@@ -656,7 +656,7 @@ else
         case $1 in
             -h|-\?|--help)
                 echo 
-                echo "  If you modified any of the files (.conf/.ini/.yml/etc) then delete 3 comments at the top of the file(s)"
+                echo "  If you modified any of the files (.conf/.ini/.yml/etc) then delete the first comment at the top of the file(s)"
                 echo
                 echo "  -f, --force      Forces an update"
                 echo "                   Example: demyx --force --update, demyx -f -u"

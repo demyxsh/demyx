@@ -23,102 +23,102 @@ demyx wp --dom=domain.tld --run --ssl
 # Commands
 demyx -h
 ```
-If you modified any of the files (.conf/.ini/.yml/etc) then delete 3 comments at the top of the file(s)
+If you modified any of the files (.conf/.ini/.yml/etc) then delete the first comment at the top of the file(s)
 
--f, --force     Forces an update
-                Example: demyx --force --update, demyx -f -u
+-f, --force     	Forces an update
+                	Example: demyx --force --update, demyx -f -u
 
--t, --top       Runs ctop (htop for containers)
-                Example: demyx -t, demyx --top
+-t, --top       	Runs ctop (htop for containers)
+					Example: demyx -t, demyx --top
 
--p, --prune     Wrapper for docker system prune && docker volume prune
-                Example: demyx -p, demyx --prune
+-p, --prune     	Wrapper for docker system prune && docker volume prune
+               		Example: demyx -p, demyx --prune
 
--df             Wrapper for docker system df
-                Example: demyx -df
+-df             	Wrapper for docker system df
+               		Example: demyx -df
 ```
 
 demyx stack -h
 ```
---action        Actions: up, down, restart, logs, and other available docker-compose commands
-                Example: demyx stack --up, demyx stack --service=traefik --action=restart
+--action       		Actions: up, down, restart, logs, and other available docker-compose commands
+            		Example: demyx stack --up, demyx stack --service=traefik --action=restart
 
---down          Shorthand for docker-compose down
-                Example: demyx stack --service=traefik --down, demyx stack --down
+--down          	Shorthand for docker-compose down
+              		Example: demyx stack --service=traefik --down, demyx stack --down
 
---restart       Shorthand for docker-compose restart
-                Example: demyx stack --service=traefik --restart, demyx stack --restart
+--restart       	Shorthand for docker-compose restart
+  	            	Example: demyx stack --service=traefik --restart, demyx stack --restart
 
---up            Shorthand for docker-compose up -d
-                Example: demyx stack --service=traefik --up, demyx stack --up
+--up            	Shorthand for docker-compose up -d
+    	        	Example: demyx stack --service=traefik --up, demyx stack --up
 
---service       Services: traefik, watchtower, logrotate
+--service       	Services: traefik, watchtower, logrotate
 ```
 
 demyx wp -h
 ```
---action        Actions: up, down, restart, logs, and other available docker-compose commands
-                Example: demyx wp --dom=domain.tld --service=wp --action=up
+--action        	Actions: up, down, restart, logs, and other available docker-compose commands
+					Example: demyx wp --dom=domain.tld --service=wp --action=up
 
---all           Selects all sites with some flags
-                Example: demyx wp --backup --all
+--all           	Selects all sites with some flags
+					Example: demyx wp --backup --all
 
---backup        Backs up a site to /srv/demyx/backup
-                Example: demyx wp --backup=domain.tld, demyx wp --dom=semver.tk --backup
+--backup        	Backs up a site to /srv/demyx/backup
+					Example: demyx wp --backup=domain.tld, demyx wp --dom=semver.tk --backup
 
---cli           Run commands to containers: wp, db
-                Example: demyx wp --dom=domain.tld --cli'ls -al'
+--cli           	Run commands to containers: wp, db
+					Example: demyx wp --dom=domain.tld --cli'ls -al'
 
---clone         Clones a site
-                Example: demyx wp --dom=new-domain.tld --clone=old-domain.tld --ssl
+--clone         	Clones a site
+					Example: demyx wp --dom=new-domain.tld --clone=old-domain.tld --ssl
 
---dom           Primary flag to target your sites
-                Example: demyx wp --dom=domain.tld --flag
+--dom           	Primary flag to target your sites
+					Example: demyx wp --dom=domain.tld --flag
 
---dev           Editing files from host to container will reflect on page reload
-                Example: demyx wp --dom=domain.tld --dev, demyx wp --dom=domain.tld --dev=off
+--dev           	Editing files from host to container will reflect on page reload
+					Example: demyx wp --dom=domain.tld --dev, demyx wp --dom=domain.tld --dev=off
 
---down          Shorthand for docker-compose down
-                Example: demyx wp --down=domain.tld, demyx wp --dom=domain.tld --down
+--down          	Shorthand for docker-compose down
+					Example: demyx wp --down=domain.tld, demyx wp --dom=domain.tld --down
 
---env           Shows all environment variables for a given site
-                Example: demyx wp --env=domain.tld, demyx wp --dom=domain.tld --env
+--env           	Shows all environment variables for a given site
+					Example: demyx wp --env=domain.tld, demyx wp --dom=domain.tld --env
 
---force         Force an override, only applies to --refresh for now
-                Example: demyx wp --refresh --all --force, demyx wp --dom=domain.tld --refresh --force
+--force         	Force an override, only applies to --refresh for now
+                	Example: demyx wp --refresh --all --force, demyx wp --dom=domain.tld --refresh --force
 
---pma           Enable phpmyadmin: pma.prmary-domain.tld
-                Example: demyx wp --dom=domain.tld --pma, demyx wp --dom=domain.tld --pma=off
+--pma           	Enable phpmyadmin: pma.prmary-domain.tld
+					Example: demyx wp --dom=domain.tld --pma, demyx wp --dom=domain.tld --pma=off
 
---refresh       Regenerate all config files for a site; use with caution
-                Example: demyx wp --refresh=domain.tld --ssl, demyx wp --dom=domain.tld --refresh --ssl
+--refresh       	Regenerate all config files for a site; use with caution
+					Example: demyx wp --refresh=domain.tld --ssl, demyx wp --dom=domain.tld --refresh --ssl
 
---remove        Removes a site
-                Example: demyx wp --rm=domain.tld, demyx wp --dom=domain.tld --rm, demyx wp --rm --all
+--remove        	Removes a site
+					Example: demyx wp --rm=domain.tld, demyx wp --dom=domain.tld --rm, demyx wp --rm --all
 
---restart       Shorthand for docker-compose restart
-                Example: demyx wp --restart=domain.tld, demyx wp --dom=domain.tld --restart
+--restart       	Shorthand for docker-compose restart
+					Example: demyx wp --restart=domain.tld, demyx wp --dom=domain.tld --restart
 
---restore       Restore a site's backup
-                Example: demyx wp --restore=domain.tld, demyx wp --dom=domain.tld --restore
+--restore       	Restore a site's backup
+					Example: demyx wp --restore=domain.tld, demyx wp --dom=domain.tld --restore
 
---run           Create a new site
-                Example: demyx wp --run=domain.tld --ssl, demyx wp --dom=domain.tld --run --ssl
+--run           	Create a new site
+					Example: demyx wp --run=domain.tld --ssl, demyx wp --dom=domain.tld --run --ssl
 
---scale         Scale a site's container
-                Example: demyx wp --dom=domain.tld --service=wp --scale=3
+--scale         	Scale a site's container
+					Example: demyx wp --dom=domain.tld --service=wp --scale=3
 
---shell         Shell into a site's wp/db container
-                Example: demyx wp --dom=domain.tld --shell, demyx wp --dom=domain.tld --shell=db
+--shell         	Shell into a site's wp/db container
+					Example: demyx wp --dom=domain.tld --shell, demyx wp --dom=domain.tld --shell=db
 
---ssl           Enables SSL for your domain, provided by Lets Encrypt
-                Example: demyx wp --dom=domain.tld --ssl, demyx wp --dom=domain.tld --ssl=off
+--ssl           	Enables SSL for your domain, provided by Lets Encrypt
+					Example: demyx wp --dom=domain.tld --ssl, demyx wp --dom=domain.tld --ssl=off
 
---up            Shorthand for docker-compose up -d
-                Example: demyx wp --up=domain.tld, demyx wp --dom=domain.tld --up
+--up            	Shorthand for docker-compose up -d
+					Example: demyx wp --up=domain.tld, demyx wp --dom=domain.tld --up
 
---wpcli         Send wp-cli commands to a site
-                Example: demyx wp --dom=domain.tld --wpcli='user list'
+--wpcli         	Send wp-cli commands to a site
+					Example: demyx wp --dom=domain.tld --wpcli='user list'
 ```
 
 # Resources
