@@ -68,7 +68,7 @@ PWGEN=$(sudo docker run -it --rm demyx/utilities sh -c "pwgen -cns 50 1" | sed -
 HTPASSWD=$(sudo docker run -it --rm demyx/utilities sh -c "htpasswd -nb $TRAEFIK_USER '$PWGEN'" | sed -e 's/\r//g')
 
 sudo mkdir -p $DIR/etc
-sudo chown $USER:$USER $DIR
+sudo chown -R $USER:$USER $DIR
 mkdir -p $DIR/apps
 mkdir -p $DIR/backup
 mkdir -p $DIR/logs
