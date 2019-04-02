@@ -63,7 +63,7 @@ demyx wp -h
                     Example: demyx wp --backup --all
 
 --backup            Backs up a site to /srv/demyx/backup
-                    Example: demyx wp --backup=domain.tld, demyx wp --dom=semver.tk --backup
+                    Example: demyx wp --backup=domain.tld, demyx wp --dom=domain.tld --backup
 
 --cli               Run commands to containers: wp, db
                     Example: demyx wp --dom=domain.tld --cli'ls -al'
