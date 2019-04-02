@@ -1,0 +1,75 @@
+#!/bin/bash
+source /srv/demyx/etc/.env
+CONTAINER_PATH=$1
+FORCE=$2
+SSL=$3
+
+if [ -f $CONTAINER_PATH/docker-compose.yml ]; then
+  NO_UPDATE=$(cat $CONTAINER_PATH/docker-compose.yml | grep "AUTO GENERATED")
+  [[ ! "$NO_UPDATE" ]] && [[ ! "$FORCE" ]] && echo -e "\e[33m[WARNING] Skipped docker-compose.yml\e[39m" && exit 1
+fi
+
+source $CONTAINER_PATH/.env
+
+if [ "$SSL" = "on" ]; then
+  SERVER_IP=$(curl -s https://ipecho.net/plain)
+  SUBDOMAIN_CHECK=$(/usr/bin/dig +short @1.1.1.1 $DOMAIN | sed -e '1d')  
+  [[ ! -z "$SUBDOMAIN_CHECK" ]] && DOMAIN_IP=$SUBDOMAIN_CHECK || DOMAIN_IP=$(/usr/bin/dig +short @1.1.1.1 $DOMAIN)
+  [[ "$SERVER_IP" != "$DOMAIN_IP" ]] && echo -e "\e[33m[WARNING] $DOMAIN does not point to server's IP! Proceeding without SSL...\e[39m" || PROTOCOL='- "traefik.frontend.redirect.entryPoint=https"'
+fi
+
+cat > $CONTAINER_PATH/docker-compose.yml <<-EOF
+# AUTO GENERATED
+# To override, see demyx -h
+
+version: "$DOCKER_COMPOSE_VERSION"
+
+services:
+  db_${WP_ID}:
+    image: demyx/mariadb
+    restart: unless-stopped
+    networks:
+      - traefik
+    volumes:
+      - ./db:/var/lib/mysql
+    environment:
+      MARIADB_DATABASE: \${WORDPRESS_DB_NAME}
+      MARIADB_USERNAME: \${WORDPRESS_DB_USER}
+      MARIADB_PASSWORD: \${WORDPRESS_DB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: \${MARIADB_ROOT_PASSWORD}
+      TZ: America/Los_Angeles
+  wp_${WP_ID}:
+    image: demyx/nginx-php-wordpress
+    restart: unless-stopped
+    networks:
+      - traefik
+    environment:
+      WORDPRESS_DB_HOST: \${WORDPRESS_DB_HOST}
+      WORDPRESS_DB_NAME: \${WORDPRESS_DB_NAME}
+      WORDPRESS_DB_USER: \${WORDPRESS_DB_USER}
+      WORDPRESS_DB_PASSWORD: \${WORDPRESS_DB_PASSWORD}
+      TZ: America/Los_Angeles
+    volumes:
+      - ./conf/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./conf/php.ini:/usr/local/etc/php/php.ini:ro
+      - ./conf/php-fpm.conf:/usr/local/etc/php-fpm.conf:ro
+      - ./data:/var/www/html
+      - \${ACCESS_LOG}:/var/log/demyx/${DOMAIN}.access.log
+      - \${ERROR_LOG}:/var/log/demyx/${DOMAIN}.error.log
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.rule=Host:\${DOMAIN},www.\${DOMAIN}"
+      - "traefik.port=80"
+      - "traefik.frontend.redirect.regex=^www.\${DOMAIN}/(.*)"
+      - "traefik.frontend.redirect.replacement=\${DOMAIN}/\$\$1"
+      $PROTOCOL
+      - "traefik.frontend.headers.forceSTSHeader=\${FORCE_STS_HEADER}"
+      - "traefik.frontend.headers.STSSeconds=\${STS_SECONDS}"
+      - "traefik.frontend.headers.STSIncludeSubdomains=\${STS_INCLUDE_SUBDOMAINS}"
+      - "traefik.frontend.headers.STSPreload=\${STS_PRELOAD}"
+networks:
+  traefik:
+    name: traefik
+EOF
+
+echo -e "\e[32m[SUCCESS] Generated .yml\e[39m"

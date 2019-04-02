@@ -1,0 +1,57 @@
+#!/bin/bash
+source /srv/demyx/etc/.env
+
+WP_ID=$1
+DOMAIN=$2
+CONTAINER_PATH=$3
+CONTAINER_NAME=$4
+WP=$5
+DB=$6
+FORCE=$7
+RUN=$8
+
+if [ -f $CONTAINER_PATH/.env ]; then
+	NO_UPDATE=$(cat $APPS/$2/.env | grep "AUTO GENERATED")
+	[[ ! "$NO_UPDATE" ]] && [[ ! "$FORCE" ]] && echo -e "\e[33m[WARNING] Skipped .env\e[39m" && exit 1
+fi
+
+WORDPRESS_USER=$(docker run -it --rm demyx/utilities sh -c "gpw 1 10" | sed -e 's/\r//g')
+WORDPRESS_USER_PASSWORD=$(docker run -it --rm demyx/utilities sh -c "pwgen -cns 50 1" | sed -e 's/\r//g')
+WORDPRESS_DB_HOST=$DB
+WORDPRESS_DB_NAME=$CONTAINER_NAME
+WORDPRESS_DB_USER=$CONTAINER_NAME
+WORDPRESS_DB_PASSWORD=$(docker run -it --rm demyx/utilities sh -c "pwgen -cns 50 1" | sed -e 's/\r//g')
+MARIADB_ROOT_PASSWORD=$(docker run -it --rm demyx/utilities sh -c "pwgen -cns 50 1" | sed -e 's/\r//g')
+
+[[ -f $CONTAINER_PATH/.env ]] && source $CONTAINER_PATH/.env
+
+cat > $CONTAINER_PATH/.env <<-EOF
+# AUTO GENERATED
+# To override, see demyx -h
+
+WP_ID=$WP_ID
+DOCKER_COMPOSE_VERSION=$DOCKER_COMPOSE_VERSION
+CONTAINER_PATH=$CONTAINER_PATH
+CONTAINER_NAME=$CONTAINER_NAME
+DOMAIN=$DOMAIN
+WP=$WP
+DB=$DB
+ACCESS_LOG=$LOGS/$DOMAIN.access.log
+ERROR_LOG=$LOGS/$DOMAIN.error.log
+WORDPRESS_USER=$WORDPRESS_USER
+WORDPRESS_USER_PASSWORD=$WORDPRESS_USER_PASSWORD
+WORDPRESS_DB_HOST=db_${WP_ID}
+WORDPRESS_DB_NAME=$WORDPRESS_DB_NAME
+WORDPRESS_DB_USER=$WORDPRESS_DB_USER
+WORDPRESS_DB_PASSWORD=$WORDPRESS_DB_PASSWORD
+MARIADB_ROOT_PASSWORD=$MARIADB_ROOT_PASSWORD
+FORCE_STS_HEADER=$FORCE_STS_HEADER
+STS_SECONDS=$STS_SECONDS
+STS_INCLUDE_SUBDOMAINS=$STS_INCLUDE_SUBDOMAINS
+STS_PRELOAD=$STS_PRELOAD
+EOF
+
+echo -e "\e[32m[SUCCESS] Generated .env\e[39m"
+
+# TODO
+#SUBNET=${SUBNETS}.${SUBNET_MAJOR}.${SUBNET_MINOR}.0/24
