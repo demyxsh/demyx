@@ -10,7 +10,6 @@ Demyx will be following a rolling release model, meaning there is only one versi
 * Primary domain must be pointed to server's IP and must have a wildcard CNAME subdomain
 
 # Install
-Clone this repo and then sudo bash demyx.sh
 ```
 wget https://raw.githubusercontent.com/demyxco/demyx/master/install.sh && bash install.sh
 ```
