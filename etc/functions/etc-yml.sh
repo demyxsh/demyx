@@ -2,12 +2,12 @@
 source /srv/demyx/etc/.env
 FORCE=$1
 
-if [ -f $ETC/docker-compose.yml ]; then
-  NO_UPDATE=$(cat $ETC/docker-compose.yml | grep "AUTO GENERATED")
-  [[ ! "$NO_UPDATE" ]] && [[ ! "$FORCE" ]] && echo -e "\e[33m[WARNING] Skipped docker-compose.yml\e[39m" && exit 1
+if [ -f "$ETC"/docker-compose.yml ]; then
+  NO_UPDATE=$(grep -r "AUTO GENERATED" "$ETC"/docker-compose.yml)
+  [[ -z "$NO_UPDATE" ]] && [[ -z "$FORCE" ]] && echo -e "\e[33m[WARNING] Skipped docker-compose.yml\e[39m" && exit 1
 fi
 
-cat > $ETC/docker-compose.yml <<-EOF
+cat > "$ETC"/docker-compose.yml <<-EOF
 # AUTO GENERATED
 # To override, see demyx -h
 

@@ -4,12 +4,12 @@ CONTAINER_PATH=$1
 DOMAIN=$2
 FORCE=$3
 
-if [ -f $CONTAINER_PATH/conf/fpm-php.conf ]; then
-	NO_UPDATE=$(cat $CONTAINER_PATH/conf/php-fpm.conf | grep "AUTO GENERATED")
-	[[ ! "$NO_UPDATE" ]] && [[ ! "$FORCE" ]] && echo -e "\e[33m[WARNING] Skipped php-fpm.conf\e[39m" && exit 1
+if [ -f "$CONTAINER_PATH"/conf/fpm-php.conf ]; then
+	NO_UPDATE=$(grep -r "AUTO GENERATED" "$CONTAINER_PATH"/conf/php-fpm.conf)
+	[[ -z "$NO_UPDATE" ]] && [[ -z "$FORCE" ]] && echo -e "\e[33m[WARNING] Skipped php-fpm.conf\e[39m" && exit 1
 fi
 
-cat > $CONTAINER_PATH/conf/php-fpm.conf <<-EOF
+cat > "$CONTAINER_PATH"/conf/php-fpm.conf <<-EOF
 ; AUTO GENERATED
 ; To override, see demyx -h
 

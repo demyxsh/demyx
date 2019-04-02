@@ -3,12 +3,12 @@
 CONTAINER_PATH=$1
 FORCE=$2
 
-if [ -f $CONTAINER_PATH/conf/php.ini ]; then
-	NO_UPDATE=$(cat $CONTAINER_PATH/conf/php.ini | grep "AUTO GENERATED")
-	[[ ! "$NO_UPDATE" ]] && [[ ! "$FORCE" ]] && echo -e "\e[33m[WARNING] Skipped php.ini\e[39m" && exit 1
+if [ -f "$CONTAINER_PATH"/conf/php.ini ]; then
+	NO_UPDATE=$(grep -r "AUTO GENERATED" "$CONTAINER_PATH"/conf/php.ini)
+	[[ -z "$NO_UPDATE" ]] && [[ -z "$FORCE" ]] && echo -e "\e[33m[WARNING] Skipped php.ini\e[39m" && exit 1
 fi
 
-cat > $CONTAINER_PATH/conf/php.ini <<-EOF
+cat > "$CONTAINER_PATH"/conf/php.ini <<-EOF
 ; AUTO GENERATED
 ; To override, see demyx -h
 

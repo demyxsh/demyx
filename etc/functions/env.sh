@@ -8,11 +8,10 @@ CONTAINER_NAME=$4
 WP=$5
 DB=$6
 FORCE=$7
-RUN=$8
 
-if [ -f $CONTAINER_PATH/.env ]; then
-	NO_UPDATE=$(cat $APPS/$2/.env | grep "AUTO GENERATED")
-	[[ ! "$NO_UPDATE" ]] && [[ ! "$FORCE" ]] && echo -e "\e[33m[WARNING] Skipped .env\e[39m" && exit 1
+if [ -f "$CONTAINER_PATH"/.env ]; then
+	NO_UPDATE=$(grep -r "AUTO GENERATED" "$APPS"/"$2"/.env)
+	[[ -z "$NO_UPDATE" ]] && [[ -z "$FORCE" ]] && echo -e "\e[33m[WARNING] Skipped .env\e[39m" && exit 1
 fi
 
 WORDPRESS_USER=$(docker run -it --rm demyx/utilities sh -c "gpw 1 10" | sed -e 's/\r//g')
@@ -23,9 +22,11 @@ WORDPRESS_DB_USER=$CONTAINER_NAME
 WORDPRESS_DB_PASSWORD=$(docker run -it --rm demyx/utilities sh -c "pwgen -cns 50 1" | sed -e 's/\r//g')
 MARIADB_ROOT_PASSWORD=$(docker run -it --rm demyx/utilities sh -c "pwgen -cns 50 1" | sed -e 's/\r//g')
 
-[[ -f $CONTAINER_PATH/.env ]] && source $CONTAINER_PATH/.env
+if [ -f "$CONTAINER_PATH"/.env ]; then
+	source "$CONTAINER_PATH"/.env
+fi
 
-cat > $CONTAINER_PATH/.env <<-EOF
+cat > "$CONTAINER_PATH"/.env <<-EOF
 # AUTO GENERATED
 # To override, see demyx -h
 

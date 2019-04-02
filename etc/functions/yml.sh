@@ -4,21 +4,21 @@ CONTAINER_PATH=$1
 FORCE=$2
 SSL=$3
 
-if [ -f $CONTAINER_PATH/docker-compose.yml ]; then
-  NO_UPDATE=$(cat $CONTAINER_PATH/docker-compose.yml | grep "AUTO GENERATED")
-  [[ ! "$NO_UPDATE" ]] && [[ ! "$FORCE" ]] && echo -e "\e[33m[WARNING] Skipped docker-compose.yml\e[39m" && exit 1
+if [ -f "$CONTAINER_PATH"/docker-compose.yml ]; then
+  NO_UPDATE=$(grep -r "AUTO GENERATED" "$CONTAINER_PATH"/docker-compose.yml)
+  [[ -z "$NO_UPDATE" ]] && [[ -z "$FORCE" ]] && echo -e "\e[33m[WARNING] Skipped docker-compose.yml\e[39m" && exit 1
 fi
 
-source $CONTAINER_PATH/.env
+source "$CONTAINER_PATH"/.env
 
 if [ "$SSL" = "on" ]; then
   SERVER_IP=$(curl -s https://ipecho.net/plain)
-  SUBDOMAIN_CHECK=$(/usr/bin/dig +short @1.1.1.1 $DOMAIN | sed -e '1d')  
-  [[ ! -z "$SUBDOMAIN_CHECK" ]] && DOMAIN_IP=$SUBDOMAIN_CHECK || DOMAIN_IP=$(/usr/bin/dig +short @1.1.1.1 $DOMAIN)
+  SUBDOMAIN_CHECK=$(/usr/bin/dig +short @1.1.1.1 "$DOMAIN" | sed -e '1d')  
+  [[ -n "$SUBDOMAIN_CHECK" ]] && DOMAIN_IP=$SUBDOMAIN_CHECK || DOMAIN_IP=$(/usr/bin/dig +short @1.1.1.1 "$DOMAIN")
   [[ "$SERVER_IP" != "$DOMAIN_IP" ]] && echo -e "\e[33m[WARNING] $DOMAIN does not point to server's IP! Proceeding without SSL...\e[39m" || PROTOCOL='- "traefik.frontend.redirect.entryPoint=https"'
 fi
 
-cat > $CONTAINER_PATH/docker-compose.yml <<-EOF
+cat > "$CONTAINER_PATH"/docker-compose.yml <<-EOF
 # AUTO GENERATED
 # To override, see demyx -h
 

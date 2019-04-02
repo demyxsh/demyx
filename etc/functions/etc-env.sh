@@ -9,8 +9,8 @@ ETC=$DEMYX/etc
 
 if [ -f $ETC/.env ]; then
 	source $ETC/.env
-	NO_UPDATE=$(cat $ETC/.env | grep "AUTO GENERATED")
-  	[[ ! "$NO_UPDATE" ]] && [[ ! "$FORCE" ]] && echo -e "\e[33m[WARNING] Skipped .env\e[39m" && exit 1
+	NO_UPDATE=$(grep -r "AUTO GENERATED" $ETC/.env)
+  	[[ -z "$NO_UPDATE" ]] && [[ -z "$FORCE" ]] && echo -e "\e[33m[WARNING] Skipped .env\e[39m" && exit 1
 fi
 
 cat > $ETC/.env <<-EOF
