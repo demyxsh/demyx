@@ -121,7 +121,13 @@ elif [ "$1" = "wp" ]; then
                 echo "  --force         Force an override, only applies to --refresh for now"
                 echo "                  Example: demyx wp --refresh --all --force, demyx wp --dom=domain.tld --refresh --force"
                 echo
-                echo "  --pma           Enable phpmyadmin: pma.prmary-domain.tld"
+                echo "  --import        Import a non demyx stack WordPress site, must be in a specific format"
+                echo "                  - Directory must be named domain.tld"
+                echo "                  - Archive must be in /srv/demyx/backup named domain.tld.tgz"
+                echo "                  - Database that will be imported must be named import.sql"
+                echo "                  Example: demyx wp --dom=domain.tld --import"
+                echo
+                echo "  --pma           Enable phpmyadmin: pma.primary-domain.tld"
                 echo "                  Example: demyx wp --dom=domain.tld --pma, demyx wp --dom=domain.tld --pma=off"
                 echo
                 echo "  --refresh       Regenerate all config files for a site; use with caution"
@@ -215,6 +221,9 @@ elif [ "$1" = "wp" ]; then
                 ;;
             -f|--force)
                 FORCE=1
+                ;;
+            --import)
+                IMPORT=1
                 ;;
             --pma|--pma=on)
                 PMA=on
@@ -412,7 +421,7 @@ elif [ "$1" = "wp" ]; then
 
         mkdir -p "$CONTAINER_PATH"/conf
         bash "$ETC"/functions/env.sh "$WP_ID" "$DOMAIN" "$CONTAINER_PATH" "$CONTAINER_NAME" "$WP" "$DB"
-        bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" $SSL
+        bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$SSL"
         bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN"
         bash "$ETC"/functions/php.sh "$CONTAINER_PATH"
         bash "$ETC"/functions/fpm.sh "$CONTAINER_PATH" "$DOMAIN"
@@ -492,6 +501,79 @@ elif [ "$1" = "wp" ]; then
     elif [ -n "$ENV" ]; then
         echo
         cat "$CONTAINER_PATH"/.env
+        echo
+    elif [ -n "$IMPORT" ]; then
+        [[ ! -f $APPS_BACKUP/$DOMAIN.tgz ]] && die "$APPS_BACKUP/$DOMAIN.tgz doesn't exist"
+        cd "$APPS_BACKUP"
+        tar -xzf "$DOMAIN".tgz
+        [[ ! -d $APPS_BACKUP/$DOMAIN ]] && die "$APPS_BACKUP/$DOMAIN doesn't exist"
+        [[ ! -f $APPS_BACKUP/$DOMAIN/import.sql ]] && die "$APPS_BACKUP/$DOMAIN/import.sql doesn't exist"
+        [[ -d $CONTAINER_PATH ]] && demyx wp --rm="$DOMAIN"
+
+        echo -e "\e[34m[INFO] Importing $DOMAIN\e[39m"
+
+        mkdir -p "$CONTAINER_PATH"/conf
+        bash "$ETC"/functions/env.sh "$WP_ID" "$DOMAIN" "$CONTAINER_PATH" "$CONTAINER_NAME" "$WP" "$DB"
+        bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$SSL"
+        bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN"
+        bash "$ETC"/functions/php.sh "$CONTAINER_PATH"
+        bash "$ETC"/functions/fpm.sh "$CONTAINER_PATH" "$DOMAIN"
+        bash "$ETC"/functions/logs.sh "$DOMAIN"
+
+        source "$CONTAINER_PATH"/.env
+
+        mv "$DOMAIN" "$CONTAINER_PATH"/data
+        rm "$CONTAINER_PATH"/data/wp-config.php
+        sudo chown -R "$USER":"$USER" "$CONTAINER_PATH"
+
+        demyx wp --up="$DOMAIN"
+        
+        sleep 10
+
+        docker run -it --rm \
+        --volumes-from "$WP" \
+        --network container:"$WP" \
+        wordpress:cli config create \
+        --dbhost="$WORDPRESS_DB_HOST" \
+        --dbname="$WORDPRESS_DB_NAME" \
+        --dbuser="$WORDPRESS_DB_USER" \
+        --dbpass="$WORDPRESS_DB_PASSWORD"
+
+        sleep 5
+
+        sudo sed -i "s/$table_prefix = 'wp_';/$table_prefix = 'wp_';\n\n\/\/ If we're behind a proxy server and using HTTPS, we need to alert Wordpress of that fact\n\/\/ see also http:\/\/codex.wordpress.org\/Administration_Over_SSL#Using_a_Reverse_Proxy\nif (isset($\_SERVER['HTTP_X_FORWARDED_PROTO']) \&\& $\_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {\n\t$\_SERVER['HTTPS'] = 'on';\n}\n/g" "$CONTAINER_PATH"/data/wp-config.php
+
+        docker run -it --rm \
+        --volumes-from "$WP" \
+        --network container:"$WP" \
+        wordpress:cli core install \
+        --url="$DOMAIN" --title="$DOMAIN" \
+        --admin_user="$WORDPRESS_USER" \
+        --admin_password="$WORDPRESS_USER_PASSWORD" \
+        --admin_email=info@"$DOMAIN" \
+        --skip-email
+
+        docker run -it --rm \
+        --volumes-from "$WP" \
+        --network container:"$WP" \
+        wordpress:cli db reset --yes
+
+        docker run -it --rm \
+        --volumes-from "$WP" \
+        --network container:"$WP" \
+        wordpress:cli db import import.sql
+
+        docker run -it --rm \
+        --volumes-from "$WP" \
+        --network container:"$WP" \
+        wordpress:cli config shuffle-salts
+
+        sudo rm "$CONTAINER_PATH"/data/import.sql
+
+        echo
+        echo "$DOMAIN/wp-admin"
+        echo "Username: $WORDPRESS_USER"
+        echo "Password: $WORDPRESS_USER_PASSWORD"
         echo
     elif [ -n "$PMA" ]; then
         PMA_EXIST=$(docker ps -aq -f name=phpmyadmin)
@@ -780,13 +862,13 @@ else
     elif [ -n "$DOMAIN" ] && [ "$INSTALL" = gitea ]; then
         mkdir -p "$APPS"/"$DOMAIN"
         sudo mkdir -p /app/gitea
-        sudo chown -R $USER:$USER /app/gitea
+        sudo chown -R "$USER":"$USER" /app/gitea
         printf '#!/bin/sh\nssh -p 2222 -o StrictHostKeyChecking=no git@127.0.0.1 "SSH_ORIGINAL_COMMAND=\\"$SSH_ORIGINAL_COMMAND\\" $0 $@"' > /app/gitea/gitea
         chmod +x /app/gitea/gitea
         sudo chown -R root:root /app/gitea
         sudo adduser git --gecos GECOS
         sudo -u git ssh-keygen -t rsa -b 4096 -C "Gitea Host Key"
-        sudo chown -R $USER:$USER /home/git
+        sudo chown -R "$USER":"$USER" /home/git
         echo "no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty $(cat /home/git/.ssh/id_rsa.pub)" >> /home/git/.ssh/authorized_keys
         sudo chown -R git:git /home/git
         bash "$ETC"/functions/gitea.sh "$DOMAIN" "$APPS"/"$DOMAIN"
