@@ -115,6 +115,9 @@ elif [ "$1" = "wp" ]; then
                 echo "  --down          Shorthand for docker-compose down"
                 echo "                  Example: demyx wp --down=domain.tld, demyx wp --dom=domain.tld --down"
                 echo
+                echo "  --du            Get a site's directory total size"
+                echo "                  Example: demyx wp --down=domain.tld --du, demyx wp --down=domain.tld --du=wp, demyx wp --down=domain.tld --du=db"
+                echo
                 echo "  --env           Shows all environment variables for a given site"
                 echo "                  Example: demyx wp --env=domain.tld, demyx wp --dom=domain.tld --env"
                 echo
@@ -211,6 +214,15 @@ elif [ "$1" = "wp" ]; then
             --down=?*)
                 DOMAIN=${2#*=}
                 ACTION=down
+                ;;
+            --du)
+                DU=1
+                ;;
+            --du=?*)
+                DU=${2#*=}
+                ;;
+            --du=)         
+                die '"--du" cannot be empty.'
                 ;;
             --env)
                 ENV=1
@@ -498,6 +510,14 @@ elif [ "$1" = "wp" ]; then
             die "--dev=$DEV not found"
         fi
         demyx wp --dom="$DOMAIN" --service=wp --action=restart
+    elif [ -n "$DU" ]; then
+        if [ "$DU" = wp ]; then
+            du -sh "$CONTAINER_PATH"/data
+        elif [ "$DU" = db ]; then
+            du -sh "$CONTAINER_PATH"/db
+        else
+            du -sh "$CONTAINER_PATH"
+        fi
     elif [ -n "$ENV" ]; then
         echo
         cat "$CONTAINER_PATH"/.env
