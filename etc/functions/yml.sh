@@ -14,8 +14,21 @@ source "$CONTAINER_PATH"/.env
 if [ "$SSL" = "on" ]; then
   SERVER_IP=$(curl -s https://ipecho.net/plain)
   SUBDOMAIN_CHECK=$(/usr/bin/dig +short @1.1.1.1 "$DOMAIN" | sed -e '1d')  
-  [[ -n "$SUBDOMAIN_CHECK" ]] && DOMAIN_IP=$SUBDOMAIN_CHECK || DOMAIN_IP=$(/usr/bin/dig +short @1.1.1.1 "$DOMAIN")
-  [[ "$SERVER_IP" != "$DOMAIN_IP" ]] && echo -e "\e[33m[WARNING] $DOMAIN does not point to server's IP! Proceeding without SSL...\e[39m" || PROTOCOL='- "traefik.frontend.redirect.entryPoint=https"'
+  if [ -n "$SUBDOMAIN_CHECK" ]; then
+    DOMAIN_IP=$SUBDOMAIN_CHECK
+  else
+    DOMAIN_IP=$(/usr/bin/dig +short @1.1.1.1 "$DOMAIN")
+  fi
+
+  if [ "$SERVER_IP" != "$DOMAIN_IP" ]; then
+    echo -e "\e[33m[WARNING] $DOMAIN does not point to server's IP! Proceeding without SSL...\e[39m"
+  else
+    PROTOCOL="- \"traefik.frontend.redirect.entryPoint=https\"
+      - \"traefik.frontend.headers.forceSTSHeader=\${FORCE_STS_HEADER}\"
+      - \"traefik.frontend.headers.STSSeconds=\${STS_SECONDS}\"
+      - \"traefik.frontend.headers.STSIncludeSubdomains=\${STS_INCLUDE_SUBDOMAINS}\"
+      - \"traefik.frontend.headers.STSPreload=\${STS_PRELOAD}\""
+  fi
 fi
 
 cat > "$CONTAINER_PATH"/docker-compose.yml <<-EOF
@@ -90,10 +103,6 @@ services:
       - "traefik.frontend.redirect.regex=^www.\${DOMAIN}/(.*)"
       - "traefik.frontend.redirect.replacement=\${DOMAIN}/\$\$1"
       $PROTOCOL
-      - "traefik.frontend.headers.forceSTSHeader=\${FORCE_STS_HEADER}"
-      - "traefik.frontend.headers.STSSeconds=\${STS_SECONDS}"
-      - "traefik.frontend.headers.STSIncludeSubdomains=\${STS_INCLUDE_SUBDOMAINS}"
-      - "traefik.frontend.headers.STSPreload=\${STS_PRELOAD}"
 networks:
   traefik:
     name: traefik
