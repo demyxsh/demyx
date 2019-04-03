@@ -572,8 +572,6 @@ elif [ "$1" = "wp" ]; then
 
         echo
         echo "$DOMAIN/wp-admin"
-        echo "Username: $WORDPRESS_USER"
-        echo "Password: $WORDPRESS_USER_PASSWORD"
         echo
     elif [ -n "$PMA" ]; then
         PMA_EXIST=$(docker ps -aq -f name=phpmyadmin)
