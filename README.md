@@ -1,7 +1,7 @@
 # Demyx
 A simple CLI wrapper for Docker to automate WordPress installations written in bash. Traefik for reverse proxy with Lets Encrypt SSL. WordPress sites are powered by NGINX, PHP, and MariaDB.
 
-Demyx will be following a rolling release model, meaning there is only one version (master branch, no tags) to ensure you always have the latest version. Any breaking changes will notify you via update command.
+Demyx will be following a rolling release model, meaning there is only one version (master branch, no tags) to ensure you always have the latest version.
 
 # Requirements
 * Ubuntu 18.04 (for now)
@@ -24,17 +24,25 @@ demyx -h
 ```
 If you modified any of the files (.conf/.ini/.yml/etc) then delete the first comment at the top of the file(s)
 
+-df                 Wrapper for docker system df
+                    Example: demyx -df
+
+--dom               Flag needed to run other Docker images
+                    Example: demyx --dom=domain.tld --install=gitea
+
+--email             Flag needed for Rocket.Chat
+                    Example: demyx --dom=domain.tld --email=info@domain.tld --install=rocketchat
+
 -f, --force         Forces an update
                     Example: demyx --force --update, demyx -f -u
 
--t, --top           Runs ctop (htop for containers)
-                    Example: demyx -t, demyx --top
+--install           Install Rocket.Chat and Gitea
 
 -p, --prune         Wrapper for docker system prune && docker volume prune
                     Example: demyx -p, demyx --prune
 
--df                 Wrapper for docker system df
-                    Example: demyx -df
+-t, --top           Runs ctop (htop for containers)
+                    Example: demyx -t, demyx --top
 ```
 
 demyx stack -h
@@ -118,6 +126,20 @@ demyx wp -h
 
 --wpcli             Send wp-cli commands to a site
                     Example: demyx wp --dom=domain.tld --wpcli='user list'
+```
+
+# Other Images
+You can run other Docker images alongside the WordPress sites. Currently, only Rocket.Chat and Gitea are supported for automatic installs but you may use them as a base to proxy other non-demyx containers.
+
+```
+# Rocket.Chat
+demyx --dom=domain.tld --email=info@domain.tld --install=rocketchat
+```
+
+```
+# Gitea
+# When running the command, it will create a new user called git and automatically setup SSH passthrough.
+demyx --dom=domain.tld --install=gitea
 ```
 
 # Resources

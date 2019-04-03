@@ -682,11 +682,19 @@ else
                 echo 
                 echo "  If you modified any of the files (.conf/.ini/.yml/etc) then delete the first comment at the top of the file(s)"
                 echo
+                echo "  -df              Wrapper for docker system df"
+                echo "                   Example: demyx -df"
+                echo
+                echo "  --dom            Flag needed to run other Docker images"
+                echo "                   Example: demyx --dom=domain.tld --install=gitea"
+                echo 
+                echo "  --email          Flag needed for Rocket.Chat"
+                echo "                   Example: demyx --dom=domain.tld --email=info@domain.tld --install=rocketchat"
+                echo 
                 echo "  -f, --force      Forces an update"
                 echo "                   Example: demyx --force --update, demyx -f -u"
                 echo
-                echo "  -df              Wrapper for docker system df"
-                echo "                   Example: demyx -df"
+                echo "  --install        Install Rocket.Chat and Gitea"
                 echo
                 echo "  -p, --prune      Wrapper for docker system prune && docker volume prune"
                 echo "                   Example: demyx -p, demyx --prune"
@@ -696,8 +704,26 @@ else
                 echo
                 exit 1
                 ;;
+            --dom=?*)
+                DOMAIN=${1#*=}
+                ;;
+            --dom=)         
+                die '"--domain" cannot be empty.'
+                ;;
+            --email=?*)
+                EMAIL=${1#*=}
+                ;;
+            --email=)         
+                die '"--email" cannot be empty.'
+                ;;
             -f|--force)
                 FORCE=1
+                ;;
+            --install=?*)
+                INSTALL=${1#*=}
+                ;;
+            --install=)         
+                die '"--install" cannot be empty.'
                 ;;
             -p|--prune)       
                 docker system prune -f
@@ -707,12 +733,18 @@ else
                 docker system df
                 ;;
             -t|--top)
+                
                 docker run --rm -ti -v /var/run/docker.sock:/var/run/docker.sock:ro quay.io/vektorlab/ctop
                 ;;
             -u|--update)
                 cd "$GIT"
 
-                [[ -n "$FORCE" ]] && echo -e "\e[33m[WARNING] Forcing an update for Demyx...\e[39m" || echo -e "\e[34m[INFO] Checking for updates\e[39m"
+                if [ -n "$FORCE" ]; then
+                    echo -e "\e[33m[WARNING] Forcing an update for Demyx...\e[39m"
+                else
+                    echo -e "\e[34m[INFO] Checking for updates\e[39m"
+                fi
+
                 CHECK_FOR_UPDATES=$(git pull | grep "Already up to date." )
 
                 if [ -n "$FORCE" ] || [ "$CHECK_FOR_UPDATES" != "Already up to date." ]; then
@@ -740,4 +772,25 @@ else
         esac
         shift
     done
+
+    if [ -n "$DOMAIN" ] && [ -n "$EMAIL" ] && [ "$INSTALL" = rocketchat ]; then
+        mkdir -p "$APPS"/"$DOMAIN"
+        bash "$ETC"/functions/rocketchat.sh "$DOMAIN" "$EMAIL" "$APPS"/"$DOMAIN"
+        cd "$APPS"/"$DOMAIN" && docker-compose up -d
+    elif [ -n "$DOMAIN" ] && [ "$INSTALL" = gitea ]; then
+        mkdir -p "$APPS"/"$DOMAIN"
+        sudo mkdir -p /app/gitea
+        sudo chown -R $USER:$USER /app/gitea
+        printf '#!/bin/sh\nssh -p 2222 -o StrictHostKeyChecking=no git@127.0.0.1 "SSH_ORIGINAL_COMMAND=\\"$SSH_ORIGINAL_COMMAND\\" $0 $@"' > /app/gitea/gitea
+        chmod +x /app/gitea/gitea
+        sudo chown -R root:root /app/gitea
+        sudo adduser git --gecos GECOS
+        sudo -u git ssh-keygen -t rsa -b 4096 -C "Gitea Host Key"
+        sudo chown -R $USER:$USER /home/git
+        echo "no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty $(cat /home/git/.ssh/id_rsa.pub)" >> /home/git/.ssh/authorized_keys
+        sudo chown -R git:git /home/git
+        bash "$ETC"/functions/gitea.sh "$DOMAIN" "$APPS"/"$DOMAIN"
+        cd "$APPS"/"$DOMAIN" && docker-compose up -d
+    fi
+
 fi
