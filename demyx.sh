@@ -1,4 +1,6 @@
 #!/bin/bash
+# Demyx
+# https://github.com/demyxco/demyx
 
 die() {
     echo -e "\e[31m" 
