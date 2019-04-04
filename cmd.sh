@@ -196,6 +196,9 @@ elif [ "$1" = "wp" ]; then
             --clone=)
                 die '"--clone" cannot be empty.'
                 ;;
+            --dev)
+                DEV=on
+                ;;
             --dev=?*)
                 DEV=${2#*=}
                 ;;
