@@ -21,6 +21,8 @@ filePath = "/etc/traefik/access.log"
 
 [api]
 entrypoint = "dashboard"
+	[api.statistics]
+    recentErrors = 100
 
 [acme]
 email = "EMAIL"
