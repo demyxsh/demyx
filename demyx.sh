@@ -504,10 +504,16 @@ elif [ "$1" = "wp" ]; then
         echo
     elif [ -n "$DEV" ]; then
         if [ "$DEV" = on ]; then
+            DEV_MODE_CHECK=$(grep -r "sendfile off" /srv/demyx/apps/semver.tk/conf/nginx.conf)
+            [[ -n "$DEV_MODE_CHECK" ]] && die "Development mode is already turned on for $DOMAIN"
+
             echo -e "\e[34m[INFO] Turning on development mode for $DOMAIN\e[39m"
             sed -i 's/sendfile on;/sendfile off;/g' "$CONTAINER_PATH"/conf/nginx.conf
             demyx wp --dom="$DOMAIN" --cli='mv /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini /'
         elif [ "$DEV" = off ]; then
+            DEV_MODE_CHECK=$(grep -r "sendfile on" /srv/demyx/apps/semver.tk/conf/nginx.conf)
+            [[ -n "$DEV_MODE_CHECK" ]] && die "Development mode is already turned off for $DOMAIN"
+
             echo -e "\e[34m[INFO] Turning off development mode for $DOMAIN\e[39m"
             sed -i 's/sendfile off;/sendfile on;/g' "$CONTAINER_PATH"/conf/nginx.conf
             demyx wp --dom="$DOMAIN" --cli='mv /docker-php-ext-opcache.ini /usr/local/etc/php/conf.d'
@@ -862,6 +868,11 @@ else
                 else
                     echo -e "\e[32m[SUCCESS] Already up to date.\e[39m"
                 fi
+                for i in $LIST
+                
+                do
+                    bash "$ETC"/functions/warnings.sh "$i"
+                done
                 ;;
             --)      
                 shift
