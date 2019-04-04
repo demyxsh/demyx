@@ -1,4 +1,7 @@
 #!/bin/bash
+# Demyx
+# https://github.com/demyxco/demyx
+
 DOMAIN=$1
 CONTAINER_NAME=$2
 ACTION=$3

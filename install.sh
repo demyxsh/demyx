@@ -1,6 +1,6 @@
 #!/bin/bash
 # Demyx
-# URL: https://github.com/demyxco/demyx
+# https://github.com/demyxco/demyx
 
 echo
 echo "Demyx"
@@ -90,7 +90,7 @@ bash $DIR/etc/functions/etc-yml.sh
 
 # Create links
 ln -s /srv/demyx $HOME/demyx
-sudo ln -s /srv/demyx/git/cmd.sh /usr/local/bin/demyx
+sudo ln -s /srv/demyx/git/demyx.sh /usr/local/bin/demyx
 
 # Change directory and finally start the stack
 cd $DIR/etc && sudo docker-compose up -d

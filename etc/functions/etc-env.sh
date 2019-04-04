@@ -1,4 +1,6 @@
 #!/bin/bash
+# Demyx
+# https://github.com/demyxco/demyx
 
 PRIMARY_DOMAIN=$1
 BASIC_AUTH_USER=$2

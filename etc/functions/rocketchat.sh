@@ -1,4 +1,6 @@
 #!/bin/bash
+# Demyx
+# https://github.com/demyxco/demyx
 
 DOMAIN=$1
 EMAIL=$2

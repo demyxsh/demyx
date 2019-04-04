@@ -1,4 +1,6 @@
 #!/bin/bash
+# Demyx
+# https://github.com/demyxco/demyx
 
 CONTAINER_PATH=$1
 DOMAIN=$2

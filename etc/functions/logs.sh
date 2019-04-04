@@ -1,4 +1,7 @@
 #!/bin/bash
+# Demyx
+# https://github.com/demyxco/demyx
+
 source /srv/demyx/etc/.env
 
 DOMAIN=$1
