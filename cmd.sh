@@ -836,7 +836,8 @@ else
                 docker system df
                 ;;
             -t|--top)
-                
+                CTOP_CHECK=$(docker ps | grep ctop | awk '{print $1}')
+                [[ -n "$CTOP_CHECK" ]] && docker stop $CTOP_CHECK
                 docker run --rm -ti -v /var/run/docker.sock:/var/run/docker.sock:ro quay.io/vektorlab/ctop
                 ;;
             -u|--update)
