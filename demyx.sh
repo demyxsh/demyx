@@ -374,17 +374,17 @@ elif [ "$1" = "wp" ]; then
         elif [ "$ACTION" = up ] && [ -z "$ALL" ] && [ -n "$DOMAIN" ]; then
             docker-compose up -d
         elif [ "$ACTION" = up ] && [ -n "$ALL" ]; then
-            for i in $LIST
+            cd "$APPS"
+            for i in *
             do
-                cd "$APPS"/"$i"
                 [[ -f $APPS/$i/data/wp-config.php ]] && cd "$APPS"/"$i" && docker-compose up -d || echo -e "\e[33m[WARNING] Skipping $i\e[39m"
             done
         elif [ "$ACTION" = down ] && [ -z "$ALL" ] && [ -n "$DOMAIN" ]; then
             docker-compose stop && docker-compose rm -f
         elif [ "$ACTION" = down ] && [ -n "$ALL" ]; then
-            for i in $LIST
+            cd "$APPS"
+            for i in *
             do
-                cd "$APPS"/"$i"
                 [[ -f $APPS/$i/data/wp-config.php ]] && cd "$APPS"/"$i" && docker-compose stop && docker-compose rm -f || echo -e "\e[33m[WARNING] Skipping $i\e[39m"
             done
         elif [ -n "$ACTION" ] && [ -z "$SERVICE" ] && [ -n "$DOMAIN" ]; then
@@ -403,11 +403,11 @@ elif [ "$1" = "wp" ]; then
             echo
         fi
     elif [ -n "$BACKUP" ]; then
+        cd "$APPS"
         if [ -n "$ALL" ]; then
-            cd "$APPS"
-            for i in $LIST
+            for i in *
             do
-                if [ -f "$APPS"/"$i"/data/wp-config.php ]; then
+                if [ -f "$i"/data/wp-config.php ]; then
                     echo -e "\e[34m[INFO] Backing up $i\e[39m"
                     sudo tar -czf "$i".tgz "$i"
                     mv "$i".tgz "$APPS_BACKUP"
@@ -418,7 +418,6 @@ elif [ "$1" = "wp" ]; then
             sudo chown -R "${USER}":"${USER}" "$APPS_BACKUP"
         else
             echo -e "\e[34m[INFO] Backing up $DOMAIN\e[39m"
-            cd "$APPS"
             sudo tar -czvf "$DOMAIN".tgz "$DOMAIN"
             mv "$DOMAIN".tgz "$APPS_BACKUP"
             sudo chown -R "${USER}":"${USER}" "$APPS_BACKUP"
@@ -637,9 +636,10 @@ elif [ "$1" = "wp" ]; then
         fi
     elif [ -n "$REFRESH" ]; then
         if [ -n "$ALL" ]; then
-            for i in $LIST
+            cd "$APPS"
+            for i in *
             do
-                if [ -f "$APPS"/"$i"/data/wp-config.php ]; then 
+                if [ -f "$i"/data/wp-config.php ]; then 
                     echo -e "\e[34m[INFO] Refreshing $i\e[39m"
                     DOMAIN=$i
                     CONTAINER_PATH=$APPS/$DOMAIN
@@ -665,8 +665,9 @@ elif [ "$1" = "wp" ]; then
             demyx wp --dom="$DOMAIN" --up
         fi
     elif [ -n "$RESTART" ]; then
+        cd "$APPS"
         if [ -n "$ALL" ]; then
-            for i in $LIST
+            for i in *
             do
                 [[ -f $APPS/$i/data/wp-config.php ]] && cd "$APPS"/"$i" && docker-compose restart || echo -e "\e[33m[WARNING] Skipping $i\e[39m"
             done
@@ -694,7 +695,8 @@ elif [ "$1" = "wp" ]; then
         echo -e "\e[39m"
         [[ "$DELETE_SITE" != [yY] ]] && die 'Cancel removal of site(s)'
         if [ -n "$ALL" ]; then
-            for i in $LIST
+            cd "$APPS"
+            for i in *
             do
                 echo -e "\e[33m[WARNING] Removing $i\e[39m"
                 [[ -f $APPS/$i/docker-compose.yml ]] && cd "$APPS"/"$i" && docker-compose stop && docker-compose rm -f
@@ -868,8 +870,9 @@ else
                 else
                     echo -e "\e[32m[SUCCESS] Already up to date.\e[39m"
                 fi
-                for i in $LIST
-                
+                cd "$APPS"
+                for i in *
+
                 do
                     bash "$ETC"/functions/warnings.sh "$i"
                 done
