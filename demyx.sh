@@ -10,6 +10,7 @@ die() {
 }
 
 source /srv/demyx/etc/.env
+EMPTY_APPS=$(find "$APPS" -type d)
 
 if [ "$1" = "stack" ]; then
     while :; do
@@ -635,7 +636,9 @@ elif [ "$1" = "wp" ]; then
             docker stop phpmyadmin && docker rm phpmyadmin
         fi
     elif [ -n "$REFRESH" ]; then
-        if [ -n "$ALL" ]; then
+        if [ -n "$EMPTY_APPS" ]; then
+            die 'No apps found.'
+        elif [ -n "$ALL" ]; then
             cd "$APPS"
             for i in *
             do
@@ -866,15 +869,14 @@ else
                     bash "$ETC"/functions/etc-env.sh
                     bash "$ETC"/functions/etc-yml.sh
                     rm -rf "$ETC"/functions
-                    cp -R "$GIT"/etc/functions "$ETC" 
+                    cp -R "$GIT"/etc/functions "$ETC"
                 else
                     echo -e "\e[32m[SUCCESS] Already up to date.\e[39m"
                 fi
                 cd "$APPS"
                 for i in *
-
                 do
-                    bash "$ETC"/functions/warnings.sh "$i"
+                    [[ -f "$i"/data/wp-config.php ]] && bash "$ETC"/functions/warnings.sh "$i"
                 done
                 ;;
             --)      
