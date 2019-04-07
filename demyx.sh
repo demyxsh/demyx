@@ -108,7 +108,7 @@ elif [ "$1" = "wp" ]; then
                 echo "  --clone         Clones a site"
                 echo "                  Example: demyx wp --dom=new-domain.tld --clone=old-domain.tld --ssl"
                 echo
-                echo "  --dom           Primary flag to target your sites"
+                echo "  --dom, --domain Primary flag to target your sites"
                 echo "                  Example: demyx wp --dom=domain.tld --flag"
                 echo
                 echo "  --dev           Editing files from host to container will reflect on page reload"
@@ -207,10 +207,10 @@ elif [ "$1" = "wp" ]; then
             --dev=)         
                 die '"--dev" cannot be empty.'
                 ;;
-            --dom=?*)
+            --dom=?*|--domain=?*)
                 DOMAIN=${2#*=}
                 ;;
-            --dom=)         
+            --dom=|--domain=)         
                 die '"--domain" cannot be empty.'
                 ;;
             --down)

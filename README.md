@@ -81,7 +81,7 @@ demyx wp -h
 --clone             Clones a site
                     Example: demyx wp --dom=new-domain.tld --clone=old-domain.tld --ssl
 
---dom               Primary flag to target your sites
+--dom, --domain     Primary flag to target your sites
                     Example: demyx wp --dom=domain.tld --flag
 
 --dev               Editing files from host to container will reflect on page reload
