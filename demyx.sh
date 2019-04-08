@@ -163,7 +163,7 @@ elif [ "$1" = "wp" ]; then
                 echo "                  Example: demyx wp --up=domain.tld, demyx wp --dom=domain.tld --up"
                 echo 
                 echo "  --wpcli         Send wp-cli commands to a site"
-                echo "                  Example: demyx wp --dom=domain.tld --wpcli='user list'"
+                echo "                  Example: demyx wp --dom=domain.tld --wpcli='user list' --all"
                 echo 
                 exit 1
                 ;;
@@ -773,19 +773,28 @@ elif [ "$1" = "wp" ]; then
         demyx wp --dom="$DOMAIN" --up
     elif [ -n "$UPDATE" ]; then
         echo "COMING SOON"
-        #if [ "$UPDATE" = on ]; then
-        #    echo -e "\e[34m[INFO] Enabled updates for $DOMAIN\e[39m"
-        #    sed -i "s|UPDATES=off|UPDATES=on|g" "$CONTAINER_PATH"/.env
-        #elif [ "$UPDATE" = off ]; then
-        #    echo -e "\e[33m[WARNING] Disabled updates for $DOMAIN\e[39m"
-        #    sed -i "s|UPDATES=on|UPDATES=off|g" "$CONTAINER_PATH"/.env
-        #fi
     elif [ -n "$WPCLI" ]; then
-        source "$CONTAINER_PATH"/.env
-        docker run -it --rm \
-        --volumes-from "$WP" \
-        --network container:"$WP" \
-        wordpress:cli $WPCLI
+        if [ -n "$ALL" ]; then
+            cd "$APPS"
+            for i in *
+            do
+                if [ -f $APPS/$i/data/wp-config.php ]; then
+                    source "$APPS"/"$i"/.env
+                    docker run -it --rm \
+                    --volumes-from "$WP" \
+                    --network container:"$WP" \
+                    wordpress:cli $WPCLI
+                else
+                    echo -e "\e[33m[WARNING] Skipping $i\e[39m"
+                fi
+            done
+        else
+            source "$CONTAINER_PATH"/.env
+            docker run -it --rm \
+            --volumes-from "$WP" \
+            --network container:"$WP" \
+            wordpress:cli $WPCLI
+        fi
     fi
 else
     [[ -z "$1" ]] && echo && echo -e "\e[34m[INFO] See commands for help: demyx -h, demyx stack -h, demyx wp -h\e[39m" && echo

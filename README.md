@@ -130,7 +130,7 @@ demyx wp -h
                     Example: demyx wp --up=domain.tld, demyx wp --dom=domain.tld --up
 
 --wpcli             Send wp-cli commands to a site
-                    Example: demyx wp --dom=domain.tld --wpcli='user list'
+                    Example: demyx wp --dom=domain.tld --wpcli='user list --all'
 ```
 
 # Other Images
