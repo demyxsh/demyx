@@ -684,7 +684,7 @@ elif [ "$1" = "wp" ]; then
         mv "$DOMAIN" "$APPS"
         sudo chown -R "${USER}":"${USER}" "$CONTAINER_PATH"
         bash "$ETC"/functions/logs.sh "$DOMAIN"
-        demyx wp --dom="$DOMAIN" --restart
+        demyx wp --dom="$DOMAIN" --up
     elif [ -n "$REMOVE" ]; then
         echo -e "\e[33m"
         if [ -z "$DOMAIN" ]; then
