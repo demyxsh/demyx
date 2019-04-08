@@ -778,7 +778,7 @@ elif [ "$1" = "wp" ]; then
             cd "$APPS" || exit
             for i in *
             do
-                if [ -f $APPS/$i/data/wp-config.php ]; then
+                if [ -f "$i"/data/wp-config.php ]; then
                     source "$APPS"/"$i"/.env
                     docker run -it --rm \
                     --volumes-from "$WP" \
@@ -860,6 +860,12 @@ else
                 docker run --rm -ti -v /var/run/docker.sock:/var/run/docker.sock:ro quay.io/vektorlab/ctop
                 ;;
             -u|--update)
+                # Cron check
+                if [ ! -f /etc/cron.daily/demyx-daily ]; then
+                    sudo cp /srv/demyx/git/cron.sh /etc/cron.daily/demyx-daily
+                    sudo chmod +x /etc/cron.daily/demyx-daily
+                fi
+
                 cd "$GIT" || exit
 
                 if [ -n "$FORCE" ]; then
