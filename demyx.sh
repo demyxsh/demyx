@@ -862,6 +862,7 @@ else
             -u|--update)
                 # Cron check
                 if [ ! -f /etc/cron.daily/demyx-daily ]; then
+                    echo -e "\e[34m[INFO] Demyx cron not found, installing now to /etc/cron.daily/demyx-daily \e[39m"
                     sudo cp /srv/demyx/git/cron.sh /etc/cron.daily/demyx-daily
                     sudo chmod +x /etc/cron.daily/demyx-daily
                 fi
