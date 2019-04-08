@@ -72,7 +72,7 @@ if [ "$1" = "stack" ]; then
         shift
     done
 
-    cd "$ETC"
+    cd "$ETC" || exit
     
     if [ "$ACTION" = up ] && [ -n "$SERVICE" ]; then
         docker-compose up -d "$SERVICE"
@@ -374,7 +374,7 @@ elif [ "$1" = "wp" ]; then
         elif [ "$ACTION" = up ] && [ -z "$ALL" ] && [ -n "$DOMAIN" ]; then
             docker-compose up -d
         elif [ "$ACTION" = up ] && [ -n "$ALL" ]; then
-            cd "$APPS"
+            cd "$APPS" || exit
             for i in *
             do
                 [[ -f $APPS/$i/data/wp-config.php ]] && cd "$APPS"/"$i" && docker-compose up -d
@@ -382,7 +382,7 @@ elif [ "$1" = "wp" ]; then
         elif [ "$ACTION" = down ] && [ -z "$ALL" ] && [ -n "$DOMAIN" ]; then
             docker-compose stop && docker-compose rm -f
         elif [ "$ACTION" = down ] && [ -n "$ALL" ]; then
-            cd "$APPS"
+            cd "$APPS" || exit
             for i in *
             do
                 [[ -f $APPS/$i/data/wp-config.php ]] && cd "$APPS"/"$i" && docker-compose stop && docker-compose rm -f || echo -e "\e[33m[WARNING] Skipping $i\e[39m"
@@ -403,7 +403,7 @@ elif [ "$1" = "wp" ]; then
             echo
         fi
     elif [ -n "$BACKUP" ]; then
-        cd "$APPS"
+        cd "$APPS" || exit
         if [ -n "$ALL" ]; then
             for i in *
             do
@@ -423,7 +423,7 @@ elif [ "$1" = "wp" ]; then
             sudo chown -R "${USER}":"${USER}" "$APPS_BACKUP"
         fi
     elif [ -n "$CLI" ]; then
-        cd "$CONTAINER_PATH"
+        cd "$CONTAINER_PATH" || exit
         source .env
         if [ "$SERVICE" = db ]; then
             docker-compose exec db_"${WP_ID}" $CLI
@@ -534,7 +534,7 @@ elif [ "$1" = "wp" ]; then
         echo
     elif [ -n "$IMPORT" ]; then
         [[ ! -f $APPS_BACKUP/$DOMAIN.tgz ]] && die "$APPS_BACKUP/$DOMAIN.tgz doesn't exist"
-        cd "$APPS_BACKUP"
+        cd "$APPS_BACKUP" || exit
         tar -xzf "$DOMAIN".tgz
         [[ ! -d $APPS_BACKUP/$DOMAIN ]] && die "$APPS_BACKUP/$DOMAIN doesn't exist"
         [[ ! -f $APPS_BACKUP/$DOMAIN/import.sql ]] && die "$APPS_BACKUP/$DOMAIN/import.sql doesn't exist"
@@ -636,7 +636,7 @@ elif [ "$1" = "wp" ]; then
         fi
     elif [ -n "$REFRESH" ]; then
         if [ -n "$ALL" ]; then
-            cd "$APPS"
+            cd "$APPS" || exit
             for i in *
             do
                 if [ -f "$i"/data/wp-config.php ]; then 
@@ -665,7 +665,7 @@ elif [ "$1" = "wp" ]; then
             demyx wp --dom="$DOMAIN" --up
         fi
     elif [ -n "$RESTART" ]; then
-        cd "$APPS"
+        cd "$APPS" || exit
         if [ -n "$ALL" ]; then
             for i in *
             do
@@ -678,7 +678,7 @@ elif [ "$1" = "wp" ]; then
     elif [ -n "$RESTORE" ]; then
         [[ ! -f $APPS_BACKUP/$DOMAIN.tgz ]] && die "No backups found for $DOMAIN"
         echo -e "\e[34m[INFO] Restoring $DOMAIN\e[39m"
-        cd "$APPS_BACKUP"
+        cd "$APPS_BACKUP" || exit
         sudo tar -xzf "$DOMAIN".tgz
         [ -d "$CONTAINER_PATH" ] && sudo rm -rf "$CONTAINER_PATH"
         mv "$DOMAIN" "$APPS"
@@ -695,7 +695,7 @@ elif [ "$1" = "wp" ]; then
         echo -e "\e[39m"
         [[ "$DELETE_SITE" != [yY] ]] && die 'Cancel removal of site(s)'
         if [ -n "$ALL" ]; then
-            cd "$APPS"
+            cd "$APPS" || exit
             for i in *
             do
                 echo -e "\e[33m[WARNING] Removing $i\e[39m"
@@ -726,7 +726,7 @@ elif [ "$1" = "wp" ]; then
         bash "$ETC"/functions/fpm.sh "$CONTAINER_PATH" "$DOMAIN"
         bash "$ETC"/functions/logs.sh "$DOMAIN"
 
-        cd "$CONTAINER_PATH"
+        cd "$CONTAINER_PATH" || exit
         docker-compose up -d
 
         sleep 10
@@ -760,7 +760,7 @@ elif [ "$1" = "wp" ]; then
             docker exec -it "$DB" sh
         fi
     elif [ -n "$SCALE" ]; then
-        cd "$CONTAINER_PATH"
+        cd "$CONTAINER_PATH" || exit
         source .env
         [[ -z "$SERVICE" ]] && die '--service is missing or empty'
         if [ "$SERVICE" = wp ]; then
@@ -775,7 +775,7 @@ elif [ "$1" = "wp" ]; then
         echo "COMING SOON"
     elif [ -n "$WPCLI" ]; then
         if [ -n "$ALL" ]; then
-            cd "$APPS"
+            cd "$APPS" || exit
             for i in *
             do
                 if [ -f $APPS/$i/data/wp-config.php ]; then
@@ -860,7 +860,7 @@ else
                 docker run --rm -ti -v /var/run/docker.sock:/var/run/docker.sock:ro quay.io/vektorlab/ctop
                 ;;
             -u|--update)
-                cd "$GIT"
+                cd "$GIT" || exit
 
                 if [ -n "$FORCE" ]; then
                     echo -e "\e[33m[WARNING] Forcing an update for Demyx...\e[39m"
@@ -879,7 +879,7 @@ else
                 else
                     echo -e "\e[32m[SUCCESS] Already up to date.\e[39m"
                 fi
-                cd "$APPS"
+                cd "$APPS" || exit
                 for i in *
                 do
                     [[ -f "$i"/data/wp-config.php ]] && bash "$ETC"/functions/warnings.sh "$i"
