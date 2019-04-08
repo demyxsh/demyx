@@ -377,7 +377,7 @@ elif [ "$1" = "wp" ]; then
             cd "$APPS"
             for i in *
             do
-                [[ -f $APPS/$i/data/wp-config.php ]] && cd "$APPS"/"$i" && docker-compose up -d || echo -e "\e[33m[WARNING] Skipping $i\e[39m"
+                [[ -f $APPS/$i/data/wp-config.php ]] && cd "$APPS"/"$i" && docker-compose up -d
             done
         elif [ "$ACTION" = down ] && [ -z "$ALL" ] && [ -n "$DOMAIN" ]; then
             docker-compose stop && docker-compose rm -f
