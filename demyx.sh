@@ -861,10 +861,19 @@ else
                 ;;
             -u|--update)
                 # Cron check
-                if [ ! -f /etc/cron.daily/demyx-daily ]; then
-                    echo -e "\e[34m[INFO] Demyx cron not found, installing now to /etc/cron.daily/demyx-daily \e[39m"
-                    sudo cp /srv/demyx/git/cron.sh /etc/cron.daily/demyx-daily
-                    sudo chmod +x /etc/cron.daily/demyx-daily
+                CRON_CHECK=$(crontab -l | grep "0 */2 * * * /usr/local/bin/demyx wp --all --wpcli='cron event run --due-now'")
+
+                if [ -z "$CRON_CHECK" ]; then
+                    # WP Cron every 2 hours
+                    echo -e "\e[34m[INFO] Demyx cron not found, installing now to crontabs \e[39m"
+                    crontab -l > demyx-cron
+                    echo "0 */2 * * * /usr/local/bin/demyx wp --all --wpcli='cron event run --due-now'" >> demyx-cron
+                    crontab demyx-cron
+                fi
+
+                if [ -f /etc/cron.daily/demyx-daily ]; then
+                    # Will remove this May 1st
+                    sudo rm /etc/cron.daily/demyx-daily
                 fi
 
                 cd "$GIT" || exit
