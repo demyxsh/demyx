@@ -80,8 +80,8 @@ http {
   gzip off;
 
   # Limit Request
-  #limit_req_status 403;
-  #limit_req_zone \$request_uri zone=one:10m rate=1r/s;
+  limit_req_status 503;
+  limit_req_zone \$request_uri zone=one:10m rate=1r/s;
 
   upstream php {
     server 127.0.0.1:9000;
@@ -113,6 +113,7 @@ http {
       fastcgi_index index.php;
       fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
       include fastcgi_params;
+      limit_req zone=one burst=5 nodelay;
     }
 
     include /etc/nginx/common/*.conf;
