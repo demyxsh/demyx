@@ -698,7 +698,7 @@ elif [ "$1" = "wp" ]; then
             cd "$APPS" || exit
             for i in *
             do
-                echo -e "\e[33m[WARNING] Removing $i\e[39m"
+                echo -e "\e[31m[CRITICAL] Removing $i\e[39m"
                 [[ -f $APPS/$i/docker-compose.yml ]] && cd "$APPS"/"$i" && docker-compose stop && docker-compose rm -f
                 cd .. && rm -rf "$i"
                 rm "$LOGS"/"$i"*.log
