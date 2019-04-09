@@ -861,7 +861,7 @@ else
                 ;;
             -u|--update)
                 # Cron check
-                CRON_CHECK=$(crontab -l | grep "0 */2 * * * /usr/local/bin/demyx wp --all --wpcli='cron event run --due-now'")
+                CRON_CHECK=$(crontab -l | grep "cron event run --due-now")
 
                 if [ -z "$CRON_CHECK" ]; then
                     # WP Cron every 2 hours
