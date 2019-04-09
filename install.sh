@@ -14,9 +14,9 @@ echo
 echo -e "\e[34m[INFO] Used for Traefik's dashboard and phpMyAdmin as subdomains\e[39m"
 read -ep "Primary Domain: " DOMAIN
 SERVER_IP=$(curl -s https://ipecho.net/plain)
-SUBDOMAIN_CHECK=$(/usr/bin/dig +short @1.1.1.1 traefik."${DOMAIN}" | sed -e '1d')
+SUBDOMAIN_CHECK=$(/usr/bin/dig +short traefik."${DOMAIN}" | sed -e '1d')
 [[ -z "$DOMAIN" ]] && echo -e "\e[31m[CRITICAL] Domain cannot be empty\e[39m" && exit 1
-[[ -n "$SUBDOMAIN_CHECK" ]] && DOMAIN_IP=$SUBDOMAIN_CHECK || DOMAIN_IP=$(/usr/bin/dig +short @1.1.1.1 traefik."${DOMAIN}")
+[[ -n "$SUBDOMAIN_CHECK" ]] && DOMAIN_IP=$SUBDOMAIN_CHECK || DOMAIN_IP=$(/usr/bin/dig +short traefik."${DOMAIN}")
 [[ "$SERVER_IP" != "$DOMAIN_IP" ]] && echo -e "\e[31m[CRITICAL] Wildcard CNAME not detected. Please add * as a CNAME to your domain's DNS.\e[39m" && exit 1
 
 echo
