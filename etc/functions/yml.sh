@@ -16,11 +16,11 @@ source "$CONTAINER_PATH"/.env
 
 if [ "$SSL" = "on" ]; then
   SERVER_IP=$(curl -s https://ipecho.net/plain)
-  SUBDOMAIN_CHECK=$(/usr/bin/dig +short @1.1.1.1 "$DOMAIN" | sed -e '1d')  
+  SUBDOMAIN_CHECK=$(/usr/bin/dig +short "$DOMAIN" | sed -e '1d')  
   if [ -n "$SUBDOMAIN_CHECK" ]; then
     DOMAIN_IP=$SUBDOMAIN_CHECK
   else
-    DOMAIN_IP=$(/usr/bin/dig +short @1.1.1.1 "$DOMAIN")
+    DOMAIN_IP=$(/usr/bin/dig +short "$DOMAIN")
   fi
 
   if [ "$SERVER_IP" != "$DOMAIN_IP" ]; then
