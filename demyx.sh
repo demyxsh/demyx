@@ -866,9 +866,10 @@ else
                 if [ -z "$CRON_CHECK" ]; then
                     # WP Cron every 2 hours
                     echo -e "\e[34m[INFO] Demyx cron not found, installing now to crontabs \e[39m"
-                    crontab -l > demyx-cron
-                    echo "0 */2 * * * /usr/local/bin/demyx wp --all --wpcli='cron event run --due-now'" >> demyx-cron
-                    crontab demyx-cron
+                    crontab -l > "$ETC"/demyx-cron
+                    echo "0 */2 * * * /usr/local/bin/demyx wp --all --wpcli='cron event run --due-now'" >> "$ETC"/demyx-cron
+                    crontab "$ETC"/demyx-cron
+                    rm "$ETC"/demyx-cron
                 fi
 
                 if [ -f /etc/cron.daily/demyx-daily ]; then
