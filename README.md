@@ -99,6 +99,12 @@ demyx wp -h
 --force             Force an override, only applies to --refresh for now
                     Example: demyx wp --refresh --all --force, demyx wp --dom=domain.tld --refresh --force
 
+--import            Import a non demyx stack WordPress site, must be in a specific format
+                    - Directory must be named domain.tld
+                    - Archive must be in /srv/demyx/backup named domain.tld.tgz
+                    - Database that will be imported must be named import.sql
+                    Example: demyx wp --dom=domain.tld --import
+
 --pma               Enable phpmyadmin: pma.prmary-domain.tld
                     Example: demyx wp --dom=domain.tld --pma, demyx wp --dom=domain.tld --pma=off
 
