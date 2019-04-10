@@ -132,6 +132,9 @@ elif [ "$1" = "wp" ]; then
                 echo "                  - Database that will be imported must be named import.sql"
                 echo "                  Example: demyx wp --dom=domain.tld --import"
                 echo
+                echo "  --list          List all WordPress sites"
+                echo "                  Example: demyx wp --list"
+                echo
                 echo "  --pma           Enable phpmyadmin: pma.primary-domain.tld"
                 echo "                  Example: demyx wp --dom=domain.tld --pma, demyx wp --dom=domain.tld --pma=off"
                 echo
@@ -241,6 +244,9 @@ elif [ "$1" = "wp" ]; then
                 ;;
             --import)
                 IMPORT=1
+                ;;
+            --list)
+                LIST=1
                 ;;
             --pma|--pma=on)
                 PMA=on
@@ -532,6 +538,13 @@ elif [ "$1" = "wp" ]; then
         echo
         cat "$CONTAINER_PATH"/.env
         echo
+    elif [ -n "$LIST" ]; then
+        cd "$APPS" || exit
+        for i in *
+        do
+            [[ ! -f "$APPS"/"$i"/data/wp-config.php ]] && continue
+            echo "$i"
+        done
     elif [ -n "$IMPORT" ]; then
         [[ ! -f $APPS_BACKUP/$DOMAIN.tgz ]] && die "$APPS_BACKUP/$DOMAIN.tgz doesn't exist"
         cd "$APPS_BACKUP" || exit
