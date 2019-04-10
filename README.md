@@ -105,6 +105,9 @@ demyx wp -h
                     - Database that will be imported must be named import.sql
                     Example: demyx wp --dom=domain.tld --import
 
+--list              List all WordPress sites
+                    Example: demyx wp --list
+
 --pma               Enable phpmyadmin: pma.prmary-domain.tld
                     Example: demyx wp --dom=domain.tld --pma, demyx wp --dom=domain.tld --pma=off
 
