@@ -936,6 +936,7 @@ else
                     echo "* * * * * /usr/local/bin/demyx wp --monitor" >> "$ETC"/CRON_MONITOR_CHECK
                     crontab "$ETC"/CRON_MONITOR_CHECK
                     rm "$ETC"/CRON_MONITOR_CHECK
+                    demyx wp --refresh --all
                 fi
 
 				if [ -f /etc/cron.daily/demyx-daily ]; then
