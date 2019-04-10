@@ -732,12 +732,12 @@ elif [ "$1" = "wp" ]; then
 
         # Future plans for subnets
         #bash $ETC/functions/subnet.sh $DOMAIN $CONTAINER_NAME create
-        bash "$ETC"/functions/env.sh "$WP_ID" "$DOMAIN" "$CONTAINER_PATH" "$CONTAINER_NAME" "$WP" "$DB"
-        bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$SSL"
-        bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN"
-        bash "$ETC"/functions/php.sh "$CONTAINER_PATH"
-        bash "$ETC"/functions/fpm.sh "$CONTAINER_PATH" "$DOMAIN"
-        bash "$ETC"/functions/logs.sh "$DOMAIN"
+        bash "$ETC"/functions/env.sh "$WP_ID" "$DOMAIN" "$CONTAINER_PATH" "$CONTAINER_NAME" "$WP" "$DB" "$FORCE"
+        bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
+        bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE"
+        bash "$ETC"/functions/php.sh "$CONTAINER_PATH" "$FORCE"
+        bash "$ETC"/functions/fpm.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE"
+        bash "$ETC"/functions/logs.sh "$DOMAIN" "$FORCE"
 
         cd "$CONTAINER_PATH" || exit
         docker-compose up -d
