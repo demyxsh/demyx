@@ -95,6 +95,7 @@ sudo ln -s /srv/demyx/git/demyx.sh /usr/local/bin/demyx
 # Add WP cron
 crontab -l > "$DIR"/demyx-cron
 echo "0 */2 * * * /usr/local/bin/demyx wp --all --wpcli='cron event run --due-now'" >> "$DIR"/demyx-cron
+echo "* * * * * /usr/local/bin/demyx wp --monitor" >> "$DIR"/demyx-cron
 crontab "$DIR"/demyx-cron
 rm "$DIR"/demyx-cron
 
