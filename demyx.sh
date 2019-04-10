@@ -151,7 +151,7 @@ elif [ "$1" = "wp" ]; then
                 echo "                  Example: demyx wp --run=domain.tld --ssl, demyx wp --dom=domain.tld --run --ssl"
                 echo
                 echo "  --scale         Scale a site's container"
-                echo "                  Example: demyx wp --dom=domain.tld --service=wp --scale=3"
+                echo "                  Example: demyx wp --dom=domain.tld --scale=3, demyx wp --dom=domain.tld --service=wp --scale=3"
                 echo
                 echo "  --shell         Shell into a site's wp/db container"
                 echo "                  Example: demyx wp --dom=domain.tld --shell, demyx wp --dom=domain.tld --shell=db"
@@ -762,10 +762,13 @@ elif [ "$1" = "wp" ]; then
     elif [ -n "$SCALE" ]; then
         cd "$CONTAINER_PATH" || exit
         source .env
-        [[ -z "$SERVICE" ]] && die '--service is missing or empty'
+        [[ -z "$SERVICE" ]] && echo -e "\e[33m[WARNING] --service is missing, targeting all services...\e[39m"
         if [ "$SERVICE" = wp ]; then
             docker-compose up -d --scale wp_"${WP_ID}"="$SCALE" wp_"${WP_ID}"
+        elif [ "$SERVICE" = db ]; then
+            docker-compose up -d --scale db_"${WP_ID}"="$SCALE" db_"${WP_ID}"
         else
+            docker-compose up -d --scale wp_"${WP_ID}"="$SCALE" wp_"${WP_ID}"
             docker-compose up -d --scale db_"${WP_ID}"="$SCALE" db_"${WP_ID}"
         fi
     elif [ -n "$SSL" ]; then

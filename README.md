@@ -124,7 +124,7 @@ demyx wp -h
                     Example: demyx wp --run=domain.tld --ssl, demyx wp --dom=domain.tld --run --ssl
 
 --scale             Scale a site's container
-                    Example: demyx wp --dom=domain.tld --service=wp --scale=3
+                    Example: demyx wp --dom=domain.tld --scale=3, demyx wp --dom=domain.tld --service=wp --scale=3
 
 --shell             Shell into a site's wp/db container
                     Example: demyx wp --dom=domain.tld --shell, demyx wp --dom=domain.tld --shell=db
