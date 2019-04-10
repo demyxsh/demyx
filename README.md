@@ -108,6 +108,8 @@ demyx wp -h
 --list              List all WordPress sites
                     Example: demyx wp --list
 
+--monitor           Cron flag for auto scaling containers
+
 --pma               Enable phpmyadmin: pma.prmary-domain.tld
                     Example: demyx wp --dom=domain.tld --pma, demyx wp --dom=domain.tld --pma=off
 
