@@ -5,6 +5,10 @@ Demyx will be following a rolling release model, meaning there is only one versi
 
 ![https://i.imgur.com/6GDrTCT.gif](https://i.imgur.com/6GDrTCT.gif)
 
+Auto scale in action
+
+![https://i.imgur.com/9VWYC8E.gif](https://i.imgur.com/9VWYC8E.gif)
+
 # Requirements
 * Ubuntu 18.04 (for now)
 * Dedicated/KVM server
