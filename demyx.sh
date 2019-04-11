@@ -135,8 +135,8 @@ elif [ "$1" = "wp" ]; then
 				echo "  --list          List all WordPress sites"
 				echo "                  Example: demyx wp --list"
 				echo
-                echo "  --monitor       Cron flag for auto scaling containers"
-                echo
+				echo "  --monitor       Cron flag for auto scaling containers"
+				echo
 				echo "  --pma           Enable phpmyadmin: pma.primary-domain.tld"
 				echo "                  Example: demyx wp --dom=domain.tld --pma, demyx wp --dom=domain.tld --pma=off"
 				echo
@@ -630,32 +630,33 @@ elif [ "$1" = "wp" ]; then
 			source "$APPS"/"$i"/.env
 			if [ ! -f "$APPS"/"$i"/.monitor ]; then
 				echo "MONITOR_COUNT=0" > "$APPS"/"$i"/.monitor 
-            else
-                source "$APPS"/"$i"/.monitor
+			else
+				source "$APPS"/"$i"/.monitor
 			fi
 
-            MONITOR_CHECK=$(echo "$MONITOR_STATS" | grep "$WP" | awk '{print $3}' | awk -F '[.]' '{print $1}')
+			MONITOR_CHECK=$(echo "$MONITOR_STATS" | grep "$WP" | awk '{print $3}' | awk -F '[.]' '{print $1}')
 
-            if (( "$MONITOR_CHECK" >= "$MONITOR_CPU" )); then
-                if [[ "$MONITOR_COUNT" != "$MONITOR_THRESHOLD" ]]; then
-                    MONITOR_COUNT_UP=$((MONITOR_COUNT+1))
-                    echo "MONITOR_COUNT=${MONITOR_COUNT_UP}" > "$APPS"/"$i"/.monitor
-                else
-                    cd "$APPS"/"$i" || exit
-                    /usr/local/bin/docker-compose up -d --scale wp_"${WP_ID}"="${MONITOR_SCALE}" wp_"${WP_ID}"
-                    /usr/local/bin/docker-compose up -d --scale db_"${WP_ID}"="${MONITOR_SCALE}" db_"${WP_ID}"
-                fi
-            elif (( "$MONITOR_CHECK" <= "$MONITOR_CPU" )); then
-                if [[ "$MONITOR_COUNT" != 0 ]]; then
-                    MONITOR_COUNT_DOWN=$((MONITOR_COUNT-1))
-                    echo "MONITOR_COUNT=${MONITOR_COUNT_DOWN}" > "$APPS"/"$i"/.monitor
-                else
-                    cd "$APPS"/"$i" || exit
-                    /usr/local/bin/docker-compose up -d --scale wp_"${WP_ID}"=1 wp_"${WP_ID}"
-                    /usr/local/bin/docker-compose up -d --scale db_"${WP_ID}"=1 db_"${WP_ID}"
-                fi
-            fi
- 		done
+			if (( "$MONITOR_CHECK" >= "$MONITOR_CPU" )); then
+				if [[ "$MONITOR_COUNT" != "$MONITOR_THRESHOLD" ]]; then
+					MONITOR_COUNT_UP=$((MONITOR_COUNT+1))
+					echo "MONITOR_COUNT=${MONITOR_COUNT_UP}" > "$APPS"/"$i"/.monitor
+				else
+					cd "$APPS"/"$i" || exit
+					/usr/local/bin/docker-compose up -d --scale wp_"${WP_ID}"="${MONITOR_SCALE}" wp_"${WP_ID}"
+					/usr/local/bin/docker-compose up -d --scale db_"${WP_ID}"="${MONITOR_SCALE}" db_"${WP_ID}"
+					[[ -f "$DEMYX"/custom/callback.sh ]] && bash "$DEMYX"/custom/callback.sh "monitor" "$i" "$MONITOR_CHECK"
+				fi
+			elif (( "$MONITOR_CHECK" <= "$MONITOR_CPU" )); then
+				if [[ "$MONITOR_COUNT" != 0 ]]; then
+					MONITOR_COUNT_DOWN=$((MONITOR_COUNT-1))
+					echo "MONITOR_COUNT=${MONITOR_COUNT_DOWN}" > "$APPS"/"$i"/.monitor
+				else
+					cd "$APPS"/"$i" || exit
+					/usr/local/bin/docker-compose up -d --scale wp_"${WP_ID}"=1 wp_"${WP_ID}"
+					/usr/local/bin/docker-compose up -d --scale db_"${WP_ID}"=1 db_"${WP_ID}"
+				fi
+			fi
+		done
 	elif [ -n "$PMA" ]; then
 		PMA_EXIST=$(docker ps -aq -f name=phpmyadmin)
 		if [ "$PMA" = "on" ]; then
@@ -918,7 +919,7 @@ else
 			-u|--update)
 				# Cron check
 				CRON_WP_CHECK=$(crontab -l | grep "cron event run --due-now")
-                CRON_MONITOR_CHECK=$(crontab -l | grep "demyx wp --monitor")
+				CRON_MONITOR_CHECK=$(crontab -l | grep "demyx wp --monitor")
 
 				if [ -z "$CRON_WP_CHECK" ]; then
 					# WP Cron every 2 hours
@@ -929,17 +930,30 @@ else
 					rm "$ETC"/CRON_WP_CHECK
 				fi
 
-                if [ -z "$CRON_MONITOR_CHECK" ]; then
-                    # WP Cron every minute
-                    echo -e "\e[34m[INFO] Auto scaling cron not found, installing now to crontabs \e[39m"
-                    crontab -l > "$ETC"/CRON_MONITOR_CHECK
-                    echo "* * * * * /usr/local/bin/demyx wp --monitor" >> "$ETC"/CRON_MONITOR_CHECK
-                    crontab "$ETC"/CRON_MONITOR_CHECK
-                    rm "$ETC"/CRON_MONITOR_CHECK
-                    demyx wp --refresh --all
-                fi
+				if [ -z "$CRON_MONITOR_CHECK" ]; then
+					# WP Cron every minute
+					echo -e "\e[34m[INFO] Auto scaling cron not found, installing now to crontabs \e[39m"
+					crontab -l > "$ETC"/CRON_MONITOR_CHECK
+					echo "* * * * * /usr/local/bin/demyx wp --monitor" >> "$ETC"/CRON_MONITOR_CHECK
+					crontab "$ETC"/CRON_MONITOR_CHECK
+					rm "$ETC"/CRON_MONITOR_CHECK
+					demyx wp --refresh --all
+				fi
 
+				# Check for custom folder where users can place custom shell scripts
+				if [ ! -d "$DEMYX"/custom ]; then
+					mkdir "$DEMYX"/custom
+					echo "#!/bin/bash
+					# Demyx
+					# https://github.com/demyxco/demyx
+					# Feel free to edit/modify this file since it will not be updated.
 
+					TYPE=\$1
+
+					#if [ \"\$TYPE\" = monitor ]; then
+					# do code
+					#fi" | tr -d '\011' > "$DEMYX"/custom/callback.sh
+				fi
 
 				if [ -f /etc/cron.daily/demyx-daily ]; then
 					# Will remove this May 1st
