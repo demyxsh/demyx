@@ -951,7 +951,9 @@ else
 					TYPE=\$1
 
 					#if [ \"\$TYPE\" = monitor ]; then
-					# do code
+					#DOMAIN=\$2
+					#CPU=\$3
+					#do code
 					#fi" | tr -d '\011' > "$DEMYX"/custom/callback.sh
 				fi
 
