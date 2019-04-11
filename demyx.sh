@@ -930,7 +930,7 @@ else
 				fi
 
                 if [ -z "$CRON_MONITOR_CHECK" ]; then
-                    # WP Cron every 2 hours
+                    # WP Cron every minute
                     echo -e "\e[34m[INFO] Auto scaling cron not found, installing now to crontabs \e[39m"
                     crontab -l > "$ETC"/CRON_MONITOR_CHECK
                     echo "* * * * * /usr/local/bin/demyx wp --monitor" >> "$ETC"/CRON_MONITOR_CHECK
@@ -938,6 +938,8 @@ else
                     rm "$ETC"/CRON_MONITOR_CHECK
                     demyx wp --refresh --all
                 fi
+
+
 
 				if [ -f /etc/cron.daily/demyx-daily ]; then
 					# Will remove this May 1st
