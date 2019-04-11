@@ -649,19 +649,23 @@ elif [ "$1" = "wp" ]; then
 					MONITOR_COUNT_UP=$((MONITOR_COUNT+1))
 					echo "MONITOR_COUNT=${MONITOR_COUNT_UP}" > "$APPS"/"$i"/.monitor
 				else
-					cd "$APPS"/"$i" || exit
-					/usr/local/bin/docker-compose up -d --scale wp_"${WP_ID}"="${MONITOR_SCALE}" wp_"${WP_ID}"
-					/usr/local/bin/docker-compose up -d --scale db_"${WP_ID}"="${MONITOR_SCALE}" db_"${WP_ID}"
-					[[ -f "$DEMYX"/custom/callback.sh ]] && bash "$DEMYX"/custom/callback.sh "monitor" "$i" "$MONITOR_CHECK"
+					if [[ "$MONITOR_COUNT" = 3 ]]; then
+						cd "$APPS"/"$i" || exit
+						/usr/local/bin/docker-compose up -d --scale wp_"${WP_ID}"="${MONITOR_SCALE}" wp_"${WP_ID}"
+						/usr/local/bin/docker-compose up -d --scale db_"${WP_ID}"="${MONITOR_SCALE}" db_"${WP_ID}"
+						[[ -f "$DEMYX"/custom/callback.sh ]] && bash "$DEMYX"/custom/callback.sh "monitor" "$i" "$MONITOR_CHECK"
+					fi
 				fi
 			elif (( "$MONITOR_CHECK" <= "$MONITOR_CPU" )); then
-				if [[ "$MONITOR_COUNT" != 0 ]]; then
+				if (( "$MONITOR_COUNT" > 0 )); then
 					MONITOR_COUNT_DOWN=$((MONITOR_COUNT-1))
 					echo "MONITOR_COUNT=${MONITOR_COUNT_DOWN}" > "$APPS"/"$i"/.monitor
 				else
-					cd "$APPS"/"$i" || exit
-					/usr/local/bin/docker-compose up -d --scale wp_"${WP_ID}"=1 wp_"${WP_ID}"
-					/usr/local/bin/docker-compose up -d --scale db_"${WP_ID}"=1 db_"${WP_ID}"
+					if [[ "$MONITOR_COUNT" = 0 ]]; then
+						cd "$APPS"/"$i" || exit
+						/usr/local/bin/docker-compose up -d --scale wp_"${WP_ID}"=1 wp_"${WP_ID}"
+						/usr/local/bin/docker-compose up -d --scale db_"${WP_ID}"=1 db_"${WP_ID}"
+					fi
 				fi
 			fi
 		done
