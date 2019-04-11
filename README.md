@@ -114,6 +114,9 @@ demyx wp -h
 
 --monitor           Cron flag for auto scaling containers
 
+--no-restart        Prevents a container from restarting when used with some flags
+                    Example: demyx wp --dom=domain.tld --run --dev --no-restart
+
 --pma               Enable phpmyadmin: pma.prmary-domain.tld
                     Example: demyx wp --dom=domain.tld --pma, demyx wp --dom=domain.tld --pma=off
 

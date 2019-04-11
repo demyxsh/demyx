@@ -137,6 +137,9 @@ elif [ "$1" = "wp" ]; then
 				echo
 				echo "  --monitor       Cron flag for auto scaling containers"
 				echo
+				echo "  --no-restart    Prevents a container from restarting when used with some flags"
+				echo "                  Example: demyx wp --dom=domain.tld --run --dev --no-restart"
+				echo 
 				echo "  --pma           Enable phpmyadmin: pma.primary-domain.tld"
 				echo "                  Example: demyx wp --dom=domain.tld --pma, demyx wp --dom=domain.tld --pma=off"
 				echo
@@ -252,6 +255,9 @@ elif [ "$1" = "wp" ]; then
 				;;
 			--monitor)
 				MONITOR=1
+				;;
+			--no-restart)
+				NO_RESTART=1
 				;;
 			--pma|--pma=on)
 				PMA=on
@@ -507,12 +513,14 @@ elif [ "$1" = "wp" ]; then
 
 		sudo rm "$CONTAINER_PATH"/data/clone.sql
 
+		[[ -n "$DEV" ]] && demyx wp --dom="$DOMAIN" --dev
+
 		echo
 		echo "$DOMAIN/wp-admin"
 		echo "Username: $WORDPRESS_USER"
 		echo "Password: $WORDPRESS_USER_PASSWORD"
 		echo
-	elif [ -n "$DEV" ]; then
+	elif [ -n "$DEV" ] && [ -z "$RUN" ] && [ -z "$CLONE" ]; then
 		if [ "$DEV" = on ]; then
 			DEV_MODE_CHECK=$(grep -r "sendfile off" /srv/demyx/apps/semver.tk/conf/nginx.conf)
 			[[ -n "$DEV_MODE_CHECK" ]] && die "Development mode is already turned on for $DOMAIN"
@@ -530,7 +538,7 @@ elif [ "$1" = "wp" ]; then
 		else
 			die "--dev=$DEV not found"
 		fi
-		demyx wp --dom="$DOMAIN" --service=wp --action=restart
+		[[ -z "$NO_RESTART" ]] && demyx wp --dom="$DOMAIN" --service=wp --action=restart
 	elif [ -n "$DU" ]; then
 		if [ "$DU" = wp ]; then
 			du -sh "$CONTAINER_PATH"/data
@@ -704,7 +712,7 @@ elif [ "$1" = "wp" ]; then
 					bash "$ETC"/functions/php.sh "$CONTAINER_PATH" "$FORCE"
 					bash "$ETC"/functions/fpm.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE"
 					bash "$ETC"/functions/logs.sh "$DOMAIN" "$FORCE"
-					demyx wp --dom="$i" --up
+					[[ -z "$NO_RESTART" ]] && demyx wp --dom="$i" --up
 				fi
 			done
 		else
@@ -716,7 +724,7 @@ elif [ "$1" = "wp" ]; then
 			bash "$ETC"/functions/php.sh "$CONTAINER_PATH" "$FORCE"
 			bash "$ETC"/functions/fpm.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE"
 			bash "$ETC"/functions/logs.sh "$DOMAIN" "$FORCE"
-			demyx wp --dom="$DOMAIN" --up
+			[[ -z "$NO_RESTART" ]] && demyx wp --dom="$DOMAIN" --up
 		fi
 	elif [ -n "$RESTART" ]; then
 		cd "$APPS" || exit
@@ -800,6 +808,8 @@ elif [ "$1" = "wp" ]; then
 		--volumes-from "$WP" \
 		--network container:"$WP" \
 		wordpress:cli rewrite structure '/%category%/%postname%/'
+
+		[[ -n "$DEV" ]] && demyx wp --dom="$DOMAIN" --dev
 
 		echo
 		echo "$DOMAIN/wp-admin"
