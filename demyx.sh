@@ -528,6 +528,7 @@ elif [ "$1" = "wp" ]; then
 			echo -e "\e[34m[INFO] Turning on development mode for $DOMAIN\e[39m"
 			sed -i 's/sendfile on;/sendfile off;/g' "$CONTAINER_PATH"/conf/nginx.conf
 			demyx wp --dom="$DOMAIN" --cli='mv /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini /'
+			[[ -z "$NO_RESTART" ]] && demyx wp --dom="$DOMAIN" --service=wp --action=restart
 		elif [ "$DEV" = off ]; then
 			DEV_MODE_CHECK=$(grep -r "sendfile on" /srv/demyx/apps/$DOMAIN/conf/nginx.conf)
 			[[ -n "$DEV_MODE_CHECK" ]] && die "Development mode is already turned off for $DOMAIN"
@@ -535,10 +536,18 @@ elif [ "$1" = "wp" ]; then
 			echo -e "\e[34m[INFO] Turning off development mode for $DOMAIN\e[39m"
 			sed -i 's/sendfile off;/sendfile on;/g' "$CONTAINER_PATH"/conf/nginx.conf
 			demyx wp --dom="$DOMAIN" --cli='mv /docker-php-ext-opcache.ini /usr/local/etc/php/conf.d'
+			[[ -z "$NO_RESTART" ]] && demyx wp --dom="$DOMAIN" --service=wp --action=restart
+		elif [ "$DEV" = check ] && [ -n "$ALL" ]; then
+			cd "$APPS" || exit
+			for i in *
+			do
+				[[ -f "$i"/data/wp-config.php ]] && bash "$ETC"/functions/warnings.sh "$i"
+			done
+		elif [ "$DEV" = check ] && [ -n "$DOMAIN" ]; then
+			[[ -f "$CONTAINER_PATH"/data/wp-config.php ]] && bash "$ETC"/functions/warnings.sh "$DOMAIN"
 		else
 			die "--dev=$DEV not found"
 		fi
-		[[ -z "$NO_RESTART" ]] && demyx wp --dom="$DOMAIN" --service=wp --action=restart
 	elif [ -n "$DU" ]; then
 		if [ "$DU" = wp ]; then
 			du -sh "$CONTAINER_PATH"/data
@@ -995,11 +1004,8 @@ else
 				else
 					echo -e "\e[32m[SUCCESS] Already up to date.\e[39m"
 				fi
-				cd "$APPS" || exit
-				for i in *
-				do
-					[[ -f "$i"/data/wp-config.php ]] && bash "$ETC"/functions/warnings.sh "$i"
-				done
+				
+				demyx wp --dev=check --all
 				;;
 			--)      
 				shift
