@@ -982,6 +982,7 @@ else
 
 				if [ -f /etc/cron.daily/demyx-daily ]; then
 					# Will remove this May 1st
+					echo -e "\e[33m[WARNING] Old cron for Demyx detected, deleting now...\e[39m" 
 					sudo rm /etc/cron.daily/demyx-daily
 				fi
 
