@@ -100,7 +100,7 @@ elif [ "$1" = "wp" ]; then
 				echo "                  Example: demyx wp --backup --all"
 				echo
 				echo "  --backup        Backs up a site to /srv/demyx/backup"
-				echo "                  Example: demyx wp --backup=domain.tld, demyx wp --dom=semver.tk --backup"
+				echo "                  Example: demyx wp --backup=domain.tld, demyx wp --dom=domain.tld --backup"
 				echo
 				echo "  --cli           Run commands to containers: wp, db"
 				echo "                  Example: demyx wp --dom=domain.tld --cli'ls -al'"
@@ -522,14 +522,14 @@ elif [ "$1" = "wp" ]; then
 		echo
 	elif [ -n "$DEV" ] && [ -z "$RUN" ] && [ -z "$CLONE" ]; then
 		if [ "$DEV" = on ]; then
-			DEV_MODE_CHECK=$(grep -r "sendfile off" /srv/demyx/apps/semver.tk/conf/nginx.conf)
+			DEV_MODE_CHECK=$(grep -r "sendfile off" /srv/demyx/apps/$DOMAIN/conf/nginx.conf)
 			[[ -n "$DEV_MODE_CHECK" ]] && die "Development mode is already turned on for $DOMAIN"
 
 			echo -e "\e[34m[INFO] Turning on development mode for $DOMAIN\e[39m"
 			sed -i 's/sendfile on;/sendfile off;/g' "$CONTAINER_PATH"/conf/nginx.conf
 			demyx wp --dom="$DOMAIN" --cli='mv /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini /'
 		elif [ "$DEV" = off ]; then
-			DEV_MODE_CHECK=$(grep -r "sendfile on" /srv/demyx/apps/semver.tk/conf/nginx.conf)
+			DEV_MODE_CHECK=$(grep -r "sendfile on" /srv/demyx/apps/$DOMAIN/conf/nginx.conf)
 			[[ -n "$DEV_MODE_CHECK" ]] && die "Development mode is already turned off for $DOMAIN"
 
 			echo -e "\e[34m[INFO] Turning off development mode for $DOMAIN\e[39m"
