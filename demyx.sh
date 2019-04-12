@@ -513,7 +513,7 @@ elif [ "$1" = "wp" ]; then
 
 		sudo rm "$CONTAINER_PATH"/data/clone.sql
 
-		[[ -n "$DEV" ]] && demyx wp --dom="$DOMAIN" --dev
+		[[ -n "$DEV" = on ]] && demyx wp --dom="$DOMAIN" --dev
 
 		echo
 		echo "$DOMAIN/wp-admin"
@@ -822,7 +822,7 @@ elif [ "$1" = "wp" ]; then
 		--network container:"$WP" \
 		wordpress:cli rewrite structure '/%category%/%postname%/'
 
-		[[ -n "$DEV" ]] && demyx wp --dom="$DOMAIN" --dev
+		[[ -n "$DEV" = on ]] && demyx wp --dom="$DOMAIN" --dev
 
 		echo
 		echo "$DOMAIN/wp-admin"
