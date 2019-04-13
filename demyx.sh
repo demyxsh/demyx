@@ -99,8 +99,20 @@ elif [ "$1" = "wp" ]; then
 				echo "  --all           Selects all sites with some flags"
 				echo "                  Example: demyx wp --backup --all"
 				echo
+				echo "  --admin_user    Override the auto generated admin username in --run"
+				echo "                  Example: demyx wp --dom=domain.tld --run --admin_user=demo"
+				echo
+				echo "  --admin_pass    Override the auto generated admin password in --run"
+				echo "                  Example: demyx wp --dom=domain.tld --run --admin_pass=demo"
+				echo
+				echo "  --admin_email   Override the auto generated admin email in --run"
+				echo "                  Example: demyx wp --dom=domain.tld --run --admin_email=info@domain.tld"
+				echo
 				echo "  --backup        Backs up a site to /srv/demyx/backup"
 				echo "                  Example: demyx wp --backup=domain.tld, demyx wp --dom=domain.tld --backup"
+				echo
+				echo "  --cache         Enables FastCGI cache with WordPress plugin helper"
+				echo "                  Example: demyx wp --dom=domain.tld --run --cache"
 				echo
 				echo "  --cli           Run commands to containers: wp, db"
 				echo "                  Example: demyx wp --dom=domain.tld --cli'ls -al'"
@@ -187,11 +199,17 @@ elif [ "$1" = "wp" ]; then
 			--admin_user=)       
 				die '"--admin_user" cannot be empty.'
 				;;
-			--admin_password=?*)
-				ADMIN_PASSWORD=${2#*=}
+			--admin_pass=?*)
+				ADMIN_PASS=${2#*=}
 				;;
-			--admin_password=)       
+			--admin_pass=)       
 				die '"--admin_password" cannot be empty.'
+				;;
+			--admin_email=?*)
+				ADMIN_EMAIL=${2#*=}
+				;;
+			--admin_email=)       
+				die '"--admin_email" cannot be empty.'
 				;;
 			--all)
 				ALL=1
@@ -208,6 +226,9 @@ elif [ "$1" = "wp" ]; then
 				;;
 			--cache|--cache=on)
 				CACHE=on
+				;;
+			--cache=off)
+				CACHE=off
 				;;
 			--cache=)         
 				die '"--cache" cannot be empty.'
@@ -405,7 +426,11 @@ elif [ "$1" = "wp" ]; then
 		fi
 
 		if [ "$ACTION" = up ] && [ -n "$SERVICE" ] && [ -n "$DOMAIN" ]; then
-			docker-compose up -d "${CONTAINER_NAME}"_"$SERVICE"
+			if [ "$SERVICE" = wp ]; then
+				docker-compose up -d wp_"${WP_ID}"
+			else
+				docker-compose up -d db_"${WP_ID}"
+			fi
 		elif [ "$ACTION" = up ] && [ -z "$ALL" ] && [ -n "$DOMAIN" ]; then
 			docker-compose up -d
 		elif [ "$ACTION" = up ] && [ -n "$ALL" ]; then
@@ -414,8 +439,17 @@ elif [ "$1" = "wp" ]; then
 			do
 				[[ -f $APPS/$i/data/wp-config.php ]] && cd "$APPS"/"$i" && docker-compose up -d
 			done
+		elif [ "$ACTION" = down ] && [ -n "$SERVICE" ] && [ -n "$DOMAIN" ]; then
+			if [ "$SERVICE" = wp ]; then
+				docker-compose stop wp_"${WP_ID}"
+				docker-compose rm -f wp_"${WP_ID}"
+			else
+				docker-compose stop db_"${WP_ID}"
+				docker-compose rm -f db_"${WP_ID}"
+			fi
 		elif [ "$ACTION" = down ] && [ -z "$ALL" ] && [ -n "$DOMAIN" ]; then
-			docker-compose stop && docker-compose rm -f
+			docker-compose stop
+			docker-compose rm -f
 		elif [ "$ACTION" = down ] && [ -n "$ALL" ]; then
 			cd "$APPS" || exit
 			for i in *
@@ -423,12 +457,12 @@ elif [ "$1" = "wp" ]; then
 				[[ -f $APPS/$i/data/wp-config.php ]] && cd "$APPS"/"$i" && docker-compose stop && docker-compose rm -f || echo -e "\e[33m[WARNING] Skipping $i\e[39m"
 			done
 		elif [ -n "$ACTION" ] && [ -z "$SERVICE" ] && [ -n "$DOMAIN" ]; then
-			docker-compose $ACTION
+			docker-compose "$ACTION"	
 		elif [ -n "$ACTION" ] && [ -n "$SERVICE" ] && [ -n "$DOMAIN" ]; then
-			if [ "$SERVICE" = "wp" ]; then
-				docker-compose $ACTION wp_"${WP_ID}"
+			if [ "$SERVICE" = wp ]; then
+				docker-compose "$ACTION" wp_"${WP_ID}"
 			else
-				docker-compose $ACTION db_"${WP_ID}"
+				docker-compose "$ACTION" db_"${WP_ID}"
 			fi
 		else
 			echo
@@ -461,16 +495,44 @@ elif [ "$1" = "wp" ]; then
 		[[ ! -f "$CONTAINER_PATH"/data/wp-config.php ]] && die 'Not a WordPress site.'
 		[[ -f "$CONTAINER_PATH"/.env ]] && source "$CONTAINER_PATH"/.env
 		if [ "$CACHE" = on ]; then
-			docker run -it --rm \
-			--volumes-from "$WP" \
-			--network container:"$WP" \
-			wordpress:cli plugin install nginx-helper --activate
+			[[ "$FASTCGI_CACHE" = on ]] && die 'Cache is already on.'
 
+			if [ -d "$CONTAINER_PATH"/data/wp-content/plugins/nginx-helper ]; then
+				docker run -it --rm \
+				--volumes-from "$WP" \
+				--network container:"$WP" \
+				wordpress:cli plugin activate nginx-helper
+			else
+				docker run -it --rm \
+				--volumes-from "$WP" \
+				--network container:"$WP" \
+				wordpress:cli plugin install nginx-helper --activate
+			fi
+
+			CACHE_OPTION_CHECK=$(demyx wp --dom="$DOMAIN" --wpcli='option get rt_wp_nginx_helper_options' | grep "Could not get")
+			if [ -n "$CACHE_OPTION_CHECK" ]; then		
+				docker run -it --rm \
+				--volumes-from "$WP" \
+				--network container:"$WP" \
+				wordpress:cli option update rt_wp_nginx_helper_options '{"enable_purge":"1","cache_method":"enable_fastcgi","purge_method":"get_request","enable_map":null,"enable_log":null,"log_level":"INFO","log_filesize":"5","enable_stamp":null,"purge_homepage_on_edit":"1","purge_homepage_on_del":"1","purge_archive_on_edit":"1","purge_archive_on_del":"1","purge_archive_on_new_comment":"1","purge_archive_on_deleted_comment":"1","purge_page_on_mod":"1","purge_page_on_new_comment":"1","purge_page_on_deleted_comment":"1","redis_hostname":"127.0.0.1","redis_port":"6379","redis_prefix":"nginx-cache:","purge_url":"","redis_enabled_by_constant":0}' --format=json
+			fi
+
+			if [ -z "$RUN" ]; then
+				bash "$ETC"/functions/env.sh "$WP_ID" "$DOMAIN" "$CONTAINER_PATH" "$CONTAINER_NAME" "$WP" "$DB" "$ADMIN_USER" "$ADMIN_PASSWORD" "on" "$FORCE"
+				bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "on" "$FORCE"
+			fi
+		elif [ "$CACHE" = off ]; then
+			[[ "$FASTCGI_CACHE" = off ]] && die 'Cache is already on.'
 			docker run -it --rm \
 			--volumes-from "$WP" \
 			--network container:"$WP" \
-			wordpress:cli option update rt_wp_nginx_helper_options '{"enable_purge":"1","cache_method":"enable_fastcgi","purge_method":"get_request","enable_map":null,"enable_log":null,"log_level":"INFO","log_filesize":"5","enable_stamp":null,"purge_homepage_on_edit":"1","purge_homepage_on_del":"1","purge_archive_on_edit":"1","purge_archive_on_del":"1","purge_archive_on_new_comment":"1","purge_archive_on_deleted_comment":"1","purge_page_on_mod":"1","purge_page_on_new_comment":"1","purge_page_on_deleted_comment":"1","redis_hostname":"127.0.0.1","redis_port":"6379","redis_prefix":"nginx-cache:","purge_url":"","redis_enabled_by_constant":0}' --format=json
+			wordpress:cli plugin deactivate nginx-helper
+			if [ -z "$RUN" ]; then
+				bash "$ETC"/functions/env.sh "$WP_ID" "$DOMAIN" "$CONTAINER_PATH" "$CONTAINER_NAME" "$WP" "$DB" "$ADMIN_USER" "$ADMIN_PASSWORD" "off" "$FORCE"
+				bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "off" "$FORCE"
+			fi
 		fi
+		demyx wp --dom="$DOMAIN" --service=wp --action=restart
 	elif [ -n "$CLI" ]; then
 		cd "$CONTAINER_PATH" || exit
 		source .env
@@ -485,12 +547,13 @@ elif [ "$1" = "wp" ]; then
 		echo -e "\e[34m[INFO] Cloning $CLONE to $DOMAIN\e[39m"
 
 		mkdir -p "$CONTAINER_PATH"/conf
-		bash "$ETC"/functions/env.sh "$WP_ID" "$DOMAIN" "$CONTAINER_PATH" "$CONTAINER_NAME" "$WP" "$DB"
-		bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$SSL"
-		bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN"
-		bash "$ETC"/functions/php.sh "$CONTAINER_PATH"
-		bash "$ETC"/functions/fpm.sh "$CONTAINER_PATH" "$DOMAIN"
-		bash "$ETC"/functions/logs.sh "$DOMAIN"
+
+		bash "$ETC"/functions/env.sh "$WP_ID" "$DOMAIN" "$CONTAINER_PATH" "$CONTAINER_NAME" "$WP" "$DB" "$ADMIN_USER" "$ADMIN_PASSWORD" "" "$FORCE"
+		bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
+		bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "" "$FORCE"
+		bash "$ETC"/functions/php.sh "$CONTAINER_PATH" "$FORCE"
+		bash "$ETC"/functions/fpm.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE"
+		bash "$ETC"/functions/logs.sh "$DOMAIN" "$FORCE"
 
 		source "$CONTAINER_PATH"/.env
 
@@ -518,6 +581,12 @@ elif [ "$1" = "wp" ]; then
 
 		sudo sed -i "s/$table_prefix = 'wp_';/$table_prefix = 'wp_';\n\n\/\/ If we're behind a proxy server and using HTTPS, we need to alert Wordpress of that fact\n\/\/ see also http:\/\/codex.wordpress.org\/Administration_Over_SSL#Using_a_Reverse_Proxy\nif (isset($\_SERVER['HTTP_X_FORWARDED_PROTO']) \&\& $\_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {\n\t$\_SERVER['HTTPS'] = 'on';\n}\n/g" "$CONTAINER_PATH"/data/wp-config.php
 
+		if [ -n "$ADMIN_EMAIL" ]; then
+			WORDPRESS_EMAIL="$ADMIN_EMAIL"
+		else
+			WORDPRESS_EMAIL=info@"$DOMAIN"
+		fi
+
 		docker run -it --rm \
 		--volumes-from "$WP" \
 		--network container:"$WP" \
@@ -525,7 +594,7 @@ elif [ "$1" = "wp" ]; then
 		--url="$DOMAIN" --title="$DOMAIN" \
 		--admin_user="$WORDPRESS_USER" \
 		--admin_password="$WORDPRESS_USER_PASSWORD" \
-		--admin_email=info@"$DOMAIN" \
+		--admin_email="$WORDPRESS_EMAIL" \
 		--skip-email
 
 		docker run -it --rm \
@@ -610,12 +679,13 @@ elif [ "$1" = "wp" ]; then
 		echo -e "\e[34m[INFO] Importing $DOMAIN\e[39m"
 
 		mkdir -p "$CONTAINER_PATH"/conf
-		bash "$ETC"/functions/env.sh "$WP_ID" "$DOMAIN" "$CONTAINER_PATH" "$CONTAINER_NAME" "$WP" "$DB"
-		bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$SSL"
-		bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN"
-		bash "$ETC"/functions/php.sh "$CONTAINER_PATH"
-		bash "$ETC"/functions/fpm.sh "$CONTAINER_PATH" "$DOMAIN"
-		bash "$ETC"/functions/logs.sh "$DOMAIN"
+
+		bash "$ETC"/functions/env.sh "$WP_ID" "$DOMAIN" "$CONTAINER_PATH" "$CONTAINER_NAME" "$WP" "$DB" "" "" "" "$FORCE"
+		bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
+		bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "" "$FORCE"
+		bash "$ETC"/functions/php.sh "$CONTAINER_PATH" "$FORCE"
+		bash "$ETC"/functions/fpm.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE"
+		bash "$ETC"/functions/logs.sh "$DOMAIN" "$FORCE"
 
 		source "$CONTAINER_PATH"/.env
 
@@ -640,6 +710,12 @@ elif [ "$1" = "wp" ]; then
 
 		sudo sed -i "s/$table_prefix = 'wp_';/$table_prefix = 'wp_';\n\n\/\/ If we're behind a proxy server and using HTTPS, we need to alert Wordpress of that fact\n\/\/ see also http:\/\/codex.wordpress.org\/Administration_Over_SSL#Using_a_Reverse_Proxy\nif (isset($\_SERVER['HTTP_X_FORWARDED_PROTO']) \&\& $\_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {\n\t$\_SERVER['HTTPS'] = 'on';\n}\n/g" "$CONTAINER_PATH"/data/wp-config.php
 
+		if [ -n "$ADMIN_EMAIL" ]; then
+			WORDPRESS_EMAIL="$ADMIN_EMAIL"
+		else
+			WORDPRESS_EMAIL=info@"$DOMAIN"
+		fi
+
 		docker run -it --rm \
 		--volumes-from "$WP" \
 		--network container:"$WP" \
@@ -647,7 +723,7 @@ elif [ "$1" = "wp" ]; then
 		--url="$DOMAIN" --title="$DOMAIN" \
 		--admin_user="$WORDPRESS_USER" \
 		--admin_password="$WORDPRESS_USER_PASSWORD" \
-		--admin_email=info@"$DOMAIN" \
+		--admin_email="$WORDPRESS_EMAIL" \
 		--skip-email
 
 		docker run -it --rm \
@@ -751,9 +827,9 @@ elif [ "$1" = "wp" ]; then
 					DOMAIN=$i
 					CONTAINER_PATH=$APPS/$DOMAIN
 					CONTAINER_NAME=${DOMAIN//./_}
-					bash "$ETC"/functions/env.sh "$WP_ID" "$DOMAIN" "$CONTAINER_PATH" "$CONTAINER_NAME" "$WP" "$DB" "$FORCE"
+					bash "$ETC"/functions/env.sh "$WP_ID" "$DOMAIN" "$CONTAINER_PATH" "$CONTAINER_NAME" "$WP" "$DB" "$ADMIN_USER" "$ADMIN_PASSWORD" "" "$FORCE"
 					bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
-					bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE" "$CACHE"
+					bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "" "$FORCE"
 					bash "$ETC"/functions/php.sh "$CONTAINER_PATH" "$FORCE"
 					bash "$ETC"/functions/fpm.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE"
 					bash "$ETC"/functions/logs.sh "$DOMAIN" "$FORCE"
@@ -763,9 +839,9 @@ elif [ "$1" = "wp" ]; then
 		else
 			[[ -z "$DOMAIN" ]] && die 'Domain is missing or add --all'
 			echo -e "\e[34m[INFO] Refreshing $DOMAIN\e[39m"
-			bash "$ETC"/functions/env.sh "$WP_ID" "$DOMAIN" "$CONTAINER_PATH" "$CONTAINER_NAME" "$WP" "$DB" "$FORCE"
+			bash "$ETC"/functions/env.sh "$WP_ID" "$DOMAIN" "$CONTAINER_PATH" "$CONTAINER_NAME" "$WP" "$DB" "$ADMIN_USER" "$ADMIN_PASSWORD" "" "$FORCE"
 			bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
-			bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE" "$CACHE"
+			bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "" "$FORCE"
 			bash "$ETC"/functions/php.sh "$CONTAINER_PATH" "$FORCE"
 			bash "$ETC"/functions/fpm.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE"
 			bash "$ETC"/functions/logs.sh "$DOMAIN" "$FORCE"
@@ -801,19 +877,20 @@ elif [ "$1" = "wp" ]; then
 		fi
 		echo -e "\e[39m"
 		[[ "$DELETE_SITE" != [yY] ]] && die 'Cancel removal of site(s)'
+		
 		if [ -n "$ALL" ]; then
 			cd "$APPS" || exit
 			for i in *
 			do
 				echo -e "\e[31m[CRITICAL] Removing $i\e[39m"
-				[[ -f $APPS/$i/docker-compose.yml ]] && cd "$APPS"/"$i" && docker-compose stop && docker-compose rm -f
+				[[ -f "$APPS"/"$i"/data/wp-config.php ]] && cd "$APPS"/"$i" && docker-compose stop && docker-compose rm -f
 				cd .. && rm -rf "$i"
 				rm "$LOGS"/"$i"*.log
 			done
 		else
 			[[ ! -d $CONTAINER_PATH ]] && die "Domain doesn't exist"
 			echo -e "\e[31m[CRITICAL] Removing $DOMAIN\e[39m"
-			[[ -f $CONTAINER_PATH/docker-compose.yml ]] && cd "$CONTAINER_PATH" && docker-compose stop && docker-compose rm -f
+			[[ -f "$CONTAINER_PATH"/data/wp-config.php ]] && cd "$CONTAINER_PATH" && docker-compose stop && docker-compose rm -f
 			[[ -f $LOGS/$DOMAIN.access.log ]] && rm "$LOGS"/"$DOMAIN".access.log && rm "$LOGS"/"$DOMAIN".error.log
 			cd .. && sudo rm -rf "$CONTAINER_PATH"
 		fi
@@ -826,18 +903,24 @@ elif [ "$1" = "wp" ]; then
 
 		# Future plans for subnets
 		#bash $ETC/functions/subnet.sh $DOMAIN $CONTAINER_NAME create
-		bash "$ETC"/functions/env.sh "$WP_ID" "$DOMAIN" "$CONTAINER_PATH" "$CONTAINER_NAME" "$WP" "$DB" "$ADMIN_USER" "$ADMIN_PASSWORD" "$FORCE"
+		bash "$ETC"/functions/env.sh "$WP_ID" "$DOMAIN" "$CONTAINER_PATH" "$CONTAINER_NAME" "$WP" "$DB" "$ADMIN_USER" "$ADMIN_PASSWORD" "" "$FORCE"
 		bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
-		bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$CACHE" "$FORCE"
+		bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "" "$FORCE"
 		bash "$ETC"/functions/php.sh "$CONTAINER_PATH" "$FORCE"
 		bash "$ETC"/functions/fpm.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE"
 		bash "$ETC"/functions/logs.sh "$DOMAIN" "$FORCE"
 
 		cd "$CONTAINER_PATH" || exit
-		docker-compose up -d
+		docker-compose up -d --remove-orphans
 
 		sleep 10
 		source "$CONTAINER_PATH"/.env
+
+		if [ -n "$ADMIN_EMAIL" ]; then
+			WORDPRESS_EMAIL="$ADMIN_EMAIL"
+		else
+			WORDPRESS_EMAIL=info@"$DOMAIN"
+		fi
 
 		docker run -it --rm \
 		--volumes-from "$WP" \
@@ -846,7 +929,7 @@ elif [ "$1" = "wp" ]; then
 		--url="$DOMAIN" --title="$DOMAIN" \
 		--admin_user="$WORDPRESS_USER" \
 		--admin_password="$WORDPRESS_USER_PASSWORD" \
-		--admin_email=info@"$DOMAIN" \
+		--admin_email="$WORDPRESS_EMAIL" \
 		--skip-email
 
 		docker run -it --rm \

@@ -76,8 +76,20 @@ demyx wp -h
 --all               Selects all sites with some flags
                     Example: demyx wp --backup --all
 
+--admin_user        Override the auto generated admin username in --run
+                    Example: demyx wp --dom=domain.tld --run --admin_user=demo
+
+--admin_pass        Override the auto generated admin username in --run
+                    Example: demyx wp --dom=domain.tld --run --admin_pass=demo
+
+--admin_email       Override the auto generated admin email in --run
+                    Example: demyx wp --dom=domain.tld --run --admin_email=info@domain.tld
+
 --backup            Backs up a site to /srv/demyx/backup
                     Example: demyx wp --backup=domain.tld, demyx wp --dom=domain.tld --backup
+
+--cache             Enables FastCGI cache with WordPress plugin helper
+                    Example: demyx wp --dom=domain.tld --run --cache
 
 --cli               Run commands to containers: wp, db
                     Example: demyx wp --dom=domain.tld --cli'ls -al'

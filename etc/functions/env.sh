@@ -12,7 +12,8 @@ WP=$5
 DB=$6
 ADMIN_USER=$7
 ADMIN_PASSWORD=$8
-FORCE=$9
+CACHE=$9
+FORCE=$10
 
 if [ -f "$CONTAINER_PATH"/.env ]; then
 	NO_UPDATE=$(grep -r "AUTO GENERATED" "$APPS"/"$2"/.env)
@@ -26,6 +27,8 @@ else
 	WORDPRESS_USER=$(docker run -it --rm demyx/utilities sh -c "gpw 1 10" | sed -e 's/\r//g')
 	WORDPRESS_USER_PASSWORD=$(docker run -it --rm demyx/utilities sh -c "pwgen -cns 50 1" | sed -e 's/\r//g')
 fi
+
+[[ -z "$CACHE" ]] && CACHE=off
 
 WORDPRESS_DB_HOST=$DB
 WORDPRESS_DB_NAME=$CONTAINER_NAME
@@ -88,6 +91,7 @@ STS_PRELOAD=$STS_PRELOAD
 MONITOR_THRESHOLD=3
 MONITOR_SCALE=5
 MONITOR_CPU=25
+FASTCGI_CACHE=$CACHE
 EOF
 
 echo -e "\e[32m[SUCCESS] Generated .env\e[39m"
