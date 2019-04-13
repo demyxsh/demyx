@@ -10,15 +10,23 @@ CONTAINER_PATH=$3
 CONTAINER_NAME=$4
 WP=$5
 DB=$6
-FORCE=$7
+ADMIN_USER=$7
+ADMIN_PASSWORD=$8
+FORCE=$9
 
 if [ -f "$CONTAINER_PATH"/.env ]; then
 	NO_UPDATE=$(grep -r "AUTO GENERATED" "$APPS"/"$2"/.env)
 	[[ -z "$NO_UPDATE" ]] && [[ -z "$FORCE" ]] && echo -e "\e[33m[WARNING] Skipped .env\e[39m" && exit 1
 fi
 
-WORDPRESS_USER=$(docker run -it --rm demyx/utilities sh -c "gpw 1 10" | sed -e 's/\r//g')
-WORDPRESS_USER_PASSWORD=$(docker run -it --rm demyx/utilities sh -c "pwgen -cns 50 1" | sed -e 's/\r//g')
+if [ -n "$ADMIN_USER" ] && [ -n "$ADMIN_PASSWORD" ]; then
+	WORDPRESS_USER="$ADMIN_USER"
+	WORDPRESS_USER_PASSWORD="$ADMIN_PASSWORD"
+else
+	WORDPRESS_USER=$(docker run -it --rm demyx/utilities sh -c "gpw 1 10" | sed -e 's/\r//g')
+	WORDPRESS_USER_PASSWORD=$(docker run -it --rm demyx/utilities sh -c "pwgen -cns 50 1" | sed -e 's/\r//g')
+fi
+
 WORDPRESS_DB_HOST=$DB
 WORDPRESS_DB_NAME=$CONTAINER_NAME
 WORDPRESS_DB_USER=$CONTAINER_NAME

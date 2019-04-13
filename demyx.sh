@@ -181,6 +181,18 @@ elif [ "$1" = "wp" ]; then
 			--action=)       
 				die '"--action" cannot be empty.'
 				;;
+			--admin_user=?*)
+				ADMIN_USER=${2#*=}
+				;;
+			--admin_user=)       
+				die '"--admin_user" cannot be empty.'
+				;;
+			--admin_password=?*)
+				ADMIN_PASSWORD=${2#*=}
+				;;
+			--admin_password=)       
+				die '"--admin_password" cannot be empty.'
+				;;
 			--all)
 				ALL=1
 				;;
@@ -803,9 +815,9 @@ elif [ "$1" = "wp" ]; then
 
 		# Future plans for subnets
 		#bash $ETC/functions/subnet.sh $DOMAIN $CONTAINER_NAME create
-		bash "$ETC"/functions/env.sh "$WP_ID" "$DOMAIN" "$CONTAINER_PATH" "$CONTAINER_NAME" "$WP" "$DB" "$FORCE"
+		bash "$ETC"/functions/env.sh "$WP_ID" "$DOMAIN" "$CONTAINER_PATH" "$CONTAINER_NAME" "$WP" "$DB" "$ADMIN_USER" "$ADMIN_PASSWORD" "$FORCE"
 		bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
-		bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE" "$CACHE"
+		bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$CACHE" "$FORCE"
 		bash "$ETC"/functions/php.sh "$CONTAINER_PATH" "$FORCE"
 		bash "$ETC"/functions/fpm.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE"
 		bash "$ETC"/functions/logs.sh "$DOMAIN" "$FORCE"
