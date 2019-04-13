@@ -1118,6 +1118,7 @@ else
 					bash "$ETC"/functions/etc-yml.sh
 					rm -rf "$ETC"/functions
 					cp -R "$GIT"/etc/functions "$ETC"
+					demyx stack -u
 				else
 					echo -e "\e[32m[SUCCESS] Already up to date.\e[39m"
 				fi
