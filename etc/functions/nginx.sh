@@ -5,10 +5,17 @@
 CONTAINER_PATH=$1
 DOMAIN=$2
 FORCE=$3
+CACHE=$4
 
 if [ -f "$CONTAINER_PATH"/conf/nginx.conf ]; then 
   NO_UPDATE=$(grep -r "AUTO GENERATED" "$CONTAINER_PATH"/conf/nginx.conf)
   [[ -z "$NO_UPDATE" ]] && [[ -z "$FORCE" ]] && echo -e "\e[33m[WARNING] Skipped nginx.conf\e[39m" && exit 1
+fi
+
+if [ "$CACHE" = on ]; then
+  CACHE_HTTP_BLOCK="include /etc/nginx/cache/http.conf;"
+  CACHE_SERVER_BLOCK="include /etc/nginx/cache/server.conf;"
+  CACHE_LOCATION_BLOCK="include /etc/nginx/cache/location.conf;"
 fi
 
 cat > "$CONTAINER_PATH"/conf/nginx.conf <<-EOF
@@ -87,6 +94,8 @@ http {
     server 127.0.0.1:9000;
   }
 
+  $CACHE_HTTP_BLOCK
+
   server {
 
     listen       80;
@@ -99,6 +108,8 @@ http {
     error_log /var/log/demyx/$DOMAIN.error.log;
 
     disable_symlinks off;
+
+    $CACHE_SERVER_BLOCK
 
     location / {
       try_files \$uri \$uri/ /index.php?\$args;
@@ -114,6 +125,7 @@ http {
       fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
       include fastcgi_params;
       limit_req zone=one burst=5 nodelay;
+      $CACHE_LOCATION_BLOCK
     }
 
     include /etc/nginx/common/*.conf;

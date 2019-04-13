@@ -194,6 +194,15 @@ elif [ "$1" = "wp" ]; then
 			--backup=)         
 				die '"--backup" cannot be empty.'
 				;;
+			--cache|--cache=on)
+				CACHE=on
+				;;
+			--cache=off)
+				CACHE=off
+				;;
+			--cache=)         
+				die '"--cache" cannot be empty.'
+				;;
 			--cli=?*)
 				CLI=${2#*=}
 				;;
@@ -721,7 +730,7 @@ elif [ "$1" = "wp" ]; then
 					CONTAINER_NAME=${DOMAIN//./_}
 					bash "$ETC"/functions/env.sh "$WP_ID" "$DOMAIN" "$CONTAINER_PATH" "$CONTAINER_NAME" "$WP" "$DB" "$FORCE"
 					bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
-					bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE"
+					bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE" "$CACHE"
 					bash "$ETC"/functions/php.sh "$CONTAINER_PATH" "$FORCE"
 					bash "$ETC"/functions/fpm.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE"
 					bash "$ETC"/functions/logs.sh "$DOMAIN" "$FORCE"
@@ -733,7 +742,7 @@ elif [ "$1" = "wp" ]; then
 			echo -e "\e[34m[INFO] Refreshing $DOMAIN\e[39m"
 			bash "$ETC"/functions/env.sh "$WP_ID" "$DOMAIN" "$CONTAINER_PATH" "$CONTAINER_NAME" "$WP" "$DB" "$FORCE"
 			bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
-			bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE"
+			bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE" "$CACHE"
 			bash "$ETC"/functions/php.sh "$CONTAINER_PATH" "$FORCE"
 			bash "$ETC"/functions/fpm.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE"
 			bash "$ETC"/functions/logs.sh "$DOMAIN" "$FORCE"
@@ -786,6 +795,7 @@ elif [ "$1" = "wp" ]; then
 			cd .. && sudo rm -rf "$CONTAINER_PATH"
 		fi
 	elif [ -n "$RUN" ]; then
+		set -e
 		[[ -d $CONTAINER_PATH ]] && demyx wp --rm="$DOMAIN"
 		echo -e "\e[34m[INFO] Creating $DOMAIN\e[39m"
 
@@ -795,7 +805,7 @@ elif [ "$1" = "wp" ]; then
 		#bash $ETC/functions/subnet.sh $DOMAIN $CONTAINER_NAME create
 		bash "$ETC"/functions/env.sh "$WP_ID" "$DOMAIN" "$CONTAINER_PATH" "$CONTAINER_NAME" "$WP" "$DB" "$FORCE"
 		bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
-		bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE"
+		bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE" "$CACHE"
 		bash "$ETC"/functions/php.sh "$CONTAINER_PATH" "$FORCE"
 		bash "$ETC"/functions/fpm.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE"
 		bash "$ETC"/functions/logs.sh "$DOMAIN" "$FORCE"
@@ -831,7 +841,7 @@ elif [ "$1" = "wp" ]; then
 	elif [ -n "$DEMYX_SHELL" ]; then
 		source "$CONTAINER_PATH"/.env
 		if [ "$DEMYX_SHELL" = "wp" ]; then
-			docker exec -it "$WP" bash
+			docker exec -it "$WP" sh
 		else
 			docker exec -it "$DB" sh
 		fi
