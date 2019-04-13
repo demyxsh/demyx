@@ -209,9 +209,6 @@ elif [ "$1" = "wp" ]; then
 			--cache|--cache=on)
 				CACHE=on
 				;;
-			--cache=off)
-				CACHE=off
-				;;
 			--cache=)         
 				die '"--cache" cannot be empty.'
 				;;
@@ -459,6 +456,20 @@ elif [ "$1" = "wp" ]; then
 			sudo tar -czvf "$DOMAIN".tgz "$DOMAIN"
 			mv "$DOMAIN".tgz "$APPS_BACKUP"
 			sudo chown -R "${USER}":"${USER}" "$APPS_BACKUP"
+		fi
+	elif [ -n "$CACHE" ] && [ -z "$RUN" ]; then
+		[[ ! -f "$CONTAINER_PATH"/data/wp-config.php ]] && die 'Not a WordPress site.'
+		[[ -f "$CONTAINER_PATH"/.env ]] && source "$CONTAINER_PATH"/.env
+		if [ "$CACHE" = on ]; then
+			docker run -it --rm \
+			--volumes-from "$WP" \
+			--network container:"$WP" \
+			wordpress:cli plugin install nginx-helper --activate
+
+			docker run -it --rm \
+			--volumes-from "$WP" \
+			--network container:"$WP" \
+			wordpress:cli option update rt_wp_nginx_helper_options '{"enable_purge":"1","cache_method":"enable_fastcgi","purge_method":"get_request","enable_map":null,"enable_log":null,"log_level":"INFO","log_filesize":"5","enable_stamp":null,"purge_homepage_on_edit":"1","purge_homepage_on_del":"1","purge_archive_on_edit":"1","purge_archive_on_del":"1","purge_archive_on_new_comment":"1","purge_archive_on_deleted_comment":"1","purge_page_on_mod":"1","purge_page_on_new_comment":"1","purge_page_on_deleted_comment":"1","redis_hostname":"127.0.0.1","redis_port":"6379","redis_prefix":"nginx-cache:","purge_url":"","redis_enabled_by_constant":0}' --format=json
 		fi
 	elif [ -n "$CLI" ]; then
 		cd "$CONTAINER_PATH" || exit
@@ -844,6 +855,7 @@ elif [ "$1" = "wp" ]; then
 		wordpress:cli rewrite structure '/%category%/%postname%/'
 
 		[[ "$DEV" = on ]] && demyx wp --dom="$DOMAIN" --dev
+		[[ "$CACHE" = on ]] && demyx wp --dom="$DOMAIN" --cache
 
 		echo
 		echo "$DOMAIN/wp-admin"
