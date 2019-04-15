@@ -895,7 +895,6 @@ elif [ "$1" = "wp" ]; then
 			cd .. && sudo rm -rf "$CONTAINER_PATH"
 		fi
 	elif [ -n "$RUN" ]; then
-		set -e
 		[[ -d $CONTAINER_PATH ]] && demyx wp --rm="$DOMAIN"
 		echo -e "\e[34m[INFO] Creating $DOMAIN\e[39m"
 
