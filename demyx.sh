@@ -438,6 +438,7 @@ elif [ "$1" = "wp" ]; then
 			for i in *
 			do
 				[[ -f $APPS/$i/data/wp-config.php ]] && cd "$APPS"/"$i" && docker-compose up -d
+				sleep 5
 			done
 		elif [ "$ACTION" = down ] && [ -n "$SERVICE" ] && [ -n "$DOMAIN" ]; then
 			if [ "$SERVICE" = wp ]; then
@@ -455,6 +456,7 @@ elif [ "$1" = "wp" ]; then
 			for i in *
 			do
 				[[ -f $APPS/$i/data/wp-config.php ]] && cd "$APPS"/"$i" && docker-compose stop && docker-compose rm -f || echo -e "\e[33m[WARNING] Skipping $i\e[39m"
+				sleep 5
 			done
 		elif [ -n "$ACTION" ] && [ -z "$SERVICE" ] && [ -n "$DOMAIN" ]; then
 			docker-compose "$ACTION"	
@@ -883,9 +885,8 @@ elif [ "$1" = "wp" ]; then
 			for i in *
 			do
 				echo -e "\e[31m[CRITICAL] Removing $i\e[39m"
-				[[ -f "$APPS"/"$i"/data/wp-config.php ]] && cd "$APPS"/"$i" && docker-compose stop && docker-compose rm -f
+				[[ -f "$APPS"/"$i"/data/wp-config.php ]] && cd "$APPS"/"$i" && docker-compose stop && docker-compose rm -f && rm "$LOGS"/"$i"*.log
 				cd .. && rm -rf "$i"
-				rm "$LOGS"/"$i"*.log
 			done
 		else
 			[[ ! -d $CONTAINER_PATH ]] && die "Domain doesn't exist"
