@@ -7,6 +7,10 @@ echo "Demyx"
 echo "URL: https://github.com/demyxco/demyx"
 echo
 
+# Install requisites
+sudo apt update
+sudo apt install -y curl dnsutils uuid-runtime
+
 # Root check
 [[ "$USER" = root ]] && echo -e "\e[31m[CRITICAL] Root user detected. Please run the script without sudo or root.\e[39m" && exit 1
 
@@ -32,8 +36,6 @@ echo
 
 # Install Docker and other packages
 echo -e "\e[34m[INFO] Installing Docker and Docker Compose\e[39m"
-sudo apt update
-sudo apt install -y jq
 sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
@@ -107,7 +109,7 @@ echo traefik."$DOMAIN"
 echo Username: "$TRAEFIK_USER"
 echo Password: "$PWGEN"
 echo
-echo "To create your first site, run: demyx wp --dom=domain.tld --run --ssl"
+echo "To create your first site, run: demyx wp --dom=manacim.tk --run --ssl"
 echo
 
 echo -e "\e[33m[WARNING] You must relogin or switch to another shell for new permissions to take effect.\e[39m"

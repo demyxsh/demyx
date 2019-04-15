@@ -10,7 +10,7 @@ Auto scale in action
 ![https://i.imgur.com/9VWYC8E.gif](https://i.imgur.com/9VWYC8E.gif)
 
 # Requirements
-* Ubuntu 18.04 (for now)
+* Ubuntu 18.04, Debian 9.7
 * Dedicated/KVM server
 * Port 80 and 443 must be open
 * Primary domain must be pointed to server's IP and must have a wildcard CNAME subdomain
