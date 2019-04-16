@@ -22,7 +22,7 @@ wget https://raw.githubusercontent.com/demyxco/demyx/master/install.sh && bash i
 
 # Getting Started
 ```
-demyx wp --dom=domain.tld --run --cache --ssl
+demyx wp --dom=domain.tld --run --cdn --cache --ssl
 ```
 
 # Commands
@@ -90,6 +90,9 @@ demyx wp -h
 
 --cache             Enables FastCGI cache with WordPress plugin helper
                     Example: demyx wp --dom=domain.tld --run --cache
+
+--cdn               Auto install CDN by Staticaly.com
+                    Example: demyx wp --dom=domain.tld --run --cdn
 
 --cli               Run commands to containers: wp, db
                     Example: demyx wp --dom=domain.tld --cli'ls -al'

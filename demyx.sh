@@ -114,6 +114,9 @@ elif [ "$1" = "wp" ]; then
 				echo "  --cache         Enables FastCGI cache with WordPress plugin helper"
 				echo "                  Example: demyx wp --dom=domain.tld --run --cache"
 				echo
+				echo "  --cdn           Auto install CDN by Staticaly.com"
+				echo "                  Example: demyx wp --dom=domain.tld --run --cdn"
+				echo
 				echo "  --cli           Run commands to containers: wp, db"
 				echo "                  Example: demyx wp --dom=domain.tld --cli'ls -al'"
 				echo
@@ -232,6 +235,15 @@ elif [ "$1" = "wp" ]; then
 				;;
 			--cache=)         
 				die '"--cache" cannot be empty.'
+				;;
+			--cdn|--cdn=on)
+				CDN=on
+				;;
+			--cdn=off)
+				CDN=off
+				;;
+			--cdn=)         
+				die '"--cdn" cannot be empty.'
 				;;
 			--cli=?*)
 				CLI=${2#*=}
@@ -456,7 +468,7 @@ elif [ "$1" = "wp" ]; then
 				sleep 5
 			done
 		elif [ -n "$ACTION" ] && [ -z "$SERVICE" ] && [ -n "$DOMAIN" ]; then
-			docker-compose "$ACTION"	
+			docker-compose "$ACTION"    
 		elif [ -n "$ACTION" ] && [ -n "$SERVICE" ] && [ -n "$DOMAIN" ]; then
 			if [ "$SERVICE" = wp ]; then
 				docker-compose "$ACTION" wp_"${WP_ID}"
@@ -494,8 +506,6 @@ elif [ "$1" = "wp" ]; then
 		[[ ! -f "$CONTAINER_PATH"/data/wp-config.php ]] && die 'Not a WordPress site.'
 		[[ -f "$CONTAINER_PATH"/.env ]] && [[ -z "$RUN" ]] && source "$CONTAINER_PATH"/.env
 		if [ "$CACHE" = on ]; then
-			#[[ "$FASTCGI_CACHE" = on ]] && die 'Cache is already on.'
-
 			if [ -d "$CONTAINER_PATH"/data/wp-content/plugins/nginx-helper ]; then
 				docker run -it --rm \
 				--volumes-from "$WP" \
@@ -508,20 +518,16 @@ elif [ "$1" = "wp" ]; then
 				wordpress:cli plugin install nginx-helper --activate
 			fi
 
-			CACHE_OPTION_CHECK=$(demyx wp --dom="$DOMAIN" --wpcli='option get rt_wp_nginx_helper_options' | grep "Could not get")
-			if [ -n "$CACHE_OPTION_CHECK" ]; then		
-				docker run -it --rm \
-				--volumes-from "$WP" \
-				--network container:"$WP" \
-				wordpress:cli option update rt_wp_nginx_helper_options '{"enable_purge":"1","cache_method":"enable_fastcgi","purge_method":"get_request","enable_map":null,"enable_log":null,"log_level":"INFO","log_filesize":"5","enable_stamp":null,"purge_homepage_on_edit":"1","purge_homepage_on_del":"1","purge_archive_on_edit":"1","purge_archive_on_del":"1","purge_archive_on_new_comment":"1","purge_archive_on_deleted_comment":"1","purge_page_on_mod":"1","purge_page_on_new_comment":"1","purge_page_on_deleted_comment":"1","redis_hostname":"127.0.0.1","redis_port":"6379","redis_prefix":"nginx-cache:","purge_url":"","redis_enabled_by_constant":0}' --format=json
-			fi
+			docker run -it --rm \
+			--volumes-from "$WP" \
+			--network container:"$WP" \
+			wordpress:cli option update rt_wp_nginx_helper_options '{"enable_purge":"1","cache_method":"enable_fastcgi","purge_method":"get_request","enable_map":null,"enable_log":null,"log_level":"INFO","log_filesize":"5","enable_stamp":null,"purge_homepage_on_edit":"1","purge_homepage_on_del":"1","purge_archive_on_edit":"1","purge_archive_on_del":"1","purge_archive_on_new_comment":"1","purge_archive_on_deleted_comment":"1","purge_page_on_mod":"1","purge_page_on_new_comment":"1","purge_page_on_deleted_comment":"1","redis_hostname":"127.0.0.1","redis_port":"6379","redis_prefix":"nginx-cache:","purge_url":"","redis_enabled_by_constant":0}' --format=json
 
 			if [ -z "$RUN" ]; then
 				bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "on" "$FORCE"
 				bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "on" "$FORCE"
 			fi
 		elif [ "$CACHE" = off ]; then
-			#[[ "$FASTCGI_CACHE" = off ]] && die 'Cache is already off.'
 			docker run -it --rm \
 			--volumes-from "$WP" \
 			--network container:"$WP" \
@@ -532,6 +538,34 @@ elif [ "$1" = "wp" ]; then
 			fi
 		fi
 		demyx wp --dom="$DOMAIN" --service=wp --action=restart
+	elif [ -n "$CDN" ] && [ -z "$RUN" ]; then
+		[[ ! -f "$CONTAINER_PATH"/data/wp-config.php ]] && die 'Not a WordPress site.'
+		[[ -f "$CONTAINER_PATH"/.env ]] && [[ -z "$RUN" ]] && source "$CONTAINER_PATH"/.env
+		if [ "$CDN" = on ]; then
+			if [ -d "$CONTAINER_PATH"/data/wp-content/plugins/cdn-enabler ]; then
+				docker run -it --rm \
+				--volumes-from "$WP" \
+				--network container:"$WP" \
+				wordpress:cli plugin activate cdn-enabler
+			else
+				docker run -it --rm \
+				--volumes-from "$WP" \
+				--network container:"$WP" \
+				wordpress:cli plugin install cdn-enabler --activate
+			fi
+
+			CDN_OPTION_CHECK=$(demyx wp --dom="$DOMAIN" --wpcli='option get cdn_enabler' | grep "Could not get")
+			
+			docker run -it --rm \
+			--volumes-from "$WP" \
+			--network container:"$WP" \
+			wordpress:cli option update cdn_enabler "{\"url\":\"https:\/\/cdn.staticaly.com\/img\/$DOMAIN\",\"dirs\":\"wp-content,wp-includes\",\"excludes\":\".php, .js, .css, .woff, .woff2, .ttf, .txt, .xml, .rar, .zip, .apk, .json\",\"relative\":1,\"https\":1,\"keycdn_api_key\":\"\",\"keycdn_zone_id\":0}" --format=json
+		elif [ "$CDN" = off ]; then
+			docker run -it --rm \
+			--volumes-from "$WP" \
+			--network container:"$WP" \
+			wordpress:cli plugin deactivate cdn-enabler
+		fi
 	elif [ -n "$CLI" ]; then
 		cd "$CONTAINER_PATH" || exit
 		source .env
@@ -935,6 +969,7 @@ elif [ "$1" = "wp" ]; then
 		--network container:"$WP" \
 		wordpress:cli rewrite structure '/%category%/%postname%/'
 
+		[[ "$CDN" = on ]] && demyx wp --dom="$DOMAIN" --cdn
 		[[ "$DEV" = on ]] && demyx wp --dom="$DOMAIN" --dev
 		[[ "$CACHE" = on ]] && demyx wp --dom="$DOMAIN" --cache
 
