@@ -573,7 +573,7 @@ elif [ "$1" = "wp" ]; then
 			docker run -it --rm \
 			--volumes-from "$WP" \
 			--network container:"$WP" \
-			wordpress:cli option update cdn_enabler "{\"url\":\"https:\/\/cdn.staticaly.com\/img\/$DOMAIN\",\"dirs\":\"wp-content,wp-includes\",\"excludes\":\".php, .js, .css, .woff, .woff2, .ttf, .txt, .xml, .rar, .zip, .apk, .json, wp-content\/plugins, wp-content\/themes\",\"relative\":1,\"https\":1,\"keycdn_api_key\":\"\",\"keycdn_zone_id\":0}" --format=json
+			wordpress:cli option update cdn_enabler "{\"url\":\"https:\/\/cdn.staticaly.com\/img\/$DOMAIN\",\"dirs\":\"wp-content,wp-includes\",\"excludes\":\".3g2, .3gp, .3gp2, .3gpp, .3gpp2, .7z, .8svx, .aa, .aac, .aax, .act, .ai, .aif, .aiff, .amr, .ape, .apk, .arj, .asp, .au, .avi, .awb, .bak, .bat, .bin, .cab, .cda, .cer, .cfg, .cfm, .cgi, .com, .css, .csv, .dat, .db, .dbf, .dct, .deb, .dmg, .doc, .docx, .dss, .dvf, .exe, .f4a, .f4b, .f4v, .flac, .flv, .fnt, .fon, .gadget, .gsm, .hdv, .htm, .html, .icns, .ico, .iklax, .iso, .ivs, .jar, .js, .json, .jsp, .key, .log, .m4a, .m4b, .m4p, .m4r, .m4v, .mdb, .mid, .mmf, .mogg, .mov, .mp3, .mpc, .msv, .nmf, .nsf, .odp, .ods, .odt, .oga, .ogg, .ogv, .ogx, .opus, .otf, .part, .pdf, .php, .pkg, .pps, .ppt, .pptx, .ps, .psd, .py, .ra, .rar, .raw, .rm, .rpm, .rss, .rtf, .sav, .sln, .sql, .svg, .tar, .tar.gz, .tex, .tif, .toast, .tta, .ttf, .txt, .vcd, .vox, .wav, .webm, .wks, .wma, .wmv, .woff, .woff2, .wpd, .wpl, .wsf, .wv, .xhtml, .xlr, .xls, .xlsx, .xml, .z, .zip, wp-content\/plugins, wp-content\/themes\",\"relative\":1,\"https\":1,\"keycdn_api_key\":\"\",\"keycdn_zone_id\":0}" --format=json
 		elif [ "$CDN" = off ]; then
 			docker run -it --rm \
 			--volumes-from "$WP" \
