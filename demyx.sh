@@ -230,6 +230,9 @@ elif [ "$1" = "wp" ]; then
 			--cache|--cache=on)
 				CACHE=on
 				;;
+			--cache=check)
+				CACHE=check
+				;;
 			--cache=off)
 				CACHE=off
 				;;
@@ -257,11 +260,14 @@ elif [ "$1" = "wp" ]; then
 			--clone=)
 				die '"--clone" cannot be empty.'
 				;;
-			--dev)
+			--dev|--dev=on)
 				DEV=on
 				;;
-			--dev=?*)
-				DEV=${2#*=}
+			--dev=off)
+				DEV=off
+				;;
+			--dev=check)
+				DEV=check
 				;;
 			--dev=)         
 				die '"--dev" cannot be empty.'
@@ -503,7 +509,7 @@ elif [ "$1" = "wp" ]; then
 			sudo chown -R "${USER}":"${USER}" "$APPS_BACKUP"
 		fi
 	elif [ -n "$CACHE" ] && [ -z "$RUN" ]; then
-		[[ ! -f "$CONTAINER_PATH"/data/wp-config.php ]] && die 'Not a WordPress site.'
+		[[ ! -f "$CONTAINER_PATH"/data/wp-config.php ]] && [[ "$CACHE" != check ]] && die 'Not a WordPress site.'
 		[[ -f "$CONTAINER_PATH"/.env ]] && [[ -z "$RUN" ]] && source "$CONTAINER_PATH"/.env
 		if [ "$CACHE" = on ]; then
 			if [ -d "$CONTAINER_PATH"/data/wp-content/plugins/nginx-helper ]; then
@@ -536,8 +542,16 @@ elif [ "$1" = "wp" ]; then
 				bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "off" "$FORCE"
 				bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "off" "$FORCE"
 			fi
+		elif [ "$CACHE" = check ]; then
+			cd "$APPS" || exit
+			for i in *
+			do
+				[[ ! -f "$i"/data/wp-config.php ]] && continue
+				CHECK=$(grep -r "FASTCGI_CACHE=on" "$i"/.env)
+				[[ -n "$CHECK" ]] && echo "$i"
+			done
 		fi
-		demyx wp --dom="$DOMAIN" --service=wp --action=restart
+		[[ "$CACHE" != check ]] && demyx wp --dom="$DOMAIN" --service=wp --action=restart
 	elif [ -n "$CDN" ] && [ -z "$RUN" ]; then
 		[[ ! -f "$CONTAINER_PATH"/data/wp-config.php ]] && die 'Not a WordPress site.'
 		[[ -f "$CONTAINER_PATH"/.env ]] && [[ -z "$RUN" ]] && source "$CONTAINER_PATH"/.env
