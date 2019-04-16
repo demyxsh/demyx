@@ -188,3 +188,5 @@ demyx --dom=domain.tld --install=gitea
 * [phpMyAdmin](https://hub.docker.com/r/phpmyadmin/phpmyadmin) - Web GUI used with Demyx stack
 * [ctop](https://ctop.sh) - htop but for containers!
 * [VirtuBox](https://github.com/VirtuBox/ubuntu-nginx-web-server) - Borrowed configs for NGINX and PHP
+* [EasyEngine](https://easyengine.io/) - Using their nginx helper plugin
+* [Staticaly](https://www.staticaly.com/) - Free CDN setup
