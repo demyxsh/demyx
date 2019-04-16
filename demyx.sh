@@ -573,7 +573,7 @@ elif [ "$1" = "wp" ]; then
 			docker run -it --rm \
 			--volumes-from "$WP" \
 			--network container:"$WP" \
-			wordpress:cli option update cdn_enabler "{\"url\":\"https:\/\/cdn.staticaly.com\/img\/$DOMAIN\",\"dirs\":\"wp-content,wp-includes\",\"excludes\":\".php, .js, .css, .woff, .woff2, .ttf, .txt, .xml, .rar, .zip, .apk, .json\",\"relative\":1,\"https\":1,\"keycdn_api_key\":\"\",\"keycdn_zone_id\":0}" --format=json
+			wordpress:cli option update cdn_enabler "{\"url\":\"https:\/\/cdn.staticaly.com\/img\/$DOMAIN\",\"dirs\":\"wp-content,wp-includes\",\"excludes\":\".php, .js, .css, .woff, .woff2, .ttf, .txt, .xml, .rar, .zip, .apk, .json, wp-content\/plugins, wp-content\/themes\",\"relative\":1,\"https\":1,\"keycdn_api_key\":\"\",\"keycdn_zone_id\":0}" --format=json
 		elif [ "$CDN" = off ]; then
 			docker run -it --rm \
 			--volumes-from "$WP" \
