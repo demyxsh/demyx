@@ -1,22 +1,21 @@
 #!/bin/bash
 # Demyx
 # https://github.com/demyxco/demyx
-
 source /srv/demyx/etc/.env
 
-WP_ID=$1
-DOMAIN=$2
-CONTAINER_PATH=$3
-CONTAINER_NAME=$4
-WP=$5
-DB=$6
-ADMIN_USER=$7
-ADMIN_PASSWORD=$8
-CACHE=$9
-FORCE=$10
+DOMAIN=$1
+ADMIN_USER=$2
+ADMIN_PASSWORD=$3
+CACHE=$4
+FORCE=$5
+CONTAINER_PATH="$APPS"/"$DOMAIN"
+CONTAINER_NAME=${DOMAIN//./_}
+WP_ID=$(uuidgen | awk -F '[-]' '{print $1}')
+WP=${DOMAIN//./}_wp_${WP_ID}_1
+DB=${DOMAIN//./}_db_${WP_ID}_1
 
 if [ -f "$CONTAINER_PATH"/.env ]; then
-	NO_UPDATE=$(grep -r "AUTO GENERATED" "$APPS"/"$2"/.env)
+	NO_UPDATE=$(grep -r "AUTO GENERATED" "$APPS"/"$DOMAIN"/.env)
 	[[ -z "$NO_UPDATE" ]] && [[ -z "$FORCE" ]] && echo -e "\e[33m[WARNING] Skipped .env\e[39m" && exit 1
 fi
 
@@ -28,7 +27,7 @@ else
 	WORDPRESS_USER_PASSWORD=$(docker run -it --rm demyx/utilities sh -c "pwgen -cns 50 1" | sed -e 's/\r//g')
 fi
 
-[[ -z "$CACHE" ]] && CACHE=off
+[[ "$CACHE" != on ]] && CACHE=off
 
 WORDPRESS_DB_HOST=$DB
 WORDPRESS_DB_NAME=$CONTAINER_NAME

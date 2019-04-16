@@ -203,7 +203,7 @@ elif [ "$1" = "wp" ]; then
 				ADMIN_PASS=${2#*=}
 				;;
 			--admin_pass=)       
-				die '"--admin_password" cannot be empty.'
+				die '"--admin_pass" cannot be empty.'
 				;;
 			--admin_email=?*)
 				ADMIN_EMAIL=${2#*=}
@@ -412,14 +412,11 @@ elif [ "$1" = "wp" ]; then
 		shift
 	done
 	
-	WP_ID=$(uuidgen | awk -F '[-]' '{print $1}')
 	CONTAINER_PATH=$APPS/$DOMAIN
 	CONTAINER_NAME=${DOMAIN//./_}
-	WP=${DOMAIN//./}_wp_${WP_ID}_1
-	DB=${DOMAIN//./}_db_${WP_ID}_1
 
 	if [ -n "$ACTION" ]; then
-		[[ ! -d $CONTAINER_PATH ]] && die "Domain doesn't exist"
+		[[ ! -d "$CONTAINER_PATH" ]] && die "Domain doesn't exist"
 
 		if [ -z "$ALL" ] && [ -n "$DOMAIN" ]; then
 			cd "$CONTAINER_PATH" && source .env
@@ -495,9 +492,9 @@ elif [ "$1" = "wp" ]; then
 		fi
 	elif [ -n "$CACHE" ] && [ -z "$RUN" ]; then
 		[[ ! -f "$CONTAINER_PATH"/data/wp-config.php ]] && die 'Not a WordPress site.'
-		[[ -f "$CONTAINER_PATH"/.env ]] && source "$CONTAINER_PATH"/.env
+		[[ -f "$CONTAINER_PATH"/.env ]] && [[ -z "$RUN" ]] && source "$CONTAINER_PATH"/.env
 		if [ "$CACHE" = on ]; then
-			[[ "$FASTCGI_CACHE" = on ]] && die 'Cache is already on.'
+			#[[ "$FASTCGI_CACHE" = on ]] && die 'Cache is already on.'
 
 			if [ -d "$CONTAINER_PATH"/data/wp-content/plugins/nginx-helper ]; then
 				docker run -it --rm \
@@ -520,17 +517,17 @@ elif [ "$1" = "wp" ]; then
 			fi
 
 			if [ -z "$RUN" ]; then
-				bash "$ETC"/functions/env.sh "$WP_ID" "$DOMAIN" "$CONTAINER_PATH" "$CONTAINER_NAME" "$WP" "$DB" "$ADMIN_USER" "$ADMIN_PASSWORD" "on" "$FORCE"
+				bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "on" "$FORCE"
 				bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "on" "$FORCE"
 			fi
 		elif [ "$CACHE" = off ]; then
-			[[ "$FASTCGI_CACHE" = off ]] && die 'Cache is already on.'
+			#[[ "$FASTCGI_CACHE" = off ]] && die 'Cache is already off.'
 			docker run -it --rm \
 			--volumes-from "$WP" \
 			--network container:"$WP" \
 			wordpress:cli plugin deactivate nginx-helper
 			if [ -z "$RUN" ]; then
-				bash "$ETC"/functions/env.sh "$WP_ID" "$DOMAIN" "$CONTAINER_PATH" "$CONTAINER_NAME" "$WP" "$DB" "$ADMIN_USER" "$ADMIN_PASSWORD" "off" "$FORCE"
+				bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "off" "$FORCE"
 				bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "off" "$FORCE"
 			fi
 		fi
@@ -544,13 +541,14 @@ elif [ "$1" = "wp" ]; then
 			docker-compose exec wp_"${WP_ID}" $CLI
 		fi
 	elif [ -n "$CLONE" ]; then
-		[[ -d $CONTAINER_PATH ]] && demyx wp --rm="$DOMAIN"
+		set -ex
+		[[ -d "$CONTAINER_PATH" ]] && demyx wp --rm="$DOMAIN"
 
 		echo -e "\e[34m[INFO] Cloning $CLONE to $DOMAIN\e[39m"
 
 		mkdir -p "$CONTAINER_PATH"/conf
 
-		bash "$ETC"/functions/env.sh "$WP_ID" "$DOMAIN" "$CONTAINER_PATH" "$CONTAINER_NAME" "$WP" "$DB" "$ADMIN_USER" "$ADMIN_PASSWORD" "" "$FORCE"
+		bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "$CACHE" "$FORCE"
 		bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
 		bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "" "$FORCE"
 		bash "$ETC"/functions/php.sh "$CONTAINER_PATH" "$FORCE"
@@ -682,7 +680,7 @@ elif [ "$1" = "wp" ]; then
 
 		mkdir -p "$CONTAINER_PATH"/conf
 
-		bash "$ETC"/functions/env.sh "$WP_ID" "$DOMAIN" "$CONTAINER_PATH" "$CONTAINER_NAME" "$WP" "$DB" "" "" "" "$FORCE"
+		bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "$CACHE" "$FORCE"
 		bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
 		bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "" "$FORCE"
 		bash "$ETC"/functions/php.sh "$CONTAINER_PATH" "$FORCE"
@@ -829,7 +827,7 @@ elif [ "$1" = "wp" ]; then
 					DOMAIN=$i
 					CONTAINER_PATH=$APPS/$DOMAIN
 					CONTAINER_NAME=${DOMAIN//./_}
-					bash "$ETC"/functions/env.sh "$WP_ID" "$DOMAIN" "$CONTAINER_PATH" "$CONTAINER_NAME" "$WP" "$DB" "$ADMIN_USER" "$ADMIN_PASSWORD" "" "$FORCE"
+					bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "$CACHE" "$FORCE"
 					bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
 					bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "" "$FORCE"
 					bash "$ETC"/functions/php.sh "$CONTAINER_PATH" "$FORCE"
@@ -841,7 +839,7 @@ elif [ "$1" = "wp" ]; then
 		else
 			[[ -z "$DOMAIN" ]] && die 'Domain is missing or add --all'
 			echo -e "\e[34m[INFO] Refreshing $DOMAIN\e[39m"
-			bash "$ETC"/functions/env.sh "$WP_ID" "$DOMAIN" "$CONTAINER_PATH" "$CONTAINER_NAME" "$WP" "$DB" "$ADMIN_USER" "$ADMIN_PASSWORD" "" "$FORCE"
+			bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "$CACHE" "$FORCE"
 			bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
 			bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "" "$FORCE"
 			bash "$ETC"/functions/php.sh "$CONTAINER_PATH" "$FORCE"
@@ -903,7 +901,7 @@ elif [ "$1" = "wp" ]; then
 
 		# Future plans for subnets
 		#bash $ETC/functions/subnet.sh $DOMAIN $CONTAINER_NAME create
-		bash "$ETC"/functions/env.sh "$WP_ID" "$DOMAIN" "$CONTAINER_PATH" "$CONTAINER_NAME" "$WP" "$DB" "$ADMIN_USER" "$ADMIN_PASSWORD" "" "$FORCE"
+		bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "$CACHE" "$FORCE"
 		bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
 		bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "" "$FORCE"
 		bash "$ETC"/functions/php.sh "$CONTAINER_PATH" "$FORCE"
