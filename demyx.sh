@@ -1097,12 +1097,12 @@ elif [ "$1" = "wp" ]; then
 	elif [ -n "$UPDATE" ]; then
 		cd "$APPS" || exit
 		if [ -n "$ALL" ]; then
-			[[ "$UPDATE" != structure ]] && die 'Not a WordPress app.'
+			[[ "$UPDATE" != structure ]] && die '--update only takes structure as the value.'
 			for i in *
 			do
 				WP_CHECK=$(grep -rs "WP_ID" "$APPS"/"$i"/.env)
 				if [ -n "$WP_CHECK" ]; then
-					echo -e "\e[34m[INFO]\e[39m Backing up $i"
+					echo -e "\e[34m[INFO]\e[39m Updating up $i"
 					source "$i"/.env
 					
 					docker volume create db_"$WP_ID" 
@@ -1121,7 +1121,7 @@ elif [ "$1" = "wp" ]; then
 				fi
 			done
 		else
-			[[ "$UPDATE" != structure ]] && die 'Not a WordPress app.'
+			[[ "$UPDATE" != structure ]] && die '--update only takes structure as the value.'
 			WP_CHECK=$(grep -rs "WP_ID" "$CONTAINER_PATH"/.env)
 			[[ -z "$WP_CHECK" ]] && die 'Not a WordPress app.'
 			echo -e "\e[34m[INFO]\e[39m Updating $DOMAIN"
