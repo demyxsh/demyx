@@ -163,7 +163,7 @@ demyx wp -h
                     Example: demyx wp --up=domain.tld, demyx wp --dom=domain.tld --up
 
 --update            This flag only updates old file structure
-                    Example: demyx wp --dom=domain.tld --update=structure, demyx wp --update=structure --all
+                    Example: demyx wp --dom=domain.tld --update=structure --ssl, demyx wp --update=structure --all --ssl
 
 --wpcli             Send wp-cli commands to a site
                     Example: demyx wp --dom=domain.tld --wpcli='user list --all'
