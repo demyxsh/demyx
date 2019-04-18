@@ -1100,6 +1100,7 @@ elif [ "$1" = "wp" ]; then
 			[[ "$UPDATE" != structure ]] && die '--update only takes structure as the value.'
 			for i in *
 			do
+				[[ ! -d "$APPS"/"$i"/db ]] && echo -e "\e[34m[INFO]\e[39m $i is already updated, continuing..." && continue
 				WP_CHECK=$(grep -rs "WP_ID" "$APPS"/"$i"/.env)
 				if [ -n "$WP_CHECK" ]; then
 					echo -e "\e[34m[INFO]\e[39m Updating up $i"
@@ -1121,6 +1122,7 @@ elif [ "$1" = "wp" ]; then
 				fi
 			done
 		else
+			[[ ! -d "$APPS"/"$i"/db ]] && die "$DOMAIN is already updated."
 			[[ "$UPDATE" != structure ]] && die '--update only takes structure as the value.'
 			WP_CHECK=$(grep -rs "WP_ID" "$CONTAINER_PATH"/.env)
 			[[ -z "$WP_CHECK" ]] && die 'Not a WordPress app.'
