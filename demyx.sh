@@ -3,9 +3,7 @@
 # https://github.com/demyxco/demyx
 
 die() {
-	echo -e "\e[31m" 
-	printf '[CRITICAL] %s\n' "$1" >&2
-	echo -e "\e[39m"
+	printf '\n\e[31m[CRITICAL]\e[39m %s\n\n' "$1" >&2
 	exit 1
 }
 
@@ -61,9 +59,7 @@ if [ "$1" = "stack" ]; then
 				break
 				;;
 			-?*)
-				echo
-				printf 'Unknown option: %s\n' "$2" >&2
-				echo
+				printf '\e[31m[WARNING]\e[39m Unknown option: %s\n' "$2" >&2
 				exit 1
 				;;
 			*) 
@@ -184,6 +180,9 @@ elif [ "$1" = "wp" ]; then
 				echo
 				echo "  --up            Shorthand for docker-compose up -d"
 				echo "                  Example: demyx wp --up=domain.tld, demyx wp --dom=domain.tld --up"
+				echo 
+				echo "  --update        This flag only updates old file structure"
+				echo "                  Example: demyx wp --dom=domain.tld --update=structure, demyx wp --update=structure --all"
 				echo 
 				echo "  --wpcli         Send wp-cli commands to a site"
 				echo "                  Example: demyx wp --dom=domain.tld --wpcli='user list' --all"
@@ -408,6 +407,12 @@ elif [ "$1" = "wp" ]; then
 				DOMAIN=${2#*=}
 				ACTION=up
 				;;
+			--update=structure)
+				UPDATE=structure
+				;;
+			--update=)       
+				die '"--update" cannot be empty.'
+				;;
 			--wpcli=?*)
 				WPCLI=${2#*=}
 				;;
@@ -419,9 +424,7 @@ elif [ "$1" = "wp" ]; then
 				break
 				;;
 			-?*)
-				echo -e "\e[31m"
-				printf 'Unknown option: %s\n' "$2" >&2
-				echo -e "\e[39m"
+				printf '\e[31m[WARNING]\e[39m Unknown option: %s\n' "$2" >&2
 				exit 1
 				;;
 			*) 
@@ -452,26 +455,30 @@ elif [ "$1" = "wp" ]; then
 			cd "$APPS" || exit
 			for i in *
 			do
-				[[ -f $APPS/$i/data/wp-config.php ]] && cd "$APPS"/"$i" && docker-compose up -d
+				WP_CHECK=$(grep -rs "WP_ID" "$APPS"/"$i"/.env)
+				[[ -n "$WP_CHECK" ]] && cd "$APPS"/"$i" && docker-compose up -d
 				sleep 5
 			done
 		elif [ "$ACTION" = down ] && [ -n "$SERVICE" ] && [ -n "$DOMAIN" ]; then
 			if [ "$SERVICE" = wp ]; then
 				docker-compose stop wp_"${WP_ID}"
+				sleep 5
 				docker-compose rm -f wp_"${WP_ID}"
 			else
 				docker-compose stop db_"${WP_ID}"
+				sleep 5
 				docker-compose rm -f db_"${WP_ID}"
 			fi
 		elif [ "$ACTION" = down ] && [ -z "$ALL" ] && [ -n "$DOMAIN" ]; then
 			docker-compose stop
+			sleep 5
 			docker-compose rm -f
 		elif [ "$ACTION" = down ] && [ -n "$ALL" ]; then
 			cd "$APPS" || exit
 			for i in *
 			do
-				[[ -f $APPS/$i/data/wp-config.php ]] && cd "$APPS"/"$i" && docker-compose stop && docker-compose rm -f || echo -e "\e[33m[WARNING] Skipping $i\e[39m"
-				sleep 5
+				WP_CHECK=$(grep -rs "WP_ID" "$APPS"/"$i"/.env)
+				[[ -n "$WP_CHECK" ]] && cd "$APPS"/"$i" && docker-compose stop && sleep 5 && docker-compose rm -f && sleep 5
 			done
 		elif [ -n "$ACTION" ] && [ -z "$SERVICE" ] && [ -n "$DOMAIN" ]; then
 			docker-compose "$ACTION"    
@@ -483,9 +490,9 @@ elif [ "$1" = "wp" ]; then
 			fi
 		else
 			echo
-			echo -e "\e[31m[CRITICAL] No --domain or --action\e[39m"
+			echo -e "\e[31m[CRITICAL]\e[39m No --domain or --action"
 			echo
-			echo -e "\e[34m[INFO] Try passing --all or demyx wp -h for a list of commands\e[39m"
+			echo -e "\e[34m[INFO]\e[39m Try passing --all or demyx wp -h for a list of commands"
 			echo
 		fi
 	elif [ -n "$BACKUP" ]; then
@@ -493,26 +500,38 @@ elif [ "$1" = "wp" ]; then
 		if [ -n "$ALL" ]; then
 			for i in *
 			do
-				if [ -f "$i"/data/wp-config.php ]; then
-					echo -e "\e[34m[INFO] Backing up $i\e[39m"
-					sudo tar -czf "$i".tgz "$i"
+				WP_CHECK=$(grep -rs "WP_ID" "$APPS"/"$i"/.env)
+				if [ -n "$WP_CHECK" ]; then
+					echo -e "\e[34m[INFO]\e[39m Backing up $i"
+					source "$i"/.env
+					demyx wp --dom="$DOMAIN" --wpcli="db export ${CONTAINER_NAME}.sql"
+					docker cp "$WP":/var/www/html "$CONTAINER_PATH"/backup
+					demyx wp --dom="$DOMAIN" --cli="rm /var/www/html/${CONTAINER_NAME}.sql"
+					tar -czf "$i".tgz "$i"
 					mv "$i".tgz "$APPS_BACKUP"
-				else
-					echo -e "\e[33m[WARNING] Skipping $i\e[39m"
+					rm -rf "$CONTAINER_PATH"/backup
 				fi
 			done
-			sudo chown -R "${USER}":"${USER}" "$APPS_BACKUP"
 		else
-			echo -e "\e[34m[INFO] Backing up $DOMAIN\e[39m"
-			sudo tar -czvf "$DOMAIN".tgz "$DOMAIN"
+			WP_CHECK=$(grep -rs "WP_ID" "$CONTAINER_PATH"/.env)
+			[[ -z "$WP_CHECK" ]] && die 'Not a WordPress app.'
+			echo -e "\e[34m[INFO]\e[39m Backing up $DOMAIN"
+			source "$CONTAINER_PATH"/.env
+			demyx wp --dom="$DOMAIN" --wpcli="db export ${CONTAINER_NAME}.sql"
+			docker cp "$WP":/var/www/html "$CONTAINER_PATH"/backup
+			demyx wp --dom="$DOMAIN" --cli="rm /var/www/html/${CONTAINER_NAME}.sql"
+			tar -czvf "$DOMAIN".tgz "$DOMAIN"
 			mv "$DOMAIN".tgz "$APPS_BACKUP"
-			sudo chown -R "${USER}":"${USER}" "$APPS_BACKUP"
+			rm -rf "$CONTAINER_PATH"/backup
 		fi
 	elif [ -n "$CACHE" ] && [ -z "$RUN" ]; then
-		[[ ! -f "$CONTAINER_PATH"/data/wp-config.php ]] && [[ "$CACHE" != check ]] && die 'Not a WordPress site.'
+		WP_CHECK=$(grep -rs "WP_ID" "$CONTAINER_PATH"/.env)
+		[[ -z "$WP_CHECK" ]] && [[ "$CACHE" != check ]] && die 'Not a WordPress site.'
 		[[ -f "$CONTAINER_PATH"/.env ]] && [[ -z "$RUN" ]] && source "$CONTAINER_PATH"/.env
 		if [ "$CACHE" = on ]; then
-			if [ -d "$CONTAINER_PATH"/data/wp-content/plugins/nginx-helper ]; then
+			echo -e "\e[34m[INFO]\e[39m Turning on FastCGI Cache for $DOMAIN"
+			NGINX_HELPER_CHECK=$(docker exec -it "$WP" sh -c '[[ -d wp-content/plugins/nginx-helper ]] && echo 1')
+			if [ -n "$NGINX_HELPER_CHECK" ]; then
 				docker run -it --rm \
 				--volumes-from "$WP" \
 				--network container:"$WP" \
@@ -534,6 +553,7 @@ elif [ "$1" = "wp" ]; then
 				bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "on" "$FORCE"
 			fi
 		elif [ "$CACHE" = off ]; then
+			echo -e "\e[34m[INFO]\e[39m Turning off FastCGI Cache for $DOMAIN"
 			docker run -it --rm \
 			--volumes-from "$WP" \
 			--network container:"$WP" \
@@ -546,17 +566,20 @@ elif [ "$1" = "wp" ]; then
 			cd "$APPS" || exit
 			for i in *
 			do
-				[[ ! -f "$i"/data/wp-config.php ]] && continue
+				[[ -z "$WP_CHECK" ]] && continue
 				CHECK=$(grep -r "FASTCGI_CACHE=on" "$i"/.env)
 				[[ -n "$CHECK" ]] && echo "$i"
 			done
 		fi
 		[[ "$CACHE" != check ]] && demyx wp --dom="$DOMAIN" --service=wp --action=restart
 	elif [ -n "$CDN" ] && [ -z "$RUN" ]; then
-		[[ ! -f "$CONTAINER_PATH"/data/wp-config.php ]] && die 'Not a WordPress site.'
+		WP_CHECK=$(grep -rs "WP_ID" "$CONTAINER_PATH"/.env)
+		[[ -z "$WP_CHECK" ]] && die 'Not a WordPress site.'
 		[[ -f "$CONTAINER_PATH"/.env ]] && [[ -z "$RUN" ]] && source "$CONTAINER_PATH"/.env
 		if [ "$CDN" = on ]; then
-			if [ -d "$CONTAINER_PATH"/data/wp-content/plugins/cdn-enabler ]; then
+			CDN_ENABLER_CHECK=$(docker exec -it "$WP" sh -c '[[ -d wp-content/plugins/cdn-enabler ]] && echo 1')
+			CDN_OPTION_CHECK=$(demyx wp --dom="$DOMAIN" --wpcli='option get cdn_enabler' | grep "Could not get")
+			if [ -n "$CDN_ENABLER_CHECK" ]; then
 				docker run -it --rm \
 				--volumes-from "$WP" \
 				--network container:"$WP" \
@@ -566,10 +589,7 @@ elif [ "$1" = "wp" ]; then
 				--volumes-from "$WP" \
 				--network container:"$WP" \
 				wordpress:cli plugin install cdn-enabler --activate
-			fi
-
-			CDN_OPTION_CHECK=$(demyx wp --dom="$DOMAIN" --wpcli='option get cdn_enabler' | grep "Could not get")
-			
+			fi			
 			docker run -it --rm \
 			--volumes-from "$WP" \
 			--network container:"$WP" \
@@ -589,13 +609,16 @@ elif [ "$1" = "wp" ]; then
 			docker-compose exec wp_"${WP_ID}" $CLI
 		fi
 	elif [ -n "$CLONE" ]; then
-		set -ex
-		[[ -d "$CONTAINER_PATH" ]] && demyx wp --rm="$DOMAIN"
+		CLONE_WP=$(cat "$APPS"/"$CLONE"/.env | awk -F= '/^WP/ { print $2 }' | sed '1d')
+		WP_CHECK=$(grep -rs "WP_ID" "$APPS"/"$CLONE"/.env)
+		DEV_MODE_CHECK=$(grep -r "sendfile off" /srv/demyx/apps/$CLONE/conf/nginx.conf)
+		[[ -z "$WP_CHECK" ]] && die "$CLONE isn't a WordPress app."
+		[[ -n "$DEV_MODE_CHECK" ]] && die "$CLONE is currently in dev mode. Please disable it before cloning."
+		[[ -d "$CONTAINER_PATH" ]] && demyx wp --dom="$DOMAIN" --remove
 
-		echo -e "\e[34m[INFO] Cloning $CLONE to $DOMAIN\e[39m"
+		echo -e "\e[34m[INFO]\e[39m Cloning $CLONE to $DOMAIN"
 
 		mkdir -p "$CONTAINER_PATH"/conf
-
 		bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "$CACHE" "$FORCE"
 		bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
 		bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "" "$FORCE"
@@ -606,28 +629,30 @@ elif [ "$1" = "wp" ]; then
 		source "$CONTAINER_PATH"/.env
 
 		demyx wp --dom="$CLONE" --wpcli="db export clone.sql --exclude_tables=wp_users,wp_usermeta"
-		sudo cp -R "$APPS"/"$CLONE"/data "$CONTAINER_PATH"
-		sudo rm "$CONTAINER_PATH"/data/wp-config.php
-		sudo chown -R "${USER}":"${USER}" "$CONTAINER_PATH"
-		rm -rf "$CONTAINER_PATH"/db
-		sudo rm "$APPS"/"$CLONE"/data/clone.sql
+		docker cp "$CLONE_WP":/var/www/html "$CONTAINER_PATH"/clone
+		demyx wp --dom="$CLONE" --cli='rm /var/www/html/clone.sql'
+		docker volume create wp_"$WP_ID"
+		docker volume create db_"$WP_ID"
 
-		demyx wp --up="$DOMAIN"
-		
-		sleep 10
+		demyx wp --dom="$DOMAIN" --service=db --action=up
+		docker run -d --rm --name clone_tmp --network traefik -v wp_"$WP_ID":/var/www/html demyx/nginx-php-wordpress tail -f /dev/null
+		cd "$CONTAINER_PATH"/clone && docker cp . clone_tmp:/var/www/html
+		docker exec -it clone_tmp sh -c 'rm /var/www/html/wp-config.php'
 
 		docker run -it --rm \
-		--volumes-from "$WP" \
-		--network container:"$WP" \
+		--volumes-from clone_tmp \
+		--network container:clone_tmp \
 		wordpress:cli config create \
 		--dbhost="$WORDPRESS_DB_HOST" \
 		--dbname="$WORDPRESS_DB_NAME" \
 		--dbuser="$WORDPRESS_DB_USER" \
 		--dbpass="$WORDPRESS_DB_PASSWORD"
 
-		sleep 10
-
-		sudo sed -i "s/$table_prefix = 'wp_';/$table_prefix = 'wp_';\n\n\/\/ If we're behind a proxy server and using HTTPS, we need to alert Wordpress of that fact\n\/\/ see also http:\/\/codex.wordpress.org\/Administration_Over_SSL#Using_a_Reverse_Proxy\nif (isset($\_SERVER['HTTP_X_FORWARDED_PROTO']) \&\& $\_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {\n\t$\_SERVER['HTTPS'] = 'on';\n}\n/g" "$CONTAINER_PATH"/data/wp-config.php
+		echo "#!/bin/bash" > "$CONTAINER_PATH"/proto.sh
+		echo "sed -i \"s/$table_prefix = 'wp_';/$table_prefix = 'wp_';\n\n\/\/ If we're behind a proxy server and using HTTPS, we need to alert Wordpress of that fact\n\/\/ see also http:\/\/codex.wordpress.org\/Administration_Over_SSL#Using_a_Reverse_Proxy\nif (isset($\_SERVER['HTTP_X_FORWARDED_PROTO']) \&\& $\_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {\n\t$\_SERVER['HTTPS'] = 'on';\n}\n/g\" /var/www/html/wp-config.php" >> "$CONTAINER_PATH"/proto.sh
+		docker cp "$CONTAINER_PATH"/proto.sh clone_tmp:/
+		rm "$CONTAINER_PATH"/proto.sh
+		docker exec -it clone_tmp sh -c 'bash /proto.sh && rm /proto.sh'
 
 		if [ -n "$ADMIN_EMAIL" ]; then
 			WORDPRESS_EMAIL="$ADMIN_EMAIL"
@@ -636,8 +661,8 @@ elif [ "$1" = "wp" ]; then
 		fi
 
 		docker run -it --rm \
-		--volumes-from "$WP" \
-		--network container:"$WP" \
+		--volumes-from clone_tmp \
+		--network container:clone_tmp \
 		wordpress:cli core install \
 		--url="$DOMAIN" --title="$DOMAIN" \
 		--admin_user="$WORDPRESS_USER" \
@@ -646,21 +671,24 @@ elif [ "$1" = "wp" ]; then
 		--skip-email
 
 		docker run -it --rm \
-		--volumes-from "$WP" \
-		--network container:"$WP" \
+		--volumes-from clone_tmp \
+		--network container:clone_tmp \
 		wordpress:cli db import clone.sql
 
 		docker run -it --rm \
-		--volumes-from "$WP" \
-		--network container:"$WP" \
+		--volumes-from clone_tmp \
+		--network container:clone_tmp \
 		wordpress:cli search-replace "$CLONE" "$DOMAIN"
 
 		docker run -it --rm \
-		--volumes-from "$WP" \
-		--network container:"$WP" \
+		--volumes-from clone_tmp \
+		--network container:clone_tmp \
 		wordpress:cli config shuffle-salts
 
-		sudo rm "$CONTAINER_PATH"/data/clone.sql
+		cd .. && rm -rf "$CONTAINER_PATH"/clone
+
+		docker stop clone_tmp
+		demyx wp --dom="$DOMAIN" --up
 
 		[[ "$DEV" = on ]] && demyx wp --dom="$DOMAIN" --dev
 
@@ -670,30 +698,39 @@ elif [ "$1" = "wp" ]; then
 		echo "Password: $WORDPRESS_USER_PASSWORD"
 		echo
 	elif [ -n "$DEV" ] && [ -z "$RUN" ] && [ -z "$CLONE" ]; then
+		WP_CHECK=$(grep -rs "WP_ID" "$CONTAINER_PATH"/.env)
 		if [ "$DEV" = on ]; then
+			source "$CONTAINER_PATH"/.env
 			DEV_MODE_CHECK=$(grep -r "sendfile off" /srv/demyx/apps/$DOMAIN/conf/nginx.conf)
 			[[ -n "$DEV_MODE_CHECK" ]] && die "Development mode is already turned on for $DOMAIN"
-
-			echo -e "\e[34m[INFO] Turning on development mode for $DOMAIN\e[39m"
+			echo -e "\e[34m[INFO]\e[39m Turning on development mode for $DOMAIN"
 			sed -i 's/sendfile on;/sendfile off;/g' "$CONTAINER_PATH"/conf/nginx.conf
-			demyx wp --dom="$DOMAIN" --cli='mv /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini /'
-			[[ -z "$NO_RESTART" ]] && demyx wp --dom="$DOMAIN" --service=wp --action=restart
+			docker cp "$WP":/var/www/html "$CONTAINER_PATH"/data
+			bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "" "" "on"
+			demyx wp --dom="$DOMAIN" --service=wp --action=down
+			demyx wp --dom="$DOMAIN" --service=wp --action=up
 		elif [ "$DEV" = off ]; then
+			source "$CONTAINER_PATH"/.env
 			DEV_MODE_CHECK=$(grep -r "sendfile on" /srv/demyx/apps/$DOMAIN/conf/nginx.conf)
 			[[ -n "$DEV_MODE_CHECK" ]] && die "Development mode is already turned off for $DOMAIN"
-
-			echo -e "\e[34m[INFO] Turning off development mode for $DOMAIN\e[39m"
+			echo -e "\e[34m[INFO]\e[39m Turning off development mode for $DOMAIN"
 			sed -i 's/sendfile off;/sendfile on;/g' "$CONTAINER_PATH"/conf/nginx.conf
-			demyx wp --dom="$DOMAIN" --cli='mv /docker-php-ext-opcache.ini /usr/local/etc/php/conf.d'
-			[[ -z "$NO_RESTART" ]] && demyx wp --dom="$DOMAIN" --service=wp --action=restart
+			docker run -d --rm --name dev_tmp -v "$WP":/var/www/html demyx/utilities tail -f /dev/null
+			cd "$CONTAINER_PATH"/data && docker cp . dev_tmp:/var/www/html
+			docker stop dev_tmp
+			bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "" "" "off"
+			cd .. &&  rm -rf "$CONTAINER_PATH"/data
+			demyx wp --dom="$DOMAIN" --service=wp --action=down
+			demyx wp --dom="$DOMAIN" --service=wp --action=up
 		elif [ "$DEV" = check ] && [ -n "$ALL" ]; then
 			cd "$APPS" || exit
 			for i in *
 			do
-				[[ -f "$i"/data/wp-config.php ]] && bash "$ETC"/functions/warnings.sh "$i"
+				WP_CHECK=$(grep -rs "WP_ID" "$APPS"/"$i"/.env)
+				[[ -n "$WP_CHECK" ]] && bash "$ETC"/functions/warnings.sh "$i"
 			done
 		elif [ "$DEV" = check ] && [ -n "$DOMAIN" ]; then
-			[[ -f "$CONTAINER_PATH"/data/wp-config.php ]] && bash "$ETC"/functions/warnings.sh "$DOMAIN"
+			[[ -n "$WP_CHECK" ]] && bash "$ETC"/functions/warnings.sh "$DOMAIN"
 		else
 			die "--dev=$DEV not found"
 		fi
@@ -713,7 +750,8 @@ elif [ "$1" = "wp" ]; then
 		cd "$APPS" || exit
 		for i in *
 		do
-			[[ ! -f "$APPS"/"$i"/data/wp-config.php ]] && continue
+			WP_CHECK=$(grep -rs "WP_ID" "$APPS"/"$i"/.env)
+			[[ -z "$WP_CHECK" ]] && continue
 			echo "$i"
 		done
 	elif [ -n "$IMPORT" ]; then
@@ -724,7 +762,7 @@ elif [ "$1" = "wp" ]; then
 		[[ ! -f $APPS_BACKUP/$DOMAIN/import.sql ]] && die "$APPS_BACKUP/$DOMAIN/import.sql doesn't exist"
 		[[ -d $CONTAINER_PATH ]] && demyx wp --rm="$DOMAIN"
 
-		echo -e "\e[34m[INFO] Importing $DOMAIN\e[39m"
+		echo -e "\e[34m[INFO]\e[39m Importing $DOMAIN"
 
 		mkdir -p "$CONTAINER_PATH"/conf
 
@@ -799,7 +837,8 @@ elif [ "$1" = "wp" ]; then
 		cd "$APPS" || exit
 		for i in *
 		do
-			[[ ! -f "$APPS"/"$i"/data/wp-config.php ]] && continue
+			WP_CHECK=$(grep -rs "WP_ID" "$APPS"/"$i"/.env)
+			[[ -z "$WP_CHECK" ]] && continue
 			source "$APPS"/"$i"/.env
 			if [ ! -f "$APPS"/"$i"/.monitor ]; then
 				echo "MONITOR_COUNT=0" > "$APPS"/"$i"/.monitor 
@@ -870,8 +909,9 @@ elif [ "$1" = "wp" ]; then
 			cd "$APPS" || exit
 			for i in *
 			do
-				if [ -f "$i"/data/wp-config.php ]; then 
-					echo -e "\e[34m[INFO] Refreshing $i\e[39m"
+				WP_CHECK=$(grep -rs "WP_ID" "$APPS"/"$i"/.env)
+				if [ -n "$WP_CHECK" ]; then 
+					echo -e "\e[34m[INFO]\e[39m Refreshing $i"
 					DOMAIN=$i
 					CONTAINER_PATH=$APPS/$DOMAIN
 					CONTAINER_NAME=${DOMAIN//./_}
@@ -885,8 +925,10 @@ elif [ "$1" = "wp" ]; then
 				fi
 			done
 		else
+			WP_CHECK=$(grep -rs "WP_ID" "$CONTAINER_PATH"/.env)
+			[[ -z "$WP_CHECK" ]] && die 'Not a WordPress app.'
 			[[ -z "$DOMAIN" ]] && die 'Domain is missing or add --all'
-			echo -e "\e[34m[INFO] Refreshing $DOMAIN\e[39m"
+			echo -e "\e[34m[INFO]\e[39m Refreshing $DOMAIN"
 			bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "$CACHE" "$FORCE"
 			bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
 			bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "" "$FORCE"
@@ -900,50 +942,87 @@ elif [ "$1" = "wp" ]; then
 		if [ -n "$ALL" ]; then
 			for i in *
 			do
-				[[ -f $APPS/$i/data/wp-config.php ]] && cd "$APPS"/"$i" && docker-compose restart || echo -e "\e[33m[WARNING] Skipping $i\e[39m"
+				WP_CHECK=$(grep -rs "WP_ID" "$APPS"/"$i"/.env)
+				[[ -z "$WP_CHECK" ]] && continue
+				cd "$APPS"/"$i"
+				docker-compose restart
 			done
 		else
+			WP_CHECK=$(grep -rs "WP_ID" "$CONTAINER_PATH"/.env)
+			[[ -z "$WP_CHECK" ]] && die 'Not a WordPress app.'
 			[[ -z "$DOMAIN" ]] && die 'Domain is missing, use --dom or --restart=domain.tld'
-			cd "$APPS"/"$DOMAIN" && docker-compose restart
+			cd "$CONTAINER_PATH"
+			docker-compose restart
 		fi
 	elif [ -n "$RESTORE" ]; then
-		[[ ! -f $APPS_BACKUP/$DOMAIN.tgz ]] && die "No backups found for $DOMAIN"
-		echo -e "\e[34m[INFO] Restoring $DOMAIN\e[39m"
+		[[ -d "$CONTAINER_PATH" ]] && demyx wp --dom="$DOMAIN" --remove
+		[[ ! -f "$APPS_BACKUP"/"$DOMAIN".tgz ]] && die "No backups found for $DOMAIN"
+		echo -e "\e[34m[INFO]\e[39m Restoring $DOMAIN"
 		cd "$APPS_BACKUP" || exit
-		sudo tar -xzf "$DOMAIN".tgz
-		[ -d "$CONTAINER_PATH" ] && sudo rm -rf "$CONTAINER_PATH"
-		mv "$DOMAIN" "$APPS"
-		sudo chown -R "${USER}":"${USER}" "$CONTAINER_PATH"
-		bash "$ETC"/functions/logs.sh "$DOMAIN"
-		demyx wp --dom="$DOMAIN" --up
+		tar -xzf "$DOMAIN".tgz
+		cp -R "$APPS_BACKUP"/"$DOMAIN" "$APPS"
+		source "$CONTAINER_PATH"/.env
+		demyx wp --dom="$DOMAIN" --down
+		docker volume rm wp_"$WP_ID" db_"$WP_ID"
+		docker volume create wp_"$WP_ID"
+		docker volume create db_"$WP_ID"
+		demyx wp --dom="$DOMAIN" --service=db --action=up
+		docker run -d --rm --name wp_tmp --network traefik -v wp_"$WP_ID":/var/www/html demyx/nginx-php-wordpress tail -f /dev/null
+		cd "$CONTAINER_PATH"/backup && docker cp . wp_tmp:/var/www/html
+		docker run -it --rm \
+		--volumes-from wp_tmp \
+		--network container:wp_tmp \
+		wordpress:cli db import "$CONTAINER_NAME".sql
+		docker stop wp_tmp
+		cd .. && rm -rf "$CONTAINER_PATH"/backup "$APPS_BACKUP"/"$DOMAIN"
+		[[ ! -f "$LOGS"/"$DOMAIN".access.log ]] && bash "$ETC"/functions/logs.sh "$DOMAIN" "$FORCE"
+		demyx wp --dom="$DOMAIN" --service=wp --action=up
 	elif [ -n "$REMOVE" ]; then
-		echo -e "\e[33m"
-		if [ -z "$DOMAIN" ]; then
-			read -rep "[WARNING] Delete all sites? [yY]: " DELETE_SITE
-		else
-			read -rep "[WARNING] Delete/overwrite $DOMAIN? [yY]: " DELETE_SITE
+		if [ -z "$FORCE" ]; then
+			echo -e "\e[33m"
+			if [ -z "$DOMAIN" ]; then
+				read -rep "[WARNING] Delete all sites? [yY]: " DELETE_SITE
+			else
+				read -rep "[WARNING] Delete/overwrite $DOMAIN? [yY]: " DELETE_SITE
+			fi
+			echo -e "\e[39m"
+			[[ "$DELETE_SITE" != [yY] ]] && die 'Cancel removal of site(s)'
 		fi
-		echo -e "\e[39m"
-		[[ "$DELETE_SITE" != [yY] ]] && die 'Cancel removal of site(s)'
 		
 		if [ -n "$ALL" ]; then
 			cd "$APPS" || exit
 			for i in *
 			do
-				echo -e "\e[31m[CRITICAL] Removing $i\e[39m"
-				[[ -f "$APPS"/"$i"/data/wp-config.php ]] && cd "$APPS"/"$i" && docker-compose stop && docker-compose rm -f && rm "$LOGS"/"$i"*.log
-				cd .. && rm -rf "$i"
+				echo -e "\e[31m[CRITICAL]\e[39m Removing $i"
+				if [ -f "$APPS"/"$i"/data/wp-config.php ]; then
+					source "$APPS"/"$i"/.env
+					cd "$APPS"/"$i"
+					docker-compose stop
+					docker-compose rm -f
+					rm "$LOGS"/"$i"*.log
+					docker volume rm wp_"$WP_ID" db_"$WP_ID"
+					cd .. && rm -rf "$i"
+				fi
 			done
 		else
-			[[ ! -d $CONTAINER_PATH ]] && die "Domain doesn't exist"
-			echo -e "\e[31m[CRITICAL] Removing $DOMAIN\e[39m"
-			[[ -f "$CONTAINER_PATH"/data/wp-config.php ]] && cd "$CONTAINER_PATH" && docker-compose stop && docker-compose rm -f
-			[[ -f $LOGS/$DOMAIN.access.log ]] && rm "$LOGS"/"$DOMAIN".access.log && rm "$LOGS"/"$DOMAIN".error.log
-			cd .. && sudo rm -rf "$CONTAINER_PATH"
+			[[ ! -f "$CONTAINER_PATH"/.env ]] && die "$DOMAIN is not a valid WordPress app or doesn't exist."
+			WP_CHECK=$(grep -rs "WP_ID" "$CONTAINER_PATH"/.env)
+			if [ -n "$WP_CHECK" ]; then
+				source "$CONTAINER_PATH"/.env
+				echo -e "\e[31m[CRITICAL]\e[39m Removing $DOMAIN"
+				cd "$CONTAINER_PATH"
+				docker-compose stop
+				docker-compose rm -f
+				docker volume rm wp_"$WP_ID" db_"$WP_ID"
+				cd .. && rm -rf "$DOMAIN"
+				[[ -f "$LOGS"/"$DOMAIN".access.log ]] && rm "$LOGS"/"$DOMAIN".access.log && rm "$LOGS"/"$DOMAIN".error.log
+			else
+				die "$DOMAIN a WordPress app."
+			fi
 		fi
 	elif [ -n "$RUN" ]; then
 		[[ -d $CONTAINER_PATH ]] && demyx wp --rm="$DOMAIN"
-		echo -e "\e[34m[INFO] Creating $DOMAIN\e[39m"
+		echo -e "\e[34m[INFO]\e[39m Creating $DOMAIN"
 
 		mkdir -p "$CONTAINER_PATH"/conf
 
@@ -956,11 +1035,12 @@ elif [ "$1" = "wp" ]; then
 		bash "$ETC"/functions/fpm.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE"
 		bash "$ETC"/functions/logs.sh "$DOMAIN" "$FORCE"
 
+		source "$CONTAINER_PATH"/.env
+
 		cd "$CONTAINER_PATH" || exit
 		docker-compose up -d --remove-orphans
 
-		sleep 10
-		source "$CONTAINER_PATH"/.env
+		sleep 5
 
 		if [ -n "$ADMIN_EMAIL" ]; then
 			WORDPRESS_EMAIL="$ADMIN_EMAIL"
@@ -1002,7 +1082,7 @@ elif [ "$1" = "wp" ]; then
 	elif [ -n "$SCALE" ]; then
 		cd "$CONTAINER_PATH" || exit
 		source .env
-		[[ -z "$SERVICE" ]] && echo -e "\e[33m[WARNING] --service is missing, targeting all services...\e[39m"
+		[[ -z "$SERVICE" ]] && echo -e "\e[33m[WARNING]\e[39m --service is missing, targeting all services..."
 		if [ "$SERVICE" = wp ]; then
 			docker-compose up -d --scale wp_"${WP_ID}"="$SCALE" wp_"${WP_ID}"
 		elif [ "$SERVICE" = db ]; then
@@ -1015,23 +1095,69 @@ elif [ "$1" = "wp" ]; then
 		bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
 		demyx wp --dom="$DOMAIN" --up
 	elif [ -n "$UPDATE" ]; then
-		echo "COMING SOON"
-	elif [ -n "$WPCLI" ]; then
+		cd "$APPS" || exit
 		if [ -n "$ALL" ]; then
-			cd "$APPS" || exit
+			[[ "$UPDATE" != structure ]] && die 'Not a WordPress app.'
 			for i in *
 			do
-				if [ -f "$i"/data/wp-config.php ]; then
+				WP_CHECK=$(grep -rs "WP_ID" "$APPS"/"$i"/.env)
+				if [ -n "$WP_CHECK" ]; then
+					echo -e "\e[34m[INFO]\e[39m Backing up $i"
+					source "$i"/.env
+					
+					docker volume create db_"$WP_ID" 
+					docker volume create wp_"$WP_ID"
+
+					sudo cp -R "$CONTAINER_PATH"/db/* /var/lib/docker/volumes/db_"$WP_ID"/_data
+					sudo cp -R "$CONTAINER_PATH"/data/* /var/lib/docker/volumes/wp_"$WP_ID"/_data
+
+					bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
+
+					demyx wp --dom="$DOMAIN" --down
+					sleep 5
+					demyx wp --dom="$DOMAIN" --up
+
+					sudo rm -rf "$CONTAINER_PATH"/data "$CONTAINER_PATH"/db
+				fi
+			done
+		else
+			[[ "$UPDATE" != structure ]] && die 'Not a WordPress app.'
+			WP_CHECK=$(grep -rs "WP_ID" "$CONTAINER_PATH"/.env)
+			[[ -z "$WP_CHECK" ]] && die 'Not a WordPress app.'
+			echo -e "\e[34m[INFO]\e[39m Updating $DOMAIN"
+			source "$CONTAINER_PATH"/.env
+
+			docker volume create db_"$WP_ID" 
+			docker volume create wp_"$WP_ID"
+
+			sudo cp -R "$CONTAINER_PATH"/db/* /var/lib/docker/volumes/db_"$WP_ID"/_data
+			sudo cp -R "$CONTAINER_PATH"/data/* /var/lib/docker/volumes/wp_"$WP_ID"/_data
+
+			bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
+
+			demyx wp --dom="$DOMAIN" --down
+			sleep 5
+			demyx wp --dom="$DOMAIN" --up
+
+			sudo rm -rf "$CONTAINER_PATH"/data "$CONTAINER_PATH"/db
+		fi
+	elif [ -n "$WPCLI" ]; then
+		cd "$APPS" || exit
+		if [ -n "$ALL" ]; then
+			for i in *
+			do
+				WP_CHECK=$(grep -rs "WP_ID" "$APPS"/"$i"/.env)
+				if [ -n "$WP_CHECK" ]; then
 					source "$APPS"/"$i"/.env
 					docker run -it --rm \
 					--volumes-from "$WP" \
 					--network container:"$WP" \
 					wordpress:cli $WPCLI
-				else
-					echo -e "\e[33m[WARNING] Skipping $i\e[39m"
 				fi
 			done
 		else
+			WP_CHECK=$(grep -rs "WP_ID" "$CONTAINER_PATH"/.env)
+			[[ -z "$WP_CHECK" ]] && die 'Not a WordPress app.'
 			source "$CONTAINER_PATH"/.env
 			docker run -it --rm \
 			--volumes-from "$WP" \
@@ -1040,7 +1166,7 @@ elif [ "$1" = "wp" ]; then
 		fi
 	fi
 else
-	[[ -z "$1" ]] && echo && echo -e "\e[34m[INFO] See commands for help: demyx -h, demyx stack -h, demyx wp -h\e[39m" && echo
+	[[ -z "$1" ]] && echo && echo -e "\e[34m[INFO]\e[39m See commands for help: demyx -h, demyx stack -h, demyx wp -h" && echo
 	while :; do
 		case $1 in
 			-h|-\?|--help)
@@ -1109,7 +1235,7 @@ else
 
 				if [ -z "$CRON_WP_CHECK" ]; then
 					# WP Cron every 2 hours
-					echo -e "\e[34m[INFO] Demyx cron not found, installing now to crontabs \e[39m"
+					echo -e "\e[34m[INFO]\e[39m Demyx cron not found, installing now to crontabs"
 					crontab -l > "$ETC"/CRON_WP_CHECK
 					echo "0 */2 * * * /usr/local/bin/demyx wp --all --wpcli='cron event run --due-now'" >> "$ETC"/CRON_WP_CHECK
 					crontab "$ETC"/CRON_WP_CHECK
@@ -1118,7 +1244,7 @@ else
 
 				if [ -z "$CRON_MONITOR_CHECK" ]; then
 					# WP Cron every minute
-					echo -e "\e[34m[INFO] Auto scaling cron not found, installing now to crontabs \e[39m"
+					echo -e "\e[34m[INFO]\e[39m Auto scaling cron not found, installing now to crontabs"
 					crontab -l > "$ETC"/CRON_MONITOR_CHECK
 					echo "* * * * * /usr/local/bin/demyx wp --monitor" >> "$ETC"/CRON_MONITOR_CHECK
 					crontab "$ETC"/CRON_MONITOR_CHECK
@@ -1145,29 +1271,29 @@ else
 
 				if [ -f /etc/cron.daily/demyx-daily ]; then
 					# Will remove this May 1st
-					echo -e "\e[33m[WARNING] Old cron for Demyx detected, deleting now...\e[39m" 
+					echo -e "\e[33m[WARNING]\e[39m Old cron for Demyx detected, deleting now..." 
 					sudo rm /etc/cron.daily/demyx-daily
 				fi
 
 				cd "$GIT" || exit
 
 				if [ -n "$FORCE" ]; then
-					echo -e "\e[33m[WARNING] Forcing an update for Demyx...\e[39m"
+					echo -e "\e[33m[WARNING]\e[39m Forcing an update for Demyx..."
 				else
-					echo -e "\e[34m[INFO] Checking for updates\e[39m"
+					echo -e "\e[34m[INFO]\e[39m Checking for updates"
 				fi
 
 				CHECK_FOR_UPDATES=$(git pull | grep "Already up to date." )
 
 				if [ -n "$FORCE" ] || [ "$CHECK_FOR_UPDATES" != "Already up to date." ]; then
-					[[ -z "$FORCE" ]] && echo -e "\e[34m[INFO] Updating Demyx...\e[39m"
+					[[ -z "$FORCE" ]] && echo -e "\e[34m[INFO]\e[39m Updating Demyx..."
 					bash "$ETC"/functions/etc-env.sh
 					bash "$ETC"/functions/etc-yml.sh
 					rm -rf "$ETC"/functions
 					cp -R "$GIT"/etc/functions "$ETC"
 					demyx stack -u
 				else
-					echo -e "\e[32m[SUCCESS] Already up to date.\e[39m"
+					echo -e "\e[32m[SUCCESS]\e[39m Already up to date."
 				fi
 				
 				demyx wp --dev=check --all
@@ -1177,9 +1303,7 @@ else
 				break
 				;;
 			-?*)
-				echo
-				printf 'Unknown option: %s\n' "$1" >&2
-				echo
+				printf '\e[31m[WARNING]\e[39m Unknown option: %s\n' "$2" >&2
 				exit 1
 				;;
 			*) 

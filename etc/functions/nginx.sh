@@ -9,7 +9,7 @@ FORCE=$4
 
 if [ -f "$CONTAINER_PATH"/conf/nginx.conf ]; then 
   NO_UPDATE=$(grep -r "AUTO GENERATED" "$CONTAINER_PATH"/conf/nginx.conf)
-  [[ -z "$NO_UPDATE" ]] && [[ -z "$FORCE" ]] && echo -e "\e[33m[WARNING] Skipped nginx.conf\e[39m" && exit 1
+  [[ -z "$NO_UPDATE" ]] && [[ -z "$FORCE" ]] && echo -e "\e[33m[WARNING]\e[39m Skipped nginx.conf" && exit 1
 fi
 
 if [ "$CACHE" = on ]; then
@@ -134,4 +134,4 @@ http {
 
 }
 EOF
-echo -e "\e[32m[SUCCESS] Generated nginx.conf\e[39m"
+echo -e "\e[32m[SUCCESS]\e[39m Generated nginx.conf"

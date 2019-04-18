@@ -7,7 +7,7 @@ echo "Demyx"
 echo "URL: https://github.com/demyxco/demyx"
 echo
 
-# Install requisites
+# Install required packages
 sudo apt update
 sudo apt install -y curl dnsutils uuid-runtime
 

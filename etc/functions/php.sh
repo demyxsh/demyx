@@ -7,7 +7,7 @@ FORCE=$2
 
 if [ -f "$CONTAINER_PATH"/conf/php.ini ]; then
 	NO_UPDATE=$(grep -r "AUTO GENERATED" "$CONTAINER_PATH"/conf/php.ini)
-	[[ -z "$NO_UPDATE" ]] && [[ -z "$FORCE" ]] && echo -e "\e[33m[WARNING] Skipped php.ini\e[39m" && exit 1
+	[[ -z "$NO_UPDATE" ]] && [[ -z "$FORCE" ]] && echo -e "\e[33m[WARNING]\e[39m Skipped php.ini" && exit 1
 fi
 
 cat > "$CONTAINER_PATH"/conf/php.ini <<-EOF
@@ -200,4 +200,4 @@ opcache.consistency_checks=0
 
 [openssl]
 EOF
-echo -e "\e[32m[SUCCESS] Generated php.ini\e[39m"
+echo -e "\e[32m[SUCCESS]\e[39m Generated php.ini"

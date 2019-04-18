@@ -61,7 +61,7 @@ networks:
     external: true
 EOF
 
-echo -e "\e[32m[SUCCESS] Generated Rocket.Chat to $CONTAINER_PATH\e[39m"
+echo -e "\e[32m[SUCCESS]\e[39m Generated Rocket.Chat to $CONTAINER_PATH"
 echo
-echo -e "\e[34m[INFO] For first time install, please allow several minutes for Mongo to setup Rocket.Chat\e[39m"
+echo -e "\e[34m[INFO]\e[39m For first time install, please allow several minutes for Mongo to setup Rocket.Chat"
 echo

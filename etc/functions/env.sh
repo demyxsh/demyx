@@ -16,7 +16,7 @@ DB=${DOMAIN//./}_db_${WP_ID}_1
 
 if [ -f "$CONTAINER_PATH"/.env ]; then
 	NO_UPDATE=$(grep -r "AUTO GENERATED" "$APPS"/"$DOMAIN"/.env)
-	[[ -z "$NO_UPDATE" ]] && [[ -z "$FORCE" ]] && echo -e "\e[33m[WARNING] Skipped .env\e[39m" && exit 1
+	[[ -z "$NO_UPDATE" ]] && [[ -z "$FORCE" ]] && echo -e "\e[33m[WARNING]\e[39m Skipped .env" && exit 1
 fi
 
 if [ -n "$ADMIN_USER" ] && [ -n "$ADMIN_PASSWORD" ]; then
@@ -93,7 +93,7 @@ MONITOR_CPU=25
 FASTCGI_CACHE=$CACHE
 EOF
 
-echo -e "\e[32m[SUCCESS] Generated .env\e[39m"
+echo -e "\e[32m[SUCCESS]\e[39m Generated .env"
 
 # TODO
 #SUBNET=${SUBNETS}.${SUBNET_MAJOR}.${SUBNET_MINOR}.0/24

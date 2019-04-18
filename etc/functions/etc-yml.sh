@@ -7,7 +7,7 @@ FORCE=$1
 
 if [ -f "$ETC"/docker-compose.yml ]; then
   NO_UPDATE=$(grep -r "AUTO GENERATED" "$ETC"/docker-compose.yml)
-  [[ -z "$NO_UPDATE" ]] && [[ -z "$FORCE" ]] && echo -e "\e[33m[WARNING] Skipped docker-compose.yml\e[39m" && exit 1
+  [[ -z "$NO_UPDATE" ]] && [[ -z "$FORCE" ]] && echo -e "\e[33m[WARNING]\e[39m Skipped docker-compose.yml" && exit 1
 fi
 
 cat > "$ETC"/docker-compose.yml <<-EOF
@@ -63,4 +63,4 @@ networks:
     name: traefik
 EOF
 
-echo -e "\e[32m[SUCCESS] Generated .yml\e[39m"
+echo -e "\e[32m[SUCCESS]\e[39m Generated .yml"

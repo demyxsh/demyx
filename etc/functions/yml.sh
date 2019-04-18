@@ -6,10 +6,11 @@ source /srv/demyx/etc/.env
 CONTAINER_PATH=$1
 FORCE=$2
 SSL=$3
+DEV=$4
 
 if [ -f "$CONTAINER_PATH"/docker-compose.yml ]; then
   NO_UPDATE=$(grep -r "AUTO GENERATED" "$CONTAINER_PATH"/docker-compose.yml)
-  [[ -z "$NO_UPDATE" ]] && [[ -z "$FORCE" ]] && echo -e "\e[33m[WARNING] Skipped docker-compose.yml\e[39m" && exit 1
+  [[ -z "$NO_UPDATE" ]] && [[ -z "$FORCE" ]] && echo -e "\e[33m[WARNING]\e[39m Skipped docker-compose.yml" && exit 1
 fi
 
 source "$CONTAINER_PATH"/.env
@@ -24,7 +25,7 @@ if [ "$SSL" = "on" ]; then
   fi
 
   if [ "$SERVER_IP" != "$DOMAIN_IP" ]; then
-    echo -e "\e[33m[WARNING] $DOMAIN does not point to server's IP! Proceeding without SSL...\e[39m"
+    echo -e "\e[33m[WARNING]\e[39m $DOMAIN does not point to server's IP! Proceeding without SSL..."
   else
     PROTOCOL="- \"traefik.frontend.redirect.entryPoint=https\"
       - \"traefik.frontend.headers.forceSTSHeader=\${FORCE_STS_HEADER}\"
@@ -32,6 +33,15 @@ if [ "$SSL" = "on" ]; then
       - \"traefik.frontend.headers.STSIncludeSubdomains=\${STS_INCLUDE_SUBDOMAINS}\"
       - \"traefik.frontend.headers.STSPreload=\${STS_PRELOAD}\""
   fi
+fi
+
+if [ "$DEV" = on ]; then
+  WP_MOUNT="./data"
+  WP_DISABLE_OPCACHE="- /dev/null:/usr/local/etc/php/conf.d/docker-php-ext-opcache.ini"
+else
+  WP_MOUNT="wp_${WP_ID}"
+  WP_VOLUME="wp_${WP_ID}:
+    name: wp_${WP_ID}"
 fi
 
 cat > "$CONTAINER_PATH"/docker-compose.yml <<-EOF
@@ -47,7 +57,7 @@ services:
     networks:
       - traefik
     volumes:
-      - ./db:/var/lib/mysql
+      - db_${WP_ID}:/var/lib/mysql
     environment:
       MARIADB_DATABASE: \${WORDPRESS_DB_NAME}
       MARIADB_USERNAME: \${WORDPRESS_DB_USER}
@@ -96,9 +106,10 @@ services:
       - ./conf/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./conf/php.ini:/usr/local/etc/php/php.ini:ro
       - ./conf/php-fpm.conf:/usr/local/etc/php-fpm.conf:ro
-      - ./data:/var/www/html
+      - ${WP_MOUNT}:/var/www/html
       - \${ACCESS_LOG}:/var/log/demyx/${DOMAIN}.access.log
       - \${ERROR_LOG}:/var/log/demyx/${DOMAIN}.error.log
+      $WP_DISABLE_OPCACHE
     labels:
       - "traefik.enable=true"
       - "traefik.frontend.rule=Host:\${DOMAIN},www.\${DOMAIN}"
@@ -106,9 +117,13 @@ services:
       - "traefik.frontend.redirect.regex=^www.\${DOMAIN}/(.*)"
       - "traefik.frontend.redirect.replacement=\${DOMAIN}/\$\$1"
       $PROTOCOL
+volumes:
+  db_${WP_ID}:
+    name: db_${WP_ID}
+  $WP_VOLUME
 networks:
   traefik:
     name: traefik
 EOF
 
-echo -e "\e[32m[SUCCESS] Generated .yml\e[39m"
+echo -e "\e[32m[SUCCESS]\e[39m Generated .yml"

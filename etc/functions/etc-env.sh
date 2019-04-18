@@ -12,7 +12,7 @@ ETC=$DEMYX/etc
 if [ -f $ETC/.env ]; then
 	source $ETC/.env
 	NO_UPDATE=$(grep -r "AUTO GENERATED" $ETC/.env)
-  	[[ -z "$NO_UPDATE" ]] && [[ -z "$FORCE" ]] && echo -e "\e[33m[WARNING] Skipped .env\e[39m" && exit 1
+  	[[ -z "$NO_UPDATE" ]] && [[ -z "$FORCE" ]] && echo -e "\e[33m[WARNING]\e[39m Skipped .env" && exit 1
 fi
 
 cat > $ETC/.env <<-EOF
@@ -38,4 +38,4 @@ STS_INCLUDE_SUBDOMAINS=true
 STS_PRELOAD=true
 EOF
 
-echo -e "\e[32m[SUCCESS] Generated .env\e[39m"
+echo -e "\e[32m[SUCCESS]\e[39m Generated .env"

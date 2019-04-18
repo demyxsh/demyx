@@ -69,7 +69,7 @@ networks:
     name: traefik
 EOF
 
-echo -e "\e[32m[SUCCESS] Generated Gitea to $CONTAINER_PATH\e[39m"
+echo -e "\e[32m[SUCCESS]\e[39m Generated Gitea to $CONTAINER_PATH"
 echo
 cat "$CONTAINER_PATH"/.env
 echo

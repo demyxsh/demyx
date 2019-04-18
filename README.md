@@ -162,6 +162,9 @@ demyx wp -h
 --up                Shorthand for docker-compose up -d
                     Example: demyx wp --up=domain.tld, demyx wp --dom=domain.tld --up
 
+--update            This flag only updates old file structure
+                    Example: demyx wp --dom=domain.tld --update=structure, demyx wp --update=structure --all
+
 --wpcli             Send wp-cli commands to a site
                     Example: demyx wp --dom=domain.tld --wpcli='user list --all'
 ```

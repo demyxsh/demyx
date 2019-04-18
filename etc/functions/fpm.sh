@@ -8,7 +8,7 @@ FORCE=$3
 
 if [ -f "$CONTAINER_PATH"/conf/fpm-php.conf ]; then
 	NO_UPDATE=$(grep -r "AUTO GENERATED" "$CONTAINER_PATH"/conf/php-fpm.conf)
-	[[ -z "$NO_UPDATE" ]] && [[ -z "$FORCE" ]] && echo -e "\e[33m[WARNING] Skipped php-fpm.conf\e[39m" && exit 1
+	[[ -z "$NO_UPDATE" ]] && [[ -z "$FORCE" ]] && echo -e "\e[33m[WARNING]\e[39m Skipped php-fpm.conf" && exit 1
 fi
 
 cat > "$CONTAINER_PATH"/conf/php-fpm.conf <<-EOF
@@ -34,4 +34,4 @@ php_admin_value[max_input_nesting_level] = 256
 catch_workers_output = yes
 EOF
 
-echo -e "\e[32m[SUCCESS] Generated php-fpm.conf\e[39m"
+echo -e "\e[32m[SUCCESS]\e[39m Generated php-fpm.conf"
