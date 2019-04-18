@@ -755,6 +755,7 @@ elif [ "$1" = "wp" ]; then
 			echo "$i"
 		done
 	elif [ -n "$IMPORT" ]; then
+		die 'Import is disabled for now.'
 		[[ ! -f $APPS_BACKUP/$DOMAIN.tgz ]] && die "$APPS_BACKUP/$DOMAIN.tgz doesn't exist"
 		cd "$APPS_BACKUP" || exit
 		tar -xzf "$DOMAIN".tgz
