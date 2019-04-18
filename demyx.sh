@@ -1112,9 +1112,8 @@ elif [ "$1" = "wp" ]; then
 					sudo cp -R "$CONTAINER_PATH"/db/* /var/lib/docker/volumes/db_"$WP_ID"/_data
 					sudo cp -R "$CONTAINER_PATH"/data/* /var/lib/docker/volumes/wp_"$WP_ID"/_data
 
-					bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
-
 					demyx wp --dom="$DOMAIN" --down
+					bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
 					sleep 5
 					demyx wp --dom="$DOMAIN" --up
 
@@ -1135,9 +1134,8 @@ elif [ "$1" = "wp" ]; then
 			sudo cp -R "$CONTAINER_PATH"/db/* /var/lib/docker/volumes/db_"$WP_ID"/_data
 			sudo cp -R "$CONTAINER_PATH"/data/* /var/lib/docker/volumes/wp_"$WP_ID"/_data
 
-			bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
-
 			demyx wp --dom="$DOMAIN" --down
+			bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
 			sleep 5
 			demyx wp --dom="$DOMAIN" --up
 
