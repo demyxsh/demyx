@@ -1091,7 +1091,7 @@ elif [ "$1" = "wp" ]; then
 			docker-compose up -d --scale wp_"${WP_ID}"="$SCALE" wp_"${WP_ID}"
 			docker-compose up -d --scale db_"${WP_ID}"="$SCALE" db_"${WP_ID}"
 		fi
-	elif [ -n "$SSL" ]; then
+	elif [ -n "$SSL" ] && [ -n "$DOMAIN" ]; then
 		bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
 		demyx wp --dom="$DOMAIN" --up
 	elif [ -n "$UPDATE" ]; then
@@ -1121,7 +1121,7 @@ elif [ "$1" = "wp" ]; then
 				fi
 			done
 		else
-			[[ ! -d "$APPS"/"$i"/db ]] && die "$DOMAIN is already updated."
+			[[ ! -d "$APPS"/"$DOMAIN"/db ]] && die "$DOMAIN is already updated."
 			[[ "$UPDATE" != structure ]] && die '--update only takes structure as the value.'
 			WP_CHECK=$(grep -rs "WP_ID" "$CONTAINER_PATH"/.env)
 			[[ -z "$WP_CHECK" ]] && die 'Not a WordPress app.'
