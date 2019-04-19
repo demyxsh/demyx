@@ -154,6 +154,9 @@ elif [ "$1" = "wp" ]; then
 				echo "  --pma           Enable phpmyadmin: pma.primary-domain.tld"
 				echo "                  Example: demyx wp --dom=domain.tld --pma, demyx wp --dom=domain.tld --pma=off"
 				echo
+				echo "  --port          Sets SFTP port for --dev"
+				echo "                  Example: demyx wp --dom=domain.tld --dev --port=2022"
+				echo
 				echo "  --refresh       Regenerate all config files for a site; use with caution"
 				echo "                  Example: demyx wp --refresh=domain.tld --ssl, demyx wp --dom=domain.tld --refresh --ssl"
 				echo
@@ -323,6 +326,12 @@ elif [ "$1" = "wp" ]; then
 				;;
 			--pma=)         
 				die '"--pma" cannot be empty.'
+				;;
+			--port=?*)
+				PORT=${2#*=}
+				;;
+			--port=)         
+				die '"--port" cannot be empty.'
 				;;
 			--refresh)
 				REFRESH=1
@@ -731,17 +740,19 @@ elif [ "$1" = "wp" ]; then
 			docker exec -it "$WP" pkill php-fpm
 			docker exec -it "$WP" php-fpm -D 
 			
+			[[ -z "$PORT" ]] && PORT=2222
+
 			docker run -d --rm \
 			--name ssh \
 			-v ssh:/home/www-data/.ssh \
 			-v wp_"$WP_ID":/var/www/html \
-			-p 2222:22 \
+			-p "$PORT":22 \
 			demyx/ssh
 
 			echo
 			echo "SFTP Address: $DOMAIN"
 			echo "SFTP User: www-data"
-			echo "SFTP Port: 2222"
+			echo "SFTP Port: $PORT"
 			echo
 		elif [ "$DEV" = off ]; then
 			source "$CONTAINER_PATH"/.env
