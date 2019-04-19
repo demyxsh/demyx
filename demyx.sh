@@ -698,33 +698,67 @@ elif [ "$1" = "wp" ]; then
 		echo "Password: $WORDPRESS_USER_PASSWORD"
 		echo
 	elif [ -n "$DEV" ] && [ -z "$RUN" ] && [ -z "$CLONE" ]; then
-		die '--dev is disabled for now'
+		SSH_CONTAINER_CHECK=$(docker ps -aq -f name=ssh)
+		SSH_VOLUME_CHECK=$(docker volume ls | grep ssh)
 		WP_CHECK=$(grep -rs "WP_ID" "$CONTAINER_PATH"/.env)
+
+		[[ -n "$SSH_CONTAINER_CHECK" ]] && docker stop ssh
+
+		if [ -z "$SSH_VOLUME_CHECK" ]; then
+			echo -e "\e[34m[INFO]\e[39m SSH volume not found, creating now..."
+			docker volume create ssh
+
+			docker run -d --rm \
+			--name ssh \
+			-v ssh:/home/www-data/.ssh \
+			demyx/ssh
+
+			docker cp /home/"$USER"/.ssh/authorized_keys ssh:/home/www-data/.ssh/authorized_keys
+			docker exec -it ssh chown -R www-data:www-data /home/www-data
+			docker stop ssh
+		fi
+
 		if [ "$DEV" = on ]; then
 			source "$CONTAINER_PATH"/.env
-			DEV_MODE_CHECK=$(grep -r "sendfile off" $APPS/$DOMAIN/conf/nginx.conf)
+			DEV_MODE_CHECK=$(docker exec -it "$WP" grep -r "sendfile off" /etc/nginx/nginx.conf)
 			[[ -n "$DEV_MODE_CHECK" ]] && die "Development mode is already turned on for $DOMAIN"
+
 			echo -e "\e[34m[INFO]\e[39m Turning on development mode for $DOMAIN"
-			demyx wp --dom="$DOMAIN" --service=wp --action=down
-			sed -i 's/sendfile on;/sendfile off;/g' "$CONTAINER_PATH"/conf/nginx.conf
-			docker run -d --rm --name dev_tmp -v wp_"$WP_ID":/var/www/html demyx/utilities tail -f /dev/null
-			docker cp dev_tmp:/var/www/html "$CONTAINER_PATH"/data
-			docker stop dev_tmp
-			bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "" "" "on"
-			demyx wp --dom="$DOMAIN" --service=wp --action=up
+			
+			docker exec -it "$WP" apk add --no-cache --update --quiet vim
+			docker exec -it "$WP" vim -esnc '%s/sendfile on/sendfile off/g|:wq' /etc/nginx/nginx.conf
+			docker exec -it "$WP" nginx -s reload
+			docker exec -it "$WP" mv /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini /
+			docker exec -it "$WP" pkill php-fpm
+			docker exec -it "$WP" php-fpm -D 
+			
+			docker run -d --rm \
+			--name ssh \
+			-v ssh:/home/www-data/.ssh \
+			-v wp_"$WP_ID":/var/www/html \
+			-p 2222:22 \
+			demyx/ssh
+
+			echo
+			echo "SFTP Address: $DOMAIN"
+			echo "SFTP User: www-data"
+			echo "SFTP Port: 2222"
+			echo
 		elif [ "$DEV" = off ]; then
 			source "$CONTAINER_PATH"/.env
-			DEV_MODE_CHECK=$(grep -r "sendfile on" $APPS/$DOMAIN/conf/nginx.conf)
+			DEV_MODE_CHECK=$(docker exec -it "$WP" grep -r "sendfile on" /etc/nginx/nginx.conf)
 			[[ -n "$DEV_MODE_CHECK" ]] && die "Development mode is already turned off for $DOMAIN"
+
 			echo -e "\e[34m[INFO]\e[39m Turning off development mode for $DOMAIN"
-			demyx wp --dom="$DOMAIN" --service=wp --action=down
-			sed -i 's/sendfile off;/sendfile on;/g' "$CONTAINER_PATH"/conf/nginx.conf
-			docker run -d --rm --name dev_tmp -v wp_"$WP_ID":/var/www/html demyx/utilities tail -f /dev/null
-			cd "$CONTAINER_PATH"/data && docker cp . dev_tmp:/var/www/html
-			docker stop dev_tmp
-			bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "" "" "off"
-			cd .. &&  rm -rf "$CONTAINER_PATH"/data
-			demyx wp --dom="$DOMAIN" --service=wp --action=up
+			
+			docker exec -it "$WP" apk add --no-cache --update --quiet vim
+			docker exec -it "$WP" vim -esnc '%s/sendfile off/sendfile on/g|:wq' /etc/nginx/nginx.conf
+			docker exec -it "$WP" nginx -s reload
+			docker exec -it "$WP" mv /docker-php-ext-opcache.ini /usr/local/etc/php/conf.d
+			docker exec -it "$WP" pkill php-fpm
+			docker exec -it "$WP" php-fpm -D 
+			
+			docker stop ssh
 		elif [ "$DEV" = check ] && [ -n "$ALL" ]; then
 			cd "$APPS" || exit
 			for i in *

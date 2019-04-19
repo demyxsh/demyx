@@ -6,7 +6,6 @@ source /srv/demyx/etc/.env
 CONTAINER_PATH=$1
 FORCE=$2
 SSL=$3
-DEV=$4
 
 if [ -f "$CONTAINER_PATH"/docker-compose.yml ]; then
   NO_UPDATE=$(grep -r "AUTO GENERATED" "$CONTAINER_PATH"/docker-compose.yml)
@@ -34,15 +33,6 @@ if [ "$SSL" = "on" ]; then
       - \"traefik.frontend.headers.STSPreload=\${STS_PRELOAD}\""
   fi
 fi
-
-#if [ "$DEV" = on ]; then
-#  WP_MOUNT="./data"
-#  WP_DISABLE_OPCACHE="- /dev/null:/usr/local/etc/php/conf.d/docker-php-ext-opcache.ini"
-#else
-  WP_MOUNT="wp_${WP_ID}"
-  WP_VOLUME="wp_${WP_ID}:
-    name: wp_${WP_ID}"
-#fi
 
 cat > "$CONTAINER_PATH"/docker-compose.yml <<-EOF
 # AUTO GENERATED
@@ -119,7 +109,8 @@ services:
 volumes:
   db_${WP_ID}:
     name: db_${WP_ID}
-  $WP_VOLUME
+  wp_${WP_ID}:
+    name: wp_${WP_ID}
 networks:
   traefik:
     name: traefik
