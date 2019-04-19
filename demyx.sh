@@ -1339,7 +1339,7 @@ else
 					echo -e "\e[34m[INFO]\e[39m Checking for updates"
 				fi
 
-				CHECK_FOR_UPDATES=$(git pull | grep "Already up to date" )
+				CHECK_FOR_UPDATES=$(git pull | grep "Already up to date." )
 
 				if [ -n "$FORCE" ] || [ "$CHECK_FOR_UPDATES" != "Already up to date" ]; then
 					[[ -z "$FORCE" ]] && echo -e "\e[34m[INFO]\e[39m Updating Demyx..."
