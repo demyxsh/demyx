@@ -1104,7 +1104,7 @@ elif [ "$1" = "wp" ]; then
 		fi
 	elif [ -n "$SSL" ] && [ -n "$DOMAIN" ]; then
 		bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
-		demyx wp --dom="$DOMAIN" --up
+		demyx wp --dom="$DOMAIN" --service=wp --action=up
 	elif [ -n "$UPDATE" ]; then
 		cd "$APPS" || exit
 		if [ -n "$ALL" ]; then
