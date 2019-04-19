@@ -35,14 +35,14 @@ if [ "$SSL" = "on" ]; then
   fi
 fi
 
-if [ "$DEV" = on ]; then
-  WP_MOUNT="./data"
-  WP_DISABLE_OPCACHE="- /dev/null:/usr/local/etc/php/conf.d/docker-php-ext-opcache.ini"
-else
+#if [ "$DEV" = on ]; then
+#  WP_MOUNT="./data"
+#  WP_DISABLE_OPCACHE="- /dev/null:/usr/local/etc/php/conf.d/docker-php-ext-opcache.ini"
+#else
   WP_MOUNT="wp_${WP_ID}"
   WP_VOLUME="wp_${WP_ID}:
     name: wp_${WP_ID}"
-fi
+#fi
 
 cat > "$CONTAINER_PATH"/docker-compose.yml <<-EOF
 # AUTO GENERATED
@@ -103,13 +103,12 @@ services:
       WORDPRESS_DB_PASSWORD: \${WORDPRESS_DB_PASSWORD}
       TZ: America/Los_Angeles
     volumes:
-      - ./conf/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./conf/php.ini:/usr/local/etc/php/php.ini:ro
-      - ./conf/php-fpm.conf:/usr/local/etc/php-fpm.conf:ro
+      - ./conf/nginx.conf:/etc/nginx/nginx.conf
+      - ./conf/php.ini:/usr/local/etc/php/php.ini
+      - ./conf/php-fpm.conf:/usr/local/etc/php-fpm.conf
       - ${WP_MOUNT}:/var/www/html
       - \${ACCESS_LOG}:/var/log/demyx/${DOMAIN}.access.log
       - \${ERROR_LOG}:/var/log/demyx/${DOMAIN}.error.log
-      $WP_DISABLE_OPCACHE
     labels:
       - "traefik.enable=true"
       - "traefik.frontend.rule=Host:\${DOMAIN},www.\${DOMAIN}"
