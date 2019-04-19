@@ -702,9 +702,7 @@ elif [ "$1" = "wp" ]; then
 		SSH_VOLUME_CHECK=$(docker volume ls | grep ssh)
 		WP_CHECK=$(grep -rs "WP_ID" "$CONTAINER_PATH"/.env)
 
-		[[ -n "$SSH_CONTAINER_CHECK" ]] && docker stop ssh
-
-		if [ -z "$SSH_VOLUME_CHECK" ]; then
+		if [ -z "$SSH_VOLUME_CHECK" ] && [ "$DEV" != check ]; then
 			echo -e "\e[34m[INFO]\e[39m SSH volume not found, creating now..."
 			docker volume create ssh
 
@@ -719,6 +717,7 @@ elif [ "$1" = "wp" ]; then
 		fi
 
 		if [ "$DEV" = on ]; then
+			[[ -n "$SSH_CONTAINER_CHECK" ]] && docker stop ssh
 			source "$CONTAINER_PATH"/.env
 			DEV_MODE_CHECK=$(docker exec -it "$WP" grep -r "sendfile off" /etc/nginx/nginx.conf)
 			[[ -n "$DEV_MODE_CHECK" ]] && die "Development mode is already turned on for $DOMAIN"
