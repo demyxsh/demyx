@@ -1003,7 +1003,8 @@ elif [ "$1" = "wp" ]; then
 		docker volume rm wp_"$WP_ID" db_"$WP_ID"
 		docker volume create wp_"$WP_ID"
 		docker volume create db_"$WP_ID"
-		demyx wp --dom="$DOMAIN" --service=db --action=up && sleep 10
+		demyx wp --dom="$DOMAIN" --service=db --action=up
+		sleep 10
 		docker run -d --rm --name restore_tmp --network traefik -v wp_"$WP_ID":/var/www/html demyx/nginx-php-wordpress tail -f /dev/null
 		cd "$CONTAINER_PATH"/backup && docker cp . restore_tmp:/var/www/html
 		docker run -it --rm \
