@@ -612,8 +612,8 @@ elif [ "$1" = "wp" ]; then
 		CLONE_WP=$(cat "$APPS"/"$CLONE"/.env | awk -F= '/^WP/ { print $2 }' | sed '1d')
 		WP_CHECK=$(grep -rs "WP_ID" "$APPS"/"$CLONE"/.env)
 		DEV_MODE_CHECK=$(grep -r "sendfile off" /srv/demyx/apps/$CLONE/conf/nginx.conf)
-		[[ -z "$WP_CHECK" ]] && die "$CLONE isn't a WordPress app."
-		[[ -n "$DEV_MODE_CHECK" ]] && die "$CLONE is currently in dev mode. Please disable it before cloning."
+		[[ -z "$WP_CHECK" ]] && die "$CLONE isn't a WordPress app"
+		[[ -n "$DEV_MODE_CHECK" ]] && die "$CLONE is currently in dev mode. Please disable it before cloning"
 		[[ -d "$CONTAINER_PATH" ]] && demyx wp --dom="$DOMAIN" --remove
 
 		echo -e "\e[34m[INFO]\e[39m Cloning $CLONE to $DOMAIN"
@@ -1013,7 +1013,7 @@ elif [ "$1" = "wp" ]; then
 				fi
 			done
 		else
-			[[ ! -f "$CONTAINER_PATH"/.env ]] && die "$DOMAIN is not a valid WordPress app or doesn't exist."
+			[[ ! -f "$CONTAINER_PATH"/.env ]] && die "$DOMAIN is not a valid WordPress app or doesn't exist"
 			WP_CHECK=$(grep -rs "WP_ID" "$CONTAINER_PATH"/.env)
 			if [ -n "$WP_CHECK" ]; then
 				source "$CONTAINER_PATH"/.env
@@ -1027,7 +1027,7 @@ elif [ "$1" = "wp" ]; then
 				cd .. && rm -rf "$DOMAIN"
 				[[ -f "$LOGS"/"$DOMAIN".access.log ]] && rm "$LOGS"/"$DOMAIN".access.log && rm "$LOGS"/"$DOMAIN".error.log
 			else
-				die "$DOMAIN a WordPress app."
+				die "$DOMAIN a WordPress app"
 			fi
 		fi
 	elif [ -n "$RUN" ]; then
@@ -1056,6 +1056,8 @@ elif [ "$1" = "wp" ]; then
 		else
 			WORDPRESS_EMAIL=info@"$DOMAIN"
 		fi
+
+		sleep 10
 
 		docker run -it --rm \
 		--volumes-from "$WP" \
@@ -1130,7 +1132,7 @@ elif [ "$1" = "wp" ]; then
 				fi
 			done
 		else
-			[[ ! -d "$APPS"/"$DOMAIN"/db ]] && die "$DOMAIN is already updated."
+			[[ ! -d "$APPS"/"$DOMAIN"/db ]] && die "$DOMAIN is already updated"
 			[[ "$UPDATE" != structure ]] && die '--update only takes structure as the value.'
 			WP_CHECK=$(grep -rs "WP_ID" "$CONTAINER_PATH"/.env)
 			[[ -z "$WP_CHECK" ]] && die 'Not a WordPress app.'
@@ -1292,9 +1294,9 @@ else
 					echo -e "\e[34m[INFO]\e[39m Checking for updates"
 				fi
 
-				CHECK_FOR_UPDATES=$(git pull | grep "Already up to date." )
+				CHECK_FOR_UPDATES=$(git pull | grep "Already up to date" )
 
-				if [ -n "$FORCE" ] || [ "$CHECK_FOR_UPDATES" != "Already up to date." ]; then
+				if [ -n "$FORCE" ] || [ "$CHECK_FOR_UPDATES" != "Already up to date" ]; then
 					[[ -z "$FORCE" ]] && echo -e "\e[34m[INFO]\e[39m Updating Demyx..."
 					bash "$ETC"/functions/etc-env.sh
 					bash "$ETC"/functions/etc-yml.sh
@@ -1302,7 +1304,7 @@ else
 					cp -R "$GIT"/etc/functions "$ETC"
 					demyx stack -u
 				else
-					echo -e "\e[32m[SUCCESS]\e[39m Already up to date."
+					echo -e "\e[32m[SUCCESS]\e[39m Already up to date"
 				fi
 				
 				demyx wp --dev=check --all
