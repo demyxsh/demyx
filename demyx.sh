@@ -751,12 +751,12 @@ elif [ "$1" = "wp" ]; then
 
 			echo -e "\e[34m[INFO]\e[39m Turning off development mode for $DOMAIN"
 			
-			docker exec -it "$WP" apk add --no-cache --update --quiet vim
 			docker exec -it "$WP" vim -esnc '%s/sendfile off/sendfile on/g|:wq' /etc/nginx/nginx.conf
 			docker exec -it "$WP" nginx -s reload
 			docker exec -it "$WP" mv /docker-php-ext-opcache.ini /usr/local/etc/php/conf.d
 			docker exec -it "$WP" pkill php-fpm
 			docker exec -it "$WP" php-fpm -D 
+			docker exec -it "$WP" apk del vim --quiet
 			
 			docker stop ssh
 		elif [ "$DEV" = check ] && [ -n "$ALL" ]; then

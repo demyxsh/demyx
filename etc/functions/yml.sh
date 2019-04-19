@@ -96,7 +96,7 @@ services:
       - ./conf/nginx.conf:/etc/nginx/nginx.conf
       - ./conf/php.ini:/usr/local/etc/php/php.ini
       - ./conf/php-fpm.conf:/usr/local/etc/php-fpm.conf
-      - ${WP_MOUNT}:/var/www/html
+      - wp_${WP_ID}:/var/www/html
       - \${ACCESS_LOG}:/var/log/demyx/${DOMAIN}.access.log
       - \${ERROR_LOG}:/var/log/demyx/${DOMAIN}.error.log
     labels:
