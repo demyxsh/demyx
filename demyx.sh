@@ -701,22 +701,24 @@ elif [ "$1" = "wp" ]; then
 		WP_CHECK=$(grep -rs "WP_ID" "$CONTAINER_PATH"/.env)
 		if [ "$DEV" = on ]; then
 			source "$CONTAINER_PATH"/.env
-			DEV_MODE_CHECK=$(grep -r "sendfile off" /srv/demyx/apps/$DOMAIN/conf/nginx.conf)
+			DEV_MODE_CHECK=$(grep -r "sendfile off" $APPS/$DOMAIN/conf/nginx.conf)
 			[[ -n "$DEV_MODE_CHECK" ]] && die "Development mode is already turned on for $DOMAIN"
 			echo -e "\e[34m[INFO]\e[39m Turning on development mode for $DOMAIN"
 			demyx wp --dom="$DOMAIN" --service=wp --action=down
 			sed -i 's/sendfile on;/sendfile off;/g' "$CONTAINER_PATH"/conf/nginx.conf
-			docker cp "$WP":/var/www/html "$CONTAINER_PATH"/data
+			docker run -d --rm --name dev_tmp -v wp_"$WP_ID":/var/www/html demyx/utilities tail -f /dev/null
+			docker cp dev_tmp:/var/www/html "$CONTAINER_PATH"/data
+			docker stop dev_tmp
 			bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "" "" "on"
 			demyx wp --dom="$DOMAIN" --service=wp --action=up
 		elif [ "$DEV" = off ]; then
 			source "$CONTAINER_PATH"/.env
-			DEV_MODE_CHECK=$(grep -r "sendfile on" /srv/demyx/apps/$DOMAIN/conf/nginx.conf)
+			DEV_MODE_CHECK=$(grep -r "sendfile on" $APPS/$DOMAIN/conf/nginx.conf)
 			[[ -n "$DEV_MODE_CHECK" ]] && die "Development mode is already turned off for $DOMAIN"
 			echo -e "\e[34m[INFO]\e[39m Turning off development mode for $DOMAIN"
 			demyx wp --dom="$DOMAIN" --service=wp --action=down
 			sed -i 's/sendfile off;/sendfile on;/g' "$CONTAINER_PATH"/conf/nginx.conf
-			docker run -d --rm --name dev_tmp -v "$WP":/var/www/html demyx/utilities tail -f /dev/null
+			docker run -d --rm --name dev_tmp -v wp_"$WP_ID":/var/www/html demyx/utilities tail -f /dev/null
 			cd "$CONTAINER_PATH"/data && docker cp . dev_tmp:/var/www/html
 			docker stop dev_tmp
 			bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "" "" "off"
@@ -967,15 +969,16 @@ elif [ "$1" = "wp" ]; then
 		docker volume rm wp_"$WP_ID" db_"$WP_ID"
 		docker volume create wp_"$WP_ID"
 		docker volume create db_"$WP_ID"
-		demyx wp --dom="$DOMAIN" --service=db --action=up
-		docker run -d --rm --name wp_tmp --network traefik -v wp_"$WP_ID":/var/www/html demyx/nginx-php-wordpress tail -f /dev/null
-		cd "$CONTAINER_PATH"/backup && docker cp . wp_tmp:/var/www/html
+		demyx wp --dom="$DOMAIN" --service=db --action=up && sleep 10
+		docker run -d --rm --name restore_tmp --network traefik -v wp_"$WP_ID":/var/www/html demyx/nginx-php-wordpress tail -f /dev/null
+		cd "$CONTAINER_PATH"/backup && docker cp . restore_tmp:/var/www/html
 		docker run -it --rm \
-		--volumes-from wp_tmp \
-		--network container:wp_tmp \
+		--volumes-from restore_tmp \
+		--network container:restore_tmp \
 		wordpress:cli db import "$CONTAINER_NAME".sql
-		docker stop wp_tmp
+		docker stop restore_tmp
 		cd .. && rm -rf "$CONTAINER_PATH"/backup "$APPS_BACKUP"/"$DOMAIN"
+		docker exec -it "$WP" sh -c "rm /var/www/html/$CONTAINER_NAME.sql"
 		[[ ! -f "$LOGS"/"$DOMAIN".access.log ]] && bash "$ETC"/functions/logs.sh "$DOMAIN" "$FORCE"
 		demyx wp --dom="$DOMAIN" --service=wp --action=up
 	elif [ -n "$REMOVE" ]; then
