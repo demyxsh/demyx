@@ -704,23 +704,23 @@ elif [ "$1" = "wp" ]; then
 			DEV_MODE_CHECK=$(grep -r "sendfile off" /srv/demyx/apps/$DOMAIN/conf/nginx.conf)
 			[[ -n "$DEV_MODE_CHECK" ]] && die "Development mode is already turned on for $DOMAIN"
 			echo -e "\e[34m[INFO]\e[39m Turning on development mode for $DOMAIN"
+			demyx wp --dom="$DOMAIN" --service=wp --action=down
 			sed -i 's/sendfile on;/sendfile off;/g' "$CONTAINER_PATH"/conf/nginx.conf
 			docker cp "$WP":/var/www/html "$CONTAINER_PATH"/data
 			bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "" "" "on"
-			demyx wp --dom="$DOMAIN" --service=wp --action=down
 			demyx wp --dom="$DOMAIN" --service=wp --action=up
 		elif [ "$DEV" = off ]; then
 			source "$CONTAINER_PATH"/.env
 			DEV_MODE_CHECK=$(grep -r "sendfile on" /srv/demyx/apps/$DOMAIN/conf/nginx.conf)
 			[[ -n "$DEV_MODE_CHECK" ]] && die "Development mode is already turned off for $DOMAIN"
 			echo -e "\e[34m[INFO]\e[39m Turning off development mode for $DOMAIN"
+			demyx wp --dom="$DOMAIN" --service=wp --action=down
 			sed -i 's/sendfile off;/sendfile on;/g' "$CONTAINER_PATH"/conf/nginx.conf
 			docker run -d --rm --name dev_tmp -v "$WP":/var/www/html demyx/utilities tail -f /dev/null
 			cd "$CONTAINER_PATH"/data && docker cp . dev_tmp:/var/www/html
 			docker stop dev_tmp
 			bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "" "" "off"
 			cd .. &&  rm -rf "$CONTAINER_PATH"/data
-			demyx wp --dom="$DOMAIN" --service=wp --action=down
 			demyx wp --dom="$DOMAIN" --service=wp --action=up
 		elif [ "$DEV" = check ] && [ -n "$ALL" ]; then
 			cd "$APPS" || exit
@@ -994,13 +994,16 @@ elif [ "$1" = "wp" ]; then
 			cd "$APPS" || exit
 			for i in *
 			do
+				WP_CHECK=$(grep -rs "WP_ID" "$APPS"/"$i"/.env)
 				echo -e "\e[31m[CRITICAL]\e[39m Removing $i"
-				if [ -f "$APPS"/"$i"/data/wp-config.php ]; then
+				if [ -n "$WP_CHECK" ]; then
 					source "$APPS"/"$i"/.env
 					cd "$APPS"/"$i"
 					docker-compose stop
+					sleep 5
 					docker-compose rm -f
-					rm "$LOGS"/"$i"*.log
+					sleep 5
+					[[ -f "$LOGS"/"$i".access.log ]] && rm "$LOGS"/"$i".access.log && rm "$LOGS"/"$i".error.log
 					docker volume rm wp_"$WP_ID" db_"$WP_ID"
 					cd .. && rm -rf "$i"
 				fi
@@ -1013,7 +1016,9 @@ elif [ "$1" = "wp" ]; then
 				echo -e "\e[31m[CRITICAL]\e[39m Removing $DOMAIN"
 				cd "$CONTAINER_PATH"
 				docker-compose stop
+				sleep 5
 				docker-compose rm -f
+				sleep 5
 				docker volume rm wp_"$WP_ID" db_"$WP_ID"
 				cd .. && rm -rf "$DOMAIN"
 				[[ -f "$LOGS"/"$DOMAIN".access.log ]] && rm "$LOGS"/"$DOMAIN".access.log && rm "$LOGS"/"$DOMAIN".error.log
@@ -1022,7 +1027,8 @@ elif [ "$1" = "wp" ]; then
 			fi
 		fi
 	elif [ -n "$RUN" ]; then
-		[[ -d $CONTAINER_PATH ]] && demyx wp --rm="$DOMAIN"
+		[[ -d $CONTAINER_PATH ]] && demyx wp --rm="$DOMAIN" && sleep 10
+
 		echo -e "\e[34m[INFO]\e[39m Creating $DOMAIN"
 
 		mkdir -p "$CONTAINER_PATH"/conf
@@ -1041,7 +1047,7 @@ elif [ "$1" = "wp" ]; then
 		cd "$CONTAINER_PATH" || exit
 		docker-compose up -d --remove-orphans
 
-		sleep 5
+		sleep 10
 
 		if [ -n "$ADMIN_EMAIL" ]; then
 			WORDPRESS_EMAIL="$ADMIN_EMAIL"
