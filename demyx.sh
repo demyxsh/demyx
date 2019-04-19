@@ -698,6 +698,7 @@ elif [ "$1" = "wp" ]; then
 		echo "Password: $WORDPRESS_USER_PASSWORD"
 		echo
 	elif [ -n "$DEV" ] && [ -z "$RUN" ] && [ -z "$CLONE" ]; then
+		die '--dev is disabled for now'
 		WP_CHECK=$(grep -rs "WP_ID" "$CONTAINER_PATH"/.env)
 		if [ "$DEV" = on ]; then
 			source "$CONTAINER_PATH"/.env
@@ -1049,8 +1050,6 @@ elif [ "$1" = "wp" ]; then
 
 		cd "$CONTAINER_PATH" || exit
 		docker-compose up -d --remove-orphans
-
-		sleep 10
 
 		if [ -n "$ADMIN_EMAIL" ]; then
 			WORDPRESS_EMAIL="$ADMIN_EMAIL"
