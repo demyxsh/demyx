@@ -557,20 +557,25 @@ elif [ "$1" = "wp" ]; then
 			--network container:"$WP" \
 			wordpress:cli option update rt_wp_nginx_helper_options '{"enable_purge":"1","cache_method":"enable_fastcgi","purge_method":"get_request","enable_map":null,"enable_log":null,"log_level":"INFO","log_filesize":"5","enable_stamp":null,"purge_homepage_on_edit":"1","purge_homepage_on_del":"1","purge_archive_on_edit":"1","purge_archive_on_del":"1","purge_archive_on_new_comment":"1","purge_archive_on_deleted_comment":"1","purge_page_on_mod":"1","purge_page_on_new_comment":"1","purge_page_on_deleted_comment":"1","redis_hostname":"127.0.0.1","redis_port":"6379","redis_prefix":"nginx-cache:","purge_url":"","redis_enabled_by_constant":0}' --format=json
 
-			if [ -z "$RUN" ]; then
-				bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "on" "$FORCE"
-				bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "on" "$FORCE"
-			fi
+			docker exec -it "$WP" apk add --no-cache --update --quiet vim
+			docker exec -it "$WP" vim -esnc '%s/#include \/etc\/nginx\/cache\/http.conf;/include \/etc\/nginx\/cache\/http.conf;/g|:wq' /etc/nginx/nginx.conf
+			docker exec -it "$WP" vim -esnc '%s/#include \/etc\/nginx\/cache\/server.conf;/include \/etc\/nginx\/cache\/server.conf;/g|:wq' /etc/nginx/nginx.conf
+			docker exec -it "$WP" vim -esnc '%s/#include \/etc\/nginx\/cache\/location.conf;/include \/etc\/nginx\/cache\/location.conf;/g|:wq' /etc/nginx/nginx.conf
+
+			bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "on" "$FORCE"
 		elif [ "$CACHE" = off ]; then
 			echo -e "\e[34m[INFO]\e[39m Turning off FastCGI Cache for $DOMAIN"
 			docker run -it --rm \
 			--volumes-from "$WP" \
 			--network container:"$WP" \
 			wordpress:cli plugin deactivate nginx-helper
-			if [ -z "$RUN" ]; then
-				bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "off" "$FORCE"
-				bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "off" "$FORCE"
-			fi
+
+			docker exec -it "$WP" vim -esnc '%s/include \/etc\/nginx\/cache\/http.conf;/#include \/etc\/nginx\/cache\/http.conf;/g|:wq' /etc/nginx/nginx.conf
+			docker exec -it "$WP" vim -esnc '%s/include \/etc\/nginx\/cache\/server.conf;/#include \/etc\/nginx\/cache\/server.conf;/g|:wq' /etc/nginx/nginx.conf
+			docker exec -it "$WP" vim -esnc '%s/include \/etc\/nginx\/cache\/location.conf;/#include \/etc\/nginx\/cache\/location.conf;/g|:wq' /etc/nginx/nginx.conf
+			docker exec -it "$WP" apk del vim --quiet
+
+			bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "off" "$FORCE"
 		elif [ "$CACHE" = check ]; then
 			cd "$APPS" || exit
 			for i in *
@@ -580,12 +585,13 @@ elif [ "$1" = "wp" ]; then
 				[[ -n "$CHECK" ]] && echo "$i"
 			done
 		fi
-		[[ "$CACHE" != check ]] && demyx wp --dom="$DOMAIN" --service=wp --action=restart
+		[[ "$CACHE" != check ]] && demyx wp --dom="$DOMAIN" --cli='nginx -s reload'
 	elif [ -n "$CDN" ] && [ -z "$RUN" ]; then
 		WP_CHECK=$(grep -rs "WP_ID" "$CONTAINER_PATH"/.env)
 		[[ -z "$WP_CHECK" ]] && die 'Not a WordPress site.'
 		[[ -f "$CONTAINER_PATH"/.env ]] && [[ -z "$RUN" ]] && source "$CONTAINER_PATH"/.env
 		if [ "$CDN" = on ]; then
+			echo -e "\e[34m[INFO]\e[39m Turning on CDN for $DOMAIN"
 			CDN_ENABLER_CHECK=$(docker exec -it "$WP" sh -c '[[ -d wp-content/plugins/cdn-enabler ]] && echo 1')
 			CDN_OPTION_CHECK=$(demyx wp --dom="$DOMAIN" --wpcli='option get cdn_enabler' | grep "Could not get")
 			if [ -n "$CDN_ENABLER_CHECK" ]; then
@@ -604,6 +610,7 @@ elif [ "$1" = "wp" ]; then
 			--network container:"$WP" \
 			wordpress:cli option update cdn_enabler "{\"url\":\"https:\/\/cdn.staticaly.com\/img\/$DOMAIN\",\"dirs\":\"wp-content,wp-includes\",\"excludes\":\".3g2, .3gp, .aac, .aiff, .alac, .apk, .avi, .css, .doc, .docx, .flac, .flv, .h264, .js, .json, .m4v, .mkv, .mov, .mp3, .mp4, .mpeg, .mpg, .ogg, .pdf, .php, .rar, .rtf, .svg, .tex, .ttf, .txt, .wav, .wks, .wma, .wmv, .woff, .woff2, .wpd, .wps, .xml, .zip, wp-content\/plugins, wp-content\/themes\",\"relative\":1,\"https\":1,\"keycdn_api_key\":\"\",\"keycdn_zone_id\":0}" --format=json
 		elif [ "$CDN" = off ]; then
+			echo -e "\e[34m[INFO]\e[39m Turning off CDN for $DOMAIN"
 			docker run -it --rm \
 			--volumes-from "$WP" \
 			--network container:"$WP" \
