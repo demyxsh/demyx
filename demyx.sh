@@ -1019,7 +1019,7 @@ elif [ "$1" = "wp" ]; then
 		echo -e "\e[34m[INFO]\e[39m Restoring $DOMAIN"
 		cd "$APPS_BACKUP" || exit
 		tar -xzf "$DOMAIN".tgz
-		cp -R "$APPS_BACKUP"/"$DOMAIN" "$APPS"
+		mv "$APPS_BACKUP"/"$DOMAIN" "$APPS"
 		source "$CONTAINER_PATH"/.env
 		demyx wp --dom="$DOMAIN" --down
 		docker volume rm wp_"$WP_ID" db_"$WP_ID"
@@ -1033,9 +1033,10 @@ elif [ "$1" = "wp" ]; then
 		--volumes-from restore_tmp \
 		--network container:restore_tmp \
 		wordpress:cli db import "$CONTAINER_NAME".sql
+		docker exec -it restore_tmp sh -c "rm /var/www/html/$CONTAINER_NAME.sql"
 		docker stop restore_tmp
-		cd .. && rm -rf "$CONTAINER_PATH"/backup "$APPS_BACKUP"/"$DOMAIN"
-		docker exec -it "$WP" sh -c "rm /var/www/html/$CONTAINER_NAME.sql"
+		cd .. && rm -rf "$CONTAINER_PATH"/backup
+		
 		[[ ! -f "$LOGS"/"$DOMAIN".access.log ]] && bash "$ETC"/functions/logs.sh "$DOMAIN" "$FORCE"
 		demyx wp --dom="$DOMAIN" --service=wp --action=up
 	elif [ -n "$REMOVE" ]; then
