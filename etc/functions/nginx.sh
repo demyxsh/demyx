@@ -4,7 +4,7 @@
 
 CONTAINER_PATH=$1
 DOMAIN=$2
-FORCE=$4
+FORCE=$3
 
 if [ -f "$CONTAINER_PATH"/conf/nginx.conf ]; then 
   NO_UPDATE=$(grep -r "AUTO GENERATED" "$CONTAINER_PATH"/conf/nginx.conf)

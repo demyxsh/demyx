@@ -970,9 +970,11 @@ elif [ "$1" = "wp" ]; then
 					DOMAIN=$i
 					CONTAINER_PATH=$APPS/$DOMAIN
 					CONTAINER_NAME=${DOMAIN//./_}
+					CACHE_CHECK=$(grep -rs "FASTCGI_CACHE=on" "$CONTAINER_PATH"/.env)
+					[[ -n "$CACHE_CHECK" ]] && CACHE=on
 					bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "$CACHE" "$FORCE"
 					bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
-					bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "" "$FORCE"
+					bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE"
 					bash "$ETC"/functions/php.sh "$CONTAINER_PATH" "$FORCE"
 					bash "$ETC"/functions/fpm.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE"
 					bash "$ETC"/functions/logs.sh "$DOMAIN" "$FORCE"
@@ -981,12 +983,14 @@ elif [ "$1" = "wp" ]; then
 			done
 		else
 			WP_CHECK=$(grep -rs "WP_ID" "$CONTAINER_PATH"/.env)
+			CACHE_CHECK=$(grep -rs "FASTCGI_CACHE=on" "$CONTAINER_PATH"/.env)
+			[[ -n "$CACHE_CHECK" ]] && CACHE=on
 			[[ -z "$WP_CHECK" ]] && die 'Not a WordPress app.'
 			[[ -z "$DOMAIN" ]] && die 'Domain is missing or add --all'
 			echo -e "\e[34m[INFO]\e[39m Refreshing $DOMAIN"
 			bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "$CACHE" "$FORCE"
 			bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
-			bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "" "$FORCE"
+			bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE"
 			bash "$ETC"/functions/php.sh "$CONTAINER_PATH" "$FORCE"
 			bash "$ETC"/functions/fpm.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE"
 			bash "$ETC"/functions/logs.sh "$DOMAIN" "$FORCE"
