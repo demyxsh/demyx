@@ -154,7 +154,7 @@ elif [ "$1" = "wp" ]; then
 				echo "  --pma           Enable phpmyadmin: pma.primary-domain.tld"
 				echo "                  Example: demyx wp --dom=domain.tld --pma, demyx wp --dom=domain.tld --pma=off"
 				echo
-				echo "  --port          Sets SFTP port for --dev"
+				echo "  --port          Sets SFTP port for --dev, defaults to 2222"
 				echo "                  Example: demyx wp --dom=domain.tld --dev --port=2022"
 				echo
 				echo "  --refresh       Regenerate all config files for a site; use with caution"

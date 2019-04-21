@@ -135,6 +135,9 @@ demyx wp -h
 --pma               Enable phpmyadmin: pma.prmary-domain.tld
                     Example: demyx wp --dom=domain.tld --pma, demyx wp --dom=domain.tld --pma=off
 
+--port              Sets SFTP port for --dev, defaults to 2222
+                    Example: demyx wp --dom=domain.tld --dev --port=2022
+
 --refresh           Regenerate all config files for a site; use with caution
                     Example: demyx wp --refresh=domain.tld --ssl, demyx wp --dom=domain.tld --refresh --ssl
 
