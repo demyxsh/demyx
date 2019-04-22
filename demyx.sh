@@ -465,7 +465,7 @@ elif [ "$1" = "wp" ]; then
 			for i in *
 			do
 				WP_CHECK=$(grep -rs "WP_ID" "$APPS"/"$i"/.env)
-				[[ -n "$WP_CHECK" ]] && cd "$APPS"/"$i" && docker-compose up -d
+				[[ -n "$WP_CHECK" ]] && cd "$APPS"/"$i" && docker-compose up -d --remove-orphans
 				sleep 5
 			done
 		elif [ "$ACTION" = down ] && [ -n "$SERVICE" ] && [ -n "$DOMAIN" ]; then
