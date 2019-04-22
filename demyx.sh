@@ -466,28 +466,24 @@ elif [ "$1" = "wp" ]; then
 			do
 				WP_CHECK=$(grep -rs "WP_ID" "$APPS"/"$i"/.env)
 				[[ -n "$WP_CHECK" ]] && cd "$APPS"/"$i" && docker-compose up -d --remove-orphans
-				sleep 5
 			done
 		elif [ "$ACTION" = down ] && [ -n "$SERVICE" ] && [ -n "$DOMAIN" ]; then
 			if [ "$SERVICE" = wp ]; then
 				docker-compose stop wp_"${WP_ID}"
-				sleep 5
 				docker-compose rm -f wp_"${WP_ID}"
 			else
 				docker-compose stop db_"${WP_ID}"
-				sleep 5
 				docker-compose rm -f db_"${WP_ID}"
 			fi
 		elif [ "$ACTION" = down ] && [ -z "$ALL" ] && [ -n "$DOMAIN" ]; then
 			docker-compose stop
-			sleep 5
 			docker-compose rm -f
 		elif [ "$ACTION" = down ] && [ -n "$ALL" ]; then
 			cd "$APPS" || exit
 			for i in *
 			do
 				WP_CHECK=$(grep -rs "WP_ID" "$APPS"/"$i"/.env)
-				[[ -n "$WP_CHECK" ]] && cd "$APPS"/"$i" && docker-compose stop && sleep 5 && docker-compose rm -f && sleep 5
+				[[ -n "$WP_CHECK" ]] && cd "$APPS"/"$i" && docker-compose stop && docker-compose rm -f
 			done
 		elif [ -n "$ACTION" ] && [ -z "$SERVICE" ] && [ -n "$DOMAIN" ]; then
 			docker-compose "$ACTION"    
