@@ -730,8 +730,10 @@ elif [ "$1" = "wp" ]; then
 
 		if [ "$DEV" = on ]; then
 			source "$CONTAINER_PATH"/.env
-			DEV_MODE_CHECK=$(grep -r "sendfile off" "$CONTAINER_PATH"/conf/nginx.conf)
-			[[ -n "$DEV_MODE_CHECK" ]] && die "Development mode is already turned on for $DOMAIN"
+			if [ -z "$FORCE" ]; then 
+				DEV_MODE_CHECK=$(grep "sendfile off" "$CONTAINER_PATH"/conf/nginx.conf)
+				[[ -n "$DEV_MODE_CHECK" ]] && die "Development mode is already turned on for $DOMAIN"
+			fi
 			[[ -n "$SSH_CONTAINER_CHECK" ]] && docker stop ssh
 
 			echo -e "\e[34m[INFO]\e[39m Turning on development mode for $DOMAIN"
@@ -758,9 +760,10 @@ elif [ "$1" = "wp" ]; then
 			echo
 		elif [ "$DEV" = off ]; then
 			source "$CONTAINER_PATH"/.env
-			DEV_MODE_CHECK=$(grep -r "sendfile on" "$CONTAINER_PATH"/conf/nginx.conf)
-			[[ -n "$DEV_MODE_CHECK" ]] && die "Development mode is already turned off for $DOMAIN"
-
+			if [ -z "$FORCE" ]; then
+				DEV_MODE_CHECK=$(grep "sendfile on" "$CONTAINER_PATH"/conf/nginx.conf)
+				[[ -n "$DEV_MODE_CHECK" ]] && die "Development mode is already turned off for $DOMAIN"
+			fi
 			echo -e "\e[34m[INFO]\e[39m Turning off development mode for $DOMAIN"
 			
 			docker exec -it "$WP" sh -c "printf ',s/sendfile off/sendfile on/g\nw\n' | ed /etc/nginx/nginx.conf; \
