@@ -753,7 +753,7 @@ elif [ "$1" = "wp" ]; then
 			demyx/ssh
 
 			echo
-			echo "SFTP Address: $DOMAIN"
+			echo "SFTP Address: $PRIMARY_DOMAIN"
 			echo "SFTP User: www-data"
 			echo "SFTP Port: $PORT"
 			echo
