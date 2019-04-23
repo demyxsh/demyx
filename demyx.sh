@@ -736,12 +736,11 @@ elif [ "$1" = "wp" ]; then
 
 			echo -e "\e[34m[INFO]\e[39m Turning on development mode for $DOMAIN"
 			
-			docker exec -it "$WP" apk add --no-cache --update --quiet vim
-			docker exec -it "$WP" vim -esnc '%s/sendfile on/sendfile off/g|:wq' /etc/nginx/nginx.conf
-			docker exec -it "$WP" nginx -s reload
-			docker exec -it "$WP" mv /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini /
-			docker exec -it "$WP" pkill php-fpm
-			docker exec -it "$WP" php-fpm -D 
+			docker exec -it "$WP" sh -c "printf ',s/sendfile on/sendfile off/g\nw\n' | ed /etc/nginx/nginx.conf; \
+			nginx -s reload; \
+			mv /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini /; \
+			pkill php-fpm; \
+			php-fpm -D"
 			
 			[[ -z "$PORT" ]] && PORT=2222
 
@@ -764,12 +763,11 @@ elif [ "$1" = "wp" ]; then
 
 			echo -e "\e[34m[INFO]\e[39m Turning off development mode for $DOMAIN"
 			
-			docker exec -it "$WP" vim -esnc '%s/sendfile off/sendfile on/g|:wq' /etc/nginx/nginx.conf
-			docker exec -it "$WP" nginx -s reload
-			docker exec -it "$WP" mv /docker-php-ext-opcache.ini /usr/local/etc/php/conf.d
-			docker exec -it "$WP" pkill php-fpm
-			docker exec -it "$WP" php-fpm -D 
-			docker exec -it "$WP" apk del vim --quiet
+			docker exec -it "$WP" sh -c "printf ',s/sendfile off/sendfile on/g\nw\n' | ed /etc/nginx/nginx.conf; \
+			nginx -s reload; \
+			mv /docker-php-ext-opcache.ini /usr/local/etc/php/conf.d; \
+			pkill php-fpm; \
+			php-fpm -D"
 			
 			docker stop ssh
 		elif [ "$DEV" = check ] && [ -n "$ALL" ]; then
