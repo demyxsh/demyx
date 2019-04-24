@@ -995,7 +995,7 @@ elif [ "$1" = "wp" ]; then
 					[[ -z "$NO_RESTART" ]] && demyx wp --dom="$i" --down
 					bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "$CACHE" "$FORCE"
 					bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
-					bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE"
+					bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE" "$CACHE"
 					bash "$ETC"/functions/php.sh "$CONTAINER_PATH" "$FORCE"
 					bash "$ETC"/functions/fpm.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE"
 					bash "$ETC"/functions/logs.sh "$DOMAIN" "$FORCE"
@@ -1012,7 +1012,7 @@ elif [ "$1" = "wp" ]; then
 			[[ -z "$NO_RESTART" ]] && demyx wp --dom="$DOMAIN" --down
 			bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "$CACHE" "$FORCE"
 			bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
-			bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE"
+			bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE" "$CACHE"
 			bash "$ETC"/functions/php.sh "$CONTAINER_PATH" "$FORCE"
 			bash "$ETC"/functions/fpm.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE"
 			bash "$ETC"/functions/logs.sh "$DOMAIN" "$FORCE"
