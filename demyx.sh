@@ -157,6 +157,9 @@ elif [ "$1" = "wp" ]; then
 				echo "  --port          Sets SFTP port for --dev, defaults to 2222"
 				echo "                  Example: demyx wp --dom=domain.tld --dev --port=2022"
 				echo
+				echo "  --rate-limit    Enable/disable rate limit requests for NGINX"
+				echo "                  Example: demyx wp --dom=domain.tld --rate-limit, demyx wp --dom=domain.tld --rate-limit=off"
+				echo
 				echo "  --refresh       Regenerate all config files for a site; use with caution"
 				echo "                  Example: demyx wp --refresh=domain.tld --ssl, demyx wp --dom=domain.tld --refresh --ssl"
 				echo
@@ -332,6 +335,15 @@ elif [ "$1" = "wp" ]; then
 				;;
 			--port=)         
 				die '"--port" cannot be empty.'
+				;;
+			--rate-limit|--rate-limit=on)
+				RATE_LIMIT=on
+				;;
+			--rate-limit=off)
+				RATE_LIMIT=off
+				;;
+			--rate-limit=)         
+				die '"--rate-limit" cannot be empty.'
 				;;
 			--refresh)
 				REFRESH=1
@@ -952,6 +964,21 @@ elif [ "$1" = "wp" ]; then
 		else
 			docker stop phpmyadmin && docker rm phpmyadmin
 		fi
+	elif [ -n "$RATE_LIMIT" ]; then
+		WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env)
+		[[ -z "$WP_CHECK" ]] && die 'Not a WordPress app.'
+
+		source "$CONTAINER_PATH"/.env
+
+		if [ "$RATE_LIMIT" = on ]; then
+			echo -e "\e[34m[INFO]\e[39m Turning on rate limiting for $DOMAIN"
+			docker exec -it "$WP" sh -c "printf ',s/#limit_req/limit_req/g\nw\n' | ed /etc/nginx/nginx.conf"
+		elif [ "$RATE_LIMIT" = off ]; then
+			echo -e "\e[34m[INFO]\e[39m Turning off rate limiting for $DOMAIN"
+			docker exec -it "$WP" sh -c "printf ',s/limit_req/#limit_req/g\nw\n' | ed /etc/nginx/nginx.conf"
+		fi
+
+		docker exec -it "$WP" sh -c "nginx -s reload"
 	elif [ -n "$REFRESH" ]; then
 		if [ -n "$ALL" ]; then
 			cd "$APPS" || exit

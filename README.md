@@ -138,6 +138,9 @@ demyx wp -h
 --port              Sets SFTP port for --dev, defaults to 2222
                     Example: demyx wp --dom=domain.tld --dev --port=2022
 
+--rate-limit        Enable/disable rate limit requests for NGINX
+                    Example: demyx wp --dom=domain.tld --rate-limit, demyx wp --dom=domain.tld --rate-limit=off
+
 --refresh           Regenerate all config files for a site; use with caution
                     Example: demyx wp --refresh=domain.tld --ssl, demyx wp --dom=domain.tld --refresh --ssl
 
