@@ -1057,10 +1057,8 @@ elif [ "$1" = "wp" ]; then
 				if [ -n "$WP_CHECK" ]; then
 					source "$APPS"/"$i"/.env
 					cd "$APPS"/"$i"
-					docker-compose stop
-					sleep 5
+					docker-compose kill
 					docker-compose rm -f
-					sleep 5
 					[[ -f "$LOGS"/"$i".access.log ]] && rm "$LOGS"/"$i".access.log && rm "$LOGS"/"$i".error.log
 					docker volume rm wp_"$WP_ID" db_"$WP_ID"
 					cd .. && rm -rf "$i"
@@ -1073,10 +1071,8 @@ elif [ "$1" = "wp" ]; then
 				source "$CONTAINER_PATH"/.env
 				echo -e "\e[31m[CRITICAL]\e[39m Removing $DOMAIN"
 				cd "$CONTAINER_PATH"
-				docker-compose stop
-				sleep 5
+				docker-compose kill
 				docker-compose rm -f
-				sleep 5
 				docker volume rm wp_"$WP_ID" db_"$WP_ID"
 				cd .. && rm -rf "$DOMAIN"
 				[[ -f "$LOGS"/"$DOMAIN".access.log ]] && rm "$LOGS"/"$DOMAIN".access.log && rm "$LOGS"/"$DOMAIN".error.log
