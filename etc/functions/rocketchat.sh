@@ -20,7 +20,7 @@ services:
     image: rocketchat/rocket.chat:latest
     restart: unless-stopped
     volumes:
-      - ./uploads:/app/uploads
+      - rocketchat:/app/uploads
     environment:
       - MONGO_URL=mongodb://mongo:27017/rocketchat
       - MONGO_OPLOG_URL=mongodb://mongo:27017/local
@@ -44,8 +44,8 @@ services:
     image: mongo:4.0
     restart: unless-stopped
     volumes:
-     - ./data/db:/data/db
-     - ./data/dump:/dump
+     - rocketchat_db:/data/db
+     - rocketchat_dump:/dump
     command: mongod --smallfiles --oplogSize 128 --replSet rs0 --storageEngine=mmapv1
     networks:
       - traefik
@@ -56,6 +56,13 @@ services:
       - mongo
     networks:
       - traefik
+volumes:
+  rocketchat:
+    name: rocketchat
+  rocketchat_db:
+    name: rocketchat_db
+  rocketchat_dump:
+    name: rocketchat_dump
 networks:
   traefik:
     external: true

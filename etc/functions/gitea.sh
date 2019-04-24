@@ -37,7 +37,7 @@ services:
       - DB_PASSWD=\$DB_PASSWD
     restart: unless-stopped
     volumes:
-      - ./data:/data
+      - gitea:/data
       - /home/git/.ssh:/data/git/.ssh
     ports:
       - "127.0.0.1:2222:22"
@@ -56,7 +56,7 @@ services:
     image: demyx/mariadb
     restart: unless-stopped
     volumes:
-      - ./db:/var/lib/mysql
+      - gitea_db:/var/lib/mysql
     environment:
       MARIADB_DATABASE: \$DB_NAME
       MARIADB_USERNAME: \$DB_USER
@@ -64,6 +64,11 @@ services:
       MARIADB_ROOT_PASSWORD: \$MARIADB_ROOT_PASSWORD
     networks:
       - traefik
+volumes:
+  gitea:
+    name: gitea
+  gitea_db:
+    name: gitea_db
 networks:
   traefik:
     name: traefik
