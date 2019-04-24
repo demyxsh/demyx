@@ -992,6 +992,7 @@ elif [ "$1" = "wp" ]; then
 					CONTAINER_NAME=${DOMAIN//./_}
 					CACHE_CHECK=$(grep -s "FASTCGI_CACHE=on" "$CONTAINER_PATH"/.env)
 					[[ -n "$CACHE_CHECK" ]] && CACHE=on
+					[[ -z "$NO_RESTART" ]] && demyx wp --dom="$i" --down
 					bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "$CACHE" "$FORCE"
 					bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
 					bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE"
@@ -1008,6 +1009,7 @@ elif [ "$1" = "wp" ]; then
 			[[ -z "$WP_CHECK" ]] && die 'Not a WordPress app.'
 			[[ -z "$DOMAIN" ]] && die 'Domain is missing or add --all'
 			echo -e "\e[34m[INFO]\e[39m Refreshing $DOMAIN"
+			[[ -z "$NO_RESTART" ]] && demyx wp --dom="$DOMAIN" --down
 			bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "$CACHE" "$FORCE"
 			bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
 			bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE"
