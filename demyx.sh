@@ -722,7 +722,7 @@ elif [ "$1" = "wp" ]; then
 			demyx/ssh
 
 			docker cp /home/"$USER"/.ssh/authorized_keys ssh:/home/www-data/.ssh/authorized_keys
-			docker exec -it ssh chown -R www-data:www-data /home/www-data
+			docker exec -it sh -c "ssh chown -R www-data:www-data /home/www-data"
 			docker stop ssh
 		fi
 
@@ -1093,6 +1093,9 @@ elif [ "$1" = "wp" ]; then
 		bash "$ETC"/functions/logs.sh "$DOMAIN" "$FORCE"
 
 		source "$CONTAINER_PATH"/.env
+
+		docker volume create db_"$WP_ID" 
+		docker volume create wp_"$WP_ID"
 
 		cd "$CONTAINER_PATH" || exit
 		docker-compose up -d --remove-orphans

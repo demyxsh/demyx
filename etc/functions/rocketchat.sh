@@ -13,7 +13,7 @@ CONTAINER_PATH=$CONTAINER_PATH
 EOF
 
 cat > "$CONTAINER_PATH"/docker-compose.yml <<-EOF
-version: '2'
+version: '3.7'
 
 services:
   rocketchat:
