@@ -129,6 +129,6 @@ http {
 }
 EOF
 
-[[ -n "$CACHE" ]] && sed -i "s|#include|include|g" "$CONTAINER_PATH"/conf/nginx.conf
+[[ "$CACHE" = on ]] && sed -i "s|#include|include|g" "$CONTAINER_PATH"/conf/nginx.conf
 
 echo -e "\e[32m[SUCCESS]\e[39m Generated nginx.conf"
