@@ -464,7 +464,7 @@ elif [ "$1" = "wp" ]; then
 			cd "$APPS" || exit
 			for i in *
 			do
-				WP_CHECK=$(grep -rs "WP_ID" "$APPS"/"$i"/.env)
+				WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env)
 				[[ -n "$WP_CHECK" ]] && cd "$APPS"/"$i" && docker-compose up -d --remove-orphans
 			done
 		elif [ "$ACTION" = down ] && [ -n "$SERVICE" ] && [ -n "$DOMAIN" ]; then
@@ -482,7 +482,7 @@ elif [ "$1" = "wp" ]; then
 			cd "$APPS" || exit
 			for i in *
 			do
-				WP_CHECK=$(grep -rs "WP_ID" "$APPS"/"$i"/.env)
+				WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env)
 				[[ -n "$WP_CHECK" ]] && cd "$APPS"/"$i" && docker-compose stop && docker-compose rm -f
 			done
 		elif [ -n "$ACTION" ] && [ -z "$SERVICE" ] && [ -n "$DOMAIN" ]; then
@@ -505,7 +505,7 @@ elif [ "$1" = "wp" ]; then
 		if [ -n "$ALL" ]; then
 			for i in *
 			do
-				WP_CHECK=$(grep -rs "WP_ID" "$APPS"/"$i"/.env)
+				WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env)
 				if [ -n "$WP_CHECK" ]; then
 					echo -e "\e[34m[INFO]\e[39m Backing up $i"
 					source "$i"/.env
@@ -518,7 +518,7 @@ elif [ "$1" = "wp" ]; then
 				fi
 			done
 		else
-			WP_CHECK=$(grep -rs "WP_ID" "$CONTAINER_PATH"/.env)
+			WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env)
 			[[ -z "$WP_CHECK" ]] && die 'Not a WordPress app.'
 			echo -e "\e[34m[INFO]\e[39m Backing up $DOMAIN"
 			source "$CONTAINER_PATH"/.env
@@ -530,7 +530,7 @@ elif [ "$1" = "wp" ]; then
 			rm -rf "$CONTAINER_PATH"/backup
 		fi
 	elif [ -n "$CACHE" ] && [ -z "$RUN" ]; then
-		WP_CHECK=$(grep -rs "WP_ID" "$CONTAINER_PATH"/.env)
+		WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env)
 		[[ -z "$WP_CHECK" ]] && [[ "$CACHE" != check ]] && die 'Not a WordPress site.'
 		[[ -f "$CONTAINER_PATH"/.env ]] && [[ -z "$RUN" ]] && source "$CONTAINER_PATH"/.env
 		if [ "$CACHE" = on ]; then
@@ -553,10 +553,9 @@ elif [ "$1" = "wp" ]; then
 			--network container:"$WP" \
 			wordpress:cli option update rt_wp_nginx_helper_options '{"enable_purge":"1","cache_method":"enable_fastcgi","purge_method":"get_request","enable_map":null,"enable_log":null,"log_level":"INFO","log_filesize":"5","enable_stamp":null,"purge_homepage_on_edit":"1","purge_homepage_on_del":"1","purge_archive_on_edit":"1","purge_archive_on_del":"1","purge_archive_on_new_comment":"1","purge_archive_on_deleted_comment":"1","purge_page_on_mod":"1","purge_page_on_new_comment":"1","purge_page_on_deleted_comment":"1","redis_hostname":"127.0.0.1","redis_port":"6379","redis_prefix":"nginx-cache:","purge_url":"","redis_enabled_by_constant":0}' --format=json
 
-			docker exec -it "$WP" apk add --no-cache --update --quiet vim
-			docker exec -it "$WP" vim -esnc '%s/#include \/etc\/nginx\/cache\/http.conf;/include \/etc\/nginx\/cache\/http.conf;/g|:wq' /etc/nginx/nginx.conf
-			docker exec -it "$WP" vim -esnc '%s/#include \/etc\/nginx\/cache\/server.conf;/include \/etc\/nginx\/cache\/server.conf;/g|:wq' /etc/nginx/nginx.conf
-			docker exec -it "$WP" vim -esnc '%s/#include \/etc\/nginx\/cache\/location.conf;/include \/etc\/nginx\/cache\/location.conf;/g|:wq' /etc/nginx/nginx.conf
+			docker exec -it "$WP" sh -c "printf ',s/#include \/etc\/nginx\/cache\/http.conf;/include \/etc\/nginx\/cache\/http.conf;/g\nw\n' | ed /etc/nginx/nginx.conf; \
+			printf ',s/#include \/etc\/nginx\/cache\/server.conf;/include \/etc\/nginx\/cache\/server.conf;/g\nw\n' | ed /etc/nginx/nginx.conf; \
+			printf ',s/#include \/etc\/nginx\/cache\/location.conf;/include \/etc\/nginx\/cache\/location.conf;/g\nw\n' | ed /etc/nginx/nginx.conf"
 
 			bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "on" "$FORCE"
 		elif [ "$CACHE" = off ]; then
@@ -566,10 +565,9 @@ elif [ "$1" = "wp" ]; then
 			--network container:"$WP" \
 			wordpress:cli plugin deactivate nginx-helper
 
-			docker exec -it "$WP" vim -esnc '%s/include \/etc\/nginx\/cache\/http.conf;/#include \/etc\/nginx\/cache\/http.conf;/g|:wq' /etc/nginx/nginx.conf
-			docker exec -it "$WP" vim -esnc '%s/include \/etc\/nginx\/cache\/server.conf;/#include \/etc\/nginx\/cache\/server.conf;/g|:wq' /etc/nginx/nginx.conf
-			docker exec -it "$WP" vim -esnc '%s/include \/etc\/nginx\/cache\/location.conf;/#include \/etc\/nginx\/cache\/location.conf;/g|:wq' /etc/nginx/nginx.conf
-			docker exec -it "$WP" apk del vim --quiet
+			docker exec -it "$WP" sh -c "printf ',s/include \/etc\/nginx\/cache\/http.conf;/#include \/etc\/nginx\/cache\/http.conf;/g\nw\n' | ed /etc/nginx/nginx.conf; \
+			printf ',s/include \/etc\/nginx\/cache\/server.conf;/#include \/etc\/nginx\/cache\/server.conf;/g\nw\n' | ed /etc/nginx/nginx.conf; \
+			printf ',s/include \/etc\/nginx\/cache\/location.conf;/#include \/etc\/nginx\/cache\/location.conf;/g\nw\n' | ed /etc/nginx/nginx.conf"
 
 			bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "off" "$FORCE"
 		elif [ "$CACHE" = check ]; then
@@ -577,13 +575,13 @@ elif [ "$1" = "wp" ]; then
 			for i in *
 			do
 				[[ -z "$WP_CHECK" ]] && continue
-				CHECK=$(grep -r "FASTCGI_CACHE=on" "$i"/.env)
+				CHECK=$(grep "FASTCGI_CACHE=on" "$i"/.env)
 				[[ -n "$CHECK" ]] && echo "$i"
 			done
 		fi
 		[[ "$CACHE" != check ]] && demyx wp --dom="$DOMAIN" --cli='nginx -s reload'
 	elif [ -n "$CDN" ] && [ -z "$RUN" ]; then
-		WP_CHECK=$(grep -rs "WP_ID" "$CONTAINER_PATH"/.env)
+		WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env)
 		[[ -z "$WP_CHECK" ]] && die 'Not a WordPress site.'
 		[[ -f "$CONTAINER_PATH"/.env ]] && [[ -z "$RUN" ]] && source "$CONTAINER_PATH"/.env
 		if [ "$CDN" = on ]; then
@@ -622,8 +620,8 @@ elif [ "$1" = "wp" ]; then
 		fi
 	elif [ -n "$CLONE" ]; then
 		CLONE_WP=$(cat "$APPS"/"$CLONE"/.env | awk -F= '/^WP/ { print $2 }' | sed '1d')
-		WP_CHECK=$(grep -rs "WP_ID" "$APPS"/"$CLONE"/.env)
-		DEV_MODE_CHECK=$(grep -r "sendfile off" /srv/demyx/apps/$CLONE/conf/nginx.conf)
+		WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$CLONE"/.env)
+		DEV_MODE_CHECK=$(grep "sendfile off" /srv/demyx/apps/$CLONE/conf/nginx.conf)
 		[[ -z "$WP_CHECK" ]] && die "$CLONE isn't a WordPress app"
 		[[ -n "$DEV_MODE_CHECK" ]] && die "$CLONE is currently in dev mode. Please disable it before cloning"
 		[[ -d "$CONTAINER_PATH" ]] && demyx wp --dom="$DOMAIN" --remove
@@ -712,7 +710,7 @@ elif [ "$1" = "wp" ]; then
 	elif [ -n "$DEV" ] && [ -z "$RUN" ] && [ -z "$CLONE" ]; then
 		SSH_CONTAINER_CHECK=$(docker ps -aq -f name=ssh)
 		SSH_VOLUME_CHECK=$(docker volume ls | grep ssh)
-		WP_CHECK=$(grep -rs "WP_ID" "$CONTAINER_PATH"/.env)
+		WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env)
 
 		if [ -z "$SSH_VOLUME_CHECK" ] && [ "$DEV" != check ]; then
 			echo -e "\e[34m[INFO]\e[39m SSH volume not found, creating now..."
@@ -777,7 +775,7 @@ elif [ "$1" = "wp" ]; then
 			cd "$APPS" || exit
 			for i in *
 			do
-				WP_CHECK=$(grep -rs "WP_ID" "$APPS"/"$i"/.env)
+				WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env)
 				[[ -n "$WP_CHECK" ]] && bash "$ETC"/functions/warnings.sh "$i"
 			done
 		elif [ "$DEV" = check ] && [ -n "$DOMAIN" ]; then
@@ -801,7 +799,7 @@ elif [ "$1" = "wp" ]; then
 		cd "$APPS" || exit
 		for i in *
 		do
-			WP_CHECK=$(grep -rs "WP_ID" "$APPS"/"$i"/.env)
+			WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env)
 			[[ -z "$WP_CHECK" ]] && continue
 			echo "$i"
 		done
@@ -843,8 +841,6 @@ elif [ "$1" = "wp" ]; then
 		--dbname="$WORDPRESS_DB_NAME" \
 		--dbuser="$WORDPRESS_DB_USER" \
 		--dbpass="$WORDPRESS_DB_PASSWORD"
-
-		sleep 5
 
 		sudo sed -i "s/$table_prefix = 'wp_';/$table_prefix = 'wp_';\n\n\/\/ If we're behind a proxy server and using HTTPS, we need to alert Wordpress of that fact\n\/\/ see also http:\/\/codex.wordpress.org\/Administration_Over_SSL#Using_a_Reverse_Proxy\nif (isset($\_SERVER['HTTP_X_FORWARDED_PROTO']) \&\& $\_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {\n\t$\_SERVER['HTTPS'] = 'on';\n}\n/g" "$CONTAINER_PATH"/data/wp-config.php
 
@@ -889,7 +885,7 @@ elif [ "$1" = "wp" ]; then
 		cd "$APPS" || exit
 		for i in *
 		do
-			WP_CHECK=$(grep -rs "WP_ID" "$APPS"/"$i"/.env)
+			WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env)
 			[[ -z "$WP_CHECK" ]] && continue
 			source "$APPS"/"$i"/.env
 			if [ ! -f "$APPS"/"$i"/.monitor ]; then
@@ -961,13 +957,13 @@ elif [ "$1" = "wp" ]; then
 			cd "$APPS" || exit
 			for i in *
 			do
-				WP_CHECK=$(grep -rs "WP_ID" "$APPS"/"$i"/.env)
+				WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env)
 				if [ -n "$WP_CHECK" ]; then 
 					echo -e "\e[34m[INFO]\e[39m Refreshing $i"
 					DOMAIN=$i
 					CONTAINER_PATH=$APPS/$DOMAIN
 					CONTAINER_NAME=${DOMAIN//./_}
-					CACHE_CHECK=$(grep -rs "FASTCGI_CACHE=on" "$CONTAINER_PATH"/.env)
+					CACHE_CHECK=$(grep -s "FASTCGI_CACHE=on" "$CONTAINER_PATH"/.env)
 					[[ -n "$CACHE_CHECK" ]] && CACHE=on
 					bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "$CACHE" "$FORCE"
 					bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
@@ -979,8 +975,8 @@ elif [ "$1" = "wp" ]; then
 				fi
 			done
 		else
-			WP_CHECK=$(grep -rs "WP_ID" "$CONTAINER_PATH"/.env)
-			CACHE_CHECK=$(grep -rs "FASTCGI_CACHE=on" "$CONTAINER_PATH"/.env)
+			WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env)
+			CACHE_CHECK=$(grep -s "FASTCGI_CACHE=on" "$CONTAINER_PATH"/.env)
 			[[ -n "$CACHE_CHECK" ]] && CACHE=on
 			[[ -z "$WP_CHECK" ]] && die 'Not a WordPress app.'
 			[[ -z "$DOMAIN" ]] && die 'Domain is missing or add --all'
@@ -998,13 +994,13 @@ elif [ "$1" = "wp" ]; then
 		if [ -n "$ALL" ]; then
 			for i in *
 			do
-				WP_CHECK=$(grep -rs "WP_ID" "$APPS"/"$i"/.env)
+				WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env)
 				[[ -z "$WP_CHECK" ]] && continue
 				cd "$APPS"/"$i"
 				docker-compose restart
 			done
 		else
-			WP_CHECK=$(grep -rs "WP_ID" "$CONTAINER_PATH"/.env)
+			WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env)
 			[[ -z "$WP_CHECK" ]] && die 'Not a WordPress app.'
 			[[ -z "$DOMAIN" ]] && die 'Domain is missing, use --dom or --restart=domain.tld'
 			cd "$CONTAINER_PATH"
@@ -1052,7 +1048,7 @@ elif [ "$1" = "wp" ]; then
 			cd "$APPS" || exit
 			for i in *
 			do
-				WP_CHECK=$(grep -rs "WP_ID" "$APPS"/"$i"/.env)
+				WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env)
 				echo -e "\e[31m[CRITICAL]\e[39m Removing $i"
 				if [ -n "$WP_CHECK" ]; then
 					source "$APPS"/"$i"/.env
@@ -1066,7 +1062,7 @@ elif [ "$1" = "wp" ]; then
 			done
 		else
 			[[ ! -f "$CONTAINER_PATH"/.env ]] && die "$DOMAIN is not a valid WordPress app or doesn't exist"
-			WP_CHECK=$(grep -rs "WP_ID" "$CONTAINER_PATH"/.env)
+			WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env)
 			if [ -n "$WP_CHECK" ]; then
 				source "$CONTAINER_PATH"/.env
 				echo -e "\e[31m[CRITICAL]\e[39m Removing $DOMAIN"
@@ -1081,7 +1077,7 @@ elif [ "$1" = "wp" ]; then
 			fi
 		fi
 	elif [ -n "$RUN" ]; then
-		[[ -d $CONTAINER_PATH ]] && demyx wp --rm="$DOMAIN" && sleep 10
+		[[ -d $CONTAINER_PATH ]] && demyx wp --rm="$DOMAIN"
 
 		echo -e "\e[34m[INFO]\e[39m Creating $DOMAIN"
 
@@ -1162,7 +1158,7 @@ elif [ "$1" = "wp" ]; then
 			for i in *
 			do
 				[[ ! -d "$APPS"/"$i"/db ]] && echo -e "\e[34m[INFO]\e[39m $i is already updated, continuing..." && continue
-				WP_CHECK=$(grep -rs "WP_ID" "$APPS"/"$i"/.env)
+				WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env)
 				if [ -n "$WP_CHECK" ]; then
 					echo -e "\e[34m[INFO]\e[39m Updating up $i"
 					source "$i"/.env
@@ -1175,7 +1171,6 @@ elif [ "$1" = "wp" ]; then
 
 					demyx wp --dom="$DOMAIN" --down
 					bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
-					sleep 5
 					demyx wp --dom="$DOMAIN" --up
 
 					sudo rm -rf "$CONTAINER_PATH"/data "$CONTAINER_PATH"/db
@@ -1184,7 +1179,7 @@ elif [ "$1" = "wp" ]; then
 		else
 			[[ ! -d "$APPS"/"$DOMAIN"/db ]] && die "$DOMAIN is already updated"
 			[[ "$UPDATE" != structure ]] && die '--update only takes structure as the value.'
-			WP_CHECK=$(grep -rs "WP_ID" "$CONTAINER_PATH"/.env)
+			WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env)
 			[[ -z "$WP_CHECK" ]] && die 'Not a WordPress app.'
 			echo -e "\e[34m[INFO]\e[39m Updating $DOMAIN"
 			source "$CONTAINER_PATH"/.env
@@ -1197,7 +1192,6 @@ elif [ "$1" = "wp" ]; then
 
 			demyx wp --dom="$DOMAIN" --down
 			bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
-			sleep 5
 			demyx wp --dom="$DOMAIN" --up
 
 			sudo rm -rf "$CONTAINER_PATH"/data "$CONTAINER_PATH"/db
@@ -1207,7 +1201,7 @@ elif [ "$1" = "wp" ]; then
 		if [ -n "$ALL" ]; then
 			for i in *
 			do
-				WP_CHECK=$(grep -rs "WP_ID" "$APPS"/"$i"/.env)
+				WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env)
 				if [ -n "$WP_CHECK" ]; then
 					source "$APPS"/"$i"/.env
 					docker run -it --rm \
@@ -1217,7 +1211,7 @@ elif [ "$1" = "wp" ]; then
 				fi
 			done
 		else
-			WP_CHECK=$(grep -rs "WP_ID" "$CONTAINER_PATH"/.env)
+			WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env)
 			[[ -z "$WP_CHECK" ]] && die 'Not a WordPress app.'
 			source "$CONTAINER_PATH"/.env
 			docker run -it --rm \
