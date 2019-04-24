@@ -466,12 +466,12 @@ elif [ "$1" = "wp" ]; then
 
 		if [ "$ACTION" = up ] && [ -n "$SERVICE" ] && [ -n "$DOMAIN" ]; then
 			if [ "$SERVICE" = wp ]; then
-				docker-compose up -d wp_"${WP_ID}"
+				docker-compose up -d --remove-orphans wp_"${WP_ID}"
 			else
-				docker-compose up -d db_"${WP_ID}"
+				docker-compose up -d --remove-orphans db_"${WP_ID}"
 			fi
 		elif [ "$ACTION" = up ] && [ -z "$ALL" ] && [ -n "$DOMAIN" ]; then
-			docker-compose up -d
+			docker-compose up -d --remove-orphans
 		elif [ "$ACTION" = up ] && [ -n "$ALL" ]; then
 			cd "$APPS" || exit
 			for i in *
