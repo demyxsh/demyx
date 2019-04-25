@@ -68,7 +68,7 @@ demyx stack -h
 --up                Shorthand for docker-compose up -d
                     Example: demyx stack --service=traefik --up, demyx stack --up
 
---service           Services: traefik, watchtower, logrotate
+--service           Services: traefik, ouroboros, logrotate
 ```
 
 demyx wp -h
@@ -195,7 +195,7 @@ demyx --dom=domain.tld --install=gitea
 # Resources
 * [Demyx](https://hub.docker.com/u/demyx) - NGINX, PHP, MariaDB, Logrotate, Utilities
 * [Traefik](https://hub.docker.com/_/traefik) - Reverse Proxy with Lets Encrypt SSL
-* [watchtower](https://hub.docker.com/r/v2tec/watchtower) - Auto pull new images from Docker Hub
+* [ouroboros](https://hub.docker.com/r/pyouroboros/ouroboros) - Auto pull new images from Docker Hub
 * [WordPress](https://hub.docker.com/_/wordpress) - Using their `wordpress:cli` image
 * [phpMyAdmin](https://hub.docker.com/r/phpmyadmin/phpmyadmin) - Web GUI used with Demyx stack
 * [ctop](https://ctop.sh) - htop but for containers!

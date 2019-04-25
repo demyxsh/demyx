@@ -31,7 +31,7 @@ if [ "$1" = "stack" ]; then
 				echo "  --up            Shorthand for docker-compose up -d"
 				echo "                  Example: demyx stack --service=traefik --up, demyx stack --up"
 				echo
-				echo "  --service       Services: traefik, watchtower, logrotate"
+				echo "  --service       Services: traefik, ouroboros, logrotate"
 				echo
 				exit 1
 				;;
