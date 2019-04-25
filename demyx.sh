@@ -73,9 +73,9 @@ if [ "$1" = "stack" ]; then
 	cd "$ETC" || exit
 	
 	if [ "$ACTION" = up ] && [ -n "$SERVICE" ]; then
-		docker-compose up -d "$SERVICE"
+		docker-compose up -d --remove-orphans "$SERVICE"
 	elif [ "$ACTION" = up ] && [ -z "$SERVICE" ]; then
-		docker-compose up -d
+		docker-compose up -d --remove-orphans
 	elif [ "$ACTION" = down ] && [ -n "$SERVICE" ]; then
 		docker-compose stop "$SERVICE" && docker-compose rm -f "$SERVICE"
 	elif [ "$ACTION" = down ] && [ -z "$SERVICE" ]; then
