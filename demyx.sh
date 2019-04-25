@@ -1,6 +1,7 @@
 #!/bin/bash
 # Demyx
 # https://github.com/demyxco/demyx
+trap 'exit' ERR
 
 die() {
 	printf '\n\e[31m[CRITICAL]\e[39m %s\n\n' "$1" >&2
@@ -482,7 +483,7 @@ elif [ "$1" = "wp" ]; then
 			cd "$APPS" || exit
 			for i in *
 			do
-				WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env)
+				WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env || true)
 				[[ -n "$WP_CHECK" ]] && cd "$APPS"/"$i" && docker-compose up -d --remove-orphans
 			done
 		elif [ "$ACTION" = down ] && [ -n "$SERVICE" ] && [ -n "$DOMAIN" ]; then
@@ -500,7 +501,7 @@ elif [ "$1" = "wp" ]; then
 			cd "$APPS" || exit
 			for i in *
 			do
-				WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env)
+				WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env || true)
 				[[ -n "$WP_CHECK" ]] && cd "$APPS"/"$i" && docker-compose stop && docker-compose rm -f
 			done
 		elif [ -n "$ACTION" ] && [ -z "$SERVICE" ] && [ -n "$DOMAIN" ]; then
@@ -523,7 +524,7 @@ elif [ "$1" = "wp" ]; then
 		if [ -n "$ALL" ]; then
 			for i in *
 			do
-				WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env)
+				WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env || true)
 				if [ -n "$WP_CHECK" ]; then
 					echo -e "\e[34m[INFO]\e[39m Backing up $i"
 					source "$i"/.env
@@ -536,7 +537,7 @@ elif [ "$1" = "wp" ]; then
 				fi
 			done
 		else
-			WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env)
+			WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env || true)
 			[[ -z "$WP_CHECK" ]] && die 'Not a WordPress app.'
 			echo -e "\e[34m[INFO]\e[39m Backing up $DOMAIN"
 			source "$CONTAINER_PATH"/.env
@@ -548,12 +549,12 @@ elif [ "$1" = "wp" ]; then
 			rm -rf "$CONTAINER_PATH"/backup
 		fi
 	elif [ -n "$CACHE" ] && [ -z "$RUN" ]; then
-		WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env)
+		WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env || true)
 		[[ -z "$WP_CHECK" ]] && [[ "$CACHE" != check ]] && die 'Not a WordPress site.'
 		[[ -f "$CONTAINER_PATH"/.env ]] && [[ -z "$RUN" ]] && source "$CONTAINER_PATH"/.env
 		if [ "$CACHE" = on ]; then
 			echo -e "\e[34m[INFO]\e[39m Turning on FastCGI Cache for $DOMAIN"
-			NGINX_HELPER_CHECK=$(docker exec -it "$WP" sh -c '[[ -d wp-content/plugins/nginx-helper ]] && echo 1')
+			NGINX_HELPER_CHECK=$(docker exec -it "$WP" sh -c 'ls wp-content/plugins' | grep nginx-helper || true)
 			if [ -n "$NGINX_HELPER_CHECK" ]; then
 				docker run -it --rm \
 				--volumes-from "$WP" \
@@ -593,19 +594,19 @@ elif [ "$1" = "wp" ]; then
 			for i in *
 			do
 				[[ -z "$WP_CHECK" ]] && continue
-				CHECK=$(grep "FASTCGI_CACHE=on" "$i"/.env)
+				CHECK=$(grep "FASTCGI_CACHE=on" "$i"/.env || true)
 				[[ -n "$CHECK" ]] && echo "$i"
 			done
 		fi
 		[[ "$CACHE" != check ]] && demyx wp --dom="$DOMAIN" --cli='nginx -s reload'
 	elif [ -n "$CDN" ] && [ -z "$RUN" ]; then
-		WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env)
+		WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env || true)
 		[[ -z "$WP_CHECK" ]] && die 'Not a WordPress site.'
 		[[ -f "$CONTAINER_PATH"/.env ]] && [[ -z "$RUN" ]] && source "$CONTAINER_PATH"/.env
 		if [ "$CDN" = on ]; then
 			echo -e "\e[34m[INFO]\e[39m Turning on CDN for $DOMAIN"
-			CDN_ENABLER_CHECK=$(docker exec -it "$WP" sh -c '[[ -d wp-content/plugins/cdn-enabler ]] && echo 1')
-			CDN_OPTION_CHECK=$(demyx wp --dom="$DOMAIN" --wpcli='option get cdn_enabler' | grep "Could not get")
+			CDN_ENABLER_CHECK=$(docker exec -it "$WP" sh -c 'ls wp-content/plugins' | grep cdn-enabler || true)
+			CDN_OPTION_CHECK=$(demyx wp --dom="$DOMAIN" --wpcli='option get cdn_enabler' | grep "Could not get" || true)
 			if [ -n "$CDN_ENABLER_CHECK" ]; then
 				docker run -it --rm \
 				--volumes-from "$WP" \
@@ -638,8 +639,8 @@ elif [ "$1" = "wp" ]; then
 		fi
 	elif [ -n "$CLONE" ]; then
 		CLONE_WP=$(cat "$APPS"/"$CLONE"/.env | awk -F= '/^WP/ { print $2 }' | sed '1d')
-		WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$CLONE"/.env)
-		DEV_MODE_CHECK=$(grep "sendfile off" /srv/demyx/apps/$CLONE/conf/nginx.conf)
+		WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$CLONE"/.env || true)
+		DEV_MODE_CHECK=$(grep "sendfile off" /srv/demyx/apps/$CLONE/conf/nginx.conf || true)
 		[[ -z "$WP_CHECK" ]] && die "$CLONE isn't a WordPress app"
 		[[ -n "$DEV_MODE_CHECK" ]] && die "$CLONE is currently in dev mode. Please disable it before cloning"
 		[[ -d "$CONTAINER_PATH" ]] && demyx wp --dom="$DOMAIN" --remove
@@ -727,8 +728,8 @@ elif [ "$1" = "wp" ]; then
 		echo
 	elif [ -n "$DEV" ] && [ -z "$RUN" ] && [ -z "$CLONE" ]; then
 		SSH_CONTAINER_CHECK=$(docker ps -aq -f name=ssh)
-		SSH_VOLUME_CHECK=$(docker volume ls | grep ssh)
-		WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env)
+		SSH_VOLUME_CHECK=$(docker volume ls | grep ssh || true)
+		WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env || true)
 
 		if [ -z "$SSH_VOLUME_CHECK" ] && [ "$DEV" != check ]; then
 			echo -e "\e[34m[INFO]\e[39m SSH volume not found, creating now..."
@@ -747,7 +748,7 @@ elif [ "$1" = "wp" ]; then
 		if [ "$DEV" = on ]; then
 			source "$CONTAINER_PATH"/.env
 			if [ -z "$FORCE" ]; then 
-				DEV_MODE_CHECK=$(grep "sendfile off" "$CONTAINER_PATH"/conf/nginx.conf)
+				DEV_MODE_CHECK=$(grep "sendfile off" "$CONTAINER_PATH"/conf/nginx.conf || true)
 				[[ -n "$DEV_MODE_CHECK" ]] && die "Development mode is already turned on for $DOMAIN"
 			fi
 			[[ -n "$SSH_CONTAINER_CHECK" ]] && docker stop ssh
@@ -777,7 +778,7 @@ elif [ "$1" = "wp" ]; then
 		elif [ "$DEV" = off ]; then
 			source "$CONTAINER_PATH"/.env
 			if [ -z "$FORCE" ]; then
-				DEV_MODE_CHECK=$(grep "sendfile on" "$CONTAINER_PATH"/conf/nginx.conf)
+				DEV_MODE_CHECK=$(grep "sendfile on" "$CONTAINER_PATH"/conf/nginx.conf || true)
 				[[ -n "$DEV_MODE_CHECK" ]] && die "Development mode is already turned off for $DOMAIN"
 			fi
 			echo -e "\e[34m[INFO]\e[39m Turning off development mode for $DOMAIN"
@@ -793,7 +794,7 @@ elif [ "$1" = "wp" ]; then
 			cd "$APPS" || exit
 			for i in *
 			do
-				WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env)
+				WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env || true)
 				[[ -n "$WP_CHECK" ]] && bash "$ETC"/functions/warnings.sh "$i"
 			done
 		elif [ "$DEV" = check ] && [ -n "$DOMAIN" ]; then
@@ -817,7 +818,7 @@ elif [ "$1" = "wp" ]; then
 		cd "$APPS" || exit
 		for i in *
 		do
-			WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env)
+			WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env || true)
 			[[ -z "$WP_CHECK" ]] && continue
 			echo "$i"
 		done
@@ -827,7 +828,7 @@ elif [ "$1" = "wp" ]; then
 		source "$CONTAINER_PATH"/.env
 		MONITOR_COUNT=0
 		[[ -f "$CONTAINER_PATH"/.monitor ]] && source "$CONTAINER_PATH"/.monitor
-		SSL_CHECK=$(grep "https" "$CONTAINER_PATH"/docker-compose.yml)
+		SSL_CHECK=$(grep -s "https" "$CONTAINER_PATH"/docker-compose.yml || true)
 		SSL_INFO=off
 
 		[[ -n "$SSL_CHECK" ]] && SSL_INFO=on
@@ -928,7 +929,7 @@ elif [ "$1" = "wp" ]; then
 		cd "$APPS" || exit
 		for i in *
 		do
-			WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env)
+			WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env || true)
 			[[ -z "$WP_CHECK" ]] && continue
 			source "$APPS"/"$i"/.env
 			if [ ! -f "$APPS"/"$i"/.monitor ]; then
@@ -996,7 +997,7 @@ elif [ "$1" = "wp" ]; then
 			docker stop phpmyadmin && docker rm phpmyadmin
 		fi
 	elif [ -n "$RATE_LIMIT" ]; then
-		WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env)
+		WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env || true)
 		[[ -z "$WP_CHECK" ]] && die 'Not a WordPress app.'
 
 		source "$CONTAINER_PATH"/.env
@@ -1015,13 +1016,13 @@ elif [ "$1" = "wp" ]; then
 			cd "$APPS" || exit
 			for i in *
 			do
-				WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env)
+				WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env || true)
 				if [ -n "$WP_CHECK" ]; then 
 					echo -e "\e[34m[INFO]\e[39m Refreshing $i"
 					DOMAIN=$i
 					CONTAINER_PATH=$APPS/$DOMAIN
 					CONTAINER_NAME=${DOMAIN//./_}
-					CACHE_CHECK=$(grep -s "FASTCGI_CACHE=on" "$CONTAINER_PATH"/.env)
+					CACHE_CHECK=$(grep -s "FASTCGI_CACHE=on" "$CONTAINER_PATH"/.env || true)
 					[[ -n "$CACHE_CHECK" ]] && CACHE=on
 					[[ -z "$NO_RESTART" ]] && demyx wp --dom="$i" --down
 					bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "$CACHE" "$FORCE"
@@ -1034,8 +1035,8 @@ elif [ "$1" = "wp" ]; then
 				fi
 			done
 		else
-			WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env)
-			CACHE_CHECK=$(grep -s "FASTCGI_CACHE=on" "$CONTAINER_PATH"/.env)
+			WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env || true)
+			CACHE_CHECK=$(grep -s "FASTCGI_CACHE=on" "$CONTAINER_PATH"/.env || true)
 			[[ -n "$CACHE_CHECK" ]] && CACHE=on
 			[[ -z "$WP_CHECK" ]] && die 'Not a WordPress app.'
 			[[ -z "$DOMAIN" ]] && die 'Domain is missing or add --all'
@@ -1054,13 +1055,13 @@ elif [ "$1" = "wp" ]; then
 		if [ -n "$ALL" ]; then
 			for i in *
 			do
-				WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env)
+				WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env || true)
 				[[ -z "$WP_CHECK" ]] && continue
 				cd "$APPS"/"$i"
 				docker-compose restart
 			done
 		else
-			WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env)
+			WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env || true)
 			[[ -z "$WP_CHECK" ]] && die 'Not a WordPress app.'
 			[[ -z "$DOMAIN" ]] && die 'Domain is missing, use --dom or --restart=domain.tld'
 			cd "$CONTAINER_PATH"
@@ -1108,7 +1109,7 @@ elif [ "$1" = "wp" ]; then
 			cd "$APPS" || exit
 			for i in *
 			do
-				WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env)
+				WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env || true)
 				echo -e "\e[31m[CRITICAL]\e[39m Removing $i"
 				if [ -n "$WP_CHECK" ]; then
 					source "$APPS"/"$i"/.env
@@ -1122,7 +1123,7 @@ elif [ "$1" = "wp" ]; then
 			done
 		else
 			[[ ! -f "$CONTAINER_PATH"/.env ]] && die "$DOMAIN is not a valid WordPress app or doesn't exist"
-			WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env)
+			WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env || true)
 			if [ -n "$WP_CHECK" ]; then
 				source "$CONTAINER_PATH"/.env
 				echo -e "\e[31m[CRITICAL]\e[39m Removing $DOMAIN"
@@ -1217,7 +1218,7 @@ elif [ "$1" = "wp" ]; then
 			for i in *
 			do
 				[[ ! -d "$APPS"/"$i"/db ]] && echo -e "\e[34m[INFO]\e[39m $i is already updated, continuing..." && continue
-				WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env)
+				WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env || true)
 				if [ -n "$WP_CHECK" ]; then
 					echo -e "\e[34m[INFO]\e[39m Updating up $i"
 					source "$i"/.env
@@ -1238,7 +1239,7 @@ elif [ "$1" = "wp" ]; then
 		else
 			[[ ! -d "$APPS"/"$DOMAIN"/db ]] && die "$DOMAIN is already updated"
 			[[ "$UPDATE" != structure ]] && die '--update only takes structure as the value.'
-			WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env)
+			WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env || true)
 			[[ -z "$WP_CHECK" ]] && die 'Not a WordPress app.'
 			echo -e "\e[34m[INFO]\e[39m Updating $DOMAIN"
 			source "$CONTAINER_PATH"/.env
@@ -1260,7 +1261,7 @@ elif [ "$1" = "wp" ]; then
 		if [ -n "$ALL" ]; then
 			for i in *
 			do
-				WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env)
+				WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env || true)
 				if [ -n "$WP_CHECK" ]; then
 					source "$APPS"/"$i"/.env
 					docker run -it --rm \
@@ -1270,7 +1271,7 @@ elif [ "$1" = "wp" ]; then
 				fi
 			done
 		else
-			WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env)
+			WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env || true)
 			[[ -z "$WP_CHECK" ]] && die 'Not a WordPress app.'
 			source "$CONTAINER_PATH"/.env
 			docker run -it --rm \
@@ -1338,14 +1339,14 @@ else
 				docker system df
 				;;
 			-t|--top)
-				CTOP_CHECK=$(docker ps | grep ctop | awk '{print $1}')
+				CTOP_CHECK=$(docker ps | grep ctop | awk '{print $1}' || true)
 				[[ -n "$CTOP_CHECK" ]] && docker stop "$CTOP_CHECK"
 				docker run --rm -ti -v /var/run/docker.sock:/var/run/docker.sock:ro quay.io/vektorlab/ctop
 				;;
 			-u|--update)
 				# Cron check
-				CRON_WP_CHECK=$(crontab -l | grep "cron event run --due-now")
-				CRON_MONITOR_CHECK=$(crontab -l | grep "demyx wp --monitor")
+				CRON_WP_CHECK=$(crontab -l | grep "cron event run --due-now" || true)
+				CRON_MONITOR_CHECK=$(crontab -l | grep "demyx wp --monitor" || true)
 
 				if [ -z "$CRON_WP_CHECK" ]; then
 					# WP Cron every 2 hours
@@ -1397,7 +1398,7 @@ else
 					echo -e "\e[34m[INFO]\e[39m Checking for updates"
 				fi
 
-				CHECK_FOR_UPDATES=$(git pull | grep "Already up to date." )
+				CHECK_FOR_UPDATES=$(git pull | grep "Already up to date." || true)
 
 				if [ -n "$FORCE" ] || [ "$CHECK_FOR_UPDATES" != "Already up to date" ]; then
 					[[ -z "$FORCE" ]] && echo -e "\e[34m[INFO]\e[39m Updating Demyx..."
