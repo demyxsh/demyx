@@ -9,6 +9,7 @@ die() {
 }
 
 source /srv/demyx/etc/.env
+source "$ETC"/functions/table.sh
 
 if [ "$1" = "stack" ]; then
 	while :; do
@@ -128,10 +129,7 @@ elif [ "$1" = "wp" ]; then
 				echo
 				echo "  --down          Shorthand for docker-compose down"
 				echo "                  Example: demyx wp --down=domain.tld, demyx wp --dom=domain.tld --down"
-				echo
-				echo "  --du            Get a site's directory total size"
-				echo "                  Example: demyx wp --down=domain.tld --du, demyx wp --down=domain.tld --du=wp, demyx wp --down=domain.tld --du=db"
-				echo
+				echo 
 				echo "  --env           Shows all environment variables for a given site"
 				echo "                  Example: demyx wp --env=domain.tld, demyx wp --dom=domain.tld --env"
 				echo
@@ -553,6 +551,7 @@ elif [ "$1" = "wp" ]; then
 		[[ -z "$WP_CHECK" ]] && [[ "$CACHE" != check ]] && die 'Not a WordPress site.'
 		[[ -f "$CONTAINER_PATH"/.env ]] && [[ -z "$RUN" ]] && source "$CONTAINER_PATH"/.env
 		if [ "$CACHE" = on ]; then
+			[[ "$FASTCGI_CACHE" = on ]] && die "Cache is already on for $DOMAIN"
 			echo -e "\e[34m[INFO]\e[39m Turning on FastCGI Cache for $DOMAIN"
 			NGINX_HELPER_CHECK=$(docker exec -it "$WP" sh -c 'ls wp-content/plugins' | grep nginx-helper || true)
 			if [ -n "$NGINX_HELPER_CHECK" ]; then
@@ -578,6 +577,7 @@ elif [ "$1" = "wp" ]; then
 
 			bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "on" "$FORCE"
 		elif [ "$CACHE" = off ]; then
+			[[ "$FASTCGI_CACHE" = off ]] && die "Cache is already off for $DOMAIN"
 			echo -e "\e[34m[INFO]\e[39m Turning off FastCGI Cache for $DOMAIN"
 			docker run -it --rm \
 			--volumes-from "$WP" \
@@ -664,6 +664,7 @@ elif [ "$1" = "wp" ]; then
 		docker volume create db_"$WP_ID"
 
 		demyx wp --dom="$DOMAIN" --service=db --action=up
+		sleep 10
 		docker run -d --rm --name clone_tmp --network traefik -v wp_"$WP_ID":/var/www/html demyx/nginx-php-wordpress tail -f /dev/null
 		cd "$CONTAINER_PATH"/clone && docker cp . clone_tmp:/var/www/html
 		docker exec -it clone_tmp sh -c 'rm /var/www/html/wp-config.php'
@@ -721,11 +722,11 @@ elif [ "$1" = "wp" ]; then
 
 		[[ "$DEV" = on ]] && demyx wp --dom="$DOMAIN" --dev
 
-		echo
-		echo "$DOMAIN/wp-admin"
-		echo "Username: $WORDPRESS_USER"
-		echo "Password: $WORDPRESS_USER_PASSWORD"
-		echo
+		PRINT_TABLE="DOMAIN, $DOMAIN/wp-admin\n"
+		PRINT_TABLE+="WORDPRESS USER, $WORDPRESS_USER\n"
+		PRINT_TABLE+="WORDPRESS PASSWORD, $WORDPRESS_USER_PASSWORD"
+
+		printTable ',' "$(echo -e $PRINT_TABLE)"
 	elif [ -n "$DEV" ] && [ -z "$RUN" ] && [ -z "$CLONE" ]; then
 		SSH_CONTAINER_CHECK=$(docker ps -aq -f name=ssh)
 		SSH_VOLUME_CHECK=$(docker volume ls | grep ssh || true)
@@ -741,7 +742,6 @@ elif [ "$1" = "wp" ]; then
 			demyx/ssh
 
 			docker cp /home/"$USER"/.ssh/authorized_keys ssh:/home/www-data/.ssh/authorized_keys
-			docker exec -it sh -c "ssh chown -R www-data:www-data /home/www-data"
 			docker stop ssh
 		fi
 
@@ -770,11 +770,11 @@ elif [ "$1" = "wp" ]; then
 			-p "$PORT":22 \
 			demyx/ssh
 
-			echo
-			echo "SFTP Address: $PRIMARY_DOMAIN"
-			echo "SFTP User: www-data"
-			echo "SFTP Port: $PORT"
-			echo
+			PRINT_TABLE="SFTP ADDRESS, $PRIMARY_DOMAIN\n"
+			PRINT_TABLE+="SFTP USER, www-data\n"
+			PRINT_TABLE+="SFTP PORT, $PORT"
+
+			printTable ',' "$(echo -e $PRINT_TABLE)"
 		elif [ "$DEV" = off ]; then
 			source "$CONTAINER_PATH"/.env
 			if [ -z "$FORCE" ]; then
@@ -802,29 +802,22 @@ elif [ "$1" = "wp" ]; then
 		else
 			die "--dev=$DEV not found"
 		fi
-	elif [ -n "$DU" ]; then
-		if [ "$DU" = wp ]; then
-			du -sh "$CONTAINER_PATH"/data
-		elif [ "$DU" = db ]; then
-			du -sh "$CONTAINER_PATH"/db
-		else
-			du -sh "$CONTAINER_PATH"
-		fi
 	elif [ -n "$ENV" ]; then
 		echo
 		cat "$CONTAINER_PATH"/.env
 		echo
 	elif [ -n "$LIST" ]; then
 		cd "$APPS" || exit
+		PRINT_TABLE="SITES\n"
 		for i in *
 		do
 			WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env || true)
 			[[ -z "$WP_CHECK" ]] && continue
-			echo "$i"
+			PRINT_TABLE+="$i\n"
 		done
+		printTable ',' "$(echo -e $PRINT_TABLE)"
 	elif [ -n "$INFO" ]; then
 		[[ -z "$DOMAIN" ]] && die 'Domain is required'
-		source "$ETC"/functions/table.sh
 		source "$CONTAINER_PATH"/.env
 		MONITOR_COUNT=0
 		[[ -f "$CONTAINER_PATH"/.monitor ]] && source "$CONTAINER_PATH"/.monitor
@@ -833,20 +826,20 @@ elif [ "$1" = "wp" ]; then
 
 		[[ -n "$SSL_CHECK" ]] && SSL_INFO=on
 
-		INFO_OUTPUT="DOMAIN, $DOMAIN\n"
-		INFO_OUTPUT+="PATH, $CONTAINER_PATH\n"
-		INFO_OUTPUT+="WP CONTAINER, $WP\n"
-		INFO_OUTPUT+="DB CONTAINER, $DB\n"
-		INFO_OUTPUT+="WORDPRESS USER, $WORDPRESS_USER\n"
-		INFO_OUTPUT+="WORDPRESS PASSWORD, $WORDPRESS_USER_PASSWORD\n"
-		INFO_OUTPUT+="SSL, $SSL_INFO\n"
-		INFO_OUTPUT+="CACHE, $FASTCGI_CACHE\n"
-		INFO_OUTPUT+="MONITOR COUNT, $MONITOR_COUNT\n"
-		INFO_OUTPUT+="MONITOR THRESHOLD, $MONITOR_THRESHOLD\n"
-		INFO_OUTPUT+="MONITOR SCALE, $MONITOR_SCALE\n"
-		INFO_OUTPUT+="MONITOR CPU, $MONITOR_CPU%"
+		PRINT_TABLE="DOMAIN, $DOMAIN\n"
+		PRINT_TABLE+="PATH, $CONTAINER_PATH\n"
+		PRINT_TABLE+="WP CONTAINER, $WP\n"
+		PRINT_TABLE+="DB CONTAINER, $DB\n"
+		PRINT_TABLE+="WORDPRESS USER, $WORDPRESS_USER\n"
+		PRINT_TABLE+="WORDPRESS PASSWORD, $WORDPRESS_USER_PASSWORD\n"
+		PRINT_TABLE+="SSL, $SSL_INFO\n"
+		PRINT_TABLE+="CACHE, $FASTCGI_CACHE\n"
+		PRINT_TABLE+="MONITOR COUNT, $MONITOR_COUNT\n"
+		PRINT_TABLE+="MONITOR THRESHOLD, $MONITOR_THRESHOLD\n"
+		PRINT_TABLE+="MONITOR SCALE, $MONITOR_SCALE\n"
+		PRINT_TABLE+="MONITOR CPU, $MONITOR_CPU%"
 
-		printTable ',' "$(echo -e $INFO_OUTPUT)"
+		printTable ',' "$(echo -e $PRINT_TABLE)"
 	elif [ -n "$IMPORT" ]; then
 		die 'Import is disabled for now.'
 		[[ ! -f $APPS_BACKUP/$DOMAIN.tgz ]] && die "$APPS_BACKUP/$DOMAIN.tgz doesn't exist"
@@ -993,6 +986,12 @@ elif [ "$1" = "wp" ]; then
 			echo "Username: $WORDPRESS_DB_USER"
 			echo "Password: $WORDPRESS_DB_PASSWORD"
 			echo 
+
+			PRINT_TABLE="PHPMYADMIN, pma.$PRIMARY_DOMAIN\n"
+			PRINT_TABLE+="USERNAME, $WORDPRESS_DB_USER\n"
+			PRINT_TABLE+="PASSWORD, $WORDPRESS_DB_PASSWORD"
+
+			printTable ',' "$(echo -e $PRINT_TABLE)"
 		else
 			docker stop phpmyadmin && docker rm phpmyadmin
 		fi
@@ -1076,7 +1075,9 @@ elif [ "$1" = "wp" ]; then
 		mv "$APPS_BACKUP"/"$DOMAIN" "$APPS"
 		source "$CONTAINER_PATH"/.env
 		demyx wp --dom="$DOMAIN" --down
-		docker volume rm wp_"$WP_ID" db_"$WP_ID"
+		VOLUME_CHECK=$(docker volume ls)
+		[[ -n "$(grep wp_${WP_ID} <<< $VOLUME_CHECK || true)" ]] && docker volume rm wp_"$WP_ID"
+		[[ -n "$(grep db_${WP_ID} <<< $VOLUME_CHECK || true)" ]] && docker volume rm db_"$WP_ID"
 		docker volume create wp_"$WP_ID"
 		docker volume create db_"$WP_ID"
 		demyx wp --dom="$DOMAIN" --service=db --action=up
@@ -1105,6 +1106,8 @@ elif [ "$1" = "wp" ]; then
 			[[ "$DELETE_SITE" != [yY] ]] && die 'Cancel removal of site(s)'
 		fi
 		
+		VOLUME_CHECK=$(docker volume ls)
+
 		if [ -n "$ALL" ]; then
 			cd "$APPS" || exit
 			for i in *
@@ -1117,7 +1120,8 @@ elif [ "$1" = "wp" ]; then
 					docker-compose kill
 					docker-compose rm -f
 					[[ -f "$LOGS"/"$i".access.log ]] && rm "$LOGS"/"$i".access.log && rm "$LOGS"/"$i".error.log
-					docker volume rm wp_"$WP_ID" db_"$WP_ID"
+					[[ -n "$(grep wp_${WP_ID} <<< $VOLUME_CHECK || true)" ]] && docker volume rm wp_"$WP_ID"
+					[[ -n "$(grep db_${WP_ID} <<< $VOLUME_CHECK || true)" ]] && docker volume rm db_"$WP_ID"
 					cd .. && rm -rf "$i"
 				fi
 			done
@@ -1130,7 +1134,8 @@ elif [ "$1" = "wp" ]; then
 				cd "$CONTAINER_PATH"
 				docker-compose kill
 				docker-compose rm -f
-				docker volume rm wp_"$WP_ID" db_"$WP_ID"
+				[[ -n "$(grep wp_${WP_ID} <<< $VOLUME_CHECK || true)" ]] && docker volume rm wp_"$WP_ID"
+				[[ -n "$(grep db_${WP_ID} <<< $VOLUME_CHECK || true)" ]] && docker volume rm db_"$WP_ID"
 				cd .. && rm -rf "$DOMAIN"
 				[[ -f "$LOGS"/"$DOMAIN".access.log ]] && rm "$LOGS"/"$DOMAIN".access.log && rm "$LOGS"/"$DOMAIN".error.log
 			else
@@ -1188,7 +1193,11 @@ elif [ "$1" = "wp" ]; then
 		[[ "$DEV" = on ]] && demyx wp --dom="$DOMAIN" --dev
 		[[ "$CACHE" = on ]] && demyx wp --dom="$DOMAIN" --cache
 
-		demyx wp --dom="$DOMAIN" --info
+		PRINT_TABLE="DOMAIN, $DOMAIN/wp-admin\n"
+		PRINT_TABLE+="WORDPRESS USER, $WORDPRESS_USER\n"
+		PRINT_TABLE+="WORDPRESS PASSWORD, $WORDPRESS_USER_PASSWORD\n"
+
+		printTable ',' "$(echo -e $PRINT_TABLE)"
 	elif [ -n "$DEMYX_SHELL" ]; then
 		source "$CONTAINER_PATH"/.env
 		if [ "$DEMYX_SHELL" = "wp" ]; then

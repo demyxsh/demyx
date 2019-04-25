@@ -109,9 +109,6 @@ demyx wp -h
 --down              Shorthand for docker-compose down
                     Example: demyx wp --down=domain.tld, demyx wp --dom=domain.tld --down
 
---du                Get a site's directory total size
-                    Example: demyx wp --down=domain.tld --du, demyx wp --down=domain.tld --du=wp, demyx wp --down=domain.tld --du=db
-
 --env               Shows all environment variables for a given site
                     Example: demyx wp --env=domain.tld, demyx wp --dom=domain.tld --env
 
