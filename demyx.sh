@@ -3,13 +3,8 @@
 # https://github.com/demyxco/demyx
 trap 'exit' ERR
 
-die() {
-	printf '\n\e[31m[CRITICAL]\e[39m %s\n\n' "$1" >&2
-	exit 1
-}
-
 source /srv/demyx/etc/.env
-source "$ETC"/functions/table.sh
+source "$ETC"/functions/functions.sh
 
 if [ "$1" = "stack" ]; then
 	while :; do
@@ -70,7 +65,7 @@ if [ "$1" = "stack" ]; then
 				break
 				;;
 			-?*)
-				printf '\e[31m[WARNING]\e[39m Unknown option: %s\n' "$2" >&2
+				printf '\e[31m[CRITICAL]\e[39m Unknown option: %s\n' "$2" >&2
 				exit 1
 				;;
 			*) 
@@ -459,7 +454,7 @@ elif [ "$1" = "wp" ]; then
 				break
 				;;
 			-?*)
-				printf '\e[31m[WARNING]\e[39m Unknown option: %s\n' "$2" >&2
+				printf '\e[31m[CRITICAL]\e[39m Unknown option: %s\n' "$2" >&2
 				exit 1
 				;;
 			*) 
@@ -1437,7 +1432,7 @@ else
 				break
 				;;
 			-?*)
-				printf '\e[31m[WARNING]\e[39m Unknown option: %s\n' "$2" >&2
+				printf '\e[31m[CRITICAL]\e[39m Unknown option: %s\n' "$2" >&2
 				exit 1
 				;;
 			*) 
