@@ -1187,11 +1187,7 @@ elif [ "$1" = "wp" ]; then
 		[[ "$DEV" = on ]] && demyx wp --dom="$DOMAIN" --dev
 		[[ "$CACHE" = on ]] && demyx wp --dom="$DOMAIN" --cache
 
-		echo
-		echo "$DOMAIN/wp-admin"
-		echo "Username: $WORDPRESS_USER"
-		echo "Password: $WORDPRESS_USER_PASSWORD"
-		echo
+		demyx wp --dom="$DOMAIN" --info
 	elif [ -n "$DEMYX_SHELL" ]; then
 		source "$CONTAINER_PATH"/.env
 		if [ "$DEMYX_SHELL" = "wp" ]; then
