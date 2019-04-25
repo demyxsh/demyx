@@ -823,15 +823,19 @@ elif [ "$1" = "wp" ]; then
 		[[ -f "$CONTAINER_PATH"/.monitor ]] && source "$CONTAINER_PATH"/.monitor
 		SSL_CHECK=$(grep -s "https" "$CONTAINER_PATH"/docker-compose.yml || true)
 		SSL_INFO=off
+		DATA_VOLUME=$(docker exec "$WP" sh -c "du -sh /var/www/html" | cut -f1)
+		DB_VOLUME=$(docker exec "$DB" sh -c "du -sh /var/lib/mysql" | cut -f1)
 
 		[[ -n "$SSL_CHECK" ]] && SSL_INFO=on
 
 		PRINT_TABLE="DOMAIN, $DOMAIN\n"
 		PRINT_TABLE+="PATH, $CONTAINER_PATH\n"
-		PRINT_TABLE+="WP CONTAINER, $WP\n"
-		PRINT_TABLE+="DB CONTAINER, $DB\n"
 		PRINT_TABLE+="WORDPRESS USER, $WORDPRESS_USER\n"
 		PRINT_TABLE+="WORDPRESS PASSWORD, $WORDPRESS_USER_PASSWORD\n"
+		PRINT_TABLE+="WP CONTAINER, $WP\n"
+		PRINT_TABLE+="DB CONTAINER, $DB\n"
+		PRINT_TABLE+="DATA VOLUME, $DATA_VOLUME\n"
+		PRINT_TABLE+="DB VOLUME, $DB_VOLUME\n"
 		PRINT_TABLE+="SSL, $SSL_INFO\n"
 		PRINT_TABLE+="CACHE, $FASTCGI_CACHE\n"
 		PRINT_TABLE+="MONITOR COUNT, $MONITOR_COUNT\n"
@@ -980,12 +984,6 @@ elif [ "$1" = "wp" ]; then
 			-l "traefik.frontend.headers.STSIncludeSubdomains=${STS_INCLUDE_SUBDOMAINS}" \
 			-l "traefik.frontend.headers.STSPreload=${STS_PRELOAD}" \
 			phpmyadmin/phpmyadmin
-
-			echo
-			echo "phpMyAdmin: pma.$PRIMARY_DOMAIN"
-			echo "Username: $WORDPRESS_DB_USER"
-			echo "Password: $WORDPRESS_DB_PASSWORD"
-			echo 
 
 			PRINT_TABLE="PHPMYADMIN, pma.$PRIMARY_DOMAIN\n"
 			PRINT_TABLE+="USERNAME, $WORDPRESS_DB_USER\n"
