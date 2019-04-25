@@ -829,13 +829,16 @@ elif [ "$1" = "wp" ]; then
 		[[ -z "$DOMAIN" ]] && die 'Domain is required'
 		source "$CONTAINER_PATH"/.env
 		MONITOR_COUNT=0
-		[[ -f "$CONTAINER_PATH"/.monitor ]] && source "$CONTAINER_PATH"/.monitor
+		DEV_MODE_CHECK=$(grep -r "sendfile off" "$CONTAINER_PATH"/conf/nginx.conf || true)
 		SSL_CHECK=$(grep -s "https" "$CONTAINER_PATH"/docker-compose.yml || true)
 		SSL_INFO=off
 		DATA_VOLUME=$(docker exec "$WP" sh -c "du -sh /var/www/html" | cut -f1)
 		DB_VOLUME=$(docker exec "$DB" sh -c "du -sh /var/lib/mysql" | cut -f1)
+		DEV_MODE_INFO=off
 
+		[[ -n "$DEV_MODE_CHECK" ]] && DEV_MODE_INFO=on
 		[[ -n "$SSL_CHECK" ]] && SSL_INFO=on
+		[[ -f "$CONTAINER_PATH"/.monitor ]] && source "$CONTAINER_PATH"/.monitor
 
 		PRINT_TABLE="DOMAIN, $DOMAIN\n"
 		PRINT_TABLE+="PATH, $CONTAINER_PATH\n"
@@ -845,6 +848,7 @@ elif [ "$1" = "wp" ]; then
 		PRINT_TABLE+="DB CONTAINER, $DB\n"
 		PRINT_TABLE+="DATA VOLUME, $DATA_VOLUME\n"
 		PRINT_TABLE+="DB VOLUME, $DB_VOLUME\n"
+		PRINT_TABLE+="DEVELOPMENT MODE, $DEV_MODE_INFO\n"
 		PRINT_TABLE+="SSL, $SSL_INFO\n"
 		PRINT_TABLE+="CACHE, $FASTCGI_CACHE\n"
 		PRINT_TABLE+="MONITOR COUNT, $MONITOR_COUNT\n"
