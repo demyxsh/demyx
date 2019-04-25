@@ -22,6 +22,9 @@ if [ "$1" = "stack" ]; then
 				echo "  --down          Shorthand for docker-compose down"
 				echo "                  Example: demyx stack --service=traefik --down, demyx stack --down"
 				echo
+				echo "  --refresh       Refreshes the stack's .env and .yml"
+				echo "                  Example: demyx stack --refresh"
+				echo
 				echo "  --restart       Shorthand for docker-compose restart"
 				echo "                  Example: demyx stack --service=traefik --restart, demyx stack --restart"
 				echo
@@ -41,6 +44,12 @@ if [ "$1" = "stack" ]; then
 			-d|--down)
 				DOWN=1
 				ACTION=down
+				;;
+			--refresh)
+				echo -e "\e[34m[INFO]\e[39m Refreshing the stack's .env and .yml files"
+				bash "$ETC"/functions/etc-env.sh
+				bash "$ETC"/functions/etc-yml.sh
+				demyx stack -u
 				;;
 			-r|--restart)
 				RESTART=1

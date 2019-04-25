@@ -50,12 +50,15 @@ services:
       TZ: America/Los_Angeles
     volumes:
       - \${LOGS}:/var/log/demyx
-  watchtower:
-    container_name: watchtower
-    image: v2tec/watchtower
+  ouroboros:
+    container_name: ouroboros
+    image: pyouroboros/ouroboros
     restart: unless-stopped
     network_mode: none
-    command: --cleanup
+    environment:
+      SELF_UPDATE: "true"
+      CLEANUP: "true"
+      LATEST: "true"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
 networks:

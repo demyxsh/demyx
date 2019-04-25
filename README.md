@@ -59,6 +59,9 @@ demyx stack -h
 --down              Shorthand for docker-compose down
                     Example: demyx stack --service=traefik --down, demyx stack --down
 
+--refresh           Refreshes the stack's .env and .yml
+                    Example: demyx stack --refresh
+
 --restart           Shorthand for docker-compose restart
                     Example: demyx stack --service=traefik --restart, demyx stack --restart
 
