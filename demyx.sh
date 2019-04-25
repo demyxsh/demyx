@@ -1161,9 +1161,9 @@ elif [ "$1" = "wp" ]; then
 
 		# Future plans for subnets
 		#bash $ETC/functions/subnet.sh $DOMAIN $CONTAINER_NAME create
-		bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "$CACHE" "$FORCE"
+		bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "" "$FORCE"
 		bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
-		bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "" "$FORCE"
+		bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE" ""
 		bash "$ETC"/functions/php.sh "$CONTAINER_PATH" "$FORCE"
 		bash "$ETC"/functions/fpm.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE"
 		bash "$ETC"/functions/logs.sh "$DOMAIN" "$FORCE"
