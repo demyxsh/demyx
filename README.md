@@ -118,6 +118,9 @@ demyx wp -h
 --force             Force an override, only applies to --refresh for now
                     Example: demyx wp --refresh --all --force, demyx wp --dom=domain.tld --refresh --force
 
+--info              Get detailed info about a site
+                    Example: demyx wp --dom=domain.tld --info
+
 --import            Import a non demyx stack WordPress site, must be in a specific format
                     - Directory must be named domain.tld
                     - Archive must be in /srv/demyx/backup named domain.tld.tgz

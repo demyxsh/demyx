@@ -137,6 +137,9 @@ elif [ "$1" = "wp" ]; then
 				echo "  --force         Force an override, only applies to --refresh for now"
 				echo "                  Example: demyx wp --refresh --all --force, demyx wp --dom=domain.tld --refresh --force"
 				echo
+				echo "  --info          Get detailed info about a site"
+				echo "                  Example: demyx wp --dom=domain.tld --info"
+				echo
 				echo "  --import        Import a non demyx stack WordPress site, must be in a specific format"
 				echo "                  - Directory must be named domain.tld"
 				echo "                  - Archive must be in /srv/demyx/backup named domain.tld.tgz"
@@ -308,6 +311,9 @@ elif [ "$1" = "wp" ]; then
 				;;
 			-f|--force)
 				FORCE=1
+				;;
+			--info)
+				INFO=1
 				;;
 			--import)
 				IMPORT=1
@@ -815,6 +821,31 @@ elif [ "$1" = "wp" ]; then
 			[[ -z "$WP_CHECK" ]] && continue
 			echo "$i"
 		done
+	elif [ -n "$INFO" ]; then
+		[[ -z "$DOMAIN" ]] && die 'Domain is required'
+		source "$ETC"/functions/table.sh
+		source "$CONTAINER_PATH"/.env
+		MONITOR_COUNT=0
+		[[ -f "$CONTAINER_PATH"/.monitor ]] && source "$CONTAINER_PATH"/.monitor
+		SSL_CHECK=$(grep "https" "$CONTAINER_PATH"/docker-compose.yml)
+		SSL_INFO=off
+
+		[[ -n "$SSL_CHECK" ]] && SSL_INFO=on
+
+		INFO_OUTPUT="DOMAIN, $DOMAIN\n"
+		INFO_OUTPUT+="PATH, $CONTAINER_PATH\n"
+		INFO_OUTPUT+="WP CONTAINER, $WP\n"
+		INFO_OUTPUT+="DB CONTAINER, $DB\n"
+		INFO_OUTPUT+="WORDPRESS USER, $WORDPRESS_USER\n"
+		INFO_OUTPUT+="WORDPRESS PASSWORD, $WORDPRESS_USER_PASSWORD\n"
+		INFO_OUTPUT+="SSL, $SSL_INFO\n"
+		INFO_OUTPUT+="CACHE, $FASTCGI_CACHE\n"
+		INFO_OUTPUT+="MONITOR COUNT, $MONITOR_COUNT\n"
+		INFO_OUTPUT+="MONITOR THRESHOLD, $MONITOR_THRESHOLD\n"
+		INFO_OUTPUT+="MONITOR SCALE, $MONITOR_SCALE\n"
+		INFO_OUTPUT+="MONITOR CPU, $MONITOR_CPU%"
+
+		printTable ',' "$(echo -e $INFO_OUTPUT)"
 	elif [ -n "$IMPORT" ]; then
 		die 'Import is disabled for now.'
 		[[ ! -f $APPS_BACKUP/$DOMAIN.tgz ]] && die "$APPS_BACKUP/$DOMAIN.tgz doesn't exist"
