@@ -969,10 +969,9 @@ elif [ "$1" = "wp" ]; then
 			
 			source "$CONTAINER_PATH"/.env
 
-			docker run -d \
+			docker run -d --rm \
 			--name phpmyadmin \
 			--network traefik \
-			--restart unless-stopped \
 			-e PMA_HOST="${DB}" \
 			-e MYSQL_ROOT_PASSWORD="${MARIADB_ROOT_PASSWORD}" \
 			-l "traefik.enable=1" \
