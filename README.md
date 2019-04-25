@@ -3,11 +3,9 @@ A simple CLI wrapper for Docker to automate WordPress installations written in b
 
 Demyx will be following a rolling release model, meaning there is only one version (master branch, no tags) to ensure you always have the latest version.
 
-![https://i.imgur.com/6GDrTCT.gif](https://i.imgur.com/6GDrTCT.gif)
-
-Auto scale in action
-
-![https://i.imgur.com/9VWYC8E.gif](https://i.imgur.com/9VWYC8E.gif)
+<p align="center">
+     <img src="https://i.imgur.com/LPTQ1h3.gif">
+</p>
 
 # Requirements
 * Ubuntu 16.04/18.04, Debian 9.7
