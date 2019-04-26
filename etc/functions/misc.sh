@@ -8,6 +8,28 @@ die() {
     exit 1
 }
 
+demyx_exec() {
+    ACTION=$1
+    EXEC_FIRST=$2
+    EXEC_SECOND=$3
+
+    [[ -z "$ACTION" ]] && die 'No action found'
+
+    echo -en "$ACTION ... "
+    echo -e "$(date) [$ACTION] $EXEC_FIRST" >> /srv/demyx/logs/demyx.log
+    [[ -n "$EXEC_SECOND" ]] && echo -e "$(date) [$ACTION] $EXEC_SECOND" >> /srv/demyx/logs/demyx.log
+
+    while [ $? != 0 ]; do
+        sleep .1
+    done
+
+    echo -e "\e[32mdone\e[39m"
+
+    if [[ "$EXEC_FIRST" == *"WARNING"* ]]; then
+        echo -e "\e[33m[WARNING]\e[39m \"demyx logs\" for more info"
+    fi
+}
+
 function printTable() {
     local -r delimiter="${1}"
     local -r data="$(removeEmptyLines "${2}")"

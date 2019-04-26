@@ -69,6 +69,12 @@ demyx stack -h
 --service           Services: traefik, ouroboros, logrotate
 ```
 
+demyx logs -h
+```
+-f, --follow        Shorthand for tail -f
+                    Example: demyx logs -f
+```
+
 demyx wp -h
 ```
 --action            Actions: up, down, restart, logs, and other available docker-compose commands
@@ -118,12 +124,6 @@ demyx wp -h
 
 --info              Get detailed info about a site
                     Example: demyx wp --dom=domain.tld --info
-
---import            Import a non demyx stack WordPress site, must be in a specific format
-                    - Directory must be named domain.tld
-                    - Archive must be in /srv/demyx/backup named domain.tld.tgz
-                    - Database that will be imported must be named import.sql
-                    Example: demyx wp --dom=domain.tld --import
 
 --list              List all WordPress sites
                     Example: demyx wp --list
