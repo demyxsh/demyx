@@ -630,9 +630,9 @@ elif [ "$1" = "wp" ]; then
 		demyx_exec 'Initializing MariaDB' && sleep 10
 		demyx_exec 'Creating temporary container' "$(docker run -d --rm --name clone_tmp --network traefik -v wp_"$WP_ID":/var/www/html demyx/nginx-php-wordpress tail -f /dev/null)"
 		demyx_exec 'Copying files to temporary container' "$(cd "$CONTAINER_PATH"/clone && docker cp . clone_tmp:/var/www/html)"
-		demyx_exec 'Removing old wp-config' "$(docker exec -it clone_tmp sh -c 'rm /var/www/html/wp-config.php')"
-		demyx_exec 'Creating new wp-config' "$(docker run -it --rm --volumes-from clone_tmp --network container:clone_tmp wordpress:cli config create --dbhost="$WORDPRESS_DB_HOST" --dbname="$WORDPRESS_DB_NAME" --dbuser="$WORDPRESS_DB_USER" --dbpass="$WORDPRESS_DB_PASSWORD")"
-		demyx_exec 'Configuring wp-config for reverse proxy' "$(echo "#!/bin/bash" > "$CONTAINER_PATH"/proto.sh; echo "sed -i \"s/$table_prefix = 'wp_';/$table_prefix = 'wp_';\n\n\/\/ If we're behind a proxy server and using HTTPS, we need to alert Wordpress of that fact\n\/\/ see also http:\/\/codex.wordpress.org\/Administration_Over_SSL#Using_a_Reverse_Proxy\nif (isset($\_SERVER['HTTP_X_FORWARDED_PROTO']) \&\& $\_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {\n\t$\_SERVER['HTTPS'] = 'on';\n}\n/g\" /var/www/html/wp-config.php" >> "$CONTAINER_PATH"/proto.sh; docker cp "$CONTAINER_PATH"/proto.sh clone_tmp:/; rm "$CONTAINER_PATH"/proto.sh; docker exec -it clone_tmp sh -c 'bash /proto.sh && rm /proto.sh')"
+		demyx_exec 'Removing old wp-config.php' "$(docker exec -it clone_tmp sh -c 'rm /var/www/html/wp-config.php')"
+		demyx_exec 'Creating new wp-config.php' "$(docker run -it --rm --volumes-from clone_tmp --network container:clone_tmp wordpress:cli config create --dbhost="$WORDPRESS_DB_HOST" --dbname="$WORDPRESS_DB_NAME" --dbuser="$WORDPRESS_DB_USER" --dbpass="$WORDPRESS_DB_PASSWORD")"
+		demyx_exec 'Configuring wp-config.php for reverse proxy' "$(echo "#!/bin/bash" > "$CONTAINER_PATH"/proto.sh; echo "sed -i \"s/$table_prefix = 'wp_';/$table_prefix = 'wp_';\n\n\/\/ If we're behind a proxy server and using HTTPS, we need to alert Wordpress of that fact\n\/\/ see also http:\/\/codex.wordpress.org\/Administration_Over_SSL#Using_a_Reverse_Proxy\nif (isset($\_SERVER['HTTP_X_FORWARDED_PROTO']) \&\& $\_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {\n\t$\_SERVER['HTTPS'] = 'on';\n}\n/g\" /var/www/html/wp-config.php" >> "$CONTAINER_PATH"/proto.sh; docker cp "$CONTAINER_PATH"/proto.sh clone_tmp:/; rm "$CONTAINER_PATH"/proto.sh; docker exec -it clone_tmp sh -c 'bash /proto.sh && rm /proto.sh')"
 
 		if [ -n "$ADMIN_EMAIL" ]; then
 			WORDPRESS_EMAIL="$ADMIN_EMAIL"
@@ -643,7 +643,7 @@ elif [ "$1" = "wp" ]; then
 		demyx_exec 'Installing WordPress' "$(docker run -it --rm --volumes-from clone_tmp --network container:clone_tmp wordpress:cli core install --url="$DOMAIN" --title="$DOMAIN" --admin_user="$WORDPRESS_USER" --admin_password="$WORDPRESS_USER_PASSWORD" --admin_email="$WORDPRESS_EMAIL" --skip-email)"
 		demyx_exec 'Importing clone database' "$(docker run -it --rm --volumes-from clone_tmp --network container:clone_tmp wordpress:cli db import clone.sql)"
 		demyx_exec 'Replacing old URLs' "$(docker run -it --rm --volumes-from clone_tmp --network container:clone_tmp wordpress:cli search-replace "$CLONE" "$DOMAIN")"
-		demyx_exec 'Creating wp-config salts' "$(docker run -it --rm --volumes-from clone_tmp --network container:clone_tmp wordpress:cli config shuffle-salts)"
+		demyx_exec 'Creating wp-config.php salts' "$(docker run -it --rm --volumes-from clone_tmp --network container:clone_tmp wordpress:cli config shuffle-salts)"
 		demyx_exec 'Removing temporary directory' "$(cd .. && rm -rf "$CONTAINER_PATH"/clone)"
 		demyx_exec 'Stopping temporary container' "$(docker stop clone_tmp)"
 
@@ -988,7 +988,7 @@ elif [ "$1" = "wp" ]; then
 		fi
 
 		demyx_exec 'Initializing MariaDB' && sleep 10
-		demyx_exec 'Configuring wp-config' "$(docker run -it --rm --volumes-from "$WP" --network container:"$WP" wordpress:cli core install --url="$DOMAIN" --title="$DOMAIN" --admin_user="$WORDPRESS_USER" --admin_password="$WORDPRESS_USER_PASSWORD" --admin_email="$WORDPRESS_EMAIL" --skip-email)"
+		demyx_exec 'Configuring wp-config.php' "$(docker run -it --rm --volumes-from "$WP" --network container:"$WP" wordpress:cli core install --url="$DOMAIN" --title="$DOMAIN" --admin_user="$WORDPRESS_USER" --admin_password="$WORDPRESS_USER_PASSWORD" --admin_email="$WORDPRESS_EMAIL" --skip-email)"
 		demyx_exec 'Configuring permalinks' "$(docker run -it --rm --volumes-from "$WP" --network container:"$WP" wordpress:cli rewrite structure '/%category%/%postname%/')"
 
 		[[ "$CDN" = on ]] && demyx wp --dom="$DOMAIN" --cdn
@@ -1125,7 +1125,7 @@ elif [ "$1" = "logs" ]; then
 	done
 
 	if [ -n "$FOLLOW" ]; then
-		demyx_exec 'demyx log -f' && tail -f "$LOGS"/demyx.log
+		demyx_exec 'demyx log -f' && clear && tail -f "$LOGS"/demyx.log
 	elif [ -n "$CLEAR" ]; then
 		demyx_exec 'Clearing logs' "$(echo > "$LOGS"/demyx.log)"
 	else
