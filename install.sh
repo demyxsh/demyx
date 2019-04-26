@@ -2,14 +2,14 @@
 # Demyx
 # https://github.com/demyxco/demyx
 
+# Install required packages
+sudo apt update
+sudo apt install -y curl dnsutils uuid-runtime
+
 echo
 echo "Demyx"
 echo "URL: https://github.com/demyxco/demyx"
 echo
-
-# Install required packages
-sudo apt update
-sudo apt install -y curl dnsutils uuid-runtime
 
 # Root check
 [[ "$USER" = root ]] && echo -e "\e[31m[CRITICAL] Root user detected. Please run the script without sudo or root.\e[39m" && exit 1
@@ -57,7 +57,7 @@ sudo docker pull demyx/ssh
 sudo docker pull traefik
 sudo docker pull wordpress:cli
 sudo docker pull phpmyadmin/phpmyadmin
-sudo docker pull v2tec/watchtower
+sudo docker pull pyouroboros/ouroboros
 sudo docker pull quay.io/vektorlab/ctop
 
 # Create our proxy network and group
