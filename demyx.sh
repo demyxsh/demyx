@@ -952,7 +952,7 @@ elif [ "$1" = "wp" ]; then
 				[[ -n "$(grep wp_${WP_ID} <<< $VOLUME_CHECK || true)" ]] && demyx_exec 'Deleting data volume' "$(docker volume rm wp_"$WP_ID")" 
 				[[ -n "$(grep db_${WP_ID} <<< $VOLUME_CHECK || true)" ]] && demyx_exec 'Deleting db volume' "$(docker volume rm db_"$WP_ID")" 
 				[[ -f "$LOGS"/"$DOMAIN".access.log ]] && demyx_exec 'Deleting logs' "$(rm "$LOGS"/"$DOMAIN".access.log; rm "$LOGS"/"$DOMAIN".error.log)"
-				demyx_exec 'Deleting directory' "$(rm -rf "$CONTAINER_PATH"/"$DOMAIN")"
+				demyx_exec 'Deleting directory' "$(rm -rf "$CONTAINER_PATH")"
 			else
 				die "$DOMAIN a WordPress app"
 			fi
