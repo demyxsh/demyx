@@ -54,7 +54,8 @@ services:
     container_name: ouroboros
     image: pyouroboros/ouroboros
     restart: unless-stopped
-    network_mode: none
+    networks:
+      - traefik
     environment:
       SELF_UPDATE: "true"
       CLEANUP: "true"

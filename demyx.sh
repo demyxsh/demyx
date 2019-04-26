@@ -41,9 +41,7 @@ if [ "$1" = "stack" ]; then
 				ACTION=down
 				;;
 			--refresh)
-				echo -e "\e[34m[INFO]\e[39m Refreshing the stack's .env and .yml files"
-				demyx_exec "Creating the stack's .env and .yml" "$(bash "$ETC"/functions/etc-env.sh)" "$(bash "$ETC"/functions/etc-yml.sh)"
-				demyx stack -u
+				REFRESH=1
 				;;
 			-r|--restart)
 				RESTART=1
@@ -87,6 +85,11 @@ if [ "$1" = "stack" ]; then
 		docker-compose $ACTION
 	elif [ -n "$ACTION" ] && [ -n "$SERVICE" ]; then
 		docker-compose $ACTION "$SERVICE"
+	elif [ -n "$REFRESH" ]; then
+		echo -e "\e[34m[INFO]\e[39m Refreshing the stack's .env and .yml files"
+		demyx_exec "Creating the stack's .env" "$(bash "$ETC"/functions/etc-env.sh)"
+		demyx_exec "Creating the stack's .yml" "$(bash "$ETC"/functions/etc-yml.sh)"
+		demyx stack -u
 	fi
 
 elif [ "$1" = "wp" ]; then
