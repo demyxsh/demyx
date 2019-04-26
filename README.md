@@ -71,8 +71,11 @@ demyx stack -h
 
 demyx logs -h
 ```
+-c, --clear         Clear the logs
+                    Example: demyx logs -c, demyx logs --clear
+
 -f, --follow        Shorthand for tail -f
-                    Example: demyx logs -f
+                    Example: demyx logs -f, --follow
 ```
 
 demyx wp -h

@@ -612,12 +612,12 @@ elif [ "$1" = "wp" ]; then
 		echo -e "\e[34m[INFO]\e[39m Cloning $CLONE to $DOMAIN"
 
 		demyx_exec "Creating directory" "$(mkdir -p "$CONTAINER_PATH"/conf)"
-		demyx_exec 'Generating .env' "$(bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "$CACHE" "$FORCE")"
-		demyx_exec 'Generating .yml' "$(bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" $SSL)"
-		demyx_exec 'Generating nginx.conf' "$(bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE" "")" 
-		demyx_exec 'Generating php.ini' "$(bash "$ETC"/functions/php.sh "$CONTAINER_PATH" "$FORCE")"
-		demyx_exec 'Generating php-fpm.conf' "$(bash "$ETC"/functions/fpm.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE")"
-		demyx_exec 'Generating access/error logs' "$(bash "$ETC"/functions/logs.sh "$DOMAIN" "$FORCE")"
+		demyx_exec 'Creating .env' "$(bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "$CACHE" "$FORCE")"
+		demyx_exec 'Creating .yml' "$(bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" $SSL)"
+		demyx_exec 'Creating nginx.conf' "$(bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE" "")" 
+		demyx_exec 'Creating php.ini' "$(bash "$ETC"/functions/php.sh "$CONTAINER_PATH" "$FORCE")"
+		demyx_exec 'Creating php-fpm.conf' "$(bash "$ETC"/functions/fpm.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE")"
+		demyx_exec 'Creating access/error logs' "$(bash "$ETC"/functions/logs.sh "$DOMAIN" "$FORCE")"
 
 		source "$CONTAINER_PATH"/.env
 
@@ -643,7 +643,7 @@ elif [ "$1" = "wp" ]; then
 		demyx_exec 'Installing WordPress' "$(docker run -it --rm --volumes-from clone_tmp --network container:clone_tmp wordpress:cli core install --url="$DOMAIN" --title="$DOMAIN" --admin_user="$WORDPRESS_USER" --admin_password="$WORDPRESS_USER_PASSWORD" --admin_email="$WORDPRESS_EMAIL" --skip-email)"
 		demyx_exec 'Importing clone database' "$(docker run -it --rm --volumes-from clone_tmp --network container:clone_tmp wordpress:cli db import clone.sql)"
 		demyx_exec 'Replacing old URLs' "$(docker run -it --rm --volumes-from clone_tmp --network container:clone_tmp wordpress:cli search-replace "$CLONE" "$DOMAIN")"
-		demyx_exec 'Generating wp-config salts' "$(docker run -it --rm --volumes-from clone_tmp --network container:clone_tmp wordpress:cli config shuffle-salts)"
+		demyx_exec 'Creating wp-config salts' "$(docker run -it --rm --volumes-from clone_tmp --network container:clone_tmp wordpress:cli config shuffle-salts)"
 		demyx_exec 'Removing temporary directory' "$(cd .. && rm -rf "$CONTAINER_PATH"/clone)"
 		demyx_exec 'Stopping temporary container' "$(docker stop clone_tmp)"
 
@@ -845,12 +845,12 @@ elif [ "$1" = "wp" ]; then
 					CACHE_CHECK=$(grep -s "FASTCGI_CACHE=on" "$CONTAINER_PATH"/.env || true)
 					[[ -n "$CACHE_CHECK" ]] && CACHE=on
 					[[ -z "$NO_RESTART" ]] && demyx wp --dom="$i" --down
-					demyx_exec 'Generating .env' "$(bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "$CACHE" "$FORCE")"
-					demyx_exec 'Generating .yml' "$(bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" $SSL)"
-					demyx_exec 'Generating nginx.conf' "$(bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE")" 
-					demyx_exec 'Generating php.ini' "$(bash "$ETC"/functions/php.sh "$CONTAINER_PATH" "$FORCE")"
-					demyx_exec 'Generating php-fpm.conf' "$(bash "$ETC"/functions/fpm.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE")"
-					demyx_exec 'Generating access/error logs' "$(bash "$ETC"/functions/logs.sh "$DOMAIN" "$FORCE")"
+					demyx_exec 'Creating .env' "$(bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "$CACHE" "$FORCE")"
+					demyx_exec 'Creating .yml' "$(bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" $SSL)"
+					demyx_exec 'Creating nginx.conf' "$(bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE")" 
+					demyx_exec 'Creating php.ini' "$(bash "$ETC"/functions/php.sh "$CONTAINER_PATH" "$FORCE")"
+					demyx_exec 'Creating php-fpm.conf' "$(bash "$ETC"/functions/fpm.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE")"
+					demyx_exec 'Creating access/error logs' "$(bash "$ETC"/functions/logs.sh "$DOMAIN" "$FORCE")"
 					[[ -z "$NO_RESTART" ]] && demyx wp --dom="$i" --up
 				fi
 			done
@@ -862,12 +862,12 @@ elif [ "$1" = "wp" ]; then
 			[[ -z "$DOMAIN" ]] && die 'Domain is missing or add --all'
 			echo -e "\e[34m[INFO]\e[39m Refreshing $DOMAIN"
 			[[ -z "$NO_RESTART" ]] && demyx wp --dom="$DOMAIN" --down
-			demyx_exec 'Generating .env' "$(bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "$CACHE" "$FORCE")"
-			demyx_exec 'Generating .yml' "$(bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" $SSL)"
-			demyx_exec 'Generating nginx.conf' "$(bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE")" 
-			demyx_exec 'Generating php.ini' "$(bash "$ETC"/functions/php.sh "$CONTAINER_PATH" "$FORCE")"
-			demyx_exec 'Generating php-fpm.conf' "$(bash "$ETC"/functions/fpm.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE")"
-			demyx_exec 'Generating access/error logs' "$(bash "$ETC"/functions/logs.sh "$DOMAIN" "$FORCE")"
+			demyx_exec 'Creating .env' "$(bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "$CACHE" "$FORCE")"
+			demyx_exec 'Creating .yml' "$(bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" $SSL)"
+			demyx_exec 'Creating nginx.conf' "$(bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE")" 
+			demyx_exec 'Creating php.ini' "$(bash "$ETC"/functions/php.sh "$CONTAINER_PATH" "$FORCE")"
+			demyx_exec 'Creating php-fpm.conf' "$(bash "$ETC"/functions/fpm.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE")"
+			demyx_exec 'Creating access/error logs' "$(bash "$ETC"/functions/logs.sh "$DOMAIN" "$FORCE")"
 			[[ -z "$NO_RESTART" ]] && demyx wp --dom="$DOMAIN" --up
 		fi
 	elif [ -n "$RESTART" ]; then
@@ -966,12 +966,12 @@ elif [ "$1" = "wp" ]; then
 
 		# Future plans for subnets
 		#bash $ETC/functions/subnet.sh $DOMAIN $CONTAINER_NAME create
-		demyx_exec 'Generating .env' "$(bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "" "$FORCE")"
-		demyx_exec 'Generating .yml' "$(bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" $SSL)"
-		demyx_exec 'Generating nginx.conf' "$(bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE")" 
-		demyx_exec 'Generating php.ini' "$(bash "$ETC"/functions/php.sh "$CONTAINER_PATH" "$FORCE")"
-		demyx_exec 'Generating php-fpm.conf' "$(bash "$ETC"/functions/fpm.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE")"
-		demyx_exec 'Generating access/error logs' "$(bash "$ETC"/functions/logs.sh "$DOMAIN" "$FORCE")"
+		demyx_exec 'Creating .env' "$(bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "" "$FORCE")"
+		demyx_exec 'Creating .yml' "$(bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" $SSL)"
+		demyx_exec 'Creating nginx.conf' "$(bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE")" 
+		demyx_exec 'Creating php.ini' "$(bash "$ETC"/functions/php.sh "$CONTAINER_PATH" "$FORCE")"
+		demyx_exec 'Creating php-fpm.conf' "$(bash "$ETC"/functions/fpm.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE")"
+		demyx_exec 'Creating access/error logs' "$(bash "$ETC"/functions/logs.sh "$DOMAIN" "$FORCE")"
 
 		source "$CONTAINER_PATH"/.env
 
@@ -1096,10 +1096,16 @@ elif [ "$1" = "logs" ]; then
 		case $2 in
 			-h|-\?|--help)
 				echo
+				echo "  -c, --clear     Clear the logs"
+				echo "                  Example: demyx logs -c, demyx logs --clear"
+				echo
 				echo "  -f, --follow    Shorthand for tail -f"
-				echo "                  Example: demyx logs -f"
+				echo "                  Example: demyx logs -f, --follow"
 				echo
 				exit
+				;;
+			-c|--clear)
+				CLEAR=1
 				;;
 			-f|--follow)
 				FOLLOW=1
@@ -1120,6 +1126,8 @@ elif [ "$1" = "logs" ]; then
 
 	if [ -n "$FOLLOW" ]; then
 		demyx_exec 'demyx log -f' && tail -f "$LOGS"/demyx.log
+	elif [ -n "$CLEAR" ]; then
+		demyx_exec 'Clearing logs' "$(echo > "$LOGS"/demyx.log)"
 	else
 		demyx_exec 'demyx log' && less +G "$LOGS"/demyx.log
 	fi
@@ -1248,7 +1256,7 @@ else
 					demyx_exec 'Creating stack .env' "$(bash "$ETC"/functions/etc-env.sh)"
 					demyx_exec 'Creating stack .yml' "$(bash "$ETC"/functions/etc-yml.sh)"
 					demyx_exec 'Updating files' "$(rm -rf "$ETC"/functions; cp -R "$GIT"/etc/functions "$ETC")"
-					demyx_exec 'demyx stack -u' "$(demyx stack -u)"
+					demyx stack -u
 				else
 					echo -e "\e[32m[SUCCESS]\e[39m Already up to date"
 				fi
@@ -1281,7 +1289,7 @@ else
 		demyx_exec 'Making executable executable' "$(chmod +x /app/gitea/gitea)"
 		demyx_exec 'Changing executable to root' "$(sudo chown -R root:root /app/gitea)"
 		demyx_exec 'Creating git user' "$(sudo adduser git --gecos GECOS)"
-		demyx_exec 'Generating SSH keys for git user' "$(sudo -u git ssh-keygen -t rsa -b 4096 -C "Gitea Host Key")"
+		demyx_exec 'Creating SSH keys for git user' "$(sudo -u git ssh-keygen -t rsa -b 4096 -C "Gitea Host Key")"
 		demyx_exec 'Setting ownershp to git home directory' "$(sudo chown -R "$USER":"$USER" /home/git)"
 		demyx_exec 'Modifying authorized_keys for git user' "$(echo "no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty $(cat /home/git/.ssh/id_rsa.pub)" >> /home/git/.ssh/authorized_keys)"
 		demyx_exec 'Changing ownership back to git' "$(sudo chown -R git:git /home/git)"
