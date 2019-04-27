@@ -961,7 +961,13 @@ elif [ "$1" = "wp" ]; then
 			fi
 		fi
 	elif [ -n "$RUN" ]; then
-		[[ -d $CONTAINER_PATH ]] && demyx wp --rm="$DOMAIN"
+		if [ -d "$CONTAINER_PATH" ]; then
+			if [ -n "$FORCE" ]; then
+				demyx wp --remove="$DOMAIN" --force
+			else
+				demyx wp --remove="$DOMAIN"
+			fi
+		fi
 
 		echo -e "\e[34m[INFO]\e[39m Creating $DOMAIN"
 
