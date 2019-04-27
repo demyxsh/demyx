@@ -896,7 +896,10 @@ elif [ "$1" = "wp" ]; then
 		echo -e "\e[34m[INFO]\e[39m Restoring $DOMAIN"
 		demyx_exec 'Extracting archive' "$(tar -xzf "$APPS_BACKUP"/"$DOMAIN".tgz -C "$APPS")"
 		source "$CONTAINER_PATH"/.env
-		demyx wp --dom="$DOMAIN" --down
+		WP_CONTAINER_CHECK=$(docker ps -aq -f name="$WP")
+		DB_CONTAINER_CHECK=$(docker ps -aq -f name="$DB")
+		[[ -n "$WP_CONTAINER_CHECK" ]] && docker stop "$WP" && docker rm "$WP"
+		[[ -n "$DB_CONTAINER_CHECK" ]] && docker stop "$DB" && docker rm "$DB"
 		VOLUME_CHECK=$(docker volume ls)
 		[[ -n "$(grep wp_${WP_ID} <<< $VOLUME_CHECK || true)" ]] && demyx_exec 'Removing data volume' "$(docker volume rm wp_"$WP_ID")"
 		[[ -n "$(grep db_${WP_ID} <<< $VOLUME_CHECK || true)" ]] && demyx_exec 'Removing database volume' "$(docker volume rm db_"$WP_ID")"
@@ -937,6 +940,10 @@ elif [ "$1" = "wp" ]; then
 					cd "$APPS"/"$i"
 					docker-compose kill
 					docker-compose rm -f
+					WP_CONTAINER_CHECK=$(docker ps -aq -f name="$WP")
+					DB_CONTAINER_CHECK=$(docker ps -aq -f name="$DB")
+					[[ -n "$WP_CONTAINER_CHECK" ]] && docker stop "$WP" && docker rm "$WP"
+					[[ -n "$DB_CONTAINER_CHECK" ]] && docker stop "$DB" && docker rm "$DB"
 					[[ -n "$(grep wp_${WP_ID} <<< $VOLUME_CHECK || true)" ]] && demyx_exec 'Deleting data volume' "$(docker volume rm wp_"$WP_ID")" 
 					[[ -n "$(grep db_${WP_ID} <<< $VOLUME_CHECK || true)" ]] && demyx_exec 'Deleting db volume' "$(docker volume rm db_"$WP_ID")" 
 					[[ -f "$LOGS"/"$DOMAIN".access.log ]] && demyx_exec 'Deleting logs' "$(rm "$LOGS"/"$DOMAIN".access.log; rm "$LOGS"/"$DOMAIN".error.log)"
@@ -952,6 +959,10 @@ elif [ "$1" = "wp" ]; then
 				cd "$CONTAINER_PATH"
 				docker-compose kill
 				docker-compose rm -f
+				WP_CONTAINER_CHECK=$(docker ps -aq -f name="$WP")
+				DB_CONTAINER_CHECK=$(docker ps -aq -f name="$DB")
+				[[ -n "$WP_CONTAINER_CHECK" ]] && docker stop "$WP" && docker rm "$WP"
+				[[ -n "$DB_CONTAINER_CHECK" ]] && docker stop "$DB" && docker rm "$DB"
 				[[ -n "$(grep wp_${WP_ID} <<< $VOLUME_CHECK || true)" ]] && demyx_exec 'Deleting data volume' "$(docker volume rm wp_"$WP_ID")" 
 				[[ -n "$(grep db_${WP_ID} <<< $VOLUME_CHECK || true)" ]] && demyx_exec 'Deleting db volume' "$(docker volume rm db_"$WP_ID")" 
 				[[ -f "$LOGS"/"$DOMAIN".access.log ]] && demyx_exec 'Deleting logs' "$(rm "$LOGS"/"$DOMAIN".access.log; rm "$LOGS"/"$DOMAIN".error.log)"
