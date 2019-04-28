@@ -898,6 +898,7 @@ elif [ "$1" = "wp" ]; then
 		source "$CONTAINER_PATH"/.env
 		WP_CONTAINER_CHECK=$(docker ps -aq -f name="$WP")
 		DB_CONTAINER_CHECK=$(docker ps -aq -f name="$DB")
+		sleep 5
 		[[ -n "$WP_CONTAINER_CHECK" ]] && docker stop "$WP" && docker rm "$WP"
 		[[ -n "$DB_CONTAINER_CHECK" ]] && docker stop "$DB" && docker rm "$DB"
 		VOLUME_CHECK=$(docker volume ls)
@@ -942,6 +943,7 @@ elif [ "$1" = "wp" ]; then
 					docker-compose rm -f
 					WP_CONTAINER_CHECK=$(docker ps -aq -f name="$WP")
 					DB_CONTAINER_CHECK=$(docker ps -aq -f name="$DB")
+					sleep 5
 					[[ -n "$WP_CONTAINER_CHECK" ]] && docker stop "$WP" && docker rm "$WP"
 					[[ -n "$DB_CONTAINER_CHECK" ]] && docker stop "$DB" && docker rm "$DB"
 					[[ -n "$(grep wp_${WP_ID} <<< $VOLUME_CHECK || true)" ]] && demyx_exec 'Deleting data volume' "$(docker volume rm wp_"$WP_ID")" 
@@ -959,6 +961,7 @@ elif [ "$1" = "wp" ]; then
 				cd "$CONTAINER_PATH"
 				docker-compose kill
 				docker-compose rm -f
+				sleep 5
 				WP_CONTAINER_CHECK=$(docker ps -aq -f name="$WP")
 				DB_CONTAINER_CHECK=$(docker ps -aq -f name="$DB")
 				[[ -n "$WP_CONTAINER_CHECK" ]] && docker stop "$WP" && docker rm "$WP"

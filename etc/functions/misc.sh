@@ -4,7 +4,7 @@
 # Table Library by: https://github.com/gdbtek/linux-cookbooks/blob/master/libraries/util.bash
 
 die() {
-    printf '\n\e[31m[CRITICAL]\e[39m %s\n\n' "$1" >&2
+    printf '\e[31m[CRITICAL]\e[39m %s\n' "$1" >&2
     exit 1
 }
 
