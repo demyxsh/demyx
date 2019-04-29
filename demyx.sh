@@ -847,14 +847,13 @@ elif [ "$1" = "wp" ]; then
 					CONTAINER_NAME=${DOMAIN//./_}
 					CACHE_CHECK=$(grep -s "FASTCGI_CACHE=on" "$CONTAINER_PATH"/.env || true)
 					[[ -n "$CACHE_CHECK" ]] && CACHE=on
-					[[ -z "$NO_RESTART" ]] && demyx wp --dom="$i" --down
 					demyx_exec 'Creating .env' "$(bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "$CACHE" "$FORCE")"
 					demyx_exec 'Creating .yml' "$(bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" $SSL)"
 					demyx_exec 'Creating nginx.conf' "$(bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE")" 
 					demyx_exec 'Creating php.ini' "$(bash "$ETC"/functions/php.sh "$CONTAINER_PATH" "$FORCE")"
 					demyx_exec 'Creating php-fpm.conf' "$(bash "$ETC"/functions/fpm.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE")"
 					demyx_exec 'Creating access/error logs' "$(bash "$ETC"/functions/logs.sh "$DOMAIN" "$FORCE")"
-					[[ -z "$NO_RESTART" ]] && demyx wp --dom="$i" --up
+					[[ -z "$NO_RESTART" ]] && demyx wp --dom="$i" --down && demyx wp --dom="$i" --up
 				fi
 			done
 		else
@@ -871,7 +870,7 @@ elif [ "$1" = "wp" ]; then
 			demyx_exec 'Creating php.ini' "$(bash "$ETC"/functions/php.sh "$CONTAINER_PATH" "$FORCE")"
 			demyx_exec 'Creating php-fpm.conf' "$(bash "$ETC"/functions/fpm.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE")"
 			demyx_exec 'Creating access/error logs' "$(bash "$ETC"/functions/logs.sh "$DOMAIN" "$FORCE")"
-			[[ -z "$NO_RESTART" ]] && demyx wp --dom="$DOMAIN" --up
+			[[ -z "$NO_RESTART" ]] && demyx wp --dom="$DOMAIN" --down && demyx wp --dom="$DOMAIN" --up
 		fi
 	elif [ -n "$RESTART" ]; then
 		cd "$APPS" || exit
