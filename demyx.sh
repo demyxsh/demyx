@@ -1221,7 +1221,7 @@ else
 			-t|--top)
 				CTOP_CHECK=$(docker ps | grep ctop | awk '{print $1}' || true)
 				[[ -n "$CTOP_CHECK" ]] && demyx_exec 'Stopping old ctop container' "$(docker stop "$CTOP_CHECK")"
-				demyx_exec 'Starting ctop' && docker run --rm -ti -v /var/run/docker.sock:/var/run/docker.sock:ro quay.io/vektorlab/ctop
+				demyx_exec 'Starting ctop' && docker run --rm -ti --name ctop -v /var/run/docker.sock:/var/run/docker.sock:ro quay.io/vektorlab/ctop
 				;;
 			-u|--update)
 				# Cron check
