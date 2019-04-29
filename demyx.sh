@@ -689,8 +689,6 @@ elif [ "$1" = "wp" ]; then
 
 			demyx_exec 'Creating SSH container' "$(docker run -d --rm --name ssh -v ssh:/home/www-data/.ssh -v wp_"$WP_ID":/var/www/html -p "$PORT":22 demyx/ssh)"
 
-			demyx wp --dom="$DOMAIN" --cache=off
-
 			PRINT_TABLE="SFTP ADDRESS, $PRIMARY_DOMAIN\n"
 			PRINT_TABLE+="SFTP USER, www-data\n"
 			PRINT_TABLE+="SFTP PORT, $PORT"
@@ -707,8 +705,6 @@ elif [ "$1" = "wp" ]; then
 			demyx_exec 'Stopping SSH container' "$(docker stop ssh)"
 			demyx_exec 'Restarting NGINX' "$(docker exec -it "$WP" sh -c "printf ',s/sendfile off/sendfile on/g\nw\n' | ed /etc/nginx/nginx.conf; nginx -s reload")"
 			demyx_exec 'Restarting php-fpm' "$(docker exec -it "$WP" sh -c "mv /docker-php-ext-opcache.ini /usr/local/etc/php/conf.d; pkill php-fpm; php-fpm -D")"
-
-			demyx wp --dom="$DOMAIN" --cache
 		elif [ "$DEV" = check ] && [ -n "$ALL" ]; then
 			cd "$APPS" || exit
 			for i in *
