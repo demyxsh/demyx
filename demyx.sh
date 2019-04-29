@@ -689,6 +689,8 @@ elif [ "$1" = "wp" ]; then
 
 			demyx_exec 'Creating SSH container' "$(docker run -d --rm --name ssh -v ssh:/home/www-data/.ssh -v wp_"$WP_ID":/var/www/html -p "$PORT":22 demyx/ssh)"
 
+			demyx wp --dom="$DOMAIN" --cache=off
+
 			PRINT_TABLE="SFTP ADDRESS, $PRIMARY_DOMAIN\n"
 			PRINT_TABLE+="SFTP USER, www-data\n"
 			PRINT_TABLE+="SFTP PORT, $PORT"
@@ -705,6 +707,8 @@ elif [ "$1" = "wp" ]; then
 			demyx_exec 'Stopping SSH container' "$(docker stop ssh)"
 			demyx_exec 'Restarting NGINX' "$(docker exec -it "$WP" sh -c "printf ',s/sendfile off/sendfile on/g\nw\n' | ed /etc/nginx/nginx.conf; nginx -s reload")"
 			demyx_exec 'Restarting php-fpm' "$(docker exec -it "$WP" sh -c "mv /docker-php-ext-opcache.ini /usr/local/etc/php/conf.d; pkill php-fpm; php-fpm -D")"
+
+			demyx wp --dom="$DOMAIN" --cache
 		elif [ "$DEV" = check ] && [ -n "$ALL" ]; then
 			cd "$APPS" || exit
 			for i in *
@@ -886,15 +890,13 @@ elif [ "$1" = "wp" ]; then
 			do
 				WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env || true)
 				[[ -z "$WP_CHECK" ]] && continue
-				cd "$APPS"/"$i"
-				docker-compose restart
+				cd "$APPS"/"$i" && docker-compose restart
 			done
 		else
 			WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env || true)
 			[[ -z "$WP_CHECK" ]] && die 'Not a WordPress app.'
 			[[ -z "$DOMAIN" ]] && die 'Domain is missing, use --dom or --restart=domain.tld'
-			cd "$CONTAINER_PATH"
-			docker-compose restart
+			cd "$CONTAINER_PATH" && docker-compose restart
 		fi
 	elif [ -n "$RESTORE" ]; then
 		[[ -d "$CONTAINER_PATH" ]] && demyx wp --dom="$DOMAIN" --remove
@@ -944,9 +946,7 @@ elif [ "$1" = "wp" ]; then
 				echo -e "\e[31m[CRITICAL]\e[39m Removing $i"
 				if [ -n "$WP_CHECK" ]; then
 					source "$APPS"/"$i"/.env
-					cd "$APPS"/"$i"
-					docker-compose kill
-					docker-compose rm -f
+					cd "$APPS"/"$i" && docker-compose kill && docker-compose rm -f
 					WP_CONTAINER_CHECK=$(docker ps -aq -f name="$WP")
 					DB_CONTAINER_CHECK=$(docker ps -aq -f name="$DB")
 					sleep 5
@@ -964,9 +964,7 @@ elif [ "$1" = "wp" ]; then
 			if [ -n "$WP_CHECK" ]; then
 				source "$CONTAINER_PATH"/.env
 				echo -e "\e[31m[CRITICAL]\e[39m Removing $DOMAIN"
-				cd "$CONTAINER_PATH"
-				docker-compose kill
-				docker-compose rm -f
+				cd "$CONTAINER_PATH" && docker-compose kill && docker-compose rm -f
 				sleep 5
 				WP_CONTAINER_CHECK=$(docker ps -aq -f name="$WP")
 				DB_CONTAINER_CHECK=$(docker ps -aq -f name="$DB")
@@ -1007,8 +1005,7 @@ elif [ "$1" = "wp" ]; then
 		demyx_exec 'Creating data volume' "$(docker volume create wp_"$WP_ID")"
 		demyx_exec 'Creating db volume' "$(docker volume create db_"$WP_ID")"
 
-		cd "$CONTAINER_PATH" || exit
-		docker-compose up -d --remove-orphans
+		cd "$CONTAINER_PATH" && docker-compose up -d --remove-orphans
 
 		if [ -n "$ADMIN_EMAIL" ]; then
 			WORDPRESS_EMAIL="$ADMIN_EMAIL"
@@ -1037,8 +1034,7 @@ elif [ "$1" = "wp" ]; then
 			docker exec -it "$DB" sh
 		fi
 	elif [ -n "$SCALE" ]; then
-		cd "$CONTAINER_PATH" || exit
-		source .env
+		cd "$CONTAINER_PATH" && source .env
 		[[ -z "$SERVICE" ]] && echo -e "\e[33m[WARNING]\e[39m --service is missing, targeting all services..."
 		if [ "$SERVICE" = wp ]; then
 			docker-compose up -d --scale wp_"${WP_ID}"="$SCALE" wp_"${WP_ID}"
