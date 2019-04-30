@@ -1252,13 +1252,13 @@ elif [ "$1" = "wp" ]; then
 		demyx wp --dom="$DOMAIN" --service=wp --action=up
 	elif [ -n "$REMOVE" ]; then
 		if [ -z "$FORCE" ]; then
-			echo -e "\e[33m"
+			echo -en "\e[33m"
 			if [ -z "$DOMAIN" ]; then
 				read -rep "[WARNING] Delete all sites? [yY]: " DELETE_SITE
 			else
-				read -rep "[WARNING] Delete/overwrite $DOMAIN? [yY]: " DELETE_SITE
+				read -rep "[WARNING] Delete $DOMAIN? [yY]: " DELETE_SITE
 			fi
-			echo -e "\e[39m"
+			echo -en "\e[39m"
 
 			[[ "$DELETE_SITE" != [yY] ]] && die 'Cancel removal of site(s)'
 		fi
@@ -1335,9 +1335,9 @@ elif [ "$1" = "wp" ]; then
 	elif [ -n "$RUN" ]; then
 		if [ -d "$CONTAINER_PATH" ]; then
 			if [ -n "$FORCE" ]; then
-				demyx wp --remove="$DOMAIN" --force
+				demyx wp --dom="$DOMAIN" --remove --force
 			else
-				demyx wp --remove="$DOMAIN"
+				demyx wp --dom="$DOMAIN" --remove
 			fi
 		fi
 		# Future plans for subnets
