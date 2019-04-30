@@ -5,6 +5,7 @@
 DOMAIN=$1
 EMAIL=$2
 CONTAINER_PATH=$3
+COMMAND='bash -c "for i in \`seq 1 30\`; do mongo db/rocketchat --eval \"rs.initiate({ _id: ''rs0'', members: [ { _id: 0, host: ''localhost:27017'' } ]})\" && s=$$? && break || s=$$?; echo \"Tried $$i times. Waiting 5 secs...\"; sleep 5; done; (exit $$s)"'
 
 cat > "$CONTAINER_PATH"/.env <<-EOF
 DOMAIN=$DOMAIN
@@ -16,14 +17,28 @@ cat > "$CONTAINER_PATH"/docker-compose.yml <<-EOF
 version: '3.7'
 
 services:
+  mongo:
+    image: mongo:4.0
+    restart: unless-stopped
+    volumes:
+     - rocketchat_db:/data/db
+     - rocketchat_dump:/dump
+    command: mongod --smallfiles --oplogSize 128 --replSet rs0 --storageEngine=mmapv1
+    networks:
+      - traefik
+  mongo-init-replica:
+    image: mongo:4.0
+    command: $COMMAND
+    depends_on:
+      - mongo
+    networks:
+      - traefik
   rocketchat:
     image: rocketchat/rocket.chat:latest
     restart: unless-stopped
-    volumes:
-      - rocketchat:/app/uploads
     environment:
-      - MONGO_URL=mongodb://mongo:27017/rocketchat
-      - MONGO_OPLOG_URL=mongodb://mongo:27017/local
+      - MONGO_URL=mongodb://mongo:27017/rocketchat?replSet=rs0
+      - MONGO_OPLOG_URL=mongodb://mongo:27017/local?replSet=rs0
       - MAIL_URL=smtp://\$EMAIL
     depends_on:
       - mongo
@@ -40,26 +55,7 @@ services:
       - "traefik.frontend.headers.STSPreload=true"
     networks:
       - traefik
-  mongo:
-    image: mongo:4.0
-    restart: unless-stopped
-    volumes:
-     - rocketchat_db:/data/db
-     - rocketchat_dump:/dump
-    command: mongod --smallfiles --oplogSize 128 --replSet rs0 --storageEngine=mmapv1
-    networks:
-      - traefik
-  mongo-init-replica:
-    image: mongo:4.0
-    command: 'mongo mongo/rocketchat --eval "rs.initiate({ _id: ''rs0'', members: [ { _id: 0, host: ''localhost:27017'' } ]})"'
-    depends_on:
-      - mongo
-    networks:
-      - traefik
 volumes:
-  rocketchat:
-    name: rocketchat
-  rocketchat_db:
     name: rocketchat_db
   rocketchat_dump:
     name: rocketchat_dump
