@@ -956,14 +956,10 @@ elif [ "$1" = "wp" ]; then
 			for i in *
 			do
 				WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env || true)
-				[[ -n "$WP_CHECK" ]] && demyx_exec 'Checking for warnings' "$(
-					bash "$ETC"/functions/warnings.sh "$i"
-				)"
+				[[ -n "$WP_CHECK" ]] && bash "$ETC"/functions/warnings.sh "$i"
 			done
 		elif [ "$DEV" = check ] && [ -n "$DOMAIN" ]; then
-			[[ -n "$WP_CHECK" ]] && demyx_exec 'Checking for warnings' "$(
-				bash "$ETC"/functions/warnings.sh "$DOMAIN"
-			)"
+			[[ -n "$WP_CHECK" ]] && bash "$ETC"/functions/warnings.sh "$DOMAIN"
 		else
 			die "--dev=$DEV not found"
 		fi
