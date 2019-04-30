@@ -698,7 +698,7 @@ elif [ "$1" = "wp" ]; then
 			done
 
 			demyx_exec 'Creating SSH container' "$(docker run -d --rm --name ssh -v ssh:/home/www-data/.ssh -v wp_"$WP_ID":/var/www/html -p "$PORT":22 demyx/ssh)"
-			demyx_exec 'Creating BrowserSync container' "$(docker run -dt --rm --name ${DOMAIN//./}_bs --net traefik --volumes-from "$WP" -p "$BROWSER_SYNC":"$BROWSER_SYNC" -p "$BROWSER_SYNC_UI":"$BROWSER_SYNC_UI" demyx/browsersync start --proxy "$WP" --files "/var/www/html/**/*" --watch --host "$DOMAIN" --port "$BROWSER_SYNC" --ui-port "$BROWSER_SYNC_UI")"
+			demyx_exec 'Creating BrowserSync container' "$(docker run -dt --rm --name ${DOMAIN//./}_bs --net traefik --volumes-from "$WP" -p "$BROWSER_SYNC":"$BROWSER_SYNC" -p "$BROWSER_SYNC_UI":"$BROWSER_SYNC_UI" demyx/browsersync start --proxy "$WP" --files "/var/www/html/**/*" --host "$DOMAIN" --port "$BROWSER_SYNC" --ui-port "$BROWSER_SYNC_UI")"
 			[[ -n "$AUTOVER_CHECK" ]] && demyx_exec 'Activating autover plugin' "$(docker run -it --rm --volumes-from "$WP" --network container:"$WP" wordpress:cli plugin activate autover)"
 			[[ -z "$AUTOVER_CHECK" ]] && demyx_exec 'Installing autover plugin' "$(docker run -it --rm --volumes-from "$WP" --network container:"$WP" wordpress:cli plugin install autover --activate)"
 			demyx_exec 'Restarting NGINX' "$(docker exec -it "$WP" sh -c "printf ',s/sendfile on/sendfile off/g\nw\n' | ed /etc/nginx/nginx.conf; nginx -s reload")"
