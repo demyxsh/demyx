@@ -663,6 +663,9 @@ elif [ "$1" = "wp" ]; then
 		SSH_CONTAINER_CHECK=$(docker ps -aq -f name=ssh)
 		SSH_VOLUME_CHECK=$(docker volume ls | grep ssh || true)
 		WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env || true)
+		BROWSER_SYNC=3000
+		BROWSER_SYNC_UI=3200
+		[[ -z "$PORT" ]] && PORT=2222
 
 		if [ -z "$SSH_VOLUME_CHECK" ] && [ "$DEV" != check ]; then
 			echo -e "\e[34m[INFO]\e[39m SSH volume not found, creating now..."
@@ -682,16 +685,28 @@ elif [ "$1" = "wp" ]; then
 
 			echo -e "\e[34m[INFO]\e[39m Turning on development mode for $DOMAIN"
 
-			demyx_exec 'Restarting NGINX' "$(docker exec -it "$WP" sh -c "printf ',s/sendfile on/sendfile off/g\nw\n' | ed /etc/nginx/nginx.conf; nginx -s reload")"
-			demyx_exec 'Restarting php-fpm' "$(docker exec -it "$WP" sh -c "mv /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini /; pkill php-fpm; php-fpm -D")"
-			
-			[[ -z "$PORT" ]] && PORT=2222
+			while true; do
+				OPEN_PORT=$(netstat -tuplen 2>/dev/null | grep :::"$BROWSER_SYNC" || true)
+				OPEN_PORT_UI=$(netstat -tuplen 2>/dev/null | grep :::"$BROWSER_SYNC_UI" || true)
+				if [ -z "$OPEN_PORT" ] && [ -z "$OPEN_PORT_UI" ]; then
+					break
+				else
+					BROWSER_SYNC=$((BROWSER_SYNC+1))
+					BROWSER_SYNC_UI=$((BROWSER_SYNC_UI+1))
+				fi
+			done
 
 			demyx_exec 'Creating SSH container' "$(docker run -d --rm --name ssh -v ssh:/home/www-data/.ssh -v wp_"$WP_ID":/var/www/html -p "$PORT":22 demyx/ssh)"
+			demyx_exec 'Creating Browsersync container' "$(docker run -dt --rm --name ${DOMAIN//./}_bs --net traefik --volumes-from "$WP" -p "$BROWSER_SYNC":"$BROWSER_SYNC" -p "$BROWSER_SYNC_UI":"$BROWSER_SYNC_UI" demyx/browsersync start --proxy "$WP" --files "/var/www/html/**/*" --watch --host "$DOMAIN" --port "$BROWSER_SYNC" --ui-port "$BROWSER_SYNC_UI")"
+			demyx_exec 'Restarting NGINX' "$(docker exec -it "$WP" sh -c "printf ',s/sendfile on/sendfile off/g\nw\n' | ed /etc/nginx/nginx.conf; nginx -s reload")"
+			demyx_exec 'Restarting php-fpm' "$(docker exec -it "$WP" sh -c "mv /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini /; pkill php-fpm; php-fpm -D")"
 
-			PRINT_TABLE="SFTP ADDRESS, $PRIMARY_DOMAIN\n"
+			PRINT_TABLE="$(echo "$DOMAIN" | tr a-z A-Z), DEVELOPMENT MODE\n"
+			PRINT_TABLE+="SFTP, $PRIMARY_DOMAIN\n"
 			PRINT_TABLE+="SFTP USER, www-data\n"
-			PRINT_TABLE+="SFTP PORT, $PORT"
+			PRINT_TABLE+="SFTP PORT, $PORT\n"
+			PRINT_TABLE+="BROWSERSYNC, ${DOMAIN}:${BROWSER_SYNC}\n"
+			PRINT_TABLE+="BROWSERSYNC UI, ${DOMAIN}:${BROWSER_SYNC_UI}"
 
 			printTable ',' "$(echo -e $PRINT_TABLE)"
 		elif [ "$DEV" = off ]; then
@@ -703,6 +718,7 @@ elif [ "$1" = "wp" ]; then
 			echo -e "\e[34m[INFO]\e[39m Turning off development mode for $DOMAIN"
 			
 			demyx_exec 'Stopping SSH container' "$(docker stop ssh)"
+			demyx_exec 'Stopping Browsersync container' "$(docker stop ${DOMAIN//./}_bs)"
 			demyx_exec 'Restarting NGINX' "$(docker exec -it "$WP" sh -c "printf ',s/sendfile off/sendfile on/g\nw\n' | ed /etc/nginx/nginx.conf; nginx -s reload")"
 			demyx_exec 'Restarting php-fpm' "$(docker exec -it "$WP" sh -c "mv /docker-php-ext-opcache.ini /usr/local/etc/php/conf.d; pkill php-fpm; php-fpm -D")"
 		elif [ "$DEV" = check ] && [ -n "$ALL" ]; then
@@ -945,11 +961,12 @@ elif [ "$1" = "wp" ]; then
 					cd "$APPS"/"$i" && docker-compose kill && docker-compose rm -f
 					WP_CONTAINER_CHECK=$(docker ps -aq -f name="$WP")
 					DB_CONTAINER_CHECK=$(docker ps -aq -f name="$DB")
-					sleep 5
+					BROWSERSYNC_CONTAINER_CHECK=$(docker ps -aq -f name=${DOMAIN//./}_bs)
 					[[ -n "$WP_CONTAINER_CHECK" ]] && docker stop "$WP" && docker rm "$WP"
 					[[ -n "$DB_CONTAINER_CHECK" ]] && docker stop "$DB" && docker rm "$DB"
 					[[ -n "$(grep wp_${WP_ID} <<< $VOLUME_CHECK || true)" ]] && demyx_exec 'Deleting data volume' "$(docker volume rm wp_"$WP_ID")" 
 					[[ -n "$(grep db_${WP_ID} <<< $VOLUME_CHECK || true)" ]] && demyx_exec 'Deleting db volume' "$(docker volume rm db_"$WP_ID")" 
+					[[ -n "$BROWSERSYNC_CONTAINER_CHECK" ]] && demyx_exec 'Stopping Browsersync container' "$(docker stop "$BROWSERSYNC_CONTAINER_CHECK")"
 					[[ -f "$LOGS"/"$DOMAIN".access.log ]] && demyx_exec 'Deleting logs' "$(rm "$LOGS"/"$DOMAIN".access.log; rm "$LOGS"/"$DOMAIN".error.log)"
 					demyx_exec 'Deleting directory' "$(rm -rf "$APPS"/"$i")"
 				fi
@@ -964,10 +981,13 @@ elif [ "$1" = "wp" ]; then
 				sleep 5
 				WP_CONTAINER_CHECK=$(docker ps -aq -f name="$WP")
 				DB_CONTAINER_CHECK=$(docker ps -aq -f name="$DB")
+				BROWSERSYNC_CONTAINER_CHECK=$(docker ps -aq -f name=${DOMAIN//./}_bs)
+				[[ -n "$BROWSERSYNC_CONTAINER_CHECK" ]] && docker stop "$BROWSERSYNC_CONTAINER_CHECK"
 				[[ -n "$WP_CONTAINER_CHECK" ]] && docker stop "$WP" && docker rm "$WP"
 				[[ -n "$DB_CONTAINER_CHECK" ]] && docker stop "$DB" && docker rm "$DB"
 				[[ -n "$(grep wp_${WP_ID} <<< $VOLUME_CHECK || true)" ]] && demyx_exec 'Deleting data volume' "$(docker volume rm wp_"$WP_ID")" 
 				[[ -n "$(grep db_${WP_ID} <<< $VOLUME_CHECK || true)" ]] && demyx_exec 'Deleting db volume' "$(docker volume rm db_"$WP_ID")" 
+				[[ -n "$BROWSERSYNC_CONTAINER_CHECK" ]] && demyx_exec 'Stopping Browsersync container' "$(docker stop "$BROWSERSYNC_CONTAINER_CHECK")"
 				[[ -f "$LOGS"/"$DOMAIN".access.log ]] && demyx_exec 'Deleting logs' "$(rm "$LOGS"/"$DOMAIN".access.log; rm "$LOGS"/"$DOMAIN".error.log)"
 				demyx_exec 'Deleting directory' "$(rm -rf "$CONTAINER_PATH")"
 			else
