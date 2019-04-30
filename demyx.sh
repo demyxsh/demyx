@@ -684,6 +684,7 @@ elif [ "$1" = "wp" ]; then
 			[[ -n "$SSH_CONTAINER_CHECK" ]] && demyx_exec 'SSH container detected, stopping now' "$(docker stop ssh)"
 
 			echo -e "\e[34m[INFO]\e[39m Turning on development mode for $DOMAIN"
+			AUTOVER_CHECK=$(docker exec -it "$WP" sh -c 'ls wp-content/plugins' | grep autover || true)
 
 			while true; do
 				OPEN_PORT=$(netstat -tuplen 2>/dev/null | grep :::"$BROWSER_SYNC" || true)
@@ -698,6 +699,8 @@ elif [ "$1" = "wp" ]; then
 
 			demyx_exec 'Creating SSH container' "$(docker run -d --rm --name ssh -v ssh:/home/www-data/.ssh -v wp_"$WP_ID":/var/www/html -p "$PORT":22 demyx/ssh)"
 			demyx_exec 'Creating BrowserSync container' "$(docker run -dt --rm --name ${DOMAIN//./}_bs --net traefik --volumes-from "$WP" -p "$BROWSER_SYNC":"$BROWSER_SYNC" -p "$BROWSER_SYNC_UI":"$BROWSER_SYNC_UI" demyx/browsersync start --proxy "$WP" --files "/var/www/html/**/*" --watch --host "$DOMAIN" --port "$BROWSER_SYNC" --ui-port "$BROWSER_SYNC_UI")"
+			[[ -n "$AUTOVER_CHECK" ]] && demyx_exec 'Activating autover plugin' "$(docker run -it --rm --volumes-from "$WP" --network container:"$WP" wordpress:cli plugin activate autover)"
+			[[ -z "$AUTOVER_CHECK" ]] && demyx_exec 'Installing autover plugin' "$(docker run -it --rm --volumes-from "$WP" --network container:"$WP" wordpress:cli plugin install autover --activate)"
 			demyx_exec 'Restarting NGINX' "$(docker exec -it "$WP" sh -c "printf ',s/sendfile on/sendfile off/g\nw\n' | ed /etc/nginx/nginx.conf; nginx -s reload")"
 			demyx_exec 'Restarting php-fpm' "$(docker exec -it "$WP" sh -c "mv /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini /; pkill php-fpm; php-fpm -D")"
 
@@ -716,9 +719,10 @@ elif [ "$1" = "wp" ]; then
 				[[ -n "$DEV_MODE_CHECK" ]] && die "Development mode is already turned off for $DOMAIN"
 			fi
 			echo -e "\e[34m[INFO]\e[39m Turning off development mode for $DOMAIN"
-			
+			AUTOVER_CHECK=$(docker exec -it "$WP" sh -c 'ls wp-content/plugins' | grep autover || true)
 			demyx_exec 'Stopping SSH container' "$(docker stop ssh)"
 			demyx_exec 'Stopping BrowserSync container' "$(docker stop ${DOMAIN//./}_bs)"
+			demyx_exec 'Deactivating autover' "$(docker run -it --rm --volumes-from "$WP" --network container:"$WP" wordpress:cli plugin deactivate autover)"
 			demyx_exec 'Restarting NGINX' "$(docker exec -it "$WP" sh -c "printf ',s/sendfile off/sendfile on/g\nw\n' | ed /etc/nginx/nginx.conf; nginx -s reload")"
 			demyx_exec 'Restarting php-fpm' "$(docker exec -it "$WP" sh -c "mv /docker-php-ext-opcache.ini /usr/local/etc/php/conf.d; pkill php-fpm; php-fpm -D")"
 		elif [ "$DEV" = check ] && [ -n "$ALL" ]; then
