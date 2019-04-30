@@ -1115,13 +1115,15 @@ elif [ "$1" = "wp" ]; then
 					CONTAINER_PATH=$APPS/$DOMAIN
 					CONTAINER_NAME=${DOMAIN//./_}
 					CACHE_CHECK=$(grep -s "FASTCGI_CACHE=on" "$CONTAINER_PATH"/.env || true)
+					SSL_CHECK=$(grep -s "https" "$CONTAINER_PATH"/docker-compose.yml || true)
 					[[ -n "$CACHE_CHECK" ]] && CACHE=on
+					[[ -n "$SSL_CHECK" ]] && SSL=on
 					
 					demyx_exec 'Creating .env' "$(
 						bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "$CACHE" "$FORCE"
 					)"
 					demyx_exec 'Creating .yml' "$(
-						bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" $SSL
+						bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
 					)"
 					demyx_exec 'Creating nginx.conf' "$(
 						bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE"
@@ -1142,7 +1144,9 @@ elif [ "$1" = "wp" ]; then
 		else
 			WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env || true)
 			CACHE_CHECK=$(grep -s "FASTCGI_CACHE=on" "$CONTAINER_PATH"/.env || true)
+			SSL_CHECK=$(grep -s "https" "$CONTAINER_PATH"/docker-compose.yml || true)
 			[[ -n "$CACHE_CHECK" ]] && CACHE=on
+			[[ -n "$SSL_CHECK" ]] && SSL=on
 			[[ -z "$WP_CHECK" ]] && die 'Not a WordPress app.'
 			[[ -z "$DOMAIN" ]] && die 'Domain is missing or add --all'
 			echo -e "\e[34m[INFO]\e[39m Refreshing $DOMAIN"
@@ -1151,7 +1155,7 @@ elif [ "$1" = "wp" ]; then
 				bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "$CACHE" "$FORCE"
 			)"
 			demyx_exec 'Creating .yml' "$(
-				bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" $SSL
+				bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
 			)"
 			demyx_exec 'Creating nginx.conf' "$(
 				bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE"
