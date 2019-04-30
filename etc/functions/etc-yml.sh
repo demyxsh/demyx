@@ -63,15 +63,6 @@ services:
       TZ: America/Los_Angeles
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-  autoheal:
-    container_name: autoheal
-    image: willfarrell/autoheal
-    restart: unless-stopped
-    network_mode: none
-    environment:
-      AUTOHEAL_CONTAINER_LABEL: "all"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
 networks:
   traefik:
     name: traefik

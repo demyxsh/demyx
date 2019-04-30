@@ -81,11 +81,6 @@ services:
       MARIADB_WRITE_BUFFER: \${MARIADB_WRITE_BUFFER}
       MARIADB_MAX_CONNECTIONS: \${MARIADB_MAX_CONNECTIONS}
       TZ: America/Los_Angeles
-    healthcheck:
-      test: mysqladmin ping -h localhost -u \${WORDPRESS_DB_USER} -p\${WORDPRESS_DB_PASSWORD} || exit 1
-      interval: \${HEALTHCHECK_INTERVAL}
-      timeout: \${HEALTHCHECK_TIMEOUT}
-      retries: \${HEALTHCHECK_RETRIES}
   wp_${WP_ID}:
     image: demyx/nginx-php-wordpress
     restart: unless-stopped
@@ -111,11 +106,6 @@ services:
       - "traefik.frontend.redirect.regex=^www.\${DOMAIN}/(.*)"
       - "traefik.frontend.redirect.replacement=\${DOMAIN}/\$\$1"
       $PROTOCOL
-    healthcheck:
-      test: curl --fail --silent http://localhost || exit 1
-      interval: \${HEALTHCHECK_INTERVAL}
-      timeout: \${HEALTHCHECK_TIMEOUT}
-      retries: \${HEALTHCHECK_RETRIES}
 volumes:
   db_${WP_ID}:
     name: db_${WP_ID}
