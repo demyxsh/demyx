@@ -884,7 +884,7 @@ elif [ "$1" = "wp" ]; then
 				docker run -d --rm \
 				--name ${DOMAIN//./}_ssh \
 				-v ssh:/home/www-data/.ssh \
-				-v wp_"$WP_ID":/var/www/html \
+				--volumes-from "$WP" \
 				-p "$SSH_PORT":22 \
 				demyx/ssh
 			)"
