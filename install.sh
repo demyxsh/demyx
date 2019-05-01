@@ -62,8 +62,8 @@ sudo docker pull quay.io/vektorlab/ctop
 
 # Create our proxy network and group
 sudo docker network create traefik
-sudo groupadd demyx -g 82
-sudo usermod -aG 82 "$USER"
+#sudo groupadd demyx -g 82
+#sudo usermod -aG 82 "$USER"
 
 # Create the initial directories and files
 DIR="/srv/demyx"
