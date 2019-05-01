@@ -168,9 +168,6 @@ elif [ "$1" = "wp" ]; then
 				echo "  --pma           Enable phpmyadmin: pma.primary-domain.tld"
 				echo "                  Example: demyx wp --dom=domain.tld --pma, demyx wp --dom=domain.tld --pma=off"
 				echo
-				echo "  --port          Sets SFTP port for --dev, defaults to 2222"
-				echo "                  Example: demyx wp --dom=domain.tld --dev --port=2022"
-				echo
 				echo "  --rate-limit    Enable/disable rate limit requests for NGINX"
 				echo "                  Example: demyx wp --dom=domain.tld --rate-limit, demyx wp --dom=domain.tld --rate-limit=off"
 				echo
@@ -832,7 +829,6 @@ elif [ "$1" = "wp" ]; then
 		WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env || true)
 		BROWSER_SYNC=3000
 		BROWSER_SYNC_UI=3200
-		[[ -z "$PORT" ]] && PORT=2222
 
 		if [ -z "$SSH_VOLUME_CHECK" ] && [ "$DEV" != check ]; then
 			echo -e "\e[34m[INFO]\e[39m SSH volume not found, creating now..."
