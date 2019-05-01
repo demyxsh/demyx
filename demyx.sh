@@ -889,7 +889,7 @@ elif [ "$1" = "wp" ]; then
 				demyx/ssh
 			)"
 			demyx_exec 'Creating BrowserSync container' "$(
-				docker run -dt --rm \
+				docker run -d --rm \
 				--name ${DOMAIN//./}_bs \
 				--net traefik \
 				--volumes-from "$WP" \
