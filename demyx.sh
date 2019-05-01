@@ -824,11 +824,11 @@ elif [ "$1" = "wp" ]; then
 		PRINT_TABLE+="WORDPRESS PASSWORD, $WORDPRESS_USER_PASSWORD"
 		printTable ',' "$(echo -e $PRINT_TABLE)"
 	elif [ -n "$DEV" ] && [ -z "$RUN" ] && [ -z "$CLONE" ]; then
-		SSH_CONTAINER_CHECK=$(docker ps -aq -f name=ssh)
 		SSH_VOLUME_CHECK=$(docker volume ls | grep ssh || true)
 		WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env || true)
 		BROWSER_SYNC=3000
 		BROWSER_SYNC_UI=3200
+		SSH_PORT=2222
 
 		if [ -z "$SSH_VOLUME_CHECK" ] && [ "$DEV" != check ]; then
 			echo -e "\e[34m[INFO]\e[39m SSH volume not found, creating now..."
@@ -856,13 +856,18 @@ elif [ "$1" = "wp" ]; then
 				DEV_MODE_CHECK=$(grep "sendfile off" "$CONTAINER_PATH"/conf/nginx.conf || true)
 				[[ -n "$DEV_MODE_CHECK" ]] && die "Development mode is already turned on for $DOMAIN"
 			fi
-			
-			[[ -n "$SSH_CONTAINER_CHECK" ]] && demyx_exec 'SSH container detected, stopping now' "$(
-				docker stop ssh
-			)"
 
 			echo -e "\e[34m[INFO]\e[39m Turning on development mode for $DOMAIN"
 			AUTOVER_CHECK=$(docker exec -it "$WP" sh -c 'ls wp-content/plugins' | grep autover || true)
+
+			while true; do
+				SSH_OPEN_PORT=$(netstat -tuplen 2>/dev/null | grep :::"$SSH_PORT" || true)
+				if [ -z "$SSH_OPEN_PORT" ]; then
+					break
+				else
+					SSH_PORT=$((SSH_PORT+1))
+				fi
+			done
 
 			while true; do
 				OPEN_PORT=$(netstat -tuplen 2>/dev/null | grep :::"$BROWSER_SYNC" || true)
@@ -877,10 +882,10 @@ elif [ "$1" = "wp" ]; then
 
 			demyx_exec 'Creating SSH container' "$(
 				docker run -d --rm \
-				--name ssh \
+				--name ${DOMAIN//./}_ssh \
 				-v ssh:/home/www-data/.ssh \
 				-v wp_"$WP_ID":/var/www/html \
-				-p "$PORT":22 \
+				-p "$SSH_PORT":22 \
 				demyx/ssh
 			)"
 			demyx_exec 'Creating BrowserSync container' "$(
@@ -919,7 +924,7 @@ elif [ "$1" = "wp" ]; then
 			PRINT_TABLE="$(echo "$DOMAIN" | tr a-z A-Z), DEVELOPMENT MODE\n"
 			PRINT_TABLE+="SFTP, $PRIMARY_DOMAIN\n"
 			PRINT_TABLE+="SFTP USER, www-data\n"
-			PRINT_TABLE+="SFTP PORT, $PORT\n"
+			PRINT_TABLE+="SFTP PORT, $SSH_PORT\n"
 			PRINT_TABLE+="BROWSERSYNC, ${DOMAIN}:${BROWSER_SYNC}\n"
 			PRINT_TABLE+="BROWSERSYNC UI, ${DOMAIN}:${BROWSER_SYNC_UI}"
 			printTable ',' "$(echo -e $PRINT_TABLE)"
@@ -933,7 +938,7 @@ elif [ "$1" = "wp" ]; then
 			AUTOVER_CHECK=$(docker exec -it "$WP" sh -c 'ls wp-content/plugins' | grep autover || true)
 			
 			demyx_exec 'Stopping SSH container' "$(
-				docker stop ssh
+				docker stop ${DOMAIN//./}_ssh
 			)"
 			demyx_exec 'Stopping BrowserSync container' "$(
 				docker stop ${DOMAIN//./}_bs
@@ -1274,6 +1279,7 @@ elif [ "$1" = "wp" ]; then
 					WP_CONTAINER_CHECK=$(docker ps -aq -f name="$WP")
 					DB_CONTAINER_CHECK=$(docker ps -aq -f name="$DB")
 					BROWSERSYNC_CONTAINER_CHECK=$(docker ps -aq -f name=${DOMAIN//./}_bs)
+					SSH_CONTAINER_CHECK=$(docker ps -aq -f name=${DOMAIN//./}_ssh)
 					[[ -n "$WP_CONTAINER_CHECK" ]] && docker stop "$WP" && docker rm "$WP"
 					[[ -n "$DB_CONTAINER_CHECK" ]] && docker stop "$DB" && docker rm "$DB"
 					
@@ -1285,6 +1291,9 @@ elif [ "$1" = "wp" ]; then
 					)" 
 					[[ -n "$BROWSERSYNC_CONTAINER_CHECK" ]] && demyx_exec 'Stopping BrowserSync container' "$(
 						docker stop "$BROWSERSYNC_CONTAINER_CHECK"
+					)"
+					[[ -n "$SSH_CONTAINER_CHECK" ]] && demyx_exec 'Stopping SSH container' "$(
+						docker stop "$SSH_CONTAINER_CHECK"
 					)"
 					[[ -f "$LOGS"/"$DOMAIN".access.log ]] && demyx_exec 'Deleting logs' "$(
 						rm "$LOGS"/"$DOMAIN".access.log; rm "$LOGS"/"$DOMAIN".error.log
@@ -1305,6 +1314,7 @@ elif [ "$1" = "wp" ]; then
 				WP_CONTAINER_CHECK=$(docker ps -aq -f name="$WP")
 				DB_CONTAINER_CHECK=$(docker ps -aq -f name="$DB")
 				BROWSERSYNC_CONTAINER_CHECK=$(docker ps -aq -f name=${DOMAIN//./}_bs)
+				SSH_CONTAINER_CHECK=$(docker ps -aq -f name=${DOMAIN//./}_ssh)
 				[[ -n "$BROWSERSYNC_CONTAINER_CHECK" ]] && docker stop "$BROWSERSYNC_CONTAINER_CHECK"
 				[[ -n "$WP_CONTAINER_CHECK" ]] && docker stop "$WP" && docker rm "$WP"
 				[[ -n "$DB_CONTAINER_CHECK" ]] && docker stop "$DB" && docker rm "$DB"
@@ -1318,6 +1328,9 @@ elif [ "$1" = "wp" ]; then
 				[[ -n "$BROWSERSYNC_CONTAINER_CHECK" ]] && demyx_exec 'Stopping BrowserSync container' "$(
 					docker stop "$BROWSERSYNC_CONTAINER_CHECK"
 				)"
+				[[ -n "$SSH_CONTAINER_CHECK" ]] && demyx_exec 'Stopping SSH container' "$(
+						docker stop "$SSH_CONTAINER_CHECK"
+					)"
 				[[ -f "$LOGS"/"$DOMAIN".access.log ]] && demyx_exec 'Deleting logs' "$(
 					rm "$LOGS"/"$DOMAIN".access.log; rm "$LOGS"/"$DOMAIN".error.log
 				)"
