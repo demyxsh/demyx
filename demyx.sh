@@ -1315,7 +1315,6 @@ elif [ "$1" = "wp" ]; then
 				DB_CONTAINER_CHECK=$(docker ps -aq -f name="$DB")
 				BROWSERSYNC_CONTAINER_CHECK=$(docker ps -aq -f name=${DOMAIN//./}_bs)
 				SSH_CONTAINER_CHECK=$(docker ps -aq -f name=${DOMAIN//./}_ssh)
-				[[ -n "$BROWSERSYNC_CONTAINER_CHECK" ]] && docker stop "$BROWSERSYNC_CONTAINER_CHECK"
 				[[ -n "$WP_CONTAINER_CHECK" ]] && docker stop "$WP" && docker rm "$WP"
 				[[ -n "$DB_CONTAINER_CHECK" ]] && docker stop "$DB" && docker rm "$DB"
 				
