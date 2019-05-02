@@ -922,7 +922,7 @@ elif [ "$1" = "wp" ]; then
 			)"
 
 			PRINT_TABLE="$(echo "$DOMAIN" | tr a-z A-Z), DEVELOPMENT MODE\n"
-			PRINT_TABLE+="SFTP, $PRIMARY_DOMAIN\n"
+			PRINT_TABLE+="SFTP, $DOMAIN\n"
 			PRINT_TABLE+="SFTP USER, www-data\n"
 			PRINT_TABLE+="SFTP PORT, $SSH_PORT\n"
 			PRINT_TABLE+="BROWSERSYNC, ${DOMAIN}:${BROWSER_SYNC}\n"
