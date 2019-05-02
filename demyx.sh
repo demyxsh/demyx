@@ -888,6 +888,9 @@ elif [ "$1" = "wp" ]; then
 				-p "$SSH_PORT":22 \
 				demyx/ssh
 			)"
+			demyx_exec 'Creating rewrite rules for BrowserSync' "$(
+				echo "module.exports={rewriteRules:[{match:/$DOMAIN/g,fn:function(e,r,t){return'$DOMAIN:$BROWSER_SYNC'}}]};" > "$CONTAINER_PATH"/conf/bs.js
+			)"
 			demyx_exec 'Creating BrowserSync container' "$(
 				docker run -d --rm \
 				--name ${DOMAIN//./}_bs \
@@ -895,7 +898,9 @@ elif [ "$1" = "wp" ]; then
 				--volumes-from "$WP" \
 				-p "$BROWSER_SYNC":"$BROWSER_SYNC" \
 				-p "$BROWSER_SYNC_UI":"$BROWSER_SYNC_UI" \
+				-v "$CONTAINER_PATH"/conf/bs.js:/bs.js \
 				demyx/browsersync start \
+				--config "/bs.js" \
 				--proxy "$WP" \
 				--files "/var/www/html/**/*" \
 				--host "$DOMAIN" \
@@ -939,6 +944,9 @@ elif [ "$1" = "wp" ]; then
 			
 			demyx_exec 'Stopping SSH container' "$(
 				docker stop ${DOMAIN//./}_ssh
+			)"
+			demyx_exec 'Removing BrowserSync rewrite rules' "$(
+				rm "$CONTAINER_PATH"/conf/bs.js
 			)"
 			demyx_exec 'Stopping BrowserSync container' "$(
 				docker stop ${DOMAIN//./}_bs
