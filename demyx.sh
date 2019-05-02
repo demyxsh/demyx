@@ -1431,6 +1431,14 @@ elif [ "$1" = "wp" ]; then
 		source "$CONTAINER_PATH"/.env
 		if [ "$DEMYX_SHELL" = "wp" ]; then
 			docker exec -it "$WP" sh
+		elif [ "$DEMYX_SHELL" = "bs" ]; then
+			BROWSERSYNC_CONTAINER_CHECK=$(docker ps -aq -f name=${DOMAIN//./}_bs)
+			[[ -z "$BROWSERSYNC_CONTAINER_CHECK" ]] && die "BrowserSync container isn't up"
+			docker exec -it ${DOMAIN//./}_bs sh
+		elif [ "$DEMYX_SHELL" = "ssh" ]; then
+			SSH_CONTAINER_CHECK=$(docker ps -aq -f name=${DOMAIN//./}_ssh)
+			[[ -z "$SSH_CONTAINER_CHECK" ]] && die "SSH container isn't up"
+			docker exec -it ${DOMAIN//./}_ssh sh
 		else
 			docker exec -it "$DB" sh
 		fi
