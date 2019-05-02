@@ -930,8 +930,8 @@ elif [ "$1" = "wp" ]; then
 			PRINT_TABLE+="SFTP, $DOMAIN\n"
 			PRINT_TABLE+="SFTP USER, www-data\n"
 			PRINT_TABLE+="SFTP PORT, $SSH_PORT\n"
-			PRINT_TABLE+="BROWSERSYNC, ${DOMAIN}:${BROWSER_SYNC}\n"
-			PRINT_TABLE+="BROWSERSYNC UI, ${DOMAIN}:${BROWSER_SYNC_UI}"
+			PRINT_TABLE+="BROWSERSYNC, http://${DOMAIN}:${BROWSER_SYNC}\n"
+			PRINT_TABLE+="BROWSERSYNC UI, http://${DOMAIN}:${BROWSER_SYNC_UI}"
 			printTable ',' "$(echo -e $PRINT_TABLE)"
 		elif [ "$DEV" = off ]; then
 			source "$CONTAINER_PATH"/.env
