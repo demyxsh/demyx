@@ -1283,18 +1283,18 @@ elif [ "$1" = "wp" ]; then
 					[[ -n "$WP_CONTAINER_CHECK" ]] && docker stop "$WP" && docker rm "$WP"
 					[[ -n "$DB_CONTAINER_CHECK" ]] && docker stop "$DB" && docker rm "$DB"
 					
-					[[ -n "$(grep wp_${WP_ID} <<< $VOLUME_CHECK || true)" ]] && demyx_exec 'Deleting data volume' "$(
-						docker volume rm wp_"$WP_ID"
-					)" 
-					[[ -n "$(grep db_${WP_ID} <<< $VOLUME_CHECK || true)" ]] && demyx_exec 'Deleting db volume' "$(
-						docker volume rm db_"$WP_ID"
-					)" 
 					[[ -n "$BROWSERSYNC_CONTAINER_CHECK" ]] && demyx_exec 'Stopping BrowserSync container' "$(
 						docker stop "$BROWSERSYNC_CONTAINER_CHECK"
 					)"
 					[[ -n "$SSH_CONTAINER_CHECK" ]] && demyx_exec 'Stopping SSH container' "$(
 						docker stop "$SSH_CONTAINER_CHECK"
 					)"
+					[[ -n "$(grep wp_${WP_ID} <<< $VOLUME_CHECK || true)" ]] && demyx_exec 'Deleting data volume' "$(
+						docker volume rm wp_"$WP_ID"
+					)" 
+					[[ -n "$(grep db_${WP_ID} <<< $VOLUME_CHECK || true)" ]] && demyx_exec 'Deleting db volume' "$(
+						docker volume rm db_"$WP_ID"
+					)" 
 					[[ -f "$LOGS"/"$DOMAIN".access.log ]] && demyx_exec 'Deleting logs' "$(
 						rm "$LOGS"/"$DOMAIN".access.log; rm "$LOGS"/"$DOMAIN".error.log
 					)"
@@ -1318,18 +1318,18 @@ elif [ "$1" = "wp" ]; then
 				[[ -n "$WP_CONTAINER_CHECK" ]] && docker stop "$WP" && docker rm "$WP"
 				[[ -n "$DB_CONTAINER_CHECK" ]] && docker stop "$DB" && docker rm "$DB"
 				
+				[[ -n "$BROWSERSYNC_CONTAINER_CHECK" ]] && demyx_exec 'Stopping BrowserSync container' "$(
+					docker stop "$BROWSERSYNC_CONTAINER_CHECK"
+				)"
+				[[ -n "$SSH_CONTAINER_CHECK" ]] && demyx_exec 'Stopping SSH container' "$(
+					docker stop "$SSH_CONTAINER_CHECK"
+				)"
 				[[ -n "$(grep wp_${WP_ID} <<< $VOLUME_CHECK || true)" ]] && demyx_exec 'Deleting data volume' "$(
 					docker volume rm wp_"$WP_ID"
 				)"
 				[[ -n "$(grep db_${WP_ID} <<< $VOLUME_CHECK || true)" ]] && demyx_exec 'Deleting db volume' "$(
 					docker volume rm db_"$WP_ID"
-				)" 
-				[[ -n "$BROWSERSYNC_CONTAINER_CHECK" ]] && demyx_exec 'Stopping BrowserSync container' "$(
-					docker stop "$BROWSERSYNC_CONTAINER_CHECK"
 				)"
-				[[ -n "$SSH_CONTAINER_CHECK" ]] && demyx_exec 'Stopping SSH container' "$(
-						docker stop "$SSH_CONTAINER_CHECK"
-					)"
 				[[ -f "$LOGS"/"$DOMAIN".access.log ]] && demyx_exec 'Deleting logs' "$(
 					rm "$LOGS"/"$DOMAIN".access.log; rm "$LOGS"/"$DOMAIN".error.log
 				)"
