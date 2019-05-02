@@ -827,7 +827,7 @@ elif [ "$1" = "wp" ]; then
 		SSH_VOLUME_CHECK=$(docker volume ls | grep ssh || true)
 		WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env || true)
 		BROWSER_SYNC=3000
-		BROWSER_SYNC_UI=3200
+		BROWSER_SYNC_UI=3001
 		SSH_PORT=2222
 
 		if [ -z "$SSH_VOLUME_CHECK" ] && [ "$DEV" != check ]; then
