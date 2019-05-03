@@ -1082,7 +1082,8 @@ elif [ "$1" = "wp" ]; then
 				-l "traefik.frontend.headers.forceSTSHeader=${FORCE_STS_HEADER}" \
 				-l "traefik.frontend.headers.STSSeconds=${STS_SECONDS}" \
 				-l "traefik.frontend.headers.STSIncludeSubdomains=${STS_INCLUDE_SUBDOMAINS}" \
-				-l "traefik.frontend.headers.STSPreload=${STS_PRELOAD}" phpmyadmin/phpmyadmin
+				-l "traefik.frontend.headers.STSPreload=${STS_PRELOAD}" \
+				phpmyadmin/phpmyadmin
 			)"
 
 			PRINT_TABLE="PHPMYADMIN, pma.$PRIMARY_DOMAIN\n"
