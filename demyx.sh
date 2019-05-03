@@ -902,7 +902,7 @@ elif [ "$1" = "wp" ]; then
 				demyx/browsersync start \
 				--config "/bs.js" \
 				--proxy "$WP" \
-				--files "/var/www/html/**/*" \
+				--files "/var/www/html/wp-content/**/*" \
 				--host "$DOMAIN" \
 				--port "$BROWSER_SYNC" \
 				--ui-port "$BROWSER_SYNC_UI"
