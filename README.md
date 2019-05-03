@@ -163,7 +163,7 @@ demyx wp -h
 --scale             Scale a site's container
                     Example: demyx wp --dom=domain.tld --scale=3, demyx wp --dom=domain.tld --service=wp --scale=3
 
---shell             Shell into a site's wp/db container
+--shell             Opens a site's shell for the following containers: wp, db, ssh, bs (BrowserSync)
                     Example: demyx wp --dom=domain.tld --shell, demyx wp --dom=domain.tld --shell=db
 
 --ssl               Enables SSL for your domain, provided by Lets Encrypt

@@ -189,7 +189,7 @@ elif [ "$1" = "wp" ]; then
 				echo "  --scale         Scale a site's container"
 				echo "                  Example: demyx wp --dom=domain.tld --scale=3, demyx wp --dom=domain.tld --service=wp --scale=3"
 				echo
-				echo "  --shell         Shell into a site's wp/db container"
+				echo "  --shell         Opens a site's shell for the following containers: wp, db, ssh, bs (BrowserSync)"
 				echo "                  Example: demyx wp --dom=domain.tld --shell, demyx wp --dom=domain.tld --shell=db"
 				echo
 				echo "  --ssl           Enables SSL for your domain, provided by Lets Encrypt"
