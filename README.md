@@ -7,23 +7,28 @@ Demyx will be following a rolling release model, meaning there is only one versi
     <img src="https://i.imgur.com/WqMCNEd.gif">
 </p>
 
-# Requirements
+### Stack
+ALPINE | NGINX | MARIADB | PHP | WORDPRESS
+------------- | ------------- | ------------- | ------------- | -------------
+3.9.3 | 1.16.0 | 10.3.13 | 7.3.5 | 5.1.1
+
+### Requirements
 * Ubuntu 16.04/18.04, Debian 9.7
 * Dedicated/KVM server
 * Port 80 and 443 must be open
 * Primary domain must be pointed to server's IP and must have a wildcard CNAME subdomain
 
-# Install
+### Install
 ```
 wget https://raw.githubusercontent.com/demyxco/demyx/master/install.sh && bash install.sh
 ```
 
-# Getting Started
+### Getting Started
 ```
 demyx wp --dom=domain.tld --run --cdn --cache --ssl
 ```
 
-# Commands
+### Commands
 demyx -h
 ```
 If you modified any of the files (.conf/.ini/.yml/etc) then delete the first comment at the top of the file(s)
@@ -179,7 +184,7 @@ demyx wp -h
                     Example: demyx wp --dom=domain.tld --wpcli='user list --all'
 ```
 
-# Other Images
+### Other Images
 You can run other Docker images alongside the WordPress sites. Currently, only Rocket.Chat and Gitea are supported for automatic installs but you may use them as a base to proxy other non-demyx containers.
 
 ```
@@ -193,7 +198,7 @@ demyx --dom=domain.tld --email=info@domain.tld --install=rocketchat
 demyx --dom=domain.tld --install=gitea
 ```
 
-# Resources
+### Resources
 * [Demyx](https://hub.docker.com/u/demyx) - NGINX, PHP, MariaDB, Logrotate, Utilities
 * [Traefik](https://hub.docker.com/_/traefik) - Reverse Proxy with Lets Encrypt SSL
 * [ouroboros](https://hub.docker.com/r/pyouroboros/ouroboros) - Auto pull new images from Docker Hub

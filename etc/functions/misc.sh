@@ -16,12 +16,13 @@ demyx_exec() {
     [[ -z "$ACTION" ]] && die 'No action found'
 
     echo -en "$ACTION ... "
-    echo -e "$(date) [$ACTION] $EXEC_FIRST" >> /srv/demyx/logs/demyx.log
-    [[ -n "$EXEC_SECOND" ]] && echo -e "$(date) [$ACTION] $EXEC_SECOND" >> /srv/demyx/logs/demyx.log
 
     while [ $? != 0 ]; do
         sleep .1
     done
+
+    echo -e "$(date) [$ACTION] $EXEC_FIRST" >> /srv/demyx/logs/demyx.log
+    [[ -n "$EXEC_SECOND" ]] && echo -e "$(date) [$ACTION] $EXEC_SECOND" >> /srv/demyx/logs/demyx.log
 
     echo -e "\e[32mdone\e[39m"
 

@@ -16,6 +16,9 @@ cat > "$CONTAINER_PATH"/conf/nginx.conf <<-EOF
 # AUTO GENERATED
 # To override, see demyx -h
 
+load_module modules/ngx_http_cache_purge_module.so;
+load_module modules/ngx_http_headers_more_filter_module.so;
+
 error_log stderr notice;
 error_log /var/log/demyx/$DOMAIN.error.log;
 pid /var/run/nginx.pid;
