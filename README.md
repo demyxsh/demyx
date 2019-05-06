@@ -144,9 +144,6 @@ demyx wp -h
 --pma               Enable phpmyadmin: pma.prmary-domain.tld
                     Example: demyx wp --dom=domain.tld --pma, demyx wp --dom=domain.tld --pma=off
 
---port              Sets SFTP port for --dev, defaults to 2222
-                    Example: demyx wp --dom=domain.tld --dev --port=2022
-
 --rate-limit        Enable/disable rate limit requests for NGINX
                     Example: demyx wp --dom=domain.tld --rate-limit, demyx wp --dom=domain.tld --rate-limit=off
 

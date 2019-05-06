@@ -1583,7 +1583,6 @@ else
 					demyx_echo 'Modifying crontab for WordPress cron' 
 					demyx_exec crontab "$ETC"/CRON_WP_CHECK
 					
-					
 					demyx_echo 'Removing temporary crontab' 
 					demyx_exec rm "$ETC"/CRON_WP_CHECK
 				fi
