@@ -1,123 +1,123 @@
 #!/bin/bash
 # Demyx
 # https://github.com/demyxco/demyx
-# Table Library by: https://github.com/gdbtek/linux-cookbooks/blob/master/libraries/util.bash
 
 die() {
-    printf '\e[31m[CRITICAL]\e[39m %s\n' "$1" >&2
-    exit 1
+	printf '\e[31m[CRITICAL]\e[39m %s\n' "$1" >&2
+	exit 1
+}
+
+demyx_echo() {
+	DEMYX_ECHO="$1"
 }
 
 demyx_exec() {
-    ACTION=$1
-    EXEC_FIRST=$2
-    EXEC_SECOND=$3
+	echo -n "$DEMYX_ECHO ... "
 
-    [[ -z "$ACTION" ]] && die 'No action found'
+	DEMYX_EXEC=$("$@")
 
-    echo -en "$ACTION ... "
+	if [[ "$DEMYX_EXEC" == *"WARNING"* ]]; then
+		echo -e "\e[33m[WARNING]\e[39m \"demyx logs\" for more info"
+	fi
 
-    while [ $? != 0 ]; do
-        sleep .1
-    done
+	echo -en "\e[32mdone\e[39m\n";
 
-    echo -e "$(date) [$ACTION] $EXEC_FIRST" >> /srv/demyx/logs/demyx.log
-    [[ -n "$EXEC_SECOND" ]] && echo -e "$(date) [$ACTION] $EXEC_SECOND" >> /srv/demyx/logs/demyx.log
-
-    echo -e "\e[32mdone\e[39m"
-
-    if [[ "$EXEC_FIRST" == *"WARNING"* ]]; then
-        echo -e "\e[33m[WARNING]\e[39m \"demyx logs\" for more info"
-    fi
+	demyx_log "$DEMYX_ECHO" "$DEMYX_EXEC"
 }
 
+demyx_log() {
+	echo -e "$(date) [$1] $2" >> /srv/demyx/logs/demyx.log
+}
+
+# Borrowed code
+# https://github.com/gdbtek/linux-cookbooks/blob/master/libraries/util.bash
 function printTable() {
-    local -r delimiter="${1}"
-    local -r data="$(removeEmptyLines "${2}")"
+	local -r delimiter="${1}"
+	local -r data="$(removeEmptyLines "${2}")"
 
-    if [[ "${delimiter}" != '' && "$(isEmptyString "${data}")" = 'false' ]]
-    then
-        local -r numberOfLines="$(wc -l <<< "${data}")"
+	if [[ "${delimiter}" != '' && "$(isEmptyString "${data}")" = 'false' ]]
+	then
+		local -r numberOfLines="$(wc -l <<< "${data}")"
 
-        if [[ "${numberOfLines}" -gt '0' ]]
-        then
-            local table=''
-            local i=1
+		if [[ "${numberOfLines}" -gt '0' ]]
+		then
+			local table=''
+			local i=1
 
-            for ((i = 1; i <= "${numberOfLines}"; i = i + 1))
-            do
-                local line=''
-                line="$(sed "${i}q;d" <<< "${data}")"
+			for ((i = 1; i <= "${numberOfLines}"; i = i + 1))
+			do
+				local line=''
+				line="$(sed "${i}q;d" <<< "${data}")"
 
-                local numberOfColumns='0'
-                numberOfColumns="$(awk -F "${delimiter}" '{print NF}' <<< "${line}")"
+				local numberOfColumns='0'
+				numberOfColumns="$(awk -F "${delimiter}" '{print NF}' <<< "${line}")"
 
-                # Add Line Delimiter
+				# Add Line Delimiter
 
-                if [[ "${i}" -eq '1' ]]
-                then
-                    table="${table}$(printf '%s#+' "$(repeatString '#+' "${numberOfColumns}")")"
-                fi
+				if [[ "${i}" -eq '1' ]]
+				then
+					table="${table}$(printf '%s#+' "$(repeatString '#+' "${numberOfColumns}")")"
+				fi
 
-                # Add Header Or Body
+				# Add Header Or Body
 
-                table="${table}\n"
+				table="${table}\n"
 
-                local j=1
+				local j=1
 
-                for ((j = 1; j <= "${numberOfColumns}"; j = j + 1))
-                do
-                    table="${table}$(printf '#| %s' "$(cut -d "${delimiter}" -f "${j}" <<< "${line}")")"
-                done
+				for ((j = 1; j <= "${numberOfColumns}"; j = j + 1))
+				do
+					table="${table}$(printf '#| %s' "$(cut -d "${delimiter}" -f "${j}" <<< "${line}")")"
+				done
 
-                table="${table}#|\n"
+				table="${table}#|\n"
 
-                # Add Line Delimiter
+				# Add Line Delimiter
 
-                if [[ "${i}" -eq '1' ]] || [[ "${numberOfLines}" -gt '1' && "${i}" -eq "${numberOfLines}" ]]
-                then
-                    table="${table}$(printf '%s#+' "$(repeatString '#+' "${numberOfColumns}")")"
-                fi
-            done
+				if [[ "${i}" -eq '1' ]] || [[ "${numberOfLines}" -gt '1' && "${i}" -eq "${numberOfLines}" ]]
+				then
+					table="${table}$(printf '%s#+' "$(repeatString '#+' "${numberOfColumns}")")"
+				fi
+			done
 
-            if [[ "$(isEmptyString "${table}")" = 'false' ]]
-            then
-                echo -e "${table}" | column -s '#' -t | awk '/^\+/{gsub(" ", "-", $0)}1'
-            fi
-        fi
-    fi
+			if [[ "$(isEmptyString "${table}")" = 'false' ]]
+			then
+				echo -e "${table}" | column -s '#' -t | awk '/^\+/{gsub(" ", "-", $0)}1'
+			fi
+		fi
+	fi
 }
 
 function removeEmptyLines() {
-    local -r content="${1}"
+	local -r content="${1}"
 
-    echo -e "${content}" | sed '/^\s*$/d'
+	echo -e "${content}" | sed '/^\s*$/d'
 }
 
 function repeatString() {
-    local -r string="${1}"
-    local -r numberToRepeat="${2}"
+	local -r string="${1}"
+	local -r numberToRepeat="${2}"
 
-    if [[ "${string}" != '' && "${numberToRepeat}" =~ ^[1-9][0-9]*$ ]]
-    then
-        local -r result="$(printf "%${numberToRepeat}s")"
-        echo -e "${result// /${string}}"
-    fi
+	if [[ "${string}" != '' && "${numberToRepeat}" =~ ^[1-9][0-9]*$ ]]
+	then
+		local -r result="$(printf "%${numberToRepeat}s")"
+		echo -e "${result// /${string}}"
+	fi
 }
 
 function isEmptyString() {
-    local -r string="${1}"
+	local -r string="${1}"
 
-    if [[ "$(trimString "${string}")" = '' ]]
-    then
-        echo 'true' && return 0
-    fi
+	if [[ "$(trimString "${string}")" = '' ]]
+	then
+		echo 'true' && return 0
+	fi
 
-    echo 'false' && return 1
+	echo 'false' && return 1
 }
 
 function trimString() {
-    local -r string="${1}"
+	local -r string="${1}"
 
-    sed 's,^[[:blank:]]*,,' <<< "${string}" | sed 's,[[:blank:]]*$,,'
+	sed 's,^[[:blank:]]*,,' <<< "${string}" | sed 's,[[:blank:]]*$,,'
 }
