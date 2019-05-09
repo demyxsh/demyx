@@ -878,7 +878,7 @@ elif [ "$1" = "wp" ]; then
 				--net traefik \
 				--volumes-from "$WP" \
 				-v "$CONTAINER_PATH"/conf/bs.js:/bs.js \
-				-l "traefik.enable=1" \
+				-l "traefik.enable=true" \
 				-l "traefik.bs.frontend.rule=Host:dev.$DOMAIN" \
 				-l "traefik.bs.port=3000" \
 				-l "traefik.bs.frontend.redirect.entryPoint=https" \
@@ -907,7 +907,7 @@ elif [ "$1" = "wp" ]; then
 				--network traefik \
 				-e PMA_HOST="${DB}" \
 				-e MYSQL_ROOT_PASSWORD="${MARIADB_ROOT_PASSWORD}" \
-				-l "traefik.enable=1" \
+				-l "traefik.enable=true" \
 				-l "traefik.frontend.rule=Host:pma.$DOMAIN" \
 				-l "traefik.port=80" \
 				-l "traefik.frontend.redirect.entryPoint=https" \
