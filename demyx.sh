@@ -854,7 +854,7 @@ elif [ "$1" = "wp" ]; then
 			AUTOVER_CHECK=$(docker exec -it "$WP" sh -c 'ls wp-content/plugins' | grep autover || true)
 
 			while true; do
-				SSH_OPEN_PORT=$(netstat -tuplen 2>/dev/null | grep :::"$SSH_PORT" || true)
+				SSH_OPEN_PORT=$(netstat -tuplen 2>/dev/null | grep :"$SSH_PORT" || true)
 				if [ -z "$SSH_OPEN_PORT" ]; then
 					break
 				else
@@ -863,8 +863,8 @@ elif [ "$1" = "wp" ]; then
 			done
 
 			while true; do
-				OPEN_PORT=$(netstat -tuplen 2>/dev/null | grep :::"$BROWSER_SYNC" || true)
-				OPEN_PORT_UI=$(netstat -tuplen 2>/dev/null | grep :::"$BROWSER_SYNC_UI" || true)
+				OPEN_PORT=$(netstat -tuplen 2>/dev/null | grep :"$BROWSER_SYNC" || true)
+				OPEN_PORT_UI=$(netstat -tuplen 2>/dev/null | grep :"$BROWSER_SYNC_UI" || true)
 				if [ -z "$OPEN_PORT" ] && [ -z "$OPEN_PORT_UI" ]; then
 					break
 				else
