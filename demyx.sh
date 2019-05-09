@@ -833,9 +833,8 @@ elif [ "$1" = "wp" ]; then
 		SSH_VOLUME_CHECK=$(docker volume ls | grep ssh || true)
 		CACHE_CHECK=$(grep -s "FASTCGI_CACHE=on" "$CONTAINER_PATH"/.env || true)
 		WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env || true)
-		BROWSER_SYNC=3000
-		BROWSER_SYNC_UI=3001
 		SSH_PORT=2222
+		PARSE_BASIC_AUTH=$(grep -s BASIC_AUTH_PASSWORD "$ETC"/.env | awk -F '[=]' '{print $2}')
 
 		if [ -z "$SSH_VOLUME_CHECK" ] && [ "$DEV" != check ]; then
 			echo -e "\e[34m[INFO]\e[39m SSH volume not found, creating now..."
@@ -876,17 +875,6 @@ elif [ "$1" = "wp" ]; then
 				fi
 			done
 
-			while true; do
-				OPEN_PORT=$(netstat -tuplen 2>/dev/null | grep :"$BROWSER_SYNC" || true)
-				OPEN_PORT_UI=$(netstat -tuplen 2>/dev/null | grep :"$BROWSER_SYNC_UI" || true)
-				if [ -z "$OPEN_PORT" ] && [ -z "$OPEN_PORT_UI" ]; then
-					break
-				else
-					BROWSER_SYNC=$((BROWSER_SYNC+1))
-					BROWSER_SYNC_UI=$((BROWSER_SYNC_UI+1))
-				fi
-			done
-
 			demyx_echo 'Creating SSH container' 
 			demyx_exec docker run -d --rm \
 				--name ${DOMAIN//./}_ssh \
@@ -895,23 +883,37 @@ elif [ "$1" = "wp" ]; then
 				-p "$SSH_PORT":22 \
 				demyx/ssh
 			
-			echo "module.exports={rewriteRules:[{match:/$DOMAIN/g,fn:function(e,r,t){return'$DOMAIN:$BROWSER_SYNC'}}]};" > "$CONTAINER_PATH"/conf/bs.js
+			echo "module.exports={rewriteRules:[{match:/$DOMAIN/g,fn:function(e,r,t){return'dev.$DOMAIN'}}],socket:{domain:'dev.$DOMAIN'}};" > "$CONTAINER_PATH"/conf/bs.js
 			demyx_echo 'Creating BrowserSync container' 
 			demyx_exec docker run -d --rm \
 				--name ${DOMAIN//./}_bs \
 				--net traefik \
 				--volumes-from "$WP" \
-				-p "$BROWSER_SYNC":"$BROWSER_SYNC" \
-				-p "$BROWSER_SYNC_UI":"$BROWSER_SYNC_UI" \
 				-v "$CONTAINER_PATH"/conf/bs.js:/bs.js \
+				-l "traefik.enable=1" \
+				-l "traefik.bs.frontend.rule=Host:dev.$DOMAIN" \
+				-l "traefik.bs.port=3000" \
+				-l "traefik.bs.frontend.redirect.entryPoint=https" \
+				-l "traefik.bs.frontend.headers.forceSTSHeader=${FORCE_STS_HEADER}" \
+				-l "traefik.bs.frontend.headers.STSSeconds=${STS_SECONDS}" \
+				-l "traefik.bs.frontend.headers.STSIncludeSubdomains=${STS_INCLUDE_SUBDOMAINS}" \
+				-l "traefik.bs.frontend.headers.STSPreload=${STS_PRELOAD}" \
+				-l "traefik.ui.frontend.rule=Host:ui.$DOMAIN" \
+				-l "traefik.ui.port=3001" \
+				-l "traefik.ui.frontend.redirect.entryPoint=https" \
+				-l "traefik.ui.frontend.headers.forceSTSHeader=${FORCE_STS_HEADER}" \
+				-l "traefik.ui.frontend.headers.STSSeconds=${STS_SECONDS}" \
+				-l "traefik.ui.frontend.headers.STSIncludeSubdomains=${STS_INCLUDE_SUBDOMAINS}" \
+				-l "traefik.ui.frontend.headers.STSPreload=${STS_PRELOAD}" \
+				-l "traefik.ui.frontend.auth.basic=${BASIC_AUTH_USER}:${PARSE_BASIC_AUTH}" \
 				demyx/browsersync start \
 				--config "/bs.js" \
 				--proxy "$WP" \
 				--files "/var/www/html/wp-content/**/*" \
-				--host "$DOMAIN" \
-				--port "$BROWSER_SYNC" \
-				--ui-port "$BROWSER_SYNC_UI"
-			
+				--host "dev.$DOMAIN" \
+				--port 3000 \
+				--ui-port 3001
+
 			[[ -n "$AUTOVER_CHECK" ]] && demyx_echo 'Activating autover plugin' && demyx_exec \
 				docker run -it --rm \
 				--volumes-from "$WP" \
@@ -932,13 +934,12 @@ elif [ "$1" = "wp" ]; then
 			demyx_echo 'Restarting php-fpm' 
 			demyx_exec docker exec -it "$WP" sh -c "mv /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini /; pkill php-fpm; php-fpm -D"
 			
-
 			PRINT_TABLE="$(echo "$DOMAIN" | tr a-z A-Z), DEVELOPMENT MODE\n"
 			PRINT_TABLE+="SFTP, $DOMAIN\n"
 			PRINT_TABLE+="SFTP USER, www-data\n"
 			PRINT_TABLE+="SFTP PORT, $SSH_PORT\n"
-			PRINT_TABLE+="BROWSERSYNC, http://${DOMAIN}:${BROWSER_SYNC}\n"
-			PRINT_TABLE+="BROWSERSYNC UI, http://${DOMAIN}:${BROWSER_SYNC_UI}"
+			PRINT_TABLE+="BROWSERSYNC, dev.${DOMAIN}\n"
+			PRINT_TABLE+="BROWSERSYNC UI, ui.${DOMAIN}"
 			printTable ',' "$(echo -e $PRINT_TABLE)"
 		elif [ "$DEV" = off ]; then
 			source "$CONTAINER_PATH"/.env
