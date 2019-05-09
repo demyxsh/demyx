@@ -915,6 +915,7 @@ elif [ "$1" = "wp" ]; then
 				-l "traefik.frontend.headers.STSSeconds=${STS_SECONDS}" \
 				-l "traefik.frontend.headers.STSIncludeSubdomains=${STS_INCLUDE_SUBDOMAINS}" \
 				-l "traefik.frontend.headers.STSPreload=${STS_PRELOAD}" \
+				-l "traefik.frontend.auth.basic=${BASIC_AUTH_USER}:${PARSE_BASIC_AUTH}" \
 				phpmyadmin/phpmyadmin
 
 			[[ -n "$AUTOVER_CHECK" ]] && demyx_echo 'Activating autover plugin' && demyx_exec \
