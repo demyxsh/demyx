@@ -165,6 +165,10 @@ demyx wp -h
 --scale             Scale a site's container
                     Example: demyx wp --dom=domain.tld --scale=3, demyx wp --dom=domain.tld --service=wp --scale=3
 
+--service           Selects a service when used with --action
+                    Available services: wp, db, nginx, php, nginx-php
+                    Example: demyx wp --dom=domain.tld --action=restart --service=nginx-php
+
 --shell             Opens a site's shell for the following containers: wp, db, ssh, bs (BrowserSync)
                     Example: demyx wp --dom=domain.tld --shell, demyx wp --dom=domain.tld --shell=db
 

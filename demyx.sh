@@ -188,6 +188,10 @@ elif [ "$1" = "wp" ]; then
 				echo "  --scale         Scale a site's container"
 				echo "                  Example: demyx wp --dom=domain.tld --scale=3, demyx wp --dom=domain.tld --service=wp --scale=3"
 				echo
+				echo "  --service       Selects a service when used with --action"
+				echo "                  Available services: wp, db, nginx, php, nginx-php"
+				echo "                  Example: demyx wp --dom=domain.tld --action=restart --service=nginx-php"
+				echo
 				echo "  --shell         Opens a site's shell for the following containers: wp, db, ssh, bs (BrowserSync)"
 				echo "                  Example: demyx wp --dom=domain.tld --shell, demyx wp --dom=domain.tld --shell=db"
 				echo
@@ -513,7 +517,16 @@ elif [ "$1" = "wp" ]; then
 		elif [ -n "$ACTION" ] && [ -z "$SERVICE" ] && [ -n "$DOMAIN" ]; then
 			docker-compose "$ACTION"    
 		elif [ -n "$ACTION" ] && [ -n "$SERVICE" ] && [ -n "$DOMAIN" ]; then
-			if [ "$SERVICE" = wp ]; then
+			if [ "$ACTION" = restart ] && [ "$SERVICE" = nginx ]; then
+				demyx_echo "Restarting NGINX"
+				demyx_exec docker exec -it "$WP" sh -c 'nginx -s reload;'
+			elif [ "$ACTION" = restart ] && [ "$SERVICE" = php ]; then
+				demyx_echo "Restarting PHP"
+				demyx_exec docker exec -it "$WP" sh -c 'pkill php-fpm; php-fpm -D'
+			elif [ "$ACTION" = restart ] && [ "$SERVICE" = nginx-php ]; then
+				demyx_echo "Restarting NGINX and PHP"
+				demyx_exec docker exec -it "$WP" sh -c 'nginx -s reload; pkill php-fpm; php-fpm -D'
+			elif [ "$SERVICE" = wp ]; then
 				docker-compose "$ACTION" wp_"${WP_ID}"
 			else
 				docker-compose "$ACTION" db_"${WP_ID}"
