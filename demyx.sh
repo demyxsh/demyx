@@ -1190,13 +1190,25 @@ elif [ "$1" = "wp" ]; then
 			do
 				WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env || true)
 				[[ -z "$WP_CHECK" ]] && continue
-				cd "$APPS"/"$i" && docker-compose restart
+				if [ "$RESTART" = nginx-php ]; then
+					source "$APPS"/"$i"/.env
+					demyx_echo "Restarting NGINX and PHP for $i"
+					demyx_exec docker exec -it "$WP" sh -c 'nginx -s reload; pkill php-fpm; php-fpm -D'
+				else
+					cd "$APPS"/"$i" && docker-compose restart
+				fi
 			done
 		else
 			WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env || true)
 			[[ -z "$WP_CHECK" ]] && die 'Not a WordPress app.'
 			[[ -z "$DOMAIN" ]] && die 'Domain is missing, use --dom or --restart=domain.tld'
-			cd "$CONTAINER_PATH" && docker-compose restart
+			if [ "$RESTART" = nginx-php ]; then
+				source "$CONTAINER_PATH"/.env
+				demyx_echo "Restarting NGINX and PHP"
+				demyx_exec docker exec -it "$WP" sh -c 'nginx -s reload; pkill php-fpm; php-fpm -D'
+			else
+				cd "$CONTAINER_PATH" && docker-compose restart
+			fi
 		fi
 	elif [ -n "$RESTORE" ]; then
 		[[ -d "$CONTAINER_PATH" ]] && demyx wp --dom="$DOMAIN" --remove
