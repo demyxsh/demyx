@@ -153,8 +153,8 @@ demyx wp -h
 --remove            Removes a site
                     Example: demyx wp --rm=domain.tld, demyx wp --dom=domain.tld --rm, demyx wp --rm --all
 
---restart           Shorthand for docker-compose restart
-                    Example: demyx wp --restart=domain.tld, demyx wp --dom=domain.tld --restart
+--restart           Shorthand for --service that loops through all the sites
+                    Example: demyx wp --restart=wp, demyx wp --restart=nginx-php
 
 --restore           Restore a site's backup
                     Example: demyx wp --restore=domain.tld, demyx wp --dom=domain.tld --restore

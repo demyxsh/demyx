@@ -176,8 +176,8 @@ elif [ "$1" = "wp" ]; then
 				echo "  --remove        Removes a site"
 				echo "                  Example: demyx wp --rm=domain.tld, demyx wp --dom=domain.tld --rm, demyx wp --rm --all"
 				echo
-				echo "  --restart       Shorthand for docker-compose restart"
-				echo "                  Example: demyx wp --restart=domain.tld, demyx wp --dom=domain.tld --restart"
+				echo "  --restart       Shorthand for --service that loops through all the sites"
+				echo "                  Example: demyx wp --restart=wp, demyx wp --restart=nginx-php"
 				echo
 				echo "  --restore       Restore a site's backup"
 				echo "                  Example: demyx wp --restore=domain.tld, demyx wp --dom=domain.tld --restore"
@@ -1185,31 +1185,28 @@ elif [ "$1" = "wp" ]; then
 		fi
 	elif [ -n "$RESTART" ]; then
 		cd "$APPS" || exit
-		if [ -n "$ALL" ]; then
-			for i in *
-			do
-				WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env || true)
-				[[ -z "$WP_CHECK" ]] && continue
-				if [ "$RESTART" = nginx-php ]; then
-					source "$APPS"/"$i"/.env
-					demyx_echo "Restarting NGINX and PHP for $i"
-					demyx_exec docker exec -it "$WP" sh -c 'nginx -s reload; pkill php-fpm; php-fpm -D'
-				else
-					cd "$APPS"/"$i" && docker-compose restart
-				fi
-			done
-		else
-			WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env || true)
-			[[ -z "$WP_CHECK" ]] && die 'Not a WordPress app.'
-			[[ -z "$DOMAIN" ]] && die 'Domain is missing, use --dom or --restart=domain.tld'
+		for i in *
+		do
+			WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env || true)
+			[[ -z "$WP_CHECK" ]] && continue
+			source "$APPS"/"$i"/.env
 			if [ "$RESTART" = nginx-php ]; then
-				source "$CONTAINER_PATH"/.env
-				demyx_echo "Restarting NGINX and PHP"
+				demyx_echo "Restarting NGINX and PHP for $i"
 				demyx_exec docker exec -it "$WP" sh -c 'nginx -s reload; pkill php-fpm; php-fpm -D'
+			elif [ "$RESTART" = nginx ]; then
+				demyx_echo "Restarting NGINX for $i"
+				demyx_exec docker exec -it "$WP" sh -c 'nginx -s reload'
+			elif [ "$RESTART" = php ]; then
+				demyx_echo "Restarting PHP for $i"
+				demyx_exec docker exec -it "$WP" sh -c 'pkill php-fpm; php-fpm -D'
+			elif [ "$RESTART" = wp ]; then
+				cd "$APPS"/"$i" && docker-compose restart wp_"$WP_ID"
+			elif [ "$RESTART" = db ]; then
+				cd "$APPS"/"$i" && docker-compose restart db_"$WP_ID"
 			else
-				cd "$CONTAINER_PATH" && docker-compose restart
+				cd "$APPS"/"$i" && docker-compose restart
 			fi
-		fi
+		done
 	elif [ -n "$RESTORE" ]; then
 		[[ -d "$CONTAINER_PATH" ]] && demyx wp --dom="$DOMAIN" --remove
 		[[ ! -f "$APPS_BACKUP"/"$DOMAIN".tgz ]] && die "No backups found for $DOMAIN"
