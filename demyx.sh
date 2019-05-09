@@ -164,9 +164,6 @@ elif [ "$1" = "wp" ]; then
 				echo "  --no-restart    Prevents a container from restarting when used with some flags"
 				echo "                  Example: demyx wp --dom=domain.tld --run --dev --no-restart"
 				echo 
-				echo "  --pma           Enable phpmyadmin: pma.primary-domain.tld"
-				echo "                  Example: demyx wp --dom=domain.tld --pma, demyx wp --dom=domain.tld --pma=off"
-				echo
 				echo "  --rate-limit    Enable/disable rate limit requests for NGINX"
 				echo "                  Example: demyx wp --dom=domain.tld --rate-limit, demyx wp --dom=domain.tld --rate-limit=off"
 				echo
@@ -337,15 +334,6 @@ elif [ "$1" = "wp" ]; then
 				;;
 			--no-restart)
 				NO_RESTART=1
-				;;
-			--pma|--pma=on)
-				PMA=on
-				;;
-			--pma=off)
-				PMA=off
-				;;
-			--pma=)         
-				die '"--pma" cannot be empty.'
 				;;
 			--port=?*)
 				PORT=${2#*=}
@@ -913,6 +901,22 @@ elif [ "$1" = "wp" ]; then
 				--port 3000 \
 				--ui-port 3001
 
+			demyx_echo 'Creating phpMyAdmin container' 
+			demyx_exec docker run -d --rm \
+				--name ${DOMAIN//./}_pma \
+				--network traefik \
+				-e PMA_HOST="${DB}" \
+				-e MYSQL_ROOT_PASSWORD="${MARIADB_ROOT_PASSWORD}" \
+				-l "traefik.enable=1" \
+				-l "traefik.frontend.rule=Host:pma.$DOMAIN" \
+				-l "traefik.port=80" \
+				-l "traefik.frontend.redirect.entryPoint=https" \
+				-l "traefik.frontend.headers.forceSTSHeader=${FORCE_STS_HEADER}" \
+				-l "traefik.frontend.headers.STSSeconds=${STS_SECONDS}" \
+				-l "traefik.frontend.headers.STSIncludeSubdomains=${STS_INCLUDE_SUBDOMAINS}" \
+				-l "traefik.frontend.headers.STSPreload=${STS_PRELOAD}" \
+				phpmyadmin/phpmyadmin
+
 			[[ -n "$AUTOVER_CHECK" ]] && demyx_echo 'Activating autover plugin' && demyx_exec \
 				docker run -it --rm \
 				--volumes-from "$WP" \
@@ -937,8 +941,11 @@ elif [ "$1" = "wp" ]; then
 			PRINT_TABLE+="SFTP, $DOMAIN\n"
 			PRINT_TABLE+="SFTP USER, www-data\n"
 			PRINT_TABLE+="SFTP PORT, $SSH_PORT\n"
-			PRINT_TABLE+="BROWSERSYNC, dev.${DOMAIN}\n"
-			PRINT_TABLE+="BROWSERSYNC UI, ui.${DOMAIN}"
+			PRINT_TABLE+="PHPMYADMIN, https://pma.$DOMAIN\n"
+			PRINT_TABLE+="PHPMYADMIN USERNAME, $WORDPRESS_DB_USER\n"
+			PRINT_TABLE+="PHPMYADMIN PASSWORD, $WORDPRESS_DB_PASSWORD\n"
+			PRINT_TABLE+="BROWSERSYNC, https://dev.$DOMAIN\n"
+			PRINT_TABLE+="BROWSERSYNC UI, https://ui.$DOMAIN"
 			printTable ',' "$(echo -e $PRINT_TABLE)"
 		elif [ "$DEV" = off ]; then
 			source "$CONTAINER_PATH"/.env
@@ -952,7 +959,10 @@ elif [ "$1" = "wp" ]; then
 			demyx_echo 'Stopping SSH container' 
 			demyx_exec docker stop ${DOMAIN//./}_ssh
 			
-			demyx_echo 'Stopping BrowserSync container' 
+			demyx_echo 'Stopping phpMyAdmin container'
+			demyx_exec docker stop ${DOMAIN//./}_pma
+
+			demyx_echo 'Stopping BrowserSync container'
 			demyx_exec docker stop ${DOMAIN//./}_bs
 			rm "$CONTAINER_PATH"/conf/bs.js
 			
@@ -1070,36 +1080,6 @@ elif [ "$1" = "wp" ]; then
 				fi
 			fi
 		done
-	elif [ -n "$PMA" ]; then
-		PMA_EXIST=$(docker ps -aq -f name=phpmyadmin)
-		if [ "$PMA" = "on" ]; then
-			[[ -n "$PMA_EXIST" ]] && docker stop phpmyadmin && docker rm phpmyadmin
-			source "$CONTAINER_PATH"/.env
-
-			demyx_echo 'Creating phpMyAdmin' 
-			demyx_exec docker run -d --rm \
-				--name phpmyadmin \
-				--network traefik \
-				-e PMA_HOST="${DB}" \
-				-e MYSQL_ROOT_PASSWORD="${MARIADB_ROOT_PASSWORD}" \
-				-l "traefik.enable=1" \
-				-l "traefik.frontend.rule=Host:pma.${PRIMARY_DOMAIN}" \
-				-l "traefik.port=80" \
-				-l "traefik.frontend.redirect.entryPoint=https" \
-				-l "traefik.frontend.headers.forceSTSHeader=${FORCE_STS_HEADER}" \
-				-l "traefik.frontend.headers.STSSeconds=${STS_SECONDS}" \
-				-l "traefik.frontend.headers.STSIncludeSubdomains=${STS_INCLUDE_SUBDOMAINS}" \
-				-l "traefik.frontend.headers.STSPreload=${STS_PRELOAD}" \
-				phpmyadmin/phpmyadmin
-
-			PRINT_TABLE="PHPMYADMIN, pma.$PRIMARY_DOMAIN\n"
-			PRINT_TABLE+="USERNAME, $WORDPRESS_DB_USER\n"
-			PRINT_TABLE+="PASSWORD, $WORDPRESS_DB_PASSWORD"
-			printTable ',' "$(echo -e $PRINT_TABLE)"
-		else
-			demyx_echo 'Stopping phpMyAdmin' 
-			demyx_exec docker stop phpmyadmin
-		fi
 	elif [ -n "$RATE_LIMIT" ]; then
 		WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env || true)
 		[[ -z "$WP_CHECK" ]] && die 'Not a WordPress app.'
