@@ -1271,13 +1271,11 @@ elif [ "$1" = "wp" ]; then
 				if [ -n "$WP_CHECK" ]; then
 					source "$APPS"/"$i"/.env
 					cd "$APPS"/"$i" && docker-compose kill && docker-compose rm -f
-					BROWSERSYNC_CONTAINER_CHECK=$(docker ps -aq -f name=${DOMAIN//./}_bs)
-					SSH_CONTAINER_CHECK=$(docker ps -aq -f name=${DOMAIN//./}_ssh)
+					ORPHANS=$(docker ps -aq -f name=${DOMAIN//./}_)
 					
-					[[ -n "$BROWSERSYNC_CONTAINER_CHECK" ]] && demyx_echo 'Stopping BrowserSync container' && demyx_exec docker stop "$BROWSERSYNC_CONTAINER_CHECK"
-					[[ -n "$SSH_CONTAINER_CHECK" ]] && demyx_echo 'Stopping SSH container' && demyx_exec docker stop "$SSH_CONTAINER_CHECK"
 					[[ -n "$(grep wp_${WP_ID} <<< $VOLUME_CHECK || true)" ]] && demyx_echo 'Deleting data volume' && demyx_exec docker volume rm wp_"$WP_ID"
 					[[ -n "$(grep db_${WP_ID} <<< $VOLUME_CHECK || true)" ]] && demyx_echo 'Deleting db volume' && demyx_exec docker volume rm db_"$WP_ID"
+					[[ -n "$ORPHANS" ]] && demyx_echo 'Stopping orphan containers' && demyx_exec docker stop $(docker ps -aq -f name=${DOMAIN//./}_)
 					[[ -f "$LOGS"/"$DOMAIN".access.log ]] && demyx_echo 'Deleting logs' && demyx_exec rm "$LOGS"/"$DOMAIN".access.log; rm "$LOGS"/"$DOMAIN".error.log
 					
 					demyx_echo 'Deleting directory'
@@ -1291,11 +1289,9 @@ elif [ "$1" = "wp" ]; then
 				source "$CONTAINER_PATH"/.env
 				echo -e "\e[31m[CRITICAL]\e[39m Removing $DOMAIN"
 				cd "$CONTAINER_PATH" && docker-compose kill && docker-compose rm -f
-				BROWSERSYNC_CONTAINER_CHECK=$(docker ps -aq -f name=${DOMAIN//./}_bs)
-				SSH_CONTAINER_CHECK=$(docker ps -aq -f name=${DOMAIN//./}_ssh)
+				ORPHANS=$(docker ps -aq -f name=${DOMAIN//./}_)
 				
-				[[ -n "$BROWSERSYNC_CONTAINER_CHECK" ]] && demyx_echo 'Stopping BrowserSync container' && demyx_exec docker stop "$BROWSERSYNC_CONTAINER_CHECK"
-				[[ -n "$SSH_CONTAINER_CHECK" ]] && demyx_echo 'Stopping SSH container' && demyx_exec docker stop "$SSH_CONTAINER_CHECK"
+				[[ -n "$ORPHANS" ]] && demyx_echo 'Stopping orphan containers' && demyx_exec docker stop $(docker ps -aq -f name=${DOMAIN//./}_)
 				[[ -n "$(grep wp_${WP_ID} <<< $VOLUME_CHECK || true)" ]] && demyx_echo 'Deleting data volume' && demyx_exec docker volume rm wp_"$WP_ID"
 				[[ -n "$(grep db_${WP_ID} <<< $VOLUME_CHECK || true)" ]] && demyx_echo 'Deleting db volume' && demyx_exec docker volume rm db_"$WP_ID"
 				[[ -f "$LOGS"/"$DOMAIN".access.log ]] && demyx_echo 'Deleting logs' && demyx_exec rm "$LOGS"/"$DOMAIN".access.log; rm "$LOGS"/"$DOMAIN".error.log
