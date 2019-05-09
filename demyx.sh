@@ -910,7 +910,6 @@ elif [ "$1" = "wp" ]; then
 				--config "/bs.js" \
 				--proxy "$WP" \
 				--files "/var/www/html/wp-content/**/*" \
-				--host "dev.$DOMAIN" \
 				--port 3000 \
 				--ui-port 3001
 
