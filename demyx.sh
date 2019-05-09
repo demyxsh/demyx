@@ -818,6 +818,7 @@ elif [ "$1" = "wp" ]; then
 		printTable ',' "$(echo -e $PRINT_TABLE)"
 	elif [ -n "$DEV" ] && [ -z "$RUN" ] && [ -z "$CLONE" ]; then
 		SSH_VOLUME_CHECK=$(docker volume ls | grep ssh || true)
+		CACHE_CHECK=$(grep -s "FASTCGI_CACHE=on" "$CONTAINER_PATH"/.env || true)
 		WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env || true)
 		BROWSER_SYNC=3000
 		BROWSER_SYNC_UI=3001
@@ -909,6 +910,8 @@ elif [ "$1" = "wp" ]; then
 				--volumes-from "$WP" \
 				--network container:"$WP" \
 				wordpress:cli plugin install autover --activate
+
+			[[ -n "$CACHE_CHECK" ]] && demyx_echo 'Disabling NGINX cache' && demyx_exec demyx_exec docker exec -it "$WP" sh -c "printf ',s/include \/etc\/nginx\/cache\/http.conf;/#include \/etc\/nginx\/cache\/http.conf;/g\nw\n' | ed /etc/nginx/nginx.conf > /dev/null; printf ',s/include \/etc\/nginx\/cache\/server.conf;/#include \/etc\/nginx\/cache\/server.conf;/g\nw\n' | ed /etc/nginx/nginx.conf > /dev/null; printf ',s/include \/etc\/nginx\/cache\/location.conf;/#include \/etc\/nginx\/cache\/location.conf;/g\nw\n' | ed /etc/nginx/nginx.conf > /dev/null"
 			
 			demyx_echo 'Restarting NGINX' 
 			demyx_exec docker exec -it "$WP" sh -c "printf ',s/sendfile on/sendfile off/g\nw\n' | ed /etc/nginx/nginx.conf; nginx -s reload"
@@ -943,6 +946,8 @@ elif [ "$1" = "wp" ]; then
 			demyx_echo 'Deactivating autover' 
 			demyx_exec docker run -it --rm --volumes-from "$WP" --network container:"$WP" wordpress:cli plugin deactivate autover
 			
+			[[ -n "$CACHE_CHECK" ]] && demyx_echo 'Enabling NGINX cache' && demyx_exec demyx_exec docker exec -it "$WP" sh -c "printf ',s/#include \/etc\/nginx\/cache\/http.conf;/include \/etc\/nginx\/cache\/http.conf;/g\nw\n' | ed /etc/nginx/nginx.conf > /dev/null; printf ',s/#include \/etc\/nginx\/cache\/server.conf;/include \/etc\/nginx\/cache\/server.conf;/g\nw\n' | ed /etc/nginx/nginx.conf > /dev/null; printf ',s/#include \/etc\/nginx\/cache\/location.conf;/include \/etc\/nginx\/cache\/location.conf;/g\nw\n' | ed /etc/nginx/nginx.conf > /dev/null"
+
 			demyx_echo 'Restarting NGINX' 
 			demyx_exec docker exec -it "$WP" sh -c "printf ',s/sendfile off/sendfile on/g\nw\n' | ed /etc/nginx/nginx.conf; nginx -s reload"
 			
