@@ -25,7 +25,7 @@ wget https://raw.githubusercontent.com/demyxco/demyx/master/install.sh && bash i
 
 ### Getting Started
 ```
-demyx wp --dom=domain.tld --run --cdn --cache --ssl
+demyx wp --dom=domain.tld --run --cdn --cache
 ```
 
 ### Commands

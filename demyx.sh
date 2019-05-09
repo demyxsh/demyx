@@ -1337,6 +1337,8 @@ elif [ "$1" = "wp" ]; then
 		#bash $ETC/functions/subnet.sh $DOMAIN $CONTAINER_NAME create
 		echo -e "\e[34m[INFO]\e[39m Creating $DOMAIN"
 
+		[[ -z "$SSL" ]] && SSL=on
+
 		demyx_echo 'Creating directory'
 		demyx_exec mkdir -p "$CONTAINER_PATH"/conf
 
@@ -1399,7 +1401,9 @@ elif [ "$1" = "wp" ]; then
 		[[ "$CDN" = on ]] && demyx wp --dom="$DOMAIN" --cdn
 		[[ "$DEV" = on ]] && demyx wp --dom="$DOMAIN" --dev
 		[[ "$CACHE" = on ]] && demyx wp --dom="$DOMAIN" --cache
-		PRINT_TABLE="DOMAIN, $DOMAIN/wp-admin\n"
+		[[ "$SSL" = on ]] && RUN_PROTO='https://'
+
+		PRINT_TABLE="DOMAIN, ${RUN_PROTO}${DOMAIN}/wp-admin\n"
 		PRINT_TABLE+="WORDPRESS USER, $WORDPRESS_USER\n"
 		PRINT_TABLE+="WORDPRESS PASSWORD, $WORDPRESS_USER_PASSWORD\n"
 		printTable ',' "$(echo -e $PRINT_TABLE)"
