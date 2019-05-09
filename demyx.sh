@@ -893,7 +893,7 @@ elif [ "$1" = "wp" ]; then
 				-l "traefik.ui.frontend.headers.STSSeconds=${STS_SECONDS}" \
 				-l "traefik.ui.frontend.headers.STSIncludeSubdomains=${STS_INCLUDE_SUBDOMAINS}" \
 				-l "traefik.ui.frontend.headers.STSPreload=${STS_PRELOAD}" \
-				-l "traefik.ui.frontend.auth.basic=${BASIC_AUTH_USER}:${PARSE_BASIC_AUTH}" \
+				-l "traefik.ui.frontend.auth.basic.users=${BASIC_AUTH_USER}:${PARSE_BASIC_AUTH}" \
 				demyx/browsersync start \
 				--config "/bs.js" \
 				--proxy "$WP" \
@@ -915,7 +915,7 @@ elif [ "$1" = "wp" ]; then
 				-l "traefik.frontend.headers.STSSeconds=${STS_SECONDS}" \
 				-l "traefik.frontend.headers.STSIncludeSubdomains=${STS_INCLUDE_SUBDOMAINS}" \
 				-l "traefik.frontend.headers.STSPreload=${STS_PRELOAD}" \
-				-l "traefik.frontend.auth.basic=${BASIC_AUTH_USER}:${PARSE_BASIC_AUTH}" \
+				-l "traefik.frontend.auth.basic.users=${BASIC_AUTH_USER}:${PARSE_BASIC_AUTH}" \
 				phpmyadmin/phpmyadmin
 
 			[[ -n "$AUTOVER_CHECK" ]] && demyx_echo 'Activating autover plugin' && demyx_exec \
