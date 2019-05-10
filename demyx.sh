@@ -1619,42 +1619,25 @@ else
                 docker run --rm -ti --name ctop -v /var/run/docker.sock:/var/run/docker.sock:ro quay.io/vektorlab/ctop
                 ;;
             -u|--update)
-                # Cron check
-                CRON_WP_CHECK=$(crontab -l | grep "cron event run --due-now" || true)
-                CRON_MONITOR_CHECK=$(crontab -l | grep "demyx wp --monitor" || true)
-
-                if [ -z "$CRON_WP_CHECK" ]; then
-                    # WP Cron every 2 hours
-                    echo -e "\e[34m[INFO]\e[39m Demyx cron not found, installing now to crontabs"
-                    crontab -l > "$ETC"/CRON_WP_CHECK
-                    echo "0 */2 * * * /usr/local/bin/demyx wp --all --wpcli='cron event run --due-now'" >> "$ETC"/CRON_WP_CHECK
-                    
-                    demyx_echo 'Modifying crontab for WordPress cron' 
-                    demyx_exec crontab "$ETC"/CRON_WP_CHECK
-                    
-                    demyx_echo 'Removing temporary crontab' 
-                    demyx_exec rm "$ETC"/CRON_WP_CHECK
-                fi
-
-                if [ -z "$CRON_MONITOR_CHECK" ]; then
-                    # WP Cron every minute
-                    echo -e "\e[34m[INFO]\e[39m Auto scaling cron not found, installing now to crontabs"
-                    crontab -l > "$ETC"/CRON_MONITOR_CHECK
-                    echo "* * * * * /usr/local/bin/demyx wp --monitor" >> "$ETC"/CRON_MONITOR_CHECK
-                    
-                    demyx_echo 'Modifying crontab for monitor cron'
-                    demyx_exec crontab "$ETC"/CRON_MONITOR_CHECK
-                    
-                    demyx_echo 'Removing temporary crontab'
-                    demyx_exec rm "$ETC"/CRON_MONITOR_CHECK
-                    
-                    demyx wp --refresh --all
-                fi
-
                 # Check for custom folder where users can place custom shell scripts
                 if [ ! -f "$DEMYX"/custom/example-callback.sh ]; then
                     demyx_echo 'Creating custom directory' 
                     demyx_exec mkdir "$DEMYX"/custom; cp "$ETC"/functions/example-callback.sh "$DEMYX"/custom
+                fi
+
+                # Replace old cron with new
+                if [ ! -d "$DEMYX"/cron ]; then
+                    crontab -l > "$ETC"/cron/cron_tmp
+
+                    sed -i '\/usr\/local\/bin\/demyx/d' "$ETC"/cron/cron_tmp
+                    echo "0 */6 * * * /bin/bash $ETC/cron/every-minute.sh" >> "$ETC"/cron/cron_tmp
+                    echo "0 */6 * * * /bin/bash $ETC/cron/every-1-hour.sh" >> "$ETC"/cron/cron_tmp
+                    echo "0 */6 * * * /bin/bash $ETC/cron/every-6-hour.sh" >> "$ETC"/cron/cron_tmp
+                    echo "0 0 * * * /bin/bash $ETC/cron/every-day.sh" >> "$ETC"/cron/cron_tmp
+                    echo "0 0 1 * * /bin/bash $ETC/cron/every-month.sh" >> "$ETC"/cron/cron_tmp
+
+                    demyx_echo 'Updating crontab'
+                    demyx_exec crontab "$ETC"/cron/cron_tmp; rm "$ETC"/cron/cron_tmp
                 fi
 
                 cd "$GIT" || exit
@@ -1677,7 +1660,7 @@ else
                     demyx_exec bash "$ETC"/functions/etc-yml.sh
                     
                     demyx_echo 'Updating files'
-                    demyx_exec rm -rf "$ETC"/functions; cp -R "$GIT"/etc/functions "$ETC"
+                    demyx_exec rm -rf "$ETC"/functions; cp -R "$GIT"/etc/functions "$ETC"; rm -rf "$ETC"/cron; cp -R "$GIT"/cron "$ETC"
                     
                     demyx stack -u
                 else
