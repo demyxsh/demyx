@@ -115,10 +115,11 @@ demyx wp -h
 --clone             Clones a site
                     Example: demyx wp --dom=new-domain.tld --clone=old-domain.tld --ssl
 
---dom, --domain     Primary flag to target your sites
-                    Example: demyx wp --dom=domain.tld --flag
+--dom               Primary flag to target your sites
+--domain            Example: demyx wp --dom=domain.tld --flag
 
---dev               Creates a development environment: BrowserSync & UI, phpMyAdmin, SSH, autover WP plugin, and cache off
+--dev               Creates a development environment
+                    BrowserSync & UI, phpMyAdmin, SSH, autover WP plugin, and cache off
                     Example: demyx wp --dom=domain.tld --dev, demyx wp --dom=domain.tld --dev=off
 
 --down              Shorthand for docker-compose down
@@ -126,6 +127,10 @@ demyx wp -h
 
 --env               Shows all environment variables for a given site
                     Example: demyx wp --env=domain.tld, demyx wp --dom=domain.tld --env
+
+--files             Used with --dev to configure BrowserSync files to watch.
+                    Available options: themes, plugins, or absolute paths
+                    Example: demyx wp --dom=domain.tld --dev --files=/var/www/html, demyx wp --dom=domain.tld --dev --files=themes
 
 --force             Force an override, only applies to --refresh for now
                     Example: demyx wp --refresh --all --force, demyx wp --dom=domain.tld --refresh --force
