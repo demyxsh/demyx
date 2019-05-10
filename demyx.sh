@@ -1625,48 +1625,38 @@ else
                     demyx_exec mkdir "$DEMYX"/custom; cp "$ETC"/functions/example-callback.sh "$DEMYX"/custom
                 fi
 
-                # Replace old cron with new
-                if [ ! -d "$DEMYX"/cron ]; then
-                    crontab -l > "$ETC"/cron/cron_tmp
 
-                    sed -i '\/usr\/local\/bin\/demyx/d' "$ETC"/cron/cron_tmp
-                    echo "0 */6 * * * /bin/bash $ETC/cron/every-minute.sh" >> "$ETC"/cron/cron_tmp
-                    echo "0 */6 * * * /bin/bash $ETC/cron/every-1-hour.sh" >> "$ETC"/cron/cron_tmp
-                    echo "0 */6 * * * /bin/bash $ETC/cron/every-6-hour.sh" >> "$ETC"/cron/cron_tmp
-                    echo "0 0 * * * /bin/bash $ETC/cron/every-day.sh" >> "$ETC"/cron/cron_tmp
-                    echo "0 0 1 * * /bin/bash $ETC/cron/every-month.sh" >> "$ETC"/cron/cron_tmp
+                cd "$GIT" && git pull
+
+                echo -e "\e[34m[INFO]\e[39m Updating Demyx..."
+                    
+                # Replace old cron with new
+                CRON_OLD=$(crontab -l | grep -s "/usr/local/bin/demyx" || true)
+                if [ -n "$CRON_OLD" ]; then
+                    crontab -l > "$ETC"/cron_tmp
+
+                    sed -i '\/usr\/local\/bin\/demyx/d' "$ETC"/cron_tmp
+                    sed -i '\/srv\/demyx\/etc\/cron/d' "$ETC"/cron_tmp
+                    echo "0 */6 * * * /bin/bash $ETC/cron/every-minute.sh" >> "$ETC"/cron_tmp
+                    echo "0 */6 * * * /bin/bash $ETC/cron/every-1-hour.sh" >> "$ETC"/cron_tmp
+                    echo "0 */6 * * * /bin/bash $ETC/cron/every-6-hour.sh" >> "$ETC"/cron_tmp
+                    echo "0 0 * * * /bin/bash $ETC/cron/every-day.sh" >> "$ETC"/cron_tmp
+                    echo "0 0 1 * * /bin/bash $ETC/cron/every-month.sh" >> "$ETC"/cron_tmp
 
                     demyx_echo 'Updating crontab'
-                    demyx_exec crontab "$ETC"/cron/cron_tmp; rm "$ETC"/cron/cron_tmp
+                    demyx_exec crontab "$ETC"/cron_tmp; rm "$ETC"/cron_tmp
                 fi
 
-                cd "$GIT" || exit
-
-                if [ -n "$FORCE" ]; then
-                    echo -e "\e[33m[WARNING]\e[39m Forcing an update for Demyx..."
-                else
-                    echo -e "\e[34m[INFO]\e[39m Checking for updates"
-                fi
-
-                CHECK_FOR_UPDATES=$(git pull | grep "Already up to date." || true)
-
-                if [ -n "$FORCE" ] || [ "$CHECK_FOR_UPDATES" != "Already up to date" ]; then
-                    [[ -z "$FORCE" ]] && echo -e "\e[34m[INFO]\e[39m Updating Demyx..."
-                    
-                    demyx_echo 'Creating stack .env'
-                    demyx_exec bash "$ETC"/functions/etc-env.sh
-                    
-                    demyx_echo 'Creating stack .yml'
-                    demyx_exec bash "$ETC"/functions/etc-yml.sh
-                    
-                    demyx_echo 'Updating files'
-                    demyx_exec rm -rf "$ETC"/functions; cp -R "$GIT"/etc/functions "$ETC"; rm -rf "$ETC"/cron; cp -R "$GIT"/cron "$ETC"
-                    
-                    demyx stack -u
-                else
-                    echo -e "\e[32m[SUCCESS]\e[39m Already up to date"
-                fi
+                demyx_echo 'Creating stack .env'
+                demyx_exec bash "$ETC"/functions/etc-env.sh
                 
+                demyx_echo 'Creating stack .yml'
+                demyx_exec bash "$ETC"/functions/etc-yml.sh
+                
+                demyx_echo 'Updating files'
+                demyx_exec rm -rf "$ETC"/functions; cp -R "$GIT"/etc/functions "$ETC"; rm -rf "$ETC"/cron; cp -R "$GIT"/etc/cron "$ETC"
+                
+                demyx stack -u
                 demyx wp --dev=check --all
                 ;;
             --)      
