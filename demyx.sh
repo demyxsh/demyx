@@ -1652,23 +1652,9 @@ else
                 fi
 
                 # Check for custom folder where users can place custom shell scripts
-                if [ ! -d "$DEMYX"/custom ]; then
-                    demyx_exec 'Creating custom directory' "$(
-                        mkdir "$DEMYX"/custom
-                    )"
-                    
-                    echo "#!/bin/bash
-                    # Demyx
-                    # https://github.com/demyxco/demyx
-                    # Feel free to edit/modify this file since it will not be updated.
-
-                    TYPE=\$1
-
-                    #if [ \"\$TYPE\" = monitor ]; then
-                    #DOMAIN=\$2
-                    #CPU=\$3
-                    #do code
-                    #fi" | tr -d '\011' > "$DEMYX"/custom/callback.sh
+                if [ ! -f "$DEMYX"/custom/example-callback.sh ]; then
+                    demyx_echo 'Creating custom directory' 
+                    demyx_exec mkdir "$DEMYX"/custom; cp "$ETC"/functions/example-callback.sh "$DEMYX"/custom
                 fi
 
                 cd "$GIT" || exit
