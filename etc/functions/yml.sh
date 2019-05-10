@@ -6,6 +6,7 @@ source /srv/demyx/etc/.env
 CONTAINER_PATH=$1
 FORCE=$2
 SSL=$3
+PROTOCOL="- \"traefik.frontend.redirect.entryPoint=http\""
 
 if [ -f "$CONTAINER_PATH"/docker-compose.yml ]; then
   NO_UPDATE=$(grep -r "AUTO GENERATED" "$CONTAINER_PATH"/docker-compose.yml)
