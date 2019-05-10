@@ -25,6 +25,8 @@ if [ "$SSL" = "on" ]; then
 
   if [ "$SERVER_IP" != "$DOMAIN_IP" ]; then
     echo -e "\e[33m[WARNING]\e[39m $DOMAIN does not point to server's IP! Proceeding without SSL..."
+    echo "SERVER IP: $SERVER_IP"
+    echo "DOMAIN IP: $DOMAIN_IP"
   else
     PROTOCOL="- \"traefik.frontend.redirect.entryPoint=https\"
       - \"traefik.frontend.headers.forceSTSHeader=\${FORCE_STS_HEADER}\"
