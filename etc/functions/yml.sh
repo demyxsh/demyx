@@ -7,9 +7,8 @@ CONTAINER_PATH=$1
 FORCE=$2
 SSL=$3
 PROTOCOL="- \"traefik.frontend.redirect.entryPoint=http\""
-FRONTEND_RULE="- \"traefik.frontend.rule=Host:\${DOMAIN},www.\${DOMAIN}\""
-REGEX="- \"traefik.frontend.redirect.replacement=\${DOMAIN}/\$\$1\"
-      - \"traefik.frontend.headers.forceSTSHeader=\${FORCE_STS_HEADER}\""
+REGEX_PROTOCOL="https://"
+REGEX_PROTOCOL_REPLACEMENT="http://"
 
 if [ -f "$CONTAINER_PATH"/docker-compose.yml ]; then
   NO_UPDATE=$(grep -r "AUTO GENERATED" "$CONTAINER_PATH"/docker-compose.yml)
@@ -19,8 +18,11 @@ fi
 source "$CONTAINER_PATH"/.env
 
 if [ "$SSL" = "on" ]; then
+  REGEX_PROTOCOL="http://"
+  REGEX_PROTOCOL_REPLACEMENT="https://"
   SERVER_IP=$(curl -s https://ipecho.net/plain)
   SUBDOMAIN_CHECK=$(/usr/bin/dig +short "$DOMAIN" | sed -e '1d')  
+  
   if [ -n "$SUBDOMAIN_CHECK" ]; then
     DOMAIN_IP=$SUBDOMAIN_CHECK
   else
@@ -40,7 +42,11 @@ if [ "$SSL" = "on" ]; then
   fi
 fi
 
-[[ -n "$SUBDOMAIN_CHECK" ]] && FRONTEND_RULE="- \"traefik.frontend.rule=Host:\${DOMAIN}\""; REGEX=''
+FRONTEND_RULE="- \"traefik.frontend.rule=Host:\${DOMAIN},www.\${DOMAIN}\""
+REGEX="- \"traefik.frontend.redirect.regex=^${REGEX_PROTOCOL}\${DOMAIN}/(.*)\"
+      - \"traefik.frontend.redirect.replacement=${REGEX_PROTOCOL_REPLACEMENT}\${DOMAIN}/\$\$1\""
+
+[[ -n "$SUBDOMAIN_CHECK" ]] && FRONTEND_RULE="- \"traefik.frontend.rule=Host:\${DOMAIN}\""
 
 cat > "$CONTAINER_PATH"/docker-compose.yml <<-EOF
 # AUTO GENERATED
