@@ -1150,7 +1150,7 @@ elif [ "$1" = "wp" ]; then
                     CONTAINER_PATH=$APPS/$DOMAIN
                     CONTAINER_NAME=${DOMAIN//./_}
                     CACHE_CHECK=$(grep -s "FASTCGI_CACHE=on" "$CONTAINER_PATH"/.env || true)
-                    SSL_CHECK=$(grep -s "https" "$CONTAINER_PATH"/docker-compose.yml || true)
+                    SSL_CHECK=$(grep -s "entryPoint=https" "$CONTAINER_PATH"/docker-compose.yml || true)
                     [[ -n "$CACHE_CHECK" ]] && CACHE=on
                     [[ -n "$SSL_CHECK" ]] && SSL=on
                     
@@ -1178,7 +1178,7 @@ elif [ "$1" = "wp" ]; then
         else
             WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env || true)
             CACHE_CHECK=$(grep -s "FASTCGI_CACHE=on" "$CONTAINER_PATH"/.env || true)
-            SSL_CHECK=$(grep -s "https" "$CONTAINER_PATH"/docker-compose.yml || true)
+            SSL_CHECK=$(grep -s "entryPoint=https" "$CONTAINER_PATH"/docker-compose.yml || true)
             [[ -z "$WP_CHECK" ]] && die 'Not a WordPress app'
             [[ -z "$DOMAIN" ]] && die 'Domain is missing or add --all'
             [[ -n "$CACHE_CHECK" ]] && CACHE=on
