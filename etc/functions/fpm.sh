@@ -7,8 +7,8 @@ DOMAIN=$2
 FORCE=$3
 
 if [ -f "$CONTAINER_PATH"/conf/fpm-php.conf ]; then
-	NO_UPDATE=$(grep -r "AUTO GENERATED" "$CONTAINER_PATH"/conf/php-fpm.conf)
-	[[ -z "$NO_UPDATE" ]] && [[ -z "$FORCE" ]] && echo -e "\e[33m[WARNING]\e[39m Skipped php-fpm.conf" && exit 1
+    NO_UPDATE=$(grep -r "AUTO GENERATED" "$CONTAINER_PATH"/conf/php-fpm.conf)
+    [[ -z "$NO_UPDATE" ]] && [[ -z "$FORCE" ]] && echo -e "\e[33m[WARNING]\e[39m Skipped php-fpm.conf" && exit 1
 fi
 
 cat > "$CONTAINER_PATH"/conf/php-fpm.conf <<-EOF

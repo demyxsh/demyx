@@ -6,8 +6,8 @@ CONTAINER_PATH=$1
 FORCE=$2
 
 if [ -f "$CONTAINER_PATH"/conf/php.ini ]; then
-	NO_UPDATE=$(grep -r "AUTO GENERATED" "$CONTAINER_PATH"/conf/php.ini)
-	[[ -z "$NO_UPDATE" ]] && [[ -z "$FORCE" ]] && echo -e "\e[33m[WARNING]\e[39m Skipped php.ini" && exit 1
+    NO_UPDATE=$(grep -r "AUTO GENERATED" "$CONTAINER_PATH"/conf/php.ini)
+    [[ -z "$NO_UPDATE" ]] && [[ -z "$FORCE" ]] && echo -e "\e[33m[WARNING]\e[39m Skipped php.ini" && exit 1
 fi
 
 cat > "$CONTAINER_PATH"/conf/php.ini <<-EOF

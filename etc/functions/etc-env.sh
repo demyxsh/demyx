@@ -11,9 +11,9 @@ ETC=$DEMYX/etc
 PARSE_BASIC_AUTH=$(grep -s BASIC_AUTH_PASSWORD "$ETC"/.env | awk -F '[=]' '{print $2}')
 
 if [ -f $ETC/.env ]; then
-	source $ETC/.env
-	NO_UPDATE=$(grep -r "AUTO GENERATED" $ETC/.env)
-  	[[ -z "$NO_UPDATE" ]] && [[ -z "$FORCE" ]] && echo -e "\e[33m[WARNING]\e[39m Skipped .env" && exit 1
+    source $ETC/.env
+    NO_UPDATE=$(grep -r "AUTO GENERATED" $ETC/.env)
+    [[ -z "$NO_UPDATE" ]] && [[ -z "$FORCE" ]] && echo -e "\e[33m[WARNING]\e[39m Skipped .env" && exit 1
 fi
 
 cat > $ETC/.env <<-EOF
