@@ -7,6 +7,7 @@ CONTAINER_PATH=$1
 FORCE=$2
 SSL=$3
 PROTOCOL="- \"traefik.frontend.redirect.entryPoint=http\""
+FRONTEND_RULE="- \"traefik.frontend.rule=Host:\${DOMAIN},www.\${DOMAIN}\""
 
 if [ -f "$CONTAINER_PATH"/docker-compose.yml ]; then
   NO_UPDATE=$(grep -r "AUTO GENERATED" "$CONTAINER_PATH"/docker-compose.yml)
@@ -36,6 +37,8 @@ if [ "$SSL" = "on" ]; then
       - \"traefik.frontend.headers.STSPreload=\${STS_PRELOAD}\""
   fi
 fi
+
+[[ -n "$SUBDOMAIN_CHECK" ]] && FRONTEND_RULE="- \"traefik.frontend.rule=Host:\${DOMAIN}\""
 
 cat > "$CONTAINER_PATH"/docker-compose.yml <<-EOF
 # AUTO GENERATED
@@ -104,7 +107,7 @@ services:
       - \${ERROR_LOG}:/var/log/demyx/${DOMAIN}.error.log
     labels:
       - "traefik.enable=true"
-      - "traefik.frontend.rule=Host:\${DOMAIN},www.\${DOMAIN}"
+      $FRONTEND_RULE
       - "traefik.port=80"
       - "traefik.frontend.redirect.regex=^www.\${DOMAIN}/(.*)"
       - "traefik.frontend.redirect.replacement=\${DOMAIN}/\$\$1"
