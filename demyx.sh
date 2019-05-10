@@ -135,7 +135,7 @@ elif [ "$1" = "wp" ]; then
 				echo "  --dom, --domain Primary flag to target your sites"
 				echo "                  Example: demyx wp --dom=domain.tld --flag"
 				echo
-				echo "  --dev           Editing files from host to container will reflect on page reload"
+				echo "  --dev           Creates a development environment: BrowserSync & UI, phpMyAdmin, SSH, autover WP plugin, and cache off"
 				echo "                  Example: demyx wp --dom=domain.tld --dev, demyx wp --dom=domain.tld --dev=off"
 				echo
 				echo "  --down          Shorthand for docker-compose down"

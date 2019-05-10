@@ -118,7 +118,7 @@ demyx wp -h
 --dom, --domain     Primary flag to target your sites
                     Example: demyx wp --dom=domain.tld --flag
 
---dev               Editing files from host to container will reflect on page reload
+--dev               Creates a development environment: BrowserSync & UI, phpMyAdmin, SSH, autover WP plugin, and cache off
                     Example: demyx wp --dom=domain.tld --dev, demyx wp --dom=domain.tld --dev=off
 
 --down              Shorthand for docker-compose down
