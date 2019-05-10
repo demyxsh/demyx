@@ -1671,12 +1671,6 @@ else
                     #fi" | tr -d '\011' > "$DEMYX"/custom/callback.sh
                 fi
 
-                if [ -f /etc/cron.daily/demyx-daily ]; then
-                    # Will remove this May 1st
-                    echo -e "\e[33m[WARNING]\e[39m Old cron for Demyx detected, deleting now..." 
-                    sudo rm /etc/cron.daily/demyx-daily
-                fi
-
                 cd "$GIT" || exit
 
                 if [ -n "$FORCE" ]; then
