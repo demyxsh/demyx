@@ -882,7 +882,7 @@ elif [ "$1" = "wp" ]; then
 
 			demyx_echo 'Creating SSH container' 
 			demyx_exec docker run -d --rm \
-				--name ${DOMAIN//./}_ssh \
+				--name ${DOMAIN//./}_ssh_"$WP_ID" \
 				-v ssh:/home/www-data/.ssh \
 				--volumes-from "$WP" \
 				-p "$SSH_PORT":22 \
@@ -891,7 +891,7 @@ elif [ "$1" = "wp" ]; then
 			echo "module.exports={rewriteRules:[{match:/$DOMAIN/g,fn:function(e,r,t){return'$BROWSERSYNC_FRONTEND_RULE'}}],socket:{domain:'$BROWSERSYNC_FRONTEND_RULE'}};" > "$CONTAINER_PATH"/conf/bs.js
 			demyx_echo 'Creating BrowserSync container' 
 			demyx_exec docker run -d --rm \
-				--name ${DOMAIN//./}_bs \
+				--name ${DOMAIN//./}_bs_"$WP_ID" \
 				--net traefik \
 				--volumes-from "$WP" \
 				-v "$CONTAINER_PATH"/conf/bs.js:/bs.js \
@@ -920,7 +920,7 @@ elif [ "$1" = "wp" ]; then
 
 			demyx_echo 'Creating phpMyAdmin container' 
 			demyx_exec docker run -d --rm \
-				--name ${DOMAIN//./}_pma \
+				--name ${DOMAIN//./}_pma_"$WP_ID" \
 				--network traefik \
 				-e PMA_HOST="${DB}" \
 				-e MYSQL_ROOT_PASSWORD="${MARIADB_ROOT_PASSWORD}" \
@@ -975,13 +975,13 @@ elif [ "$1" = "wp" ]; then
 			AUTOVER_CHECK=$(docker exec -it "$WP" sh -c 'ls wp-content/plugins' | grep autover || true)
 			
 			demyx_echo 'Stopping SSH container' 
-			demyx_exec docker stop ${DOMAIN//./}_ssh
+			demyx_exec docker stop ${DOMAIN//./}_ssh_"$WP_ID"
 			
 			demyx_echo 'Stopping phpMyAdmin container'
-			demyx_exec docker stop ${DOMAIN//./}_pma
+			demyx_exec docker stop ${DOMAIN//./}_pma_"$WP_ID"
 
 			demyx_echo 'Stopping BrowserSync container'
-			demyx_exec docker stop ${DOMAIN//./}_bs
+			demyx_exec docker stop ${DOMAIN//./}_bs_"$WP_ID"
 			rm "$CONTAINER_PATH"/conf/bs.js
 			
 			demyx_echo 'Deactivating autover' 
@@ -1288,11 +1288,11 @@ elif [ "$1" = "wp" ]; then
 				if [ -n "$WP_CHECK" ]; then
 					source "$APPS"/"$i"/.env
 					cd "$APPS"/"$i" && docker-compose kill && docker-compose rm -f
-					ORPHANS=$(docker ps -aq -f name=${DOMAIN//./}_)
+					ORPHANS=$(docker ps -aq -f name="$WP_ID")
 					
 					[[ -n "$(grep wp_${WP_ID} <<< $VOLUME_CHECK || true)" ]] && demyx_echo 'Deleting data volume' && demyx_exec docker volume rm wp_"$WP_ID"
 					[[ -n "$(grep db_${WP_ID} <<< $VOLUME_CHECK || true)" ]] && demyx_echo 'Deleting db volume' && demyx_exec docker volume rm db_"$WP_ID"
-					[[ -n "$ORPHANS" ]] && demyx_echo 'Stopping orphan containers' && demyx_exec docker stop $(docker ps -aq -f name=${DOMAIN//./}_)
+					[[ -n "$ORPHANS" ]] && demyx_echo 'Stopping orphan containers' && demyx_exec docker stop $(docker ps -aq -f name="$WP_ID")
 					[[ -f "$LOGS"/"$DOMAIN".access.log ]] && demyx_echo 'Deleting logs' && demyx_exec rm "$LOGS"/"$DOMAIN".access.log; rm "$LOGS"/"$DOMAIN".error.log
 					
 					demyx_echo 'Deleting directory'
@@ -1306,9 +1306,9 @@ elif [ "$1" = "wp" ]; then
 				source "$CONTAINER_PATH"/.env
 				echo -e "\e[31m[CRITICAL]\e[39m Removing $DOMAIN"
 				cd "$CONTAINER_PATH" && docker-compose kill && docker-compose rm -f
-				ORPHANS=$(docker ps -aq -f name=${DOMAIN//./}_)
+				ORPHANS=$(docker ps -aq -f name="$WP_ID")
 				
-				[[ -n "$ORPHANS" ]] && demyx_echo 'Stopping orphan containers' && demyx_exec docker stop $(docker ps -aq -f name=${DOMAIN//./}_)
+				[[ -n "$ORPHANS" ]] && demyx_echo 'Stopping orphan containers' && demyx_exec docker stop $(docker ps -aq -f name="$WP_ID")
 				[[ -n "$(grep wp_${WP_ID} <<< $VOLUME_CHECK || true)" ]] && demyx_echo 'Deleting data volume' && demyx_exec docker volume rm wp_"$WP_ID"
 				[[ -n "$(grep db_${WP_ID} <<< $VOLUME_CHECK || true)" ]] && demyx_echo 'Deleting db volume' && demyx_exec docker volume rm db_"$WP_ID"
 				[[ -f "$LOGS"/"$DOMAIN".access.log ]] && demyx_echo 'Deleting logs' && demyx_exec rm "$LOGS"/"$DOMAIN".access.log; rm "$LOGS"/"$DOMAIN".error.log
