@@ -986,7 +986,8 @@ elif [ "$1" = "wp" ]; then
             PRINT_TABLE+="PHPMYADMIN USERNAME, $WORDPRESS_DB_USER\n"
             PRINT_TABLE+="PHPMYADMIN PASSWORD, $WORDPRESS_DB_PASSWORD\n"
             PRINT_TABLE+="BROWSERSYNC, https://$BROWSERSYNC_FRONTEND_RULE\n"
-            PRINT_TABLE+="BROWSERSYNC UI, https://$BROWSERSYNC_UI_FRONTEND_RULE"
+            PRINT_TABLE+="BROWSERSYNC UI, https://$BROWSERSYNC_UI_FRONTEND_RULE\n"
+            PRINT_TABLE+="BROWSERSYNC FILES, $BS_FILES"
             printTable ',' "$(echo -e $PRINT_TABLE)"
         elif [ "$DEV" = off ]; then
             source "$CONTAINER_PATH"/.env
