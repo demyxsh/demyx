@@ -688,6 +688,7 @@ elif [ "$1" = "wp" ]; then
 		CLONE_WP=$(cat "$APPS"/"$CLONE"/.env | awk -F= '/^WP/ { print $2 }' | sed '1d')
 		WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$CLONE"/.env || true)
 		DEV_MODE_CHECK=$(grep "sendfile off" /srv/demyx/apps/$CLONE/conf/nginx.conf || true)
+		[[ -z "$SSL" ]] && SSL=on
 		[[ -z "$WP_CHECK" ]] && die "$CLONE isn't a WordPress app"
 		[[ -n "$DEV_MODE_CHECK" ]] && die "$CLONE is currently in dev mode. Please disable it before cloning"
 		[[ -d "$CONTAINER_PATH" ]] && demyx wp --dom="$DOMAIN" --remove
