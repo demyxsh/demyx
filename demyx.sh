@@ -818,11 +818,28 @@ elif [ "$1" = "wp" ]; then
 		PRINT_TABLE+="WORDPRESS PASSWORD, $WORDPRESS_USER_PASSWORD"
 		printTable ',' "$(echo -e $PRINT_TABLE)"
 	elif [ -n "$DEV" ] && [ -z "$RUN" ] && [ -z "$CLONE" ]; then
+		[[ -z "$DOMAIN" ]] && die '--domain missing'
 		SSH_VOLUME_CHECK=$(docker volume ls | grep ssh || true)
 		CACHE_CHECK=$(grep -s "FASTCGI_CACHE=on" "$CONTAINER_PATH"/.env || true)
+		SUBDOMAIN_CHECK=$(/usr/bin/dig +short "$DOMAIN" | sed -e '1d')
+		SUBDOMAIN_STRIP=$(echo $DOMAIN | awk -F '[.]' '{print $2"."$3}' )
 		WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env || true)
 		SSH_PORT=2222
 		PARSE_BASIC_AUTH=$(grep -s BASIC_AUTH_PASSWORD "$ETC"/.env | awk -F '[=]' '{print $2}' || true)
+		BROWSERSYNC_SUB=dev
+		BROWSERSYNC_SUB_UI=ui
+		PHPMYADMIN_SUB=pma
+
+		if [ -n "$SUBDOMAIN_CHECK" ]; then
+			[[ "$DOMAIN" == "$BROWSERSYNC_SUB."* ]] && BROWSERSYNC_SUB=bs
+			BROWSERSYNC_FRONTEND_RULE="$BROWSERSYNC_SUB"."$SUBDOMAIN_STRIP"
+			BROWSERSYNC_UI_FRONTEND_RULE="$BROWSERSYNC_SUB_UI"."$SUBDOMAIN_STRIP"
+			PHPMYADMIN_FRONTEND_RULE="$PHPMYADMIN_SUB.$SUBDOMAIN_STRIP"
+		else
+			BROWSERSYNC_FRONTEND_RULE="$BROWSERSYNC_SUB"."$DOMAIN"
+			BROWSERSYNC_UI_FRONTEND_RULE="$BROWSERSYNC_SUB_UI"."$DOMAIN"
+			PHPMYADMIN_FRONTEND_RULE="$PHPMYADMIN_SUB.$DOMAIN"
+		fi
 
 		if [ -z "$SSH_VOLUME_CHECK" ] && [ "$DEV" != check ]; then
 			echo -e "\e[34m[INFO]\e[39m SSH volume not found, creating now..."
@@ -871,7 +888,7 @@ elif [ "$1" = "wp" ]; then
 				-p "$SSH_PORT":22 \
 				demyx/ssh
 			
-			echo "module.exports={rewriteRules:[{match:/$DOMAIN/g,fn:function(e,r,t){return'dev.$DOMAIN'}}],socket:{domain:'dev.$DOMAIN'}};" > "$CONTAINER_PATH"/conf/bs.js
+			echo "module.exports={rewriteRules:[{match:/$DOMAIN/g,fn:function(e,r,t){return'$BROWSERSYNC_FRONTEND_RULE'}}],socket:{domain:'$BROWSERSYNC_FRONTEND_RULE'}};" > "$CONTAINER_PATH"/conf/bs.js
 			demyx_echo 'Creating BrowserSync container' 
 			demyx_exec docker run -d --rm \
 				--name ${DOMAIN//./}_bs \
@@ -879,14 +896,14 @@ elif [ "$1" = "wp" ]; then
 				--volumes-from "$WP" \
 				-v "$CONTAINER_PATH"/conf/bs.js:/bs.js \
 				-l "traefik.enable=true" \
-				-l "traefik.bs.frontend.rule=Host:dev.$DOMAIN" \
+				-l "traefik.bs.frontend.rule=Host:$BROWSERSYNC_FRONTEND_RULE" \
 				-l "traefik.bs.port=3000" \
 				-l "traefik.bs.frontend.redirect.entryPoint=https" \
 				-l "traefik.bs.frontend.headers.forceSTSHeader=${FORCE_STS_HEADER}" \
 				-l "traefik.bs.frontend.headers.STSSeconds=${STS_SECONDS}" \
 				-l "traefik.bs.frontend.headers.STSIncludeSubdomains=${STS_INCLUDE_SUBDOMAINS}" \
 				-l "traefik.bs.frontend.headers.STSPreload=${STS_PRELOAD}" \
-				-l "traefik.ui.frontend.rule=Host:ui.$DOMAIN" \
+				-l "traefik.ui.frontend.rule=Host:$BROWSERSYNC_UI_FRONTEND_RULE" \
 				-l "traefik.ui.port=3001" \
 				-l "traefik.ui.frontend.redirect.entryPoint=https" \
 				-l "traefik.ui.frontend.headers.forceSTSHeader=${FORCE_STS_HEADER}" \
@@ -908,7 +925,7 @@ elif [ "$1" = "wp" ]; then
 				-e PMA_HOST="${DB}" \
 				-e MYSQL_ROOT_PASSWORD="${MARIADB_ROOT_PASSWORD}" \
 				-l "traefik.enable=true" \
-				-l "traefik.frontend.rule=Host:pma.$DOMAIN" \
+				-l "traefik.frontend.rule=Host:$PHPMYADMIN_FRONTEND_RULE" \
 				-l "traefik.port=80" \
 				-l "traefik.frontend.redirect.entryPoint=https" \
 				-l "traefik.frontend.headers.forceSTSHeader=${FORCE_STS_HEADER}" \
@@ -942,11 +959,11 @@ elif [ "$1" = "wp" ]; then
 			PRINT_TABLE+="SFTP, $DOMAIN\n"
 			PRINT_TABLE+="SFTP USER, www-data\n"
 			PRINT_TABLE+="SFTP PORT, $SSH_PORT\n"
-			PRINT_TABLE+="PHPMYADMIN, https://pma.$DOMAIN\n"
+			PRINT_TABLE+="PHPMYADMIN, https://$PHPMYADMIN_FRONTEND_RULE\n"
 			PRINT_TABLE+="PHPMYADMIN USERNAME, $WORDPRESS_DB_USER\n"
 			PRINT_TABLE+="PHPMYADMIN PASSWORD, $WORDPRESS_DB_PASSWORD\n"
-			PRINT_TABLE+="BROWSERSYNC, https://dev.$DOMAIN\n"
-			PRINT_TABLE+="BROWSERSYNC UI, https://ui.$DOMAIN"
+			PRINT_TABLE+="BROWSERSYNC, https://$BROWSERSYNC_FRONTEND_RULE\n"
+			PRINT_TABLE+="BROWSERSYNC UI, https://$BROWSERSYNC_UI_FRONTEND_RULE"
 			printTable ',' "$(echo -e $PRINT_TABLE)"
 		elif [ "$DEV" = off ]; then
 			source "$CONTAINER_PATH"/.env
