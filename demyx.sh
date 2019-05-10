@@ -830,37 +830,39 @@ elif [ "$1" = "wp" ]; then
         PRINT_TABLE+="WORDPRESS PASSWORD, $WORDPRESS_USER_PASSWORD"
         printTable ',' "$(echo -e $PRINT_TABLE)"
     elif [ -n "$DEV" ] && [ -z "$RUN" ] && [ -z "$CLONE" ]; then
-        [[ -z "$DOMAIN" ]] && die '--domain missing'
-        SSH_VOLUME_CHECK=$(docker volume ls | grep ssh || true)
-        CACHE_CHECK=$(grep -s "FASTCGI_CACHE=on" "$CONTAINER_PATH"/.env || true)
-        SUBDOMAIN_CHECK=$(/usr/bin/dig +short "$DOMAIN" | sed -e '1d')
-        SUBDOMAIN_GET=$(echo $DOMAIN | awk -F '[.]' '{print $1}')
-        SUBDOMAIN_STRIP=$(echo $DOMAIN | awk -F '[.]' '{print $2"."$3}')
-        WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env || true)
-        SSH_PORT=2222
-        PARSE_BASIC_AUTH=$(grep -s BASIC_AUTH_PASSWORD "$ETC"/.env | awk -F '[=]' '{print $2}' || true)
-        BROWSERSYNC_SUB=dev
-        BROWSERSYNC_SUB_UI=ui
-        PHPMYADMIN_SUB=pma
+        if [ "$DEV" != check ]; then
+            [[ -z "$DOMAIN" ]] && die '--domain missing'
+            SSH_VOLUME_CHECK=$(docker volume ls | grep ssh || true)
+            CACHE_CHECK=$(grep -s "FASTCGI_CACHE=on" "$CONTAINER_PATH"/.env || true)
+            SUBDOMAIN_CHECK=$(/usr/bin/dig +short "$DOMAIN" | sed -e '1d')
+            SUBDOMAIN_GET=$(echo $DOMAIN | awk -F '[.]' '{print $1}')
+            SUBDOMAIN_STRIP=$(echo $DOMAIN | awk -F '[.]' '{print $2"."$3}')
+            WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env || true)
+            SSH_PORT=2222
+            PARSE_BASIC_AUTH=$(grep -s BASIC_AUTH_PASSWORD "$ETC"/.env | awk -F '[=]' '{print $2}' || true)
+            BROWSERSYNC_SUB=dev
+            BROWSERSYNC_SUB_UI=ui
+            PHPMYADMIN_SUB=pma
 
-        if [ -z "$SSH_VOLUME_CHECK" ] && [ "$DEV" != check ]; then
-            echo -e "\e[34m[INFO]\e[39m SSH volume not found, creating now..."
-            
-            demyx_echo 'Creating SSH volume' 
-            demyx_exec docker volume create ssh
-            
-            demyx_echo 'Creating temporary SSH container' 
-            demyx_exec docker run -d --rm \
-                --name ssh \
-                -v ssh:/home/www-data/.ssh \
-                demyx/ssh
-            
-            demyx_echo 'Copying authorized_keys to SSH volume' 
-            demyx_exec docker cp /home/"$USER"/.ssh/authorized_keys ssh:/home/www-data/.ssh/authorized_keys
-            
-            demyx_echo 'Stopping temporary SSH container' 
-            demyx_exec docker stop ssh
-            
+            if [ -z "$SSH_VOLUME_CHECK" ]; then
+                echo -e "\e[34m[INFO]\e[39m SSH volume not found, creating now..."
+                
+                demyx_echo 'Creating SSH volume' 
+                demyx_exec docker volume create ssh
+                
+                demyx_echo 'Creating temporary SSH container' 
+                demyx_exec docker run -d --rm \
+                    --name ssh \
+                    -v ssh:/home/www-data/.ssh \
+                    demyx/ssh
+                
+                demyx_echo 'Copying authorized_keys to SSH volume' 
+                demyx_exec docker cp /home/"$USER"/.ssh/authorized_keys ssh:/home/www-data/.ssh/authorized_keys
+                
+                demyx_echo 'Stopping temporary SSH container' 
+                demyx_exec docker stop ssh
+                
+            fi
         fi
 
         if [ "$DEV" = on ]; then
