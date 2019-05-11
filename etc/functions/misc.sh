@@ -14,10 +14,10 @@ demyx_echo() {
 demyx_exec() {
     echo -n "$DEMYX_ECHO ... "
     DEMYX_EXEC=$("$@")
-    echo -en "\e[32mdone\e[39m\n";
-    demyx_log "$DEMYX_ECHO" "$DEMYX_EXEC"
+    echo -en "\e[32mdone\e[39m\n"
     [[ "$DEMYX_EXEC" == *"WARNING"* ]] && echo -e "\e[33m[WARNING]\e[39m \"demyx logs\" for more info"
     [[ "$DEMYX_ECHO" == *"wp-cli"* ]] && echo "$DEMYX_EXEC"
+    demyx_log "$DEMYX_ECHO" "$DEMYX_EXEC"
 }
 
 demyx_log() {
