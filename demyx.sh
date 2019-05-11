@@ -1409,6 +1409,12 @@ elif [ "$1" = "wp" ]; then
             --admin_password="$WORDPRESS_USER_PASSWORD" \
             --admin_email="$WORDPRESS_EMAIL" \
             --skip-email
+
+        demyx_echo 'Replacing domains to HTTPS' 
+        demyx_exec docker run -it --rm \
+            --volumes-from "$WP" \
+            --network container:"$WP" \
+            wordpress:cli search-replace "http://$DOMAIN" "https://$DOMAIN"
         
         demyx_echo 'Configuring permalinks' 
         demyx_exec docker run -it --rm \
