@@ -1635,17 +1635,17 @@ else
                 # Replace old cron with new
                 CRON_OLD=$(crontab -l | grep -s "/usr/local/bin/demyx" || true)
                 if [ -n "$CRON_OLD" ]; then
-                    crontab -l > "$ETC"/cron_tmp
+                    demyx_echo 'Updating crontab' 
 
+                    crontab -l > "$ETC"/cron_tmp
                     sed -i '\/usr\/local\/bin\/demyx/d' "$ETC"/cron_tmp
-                    sed -i '\/srv\/demyx\/etc\/cron/d' "$ETC"/cron_tmp
-                    echo "0 */6 * * * /bin/bash $ETC/cron/every-minute.sh" >> "$ETC"/cron_tmp
-                    echo "0 */6 * * * /bin/bash $ETC/cron/every-1-hour.sh" >> "$ETC"/cron_tmp
+                    sed -i '\/srv\/demyx\/etc\/cron/d' "$ETC"/cron_tmp 
+                    echo "* * * * * /bin/bash $ETC/cron/every-minute.sh" >> "$ETC"/cron_tmp
+                    echo "0 * * * * /bin/bash $ETC/cron/every-1-hour.sh" >> "$ETC"/cron_tmp
                     echo "0 */6 * * * /bin/bash $ETC/cron/every-6-hour.sh" >> "$ETC"/cron_tmp
                     echo "0 0 * * * /bin/bash $ETC/cron/every-day.sh" >> "$ETC"/cron_tmp
                     echo "0 0 1 * * /bin/bash $ETC/cron/every-month.sh" >> "$ETC"/cron_tmp
 
-                    demyx_echo 'Updating crontab'
                     demyx_exec crontab "$ETC"/cron_tmp; rm "$ETC"/cron_tmp
                 fi
 
