@@ -20,7 +20,7 @@ ALPINE | NGINX | MARIADB | PHP | WORDPRESS
 
 ### Install
 ```
-wget https://raw.githubusercontent.com/demyxco/demyx/master/install.sh && bash install.sh
+wget demyx.sh/install && bash install.sh
 ```
 
 ### Getting Started
