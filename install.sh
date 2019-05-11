@@ -114,7 +114,7 @@ echo traefik."$DOMAIN"
 echo Username: "$TRAEFIK_USER"
 echo Password: "$PWGEN"
 echo
-echo "To create your first site, run: demyx wp --dom=$DOMAIN --run --cdn --cache --ssl"
+echo "To create your first site, run: demyx wp --dom=$DOMAIN --run --cdn --cache"
 echo
 
 echo -e "\e[33m[WARNING] You must relogin or switch to another shell for new permissions to take effect.\e[39m"
