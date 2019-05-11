@@ -54,6 +54,7 @@ sudo docker pull demyx/mariadb
 sudo docker pull demyx/logrotate
 sudo docker pull demyx/utilities
 sudo docker pull demyx/ssh
+sudo docker pull demyx/browsersync
 sudo docker pull traefik
 sudo docker pull wordpress:cli
 sudo docker pull phpmyadmin/phpmyadmin
