@@ -1021,7 +1021,7 @@ elif [ "$1" = "wp" ]; then
             demyx_echo 'Restarting php-fpm' 
             demyx_exec docker exec -it "$WP" sh -c "mv /docker-php-ext-opcache.ini /usr/local/etc/php/conf.d; pkill php-fpm; php-fpm -D"
             
-        elif [ "$DEV" = check ] && [ -n "$ALL" ]; then
+        elif [ "$DEV" = check ]; then
             cd "$APPS" || exit
             for i in *
             do
@@ -1659,7 +1659,7 @@ else
                 demyx_exec rm -rf "$ETC"/functions; cp -R "$GIT"/etc/functions "$ETC"; rm -rf "$ETC"/cron; cp -R "$GIT"/etc/cron "$ETC"
                 
                 demyx stack -u
-                demyx wp --dev=check --all
+                demyx wp --dev=check
                 ;;
             --)      
                 shift
