@@ -2,7 +2,6 @@
 # Demyx
 # https://github.com/demyxco/demyx
 trap 'exit' ERR
-
 source /srv/demyx/etc/.env
 source "$ETC"/functions/misc.sh
 
@@ -1501,20 +1500,22 @@ elif [ "$1" = "wp" ]; then
                 WP_CHECK=$(grep -s "WP_ID" "$APPS"/"$i"/.env || true)
                 if [ -n "$WP_CHECK" ]; then
                     source "$APPS"/"$i"/.env
-                    docker run -it --rm \
-                    --volumes-from "$WP" \
-                    --network container:"$WP" \
-                    wordpress:cli $WPCLI
+                    demyx_echo "Executing wp-cli for $i"
+                    demyx_exec docker run -it --rm \
+                        --volumes-from "$WP" \
+                        --network container:"$WP" \
+                        wordpress:cli $WPCLI
                 fi
             done
         else
             WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env || true)
             [[ -z "$WP_CHECK" ]] && die 'Not a WordPress app.'
             source "$CONTAINER_PATH"/.env
-            docker run -it --rm \
-            --volumes-from "$WP" \
-            --network container:"$WP" \
-            wordpress:cli $WPCLI
+            demyx_echo "Executing wp-cli for $DOMAIN"
+            demyx_exec docker run -it --rm \
+                --volumes-from "$WP" \
+                --network container:"$WP" \
+                wordpress:cli $WPCLI
         fi
     fi
 elif [ "$1" = "logs" ]; then
@@ -1680,11 +1681,15 @@ else
         demyx_echo 'Making Rocket.Chat directory'
         demyx_exec mkdir -p "$APPS"/"$DOMAIN"
         
-        demyx_echo 'Creating .yml'
+        demyx_echo 'Creating Rocket.Chat .env'
         demyx_exec bash "$ETC"/functions/rocketchat.sh "$DOMAIN" "$EMAIL" "$APPS"/"$DOMAIN"
-        
+
+        demyx_echo 'Creating Rocket.Chat .yml'
+        cp "$GIT"/examples/rocketchat/docker-compose.yml "$APPS"/"$DOMAIN"
         
         cd "$APPS"/"$DOMAIN" && docker-compose up -d
+
+        echo -e "\e[34m[INFO]\e[39m For first time install, please allow several minutes for Mongo to setup Rocket.Chat"
     elif [ -n "$DOMAIN" ] && [ "$INSTALL" = gitea ]; then
         demyx_echo 'Making Gitea directory'
         demyx_exec mkdir -p "$APPS"/"$DOMAIN"
@@ -1708,7 +1713,7 @@ else
         demyx_exec sudo adduser git --gecos GECOS
         
         demyx_echo 'Creating SSH keys for git user'
-        demyx_exec sudo -u git ssh-keygen -t rsa -b 4096 -C "Gitea Host Key"
+        sudo -u git ssh-keygen -t rsa -b 4096 -C "Gitea Host Key"
         
         demyx_echo 'Setting ownershp to git home directory'
         demyx_exec sudo chown -R "$USER":"$USER" /home/git
@@ -1719,9 +1724,14 @@ else
         demyx_echo 'Changing ownership back to git'
         demyx_exec sudo chown -R git:git /home/git
         
-        demyx_echo 'Creating .yml'
+        demyx_echo 'Creating Gitea .env'
         demyx_exec bash "$ETC"/functions/gitea.sh "$DOMAIN" "$APPS"/"$DOMAIN"
+
+        demyx_echo 'Creating Gitea .yml'
+        cp "$GIT"/examples/gitea/docker-compose.yml "$APPS"/"$DOMAIN"
         
         cd "$APPS"/"$DOMAIN" && docker-compose up -d
+
+        cat "$APPS"/"$DOMAIN"/.env
     fi
 fi
