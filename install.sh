@@ -96,11 +96,14 @@ ln -s /srv/demyx "$HOME"/demyx
 sudo ln -s /srv/demyx/git/demyx.sh /usr/local/bin/demyx
 
 # Add WP cron
-crontab -l > "$DIR"/demyx-cron
-echo "0 */2 * * * /usr/local/bin/demyx wp --all --wpcli='cron event run --due-now'" >> "$DIR"/demyx-cron
-echo "* * * * * /usr/local/bin/demyx wp --monitor" >> "$DIR"/demyx-cron
-crontab "$DIR"/demyx-cron
-rm "$DIR"/demyx-cron
+crontab -l > "$DIR"/etc/cron_tmp
+echo "* * * * * /bin/bash $ETC/cron/every-minute.sh" >> "$DIR"/etc/cron_tmp
+echo "0 * * * * /bin/bash $ETC/cron/every-1-hour.sh" >> "$DIR"/etc/cron_tmp
+echo "0 */6 * * * /bin/bash $ETC/cron/every-6-hour.sh" >> "$DIR"/etc/cron_tmp
+echo "0 0 * * * /bin/bash $ETC/cron/every-day.sh" >> "$DIR"/etc/cron_tmp
+echo "0 0 1 * * /bin/bash $ETC/cron/every-month.sh" >> "$DIR"/etc/cron_tmp
+crontab "$DIR"/etc/cron_tmp
+rm "$DIR"/etc/cron_tmp
 
 # Change directory and finally start the stack
 cd "$DIR"/etc && sudo docker-compose up -d
