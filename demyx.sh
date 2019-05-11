@@ -1410,7 +1410,7 @@ elif [ "$1" = "wp" ]; then
             --admin_email="$WORDPRESS_EMAIL" \
             --skip-email
 
-        demyx_echo 'Replacing domains to HTTPS' 
+        demyx_echo 'Replacing URLs to HTTPS' 
         demyx_exec docker run -it --rm \
             --volumes-from "$WP" \
             --network container:"$WP" \
@@ -1459,8 +1459,29 @@ elif [ "$1" = "wp" ]; then
             docker-compose up -d --scale db_"${WP_ID}"="$SCALE" db_"${WP_ID}"
         fi
     elif [ -n "$SSL" ] && [ -n "$DOMAIN" ]; then
-        bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
-        demyx wp --dom="$DOMAIN" --service=wp --action=up
+        WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env || true)
+        if [ -n "$WP_CHECK" ]; then
+            source "$CONTAINER_PATH"/.env
+            bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
+            if [ "$SSL" = on ]; then
+                demyx_echo 'Replacing URLs to HTTPS' 
+                demyx_exec docker run -it --rm \
+                    --volumes-from "$WP" \
+                    --network container:"$WP" \
+                    wordpress:cli search-replace "http://$DOMAIN" "https://$DOMAIN"
+            elif [ "$SSL" = off ]; then
+                demyx_echo 'Replacing URLs to HTTP'
+                demyx_exec docker run -it --rm \
+                    --volumes-from "$WP" \
+                    --network container:"$WP" \
+                    wordpress:cli search-replace "https://$DOMAIN" "http://$DOMAIN"
+            else
+                die '--ssl only accepts: on, off'
+            fi
+            demyx wp --dom="$DOMAIN" --service=wp --action=up
+        else
+            die 'Not a WordPress app'
+        fi    
     elif [ -n "$UPDATE" ]; then
         cd "$APPS" || exit
         if [ -n "$ALL" ]; then
