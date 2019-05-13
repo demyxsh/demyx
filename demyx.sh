@@ -872,7 +872,6 @@ elif [ "$1" = "wp" ]; then
             fi
 
             echo -e "\e[34m[INFO]\e[39m Turning on development mode for $DOMAIN"
-            AUTOVER_CHECK=$(docker exec -it "$WP" sh -c 'ls wp-content/plugins' | grep autover || true)
 
             while true; do
                 SSH_OPEN_PORT=$(netstat -tuplen 2>/dev/null | grep :"$SSH_PORT" || true)
@@ -959,17 +958,39 @@ elif [ "$1" = "wp" ]; then
                 -l "traefik.frontend.auth.basic.users=${BASIC_AUTH_USER}:${PARSE_BASIC_AUTH}" \
                 phpmyadmin/phpmyadmin
 
-            [[ -n "$AUTOVER_CHECK" ]] && demyx_echo 'Activating autover plugin' && demyx_exec \
+            PLUGIN_CHECK=$(demyx wp --dom="$DOMAIN" --wpcli='plugin list --format=csv')
+            AUTOVER_CHECK=$(echo "$PLUGIN_CHECK" | grep -s autover || true)
+            DEMYX_PLUGIN_CHECK=$(echo "$PLUGIN_CHECK" | grep -s demyx_browsersync || true)
+
+            if [ -n "$AUTOVER_CHECK" ]; then
+                demyx_echo 'Activating autover plugin'
+                demyx_exec docker run -it --rm \
+                    --volumes-from "$WP" \
+                    --network container:"$WP" \
+                    wordpress:cli plugin activate autover
+            else
+                demyx_echo 'Installing autover plugin'
+                demyx_exec docker run -it --rm \
+                    --volumes-from "$WP" \
+                    --network container:"$WP" \
+                    wordpress:cli plugin install autover --activate
+            fi
+
+            if [ -n "$DEMYX_PLUGIN_CHECK" ]; then
+                demyx_echo 'Activating demyx_browsersync plugin'
+                demyx_exec docker run -it --rm \
+                    --volumes-from "$WP" \
+                    --network container:"$WP" \
+                    wordpress:cli plugin activate demyx_browsersync
+            else
+                demyx_echo 'Activating demyx_browsersync plugin'
+                demyx_exec bash "$ETC"/functions/plugin.sh "$DOMAIN"; \
+                docker cp "$CONTAINER_PATH"/conf/demyx_browsersync.php "$WP":/var/www/html/wp-content/plugins \
                 docker run -it --rm \
-                --volumes-from "$WP" \
-                --network container:"$WP" \
-                wordpress:cli plugin activate autover
-            
-            [[ -z "$AUTOVER_CHECK" ]] && demyx_echo 'Installing autover plugin' && demyx_exec \
-                docker run -it --rm \
-                --volumes-from "$WP" \
-                --network container:"$WP" \
-                wordpress:cli plugin install autover --activate
+                    --volumes-from "$WP" \
+                    --network container:"$WP" \
+                    wordpress:cli plugin activate demyx_browsersync
+            fi
 
             [[ -n "$CACHE_CHECK" ]] && demyx_echo 'Disabling NGINX cache' && demyx_exec demyx_exec docker exec -it "$WP" sh -c "printf ',s/include \/etc\/nginx\/cache\/http.conf;/#include \/etc\/nginx\/cache\/http.conf;/g\nw\n' | ed /etc/nginx/nginx.conf > /dev/null; printf ',s/include \/etc\/nginx\/cache\/server.conf;/#include \/etc\/nginx\/cache\/server.conf;/g\nw\n' | ed /etc/nginx/nginx.conf > /dev/null; printf ',s/include \/etc\/nginx\/cache\/location.conf;/#include \/etc\/nginx\/cache\/location.conf;/g\nw\n' | ed /etc/nginx/nginx.conf > /dev/null"
             
@@ -1011,7 +1032,11 @@ elif [ "$1" = "wp" ]; then
             
             demyx_echo 'Deactivating autover' 
             demyx_exec docker run -it --rm --volumes-from "$WP" --network container:"$WP" wordpress:cli plugin deactivate autover
+
+            demyx_echo 'Deactivating demyx_browsersync' 
+            demyx_exec docker run -it --rm --volumes-from "$WP" --network container:"$WP" wordpress:cli plugin deactivate demyx_browsersync
             
+            [[ -f "$CONTAINER_PATH"/conf/demyx_browsersync.php ]] && demyx_echo 'Deleting demyx_browsersync plugin from host' && demyx_exec rm "$CONTAINER_PATH"/conf/demyx_browsersync.php
             [[ -n "$CACHE_CHECK" ]] && demyx_echo 'Enabling NGINX cache' && demyx_exec demyx_exec docker exec -it "$WP" sh -c "printf ',s/#include \/etc\/nginx\/cache\/http.conf;/include \/etc\/nginx\/cache\/http.conf;/g\nw\n' | ed /etc/nginx/nginx.conf > /dev/null; printf ',s/#include \/etc\/nginx\/cache\/server.conf;/include \/etc\/nginx\/cache\/server.conf;/g\nw\n' | ed /etc/nginx/nginx.conf > /dev/null; printf ',s/#include \/etc\/nginx\/cache\/location.conf;/include \/etc\/nginx\/cache\/location.conf;/g\nw\n' | ed /etc/nginx/nginx.conf > /dev/null"
 
             demyx_echo 'Restarting NGINX' 
