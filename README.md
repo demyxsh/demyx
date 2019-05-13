@@ -10,7 +10,7 @@ Demyx will be following a rolling release model, meaning there is only one versi
 ### Stack
 ALPINE | NGINX | MARIADB | PHP | WORDPRESS
 ------------- | ------------- | ------------- | ------------- | -------------
-3.9.3 | 1.16.0 | 10.3.13 | 7.3.5 | 5.1.1
+3.9.4 | 1.16.0 | 10.3.13 | 7.3.5 | 5.2.0
 
 ### Requirements
 * Ubuntu 16.04/18.04, Debian 9.7

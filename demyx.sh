@@ -1439,11 +1439,11 @@ elif [ "$1" = "wp" ]; then
         elif [ "$DEMYX_SHELL" = "bs" ]; then
             BROWSERSYNC_CONTAINER_CHECK=$(docker ps -aq -f name=${DOMAIN//./}_bs)
             [[ -z "$BROWSERSYNC_CONTAINER_CHECK" ]] && die "BrowserSync container isn't up"
-            docker exec -it ${DOMAIN//./}_bs sh
+            docker exec -it ${DOMAIN//./}_bs_"$WP_ID" sh
         elif [ "$DEMYX_SHELL" = "ssh" ]; then
             SSH_CONTAINER_CHECK=$(docker ps -aq -f name=${DOMAIN//./}_ssh)
             [[ -z "$SSH_CONTAINER_CHECK" ]] && die "SSH container isn't up"
-            docker exec -it ${DOMAIN//./}_ssh sh
+            docker exec -it ${DOMAIN//./}_ssh_"$WP_ID" sh
         else
             docker exec -it "$DB" sh
         fi
@@ -1704,10 +1704,9 @@ else
     done
 
     if [ -n "$DOMAIN" ] && [ -n "$EMAIL" ] && [ "$INSTALL" = rocketchat ]; then
-        
         demyx_echo 'Making Rocket.Chat directory'
         demyx_exec mkdir -p "$APPS"/"$DOMAIN"
-        
+    
         demyx_echo 'Creating Rocket.Chat .env'
         demyx_exec bash "$ETC"/functions/rocketchat.sh "$DOMAIN" "$EMAIL" "$APPS"/"$DOMAIN"
 
