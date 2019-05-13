@@ -28,6 +28,17 @@ wget demyx.sh/install && bash install.sh
 demyx wp --dom=domain.tld --run --cdn --cache
 ```
 
+### WordPress Features
+* SSL turned on by default
+* Site-wide request rate limiting
+* Secure NGINX/PHP configurations
+* Backup/Restore/Clone
+* CDN provided by Staticaly
+* FastCGI cache with nginx-helper plugin by rtCamp (WooCommerce ready)
+* Development mode includes the tools SSH, BrowserSync with UI, phpMyAdmin, and Demyx BrowserSync plugin
+* Auto scale containers with callback (see etc/functions/example-callback.sh)
+* WP-CLI
+
 ### Commands
 demyx -h
 ```
