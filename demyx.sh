@@ -985,7 +985,7 @@ elif [ "$1" = "wp" ]; then
             else
                 demyx_echo 'Activating demyx_browsersync plugin'
                 demyx_exec bash "$ETC"/functions/plugin.sh "$DOMAIN"; \
-                docker cp "$CONTAINER_PATH"/conf/demyx_browsersync.php "$WP":/var/www/html/wp-content/plugins \
+                docker cp "$CONTAINER_PATH"/conf/demyx_browsersync.php "$WP":/var/www/html/wp-content/plugins
                 docker run -it --rm \
                     --volumes-from "$WP" \
                     --network container:"$WP" \
