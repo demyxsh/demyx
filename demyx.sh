@@ -926,6 +926,7 @@ elif [ "$1" = "wp" ]; then
                 -l "traefik.bs.frontend.headers.STSSeconds=${STS_SECONDS}" \
                 -l "traefik.bs.frontend.headers.STSIncludeSubdomains=${STS_INCLUDE_SUBDOMAINS}" \
                 -l "traefik.bs.frontend.headers.STSPreload=${STS_PRELOAD}" \
+                -l "traefik.bs.frontend.auth.basic.users=${BASIC_AUTH_USER}:${PARSE_BASIC_AUTH}" \
                 -l "traefik.ui.frontend.rule=Host:$BROWSERSYNC_UI_FRONTEND_RULE" \
                 -l "traefik.ui.port=3001" \
                 -l "traefik.ui.frontend.redirect.entryPoint=https" \
