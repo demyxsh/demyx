@@ -6,6 +6,8 @@ source /srv/demyx/etc/.env
 CONTAINER_PATH=$1
 FORCE=$2
 SSL=$3
+BASIC_AUTH=$4
+PARSE_BASIC_AUTH=$(grep -s BASIC_AUTH_PASSWORD "$ETC"/.env | awk -F '[=]' '{print $2}' | sed 's/\$/$$/g' || true)
 PROTOCOL="- \"traefik.frontend.redirect.entryPoint=http\""
 REGEX_PROTOCOL="https://"
 REGEX_PROTOCOL_REPLACEMENT="http://"
@@ -47,6 +49,8 @@ REGEX="- \"traefik.frontend.redirect.regex=^${REGEX_PROTOCOL}\${DOMAIN}/(.*)\"
       - \"traefik.frontend.redirect.replacement=${REGEX_PROTOCOL_REPLACEMENT}\${DOMAIN}/\$\$1\""
 
 [[ -n "$SUBDOMAIN_CHECK" ]] && FRONTEND_RULE="- \"traefik.frontend.rule=Host:\${DOMAIN}\""
+[[ "$BASIC_AUTH" = on ]] && BASIC_AUTH="- \"traefik.bs.frontend.auth.basic.users=${BASIC_AUTH_USER}:${PARSE_BASIC_AUTH}\""
+[[ "$BASIC_AUTH" = off ]] && BASIC_AUTH=
 
 cat > "$CONTAINER_PATH"/docker-compose.yml <<-EOF
 # AUTO GENERATED
@@ -119,6 +123,7 @@ services:
       $FRONTEND_RULE
       $REGEX
       $PROTOCOL
+      $BASIC_AUTH
 volumes:
   db_${WP_ID}:
     name: db_${WP_ID}

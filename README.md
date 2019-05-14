@@ -114,6 +114,9 @@ demyx wp -h
 --backup            Backs up a site to /srv/demyx/backup
                     Example: demyx wp --backup=domain.tld, demyx wp --dom=domain.tld --backup
 
+--basic-auth        Turns on basic auth for a site
+                    Example: demyx wp --dom=domain.tld --basic-auth, demyx wp --dom=domain.tld --basic-auth=off
+
 --cache             Enables FastCGI cache with WordPress plugin helper
                     Example: demyx wp --dom=domain.tld --run --cache
 

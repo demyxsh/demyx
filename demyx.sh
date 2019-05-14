@@ -119,6 +119,9 @@ elif [ "$1" = "wp" ]; then
                 echo "  --backup        Backs up a site to /srv/demyx/backup"
                 echo "                  Example: demyx wp --backup=domain.tld, demyx wp --dom=domain.tld --backup"
                 echo
+                echo "  --basic-auth    Turns on basic auth for a site"
+                echo "                  Example: demyx wp --dom=domain.tld --basic-auth, demyx wp --dom=domain.tld --basic-auth=off"
+                echo
                 echo "  --cache         Enables FastCGI cache with WordPress plugin helper"
                 echo "                  Example: demyx wp --dom=domain.tld --run --cache"
                 echo
@@ -246,6 +249,18 @@ elif [ "$1" = "wp" ]; then
                 ;;
             --backup=)         
                 die '"--backup" cannot be empty.'
+                ;;
+            --basic-auth)
+                BASIC_AUTH=on
+                ;;
+            --basic-auth=on)
+                BASIC_AUTH=on
+                ;;
+            --basic-auth=off)
+                BASIC_AUTH=off
+                ;;
+            --basic-auth=)
+                die '"--basic-auth" cannot be empty.'
                 ;;
             --cache|--cache=on)
                 CACHE=on
@@ -595,6 +610,13 @@ elif [ "$1" = "wp" ]; then
             demyx_echo 'Deleting backup directory' 
             demyx_exec rm -rf "$CONTAINER_PATH"/backup
         fi
+    elif [ -n "$BASIC_AUTH" ]; then
+        WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env || true)
+        [[ -z "$WP_CHECK" ]] && die 'Not a WordPress site.'
+        [[ "$BASIC_AUTH" != on ]] && BASIC_AUTH=off
+        demyx_echo 'Creating .yml'
+        demyx_exec bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL" "$BASIC_AUTH"
+        demyx wp --dom="$DOMAIN" --up
     elif [ -n "$CACHE" ] && [ -z "$RUN" ]; then
         WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env || true)
         [[ -z "$WP_CHECK" ]] && [[ "$CACHE" != check ]] && die 'Not a WordPress site.'
@@ -711,7 +733,7 @@ elif [ "$1" = "wp" ]; then
         demyx_exec bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "$CACHE" "$FORCE"
         
         demyx_echo 'Creating .yml' 
-        demyx_exec bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
+        demyx_exec bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL" ""
         
         demyx_echo 'Creating nginx.conf' 
         demyx_exec bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE" ""
@@ -1185,7 +1207,7 @@ elif [ "$1" = "wp" ]; then
                     demyx_exec bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "$CACHE" "$FORCE"
         
                     demyx_echo 'Creating .yml' 
-                    demyx_exec bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
+                    demyx_exec bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL" ""
         
                     demyx_echo 'Creating nginx.conf' 
                     demyx_exec bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE" "$CACHE"
@@ -1216,7 +1238,7 @@ elif [ "$1" = "wp" ]; then
             demyx_exec bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "$CACHE" "$FORCE"
 
             demyx_echo 'Creating .yml' 
-            demyx_exec bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
+            demyx_exec bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL" ""
 
             demyx_echo 'Creating nginx.conf' 
             demyx_exec bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE" "$CACHE"
@@ -1391,7 +1413,7 @@ elif [ "$1" = "wp" ]; then
         demyx_exec bash "$ETC"/functions/env.sh "$DOMAIN" "$ADMIN_USER" "$ADMIN_PASS" "" "$FORCE"
 
         demyx_echo 'Creating .yml'
-        demyx_exec bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
+        demyx_exec bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL" ""
 
         demyx_echo 'Creating nginx.conf'
         demyx_exec bash "$ETC"/functions/nginx.sh "$CONTAINER_PATH" "$DOMAIN" "$FORCE" 
@@ -1488,7 +1510,7 @@ elif [ "$1" = "wp" ]; then
         WP_CHECK=$(grep -s "WP_ID" "$CONTAINER_PATH"/.env || true)
         if [ -n "$WP_CHECK" ]; then
             source "$CONTAINER_PATH"/.env
-            bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
+            bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL" ""
             if [ "$SSL" = on ]; then
                 demyx_echo 'Replacing URLs to HTTPS' 
                 demyx_exec docker run -it --rm \
@@ -1524,7 +1546,7 @@ elif [ "$1" = "wp" ]; then
                     sudo cp -R "$CONTAINER_PATH"/db/* /var/lib/docker/volumes/db_"$WP_ID"/_data
                     sudo cp -R "$CONTAINER_PATH"/data/* /var/lib/docker/volumes/wp_"$WP_ID"/_data
                     demyx wp --dom="$DOMAIN" --down
-                    bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
+                    bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL" ""
                     demyx wp --dom="$DOMAIN" --up
                     sudo rm -rf "$CONTAINER_PATH"/data "$CONTAINER_PATH"/db
                 fi
@@ -1541,7 +1563,7 @@ elif [ "$1" = "wp" ]; then
             sudo cp -R "$CONTAINER_PATH"/db/* /var/lib/docker/volumes/db_"$WP_ID"/_data
             sudo cp -R "$CONTAINER_PATH"/data/* /var/lib/docker/volumes/wp_"$WP_ID"/_data
             demyx wp --dom="$DOMAIN" --down
-            bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL"
+            bash "$ETC"/functions/yml.sh "$CONTAINER_PATH" "$FORCE" "$SSL" ""
             demyx wp --dom="$DOMAIN" --up
             sudo rm -rf "$CONTAINER_PATH"/data "$CONTAINER_PATH"/db
         fi
@@ -1707,7 +1729,7 @@ else
                 demyx_exec bash "$ETC"/functions/etc-env.sh
                 
                 demyx_echo 'Creating stack .yml'
-                demyx_exec bash "$ETC"/functions/etc-yml.sh
+                demyx_exec bash "$ETC"/functions/etc-yml.sh ""
                 
                 demyx_echo 'Updating files'
                 demyx_exec rm -rf "$ETC"/functions; cp -R "$GIT"/etc/functions "$ETC"; rm -rf "$ETC"/cron; cp -R "$GIT"/etc/cron "$ETC"
