@@ -22,6 +22,9 @@ while :; do
         --ssh)
             DEMYX_SSH=${1#*=}
             ;;
+        --update)
+            DEMYX_UPDATE=1
+            ;;
         --)
             shift
             break
@@ -67,7 +70,6 @@ function demyx_run() {
     -e DEMYX_DEVELOPMENT_MODE="$DEMYX_DEVELOPMENT_MODE" \
     -e DEMYX_SSH="$DEMYX_SSH" \
     -v /var/run/docker.sock:/var/run/docker.sock:ro \
-    -v /usr/local/bin/demyx:/demyx/etc/chroot.sh:ro \
     -v demyx:/demyx \
     -v demyx_user:/home/demyx \
     -v demyx_log:/var/log/demyx \
@@ -86,7 +88,20 @@ if [ -n "$DEMYX_HELP" ]; then
     echo "      --nc            Prevent chrooting into container"
     echo "      --rs            Stops, removes, and starts demyx container"
     echo "      --ssh           Override ssh port"
+    echo "      --update        Update the demyx chroot"
     echo
+elif [ -n "$DEMYX_UPDATE" ]; then
+    # sudo check
+    DEMYX_SUDO_CHECK=$(id -u)
+    if [ "$DEMYX_SUDO_CHECK" != 0 ]; then
+        echo -e "\e[31m[CRITICAL]\e[39m --update must be ran as root or sudo"
+        exit 1
+    fi
+    if [ -f /usr/local/bin/demyx ]; then
+        rm /usr/local/bin/demyx
+    fi
+    wget demyx.sh/chroot -qO /usr/local/bin/demyx
+    chmod +x /usr/local/bin/demyx
     echo -e "\e[32m[SUCCESS]\e[39m Demyx chroot has successfully updated"
 elif [ -n "$DEMYX_DEVELOPMENT_MODE" ]; then
     if [ -n "$DEMYX_CONTAINER_CHECK" ]; then
