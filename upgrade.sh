@@ -83,6 +83,7 @@ docker run -dt --rm \
 demyx/utilities bash
 
 docker cp /srv/demyx/etc/traefik/acme.json demyx_traefik:/demyx
+docker exec -t demyx demyx mkdir -p /demyx/app/stack
 docker cp /srv/demyx/etc/.env demyx:/demyx/app/stack
 docker exec -t demyx_traefik chmod 600 /demyx/acme.json
 docker stop demyx_traefik
