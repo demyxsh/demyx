@@ -253,6 +253,7 @@ RUN set -xe; \
 	apk del --no-network .fetch-deps
 
 COPY docker-php-source /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-php-source
 
 RUN set -xe \
 	&& apk add --no-cache --virtual .build-deps \
