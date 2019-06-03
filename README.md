@@ -1,32 +1,17 @@
+
 # Demyx
 A simple CLI wrapper for Docker to automate WordPress installations written in bash. Traefik for reverse proxy with Lets Encrypt SSL. WordPress sites are powered by NGINX, PHP, and MariaDB.
 
-Demyx will be following a rolling release model, meaning there is only one version (master branch, no tags) to ensure you always have the latest version.
+Demyx is now a Docker image and the code base has been completely rewritten, think of this as a "Version 2." The plan was to not "pollute" the host OS and go full Docker mode. This makes it easier to have a controlled and predictable environment. One can say Demyx is "Linux OS agnostic," as long as you have Docker installed.
 
 <p align="center">
-    <img src="https://i.imgur.com/WqMCNEd.gif">
+<img  src="https://i.imgur.com/sYNrgFh.gif">
 </p>
 
 ### Stack
 ALPINE | NGINX | MARIADB | PHP | WORDPRESS
 ------------- | ------------- | ------------- | ------------- | -------------
-3.9.4 | 1.16.0 | 10.3.13 | 7.3.5 | 5.2.0
-
-### Requirements
-* Ubuntu 16.04/18.04, Debian 9.7
-* Dedicated/KVM server
-* Port 80 and 443 must be open
-* Primary domain must be pointed to server's IP and must have a wildcard CNAME subdomain
-
-### Install
-```
-wget demyx.sh/install && bash install.sh
-```
-
-### Getting Started
-```
-demyx wp --dom=domain.tld --run --cdn --cache
-```
+3.9.4 | 1.16.0 | 10.3.13 | 7.3.6 | 5.2.1
 
 ### WordPress Features
 * SSL turned on by default
@@ -39,189 +24,149 @@ demyx wp --dom=domain.tld --run --cdn --cache
 * Auto scale containers with callback (see etc/functions/example-callback.sh)
 * WP-CLI
 
+### Demyx Image
+Since the image needs docker.sock to be mounted and the Docker binary is included, I've installed sudo to only allow the demyx user to execute only one script as root. The image is put in production mode by default, meaning that /demyx directory and all it's folders and files will be set to read-only mode. This prevents the non-privelege user to modify the script and do malicious things.
+
+* User/Group: demyx:demyx
+* Docker binary
+* Eternal Terminal
+* bash
+* curl
+* zsh
+* oh-my-zsh
+* sudo
+* git
+* gnupg
+* tzdata
+* jq
+
+### Eternal Terminal
+REMOTE MACHINE: Run eternal terminal server first
+```
+docker run -dit \
+--name demyx_et \
+-v demyx_ssh:/home/demyx/.ssh \
+-p 2222:22 \
+-p 2022:2022 \
+demyx/eternal-terminal
+```
+REMOTE MACHINE: Copy authorized_keys to volume
+```
+docker cp /home/"$USER"/.ssh/authorized_keys demyx_et:/home/demyx/.ssh
+```
+REMOTE MACHINE: Verify authorized_keys is in the volume
+```
+docker exec -t demyx_et ls -al /home/demyx/.ssh
+```
+REMOTE MACHINE: Restart container so permissions are set
+```
+docker restart demyx_et
+```
+LOCAL MACHINE: Make ssh alias (~/.ssh/config)
+```
+Host example
+     HostName example.com
+     User demyx
+     Port 2222
+```
+LOCAL MACHINE: Run et command using alias (assuming et is installed on local machine)
+```
+et example
+```
+
+### Requirements
+* Docker
+* Dedicated/KVM server with Linux
+* Port 80 and 443 must be open
+* Primary domain must be pointed to server's IP and must have a wildcard CNAME subdomain
+
+### Install
+```
+wget demyx.sh/install && sudo bash install.sh
+```
+
+### Upgrade
+Only execute this script if you have Demyx (Version 1) installed on the host
+```
+wget demyx.sh/install && sudo bash upgrade.sh
+```
+What's changed from "Version 1?"
+* Demyx code base has been rewritten
+* No more bind mounts, all data are stored in volumes
+* Traefik's configs are now in docker-compose via cli
+* Logrotate was taken off from the stack and now runs as cron by demyx container
+
+### Getting Started
+```
+# You can create a WordPress site on the host
+docker exec -t demyx demyx run domain.tld --auth --cdn --cache
+
+# Chroot by typing demyx on the host
+demyx run domain.tld --auth --cdn --cache
+```
+
+### chroot.sh
+This script helps you change root to the demyx container, it's installed on the host OS and lives in /usr/local/bin. Executing the install or upgrade script will automatically install the Demyx chroot script. The chroot script will start the demyx container, bind ports 2222 for SSH, and 2022 for Eternal Terminal by default. These ports can be overriden by the script.
+```
+docker run -dit \
+    --name demyx \
+    --restart unless-stopped \
+    --network demyx \
+    -e DEMYX_DEVELOPMENT_MODE="$DEMYX_DEVELOPMENT_MODE" \
+    -e DEMYX_SSH="$DEMYX_SSH" \
+    -v /var/run/docker.sock:/var/run/docker.sock:ro \
+    -v demyx:/demyx \
+    -v demyx_user:/home/demyx \
+    -v demyx_log:/var/log/demyx \
+    -e TZ=America/Los_Angeles \
+    -p "$DEMYX_SSH":22 \
+    -p "$DEMYX_ET":2022 \
+    demyx/demyx
+```
+demyx (host) --help
+```
+demyx <args>          Chroot into the demyx container
+      --dev           Restarts the demyx container into development mode
+      --et            Override et port
+      --help          Demyx help
+      --nc            Prevent chrooting into container
+      --rs            Stops, removes, and starts demyx container
+      --ssh           Override ssh port
+      --update        Update the demyx chroot
+```
+
 ### Commands
-demyx -h
 ```
-If you modified any of the files (.conf/.ini/.yml/etc) then delete the first comment at the top of the file(s)
-
--df                 Wrapper for docker system df
-                    Example: demyx -df
-
---dom               Flag needed to run other Docker images
-                    Example: demyx --dom=domain.tld --install=gitea
-
---email             Flag needed for Rocket.Chat
-                    Example: demyx --dom=domain.tld --email=info@domain.tld --install=rocketchat
-
--f, --force         Forces an update
-                    Example: demyx --force --update, demyx -f -u
-
---install           Install Rocket.Chat and Gitea
-
--p, --prune         Wrapper for docker system prune && docker volume prune
-                    Example: demyx -p, demyx --prune
-
--t, --top           Runs ctop (htop for containers)
-                    Example: demyx -t, demyx --top
+demyx <arg>       Main demyx command
+      backup      Back up an app
+      compose     Accepts all docker-compose arguments
+      config      Modifies an app's configuration
+      ctop        Htop but for containers
+      exec        Accepts all docker exec arguments
+      info        Shows an app's .env and filter output
+      log         Show or follow demyx.log
+      monitor     For auto scaling purposes
+      restore     Restore an app
+      rm          Removes an app and its volumes
+      run         Creates a new app
+      stack       Control the stack via docker-compose arguments
+      update      Update demyx code base
+      util        Generates credentials or access util container
+      wp          Execute wp-cli commands
 ```
 
-demyx stack -h
-```
---action            Actions: up, down, restart, logs, and other available docker-compose commands
-                    Example: demyx stack --up, demyx stack --service=traefik --action=restart
-
---down              Shorthand for docker-compose down
-                    Example: demyx stack --service=traefik --down, demyx stack --down
-
---refresh           Refreshes the stack's .env and .yml
-                    Example: demyx stack --refresh
-
---restart           Shorthand for docker-compose restart
-                    Example: demyx stack --service=traefik --restart, demyx stack --restart
-
---up                Shorthand for docker-compose up -d
-                    Example: demyx stack --service=traefik --up, demyx stack --up
-
---service           Services: traefik, ouroboros, logrotate
-```
-
-demyx logs -h
-```
--c, --clear         Clear the logs
-                    Example: demyx logs -c, demyx logs --clear
-
--f, --follow        Shorthand for tail -f
-                    Example: demyx logs -f, --follow
-```
-
-demyx wp -h
-```
---action            Actions: up, down, restart, logs, and other available docker-compose commands
-                    Example: demyx wp --dom=domain.tld --service=wp --action=up
-
---all               Selects all sites with some flags
-                    Example: demyx wp --backup --all
-
---admin_user        Override the auto generated admin username in --run
-                    Example: demyx wp --dom=domain.tld --run --admin_user=demo
-
---admin_pass        Override the auto generated admin username in --run
-                    Example: demyx wp --dom=domain.tld --run --admin_pass=demo
-
---admin_email       Override the auto generated admin email in --run
-                    Example: demyx wp --dom=domain.tld --run --admin_email=info@domain.tld
-
---backup            Backs up a site to /srv/demyx/backup
-                    Example: demyx wp --backup=domain.tld, demyx wp --dom=domain.tld --backup
-
---basic-auth        Turns on basic auth for a site
-                    Example: demyx wp --dom=domain.tld --basic-auth, demyx wp --dom=domain.tld --basic-auth=off
-
---cache             Enables FastCGI cache with WordPress plugin helper
-                    Example: demyx wp --dom=domain.tld --run --cache
-
---cdn               Auto install CDN by Staticaly.com
-                    Example: demyx wp --dom=domain.tld --run --cdn
-
---cli               Run commands to containers: wp, db
-                    Example: demyx wp --dom=domain.tld --cli'ls -al'
-
---clone             Clones a site
-                    Example: demyx wp --dom=new-domain.tld --clone=old-domain.tld --ssl
-
---dom               Primary flag to target your sites
---domain            Example: demyx wp --dom=domain.tld --flag
-
---dev               Creates a development environment
-                    BrowserSync & UI, phpMyAdmin, SSH, autover WP plugin, and cache off
-                    Example: demyx wp --dom=domain.tld --dev, demyx wp --dom=domain.tld --dev=off
-
---down              Shorthand for docker-compose down
-                    Example: demyx wp --down=domain.tld, demyx wp --dom=domain.tld --down
-
---env               Shows all environment variables for a given site
-                    Example: demyx wp --env=domain.tld, demyx wp --dom=domain.tld --env
-
---files             Used with --dev to configure BrowserSync files to watch.
-                    Available options: themes, plugins, or absolute paths
-                    Example: demyx wp --dom=domain.tld --dev --files=/var/www/html, demyx wp --dom=domain.tld --dev --files=themes
-
---force             Force an override, only applies to --refresh for now
-                    Example: demyx wp --refresh --all --force, demyx wp --dom=domain.tld --refresh --force
-
---info              Get detailed info about a site
-                    Example: demyx wp --dom=domain.tld --info
-
---list              List all WordPress sites
-                    Example: demyx wp --list
-
---monitor           Cron flag for auto scaling containers
-
---no-restart        Prevents a container from restarting when used with some flags
-                    Example: demyx wp --dom=domain.tld --run --dev --no-restart
-
---rate-limit        Enable/disable rate limit requests for NGINX
-                    Example: demyx wp --dom=domain.tld --rate-limit, demyx wp --dom=domain.tld --rate-limit=off
-
---refresh           Regenerate all config files for a site; use with caution
-                    Example: demyx wp --refresh=domain.tld --ssl, demyx wp --dom=domain.tld --refresh --ssl
-
---remove            Removes a site
-                    Example: demyx wp --rm=domain.tld, demyx wp --dom=domain.tld --rm, demyx wp --rm --all
-
---restart           Shorthand for --service that loops through all the sites
-                    Example: demyx wp --restart=wp, demyx wp --restart=nginx-php
-
---restore           Restore a site's backup
-                    Example: demyx wp --restore=domain.tld, demyx wp --dom=domain.tld --restore
-
---run               Create a new site
-                    Example: demyx wp --run=domain.tld --ssl, demyx wp --dom=domain.tld --run --ssl
-
---scale             Scale a site's container
-                    Example: demyx wp --dom=domain.tld --scale=3, demyx wp --dom=domain.tld --service=wp --scale=3
-
---service           Selects a service when used with --action
-                    Available services: wp, db, nginx, php, nginx-php
-                    Example: demyx wp --dom=domain.tld --action=restart --service=nginx-php
-
---shell             Opens a site's shell for the following containers: wp, db, ssh, bs (BrowserSync)
-                    Example: demyx wp --dom=domain.tld --shell, demyx wp --dom=domain.tld --shell=db
-
---ssl               Enables SSL for your domain, provided by Lets Encrypt
-                    Example: demyx wp --dom=domain.tld --ssl, demyx wp --dom=domain.tld --ssl=off
-
---up                Shorthand for docker-compose up -d
-                    Example: demyx wp --up=domain.tld, demyx wp --dom=domain.tld --up
-
---update            This flag only updates old file structure
-                    Example: demyx wp --dom=domain.tld --update=structure --ssl, demyx wp --update=structure --all --ssl
-
---wpcli             Send wp-cli commands to a site
-                    Example: demyx wp --dom=domain.tld --wpcli='user list --all'
-```
-
-### Other Images
-You can run other Docker images alongside the WordPress sites. Currently, only Rocket.Chat and Gitea are supported for automatic installs but you may use them as a base to proxy other non-demyx containers.
-
-```
-# Rocket.Chat
-demyx --dom=domain.tld --email=info@domain.tld --install=rocketchat
-```
-
-```
-# Gitea
-# When running the command, it will create a new user called git and automatically setup SSH passthrough.
-demyx --dom=domain.tld --install=gitea
-```
+### Questions?
+You can reach me by these avenues
+* [info@demyx.sh](mailto:info@demyx.sh)
+* #demyx at freenode
 
 ### Resources
-* [Demyx](https://hub.docker.com/u/demyx) - NGINX, PHP, MariaDB, Logrotate, Utilities
-* [Traefik](https://hub.docker.com/_/traefik) - Reverse Proxy with Lets Encrypt SSL
-* [ouroboros](https://hub.docker.com/r/pyouroboros/ouroboros) - Auto pull new images from Docker Hub
-* [WordPress](https://hub.docker.com/_/wordpress) - Using their `wordpress:cli` image
-* [phpMyAdmin](https://hub.docker.com/r/phpmyadmin/phpmyadmin) - Web GUI used with Demyx stack
-* [ctop](https://ctop.sh) - htop but for containers!
-* [VirtuBox](https://github.com/VirtuBox/ubuntu-nginx-web-server) - Borrowed configs for NGINX and PHP
-* [EasyEngine](https://easyengine.io/) - Using their nginx helper plugin
-* [Staticaly](https://www.staticaly.com/) - Free CDN setup
+*  [Demyx](https://hub.docker.com/u/demyx) - NGINX, PHP, MariaDB, Logrotate, Utilities
+*  [Traefik](https://hub.docker.com/_/traefik) - Reverse Proxy with Lets Encrypt SSL
+*  [ouroboros](https://hub.docker.com/r/pyouroboros/ouroboros) - Auto pull new images from Docker Hub
+*  [WordPress](https://hub.docker.com/_/wordpress) - Using their `wordpress:cli` image
+*  [phpMyAdmin](https://hub.docker.com/r/phpmyadmin/phpmyadmin) - Web GUI used with Demyx stack
+*  [ctop](https://ctop.sh) - htop but for containers!
+*  [VirtuBox](https://github.com/VirtuBox/ubuntu-nginx-web-server) - Borrowed configs for NGINX and PHP
+*  [EasyEngine](https://easyengine.io/) - Using their nginx helper plugin
+*  [Staticaly](https://www.staticaly.com/) - Free CDN setup

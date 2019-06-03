@@ -1,122 +1,95 @@
-#!/bin/bash
+#!/bin/sh
 # Demyx
-# https://github.com/demyxco/demyx
+# https://demyx.sh
 
-# Install required packages
-sudo apt update
-sudo apt install -y curl dnsutils uuid-runtime
+DEMYX_DOCKER_CHECK=$(which docker)
+DEMYX_BASH_CHECK=$(which bash)
+DEMYX_ZSH_CHECK=$(which zsh)
+DEMYX_SUDO_CHECK=$(id -u)
 
-echo
-echo "Demyx"
-echo "URL: https://github.com/demyxco/demyx"
-echo
+if [ "$DEMYX_SUDO_CHECK" != 0 ]; then
+    echo -e "\e[31m[CRITICAL]\e[39m Must be ran as root or sudo"
+    exit 1
+fi
 
-# Root check
-[[ "$USER" = root ]] && echo -e "\e[31m[CRITICAL] Root user detected. Please run the script without sudo or root.\e[39m" && exit 1
+if [ -z "$DEMYX_DOCKER_CHECK" ]; then
+    echo -e "\e[31m[CRITICAL]\e[39m Docker must be installed"
+    exit 1
+fi
 
-# Prompts
-echo -e "\e[34m[INFO] Used for Traefik's dashboard and phpMyAdmin as subdomains\e[39m"
-read -ep "Primary Domain: " DOMAIN
-SERVER_IP=$(curl -s https://ipecho.net/plain)
-SUBDOMAIN_CHECK=$(/usr/bin/dig +short traefik."${DOMAIN}" | sed -e '1d')
-[[ -z "$DOMAIN" ]] && echo -e "\e[31m[CRITICAL] Domain cannot be empty\e[39m" && exit 1
-[[ -n "$SUBDOMAIN_CHECK" ]] && DOMAIN_IP=$SUBDOMAIN_CHECK || DOMAIN_IP=$(/usr/bin/dig +short traefik."${DOMAIN}")
-[[ "$SERVER_IP" != "$DOMAIN_IP" ]] && echo -e "\e[31m[CRITICAL] Wildcard CNAME not detected. Please add * as a CNAME to your domain's DNS.\e[39m" && exit 1
+echo -e "\e[34m[INFO] Enter top level domain for Traefik dashboard\e[39m"
+read -ep "Domain: " DEMYX_INSTALL_DOMAIN 
+if [ -z "$DEMYX_INSTALL_DOMAIN" ]; then
+    echo -e "\e[31m[CRITICAL]\e[39m Domain cannot be empty"
+    exit 1
+fi
 
-echo
-echo -e "\e[34m[INFO] Lets Encrypt SSL notifications\e[39m"
-read -ep "Lets Encrypt Email: " EMAIL
-[[ -z "$EMAIL" ]] && echo -e "\e[31m[CRITICAL] Email cannot be empty\e[39m" && exit 1
+DEMYX_WILDCARD_CHECK=$(docker run -t --rm demyx/utilities "dig +short '*.$DEMYX_INSTALL_DOMAIN'")
+if [ -z "$DEMYX_WILDCARD_CHECK" ]]; then
+    echo -e "\e[31m[CRITICAL]\e[39m Wildcard CNAME not detected, please add * as a CNAME to your domain's DNS and rerun installation"
+    exit
+fi
 
-echo
-echo -e "\e[34m[INFO] Enter username for Traefik dashboard\e[39m"
-read -ep "Traefik Username: " TRAEFIK_USER
-[[ -z "$TRAEFIK_USER" ]] && echo -e "\e[31m[CRITICAL] Username cannot be empty\e[39m" && exit 1
-echo
+echo -e "\e[34m[INFO\e[39m] Lets Encrypt SSL notifications"
+read -ep "Email: " DEMYX_INSTALL_EMAIL
+if [ -z "$DEMYX_INSTALL_EMAIL" ]; then
+    echo -e "\e[31m[CRITICAL]\e[39m Email cannot be empty"
+    exit 1
+fi
 
-# Install Docker and other packages
-echo -e "\e[34m[INFO] Installing Docker and Docker Compose\e[39m"
-sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
-sudo apt update
-apt-cache policy docker-ce
-sudo apt install -y docker-ce
-sudo usermod -aG docker "$USER"
-sudo curl -L https://github.com/docker/compose/releases/download/1.24.0/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-sudo sed -i 's|#DOCKER_OPTS="--dns 8.8.8.8 --dns 8.8.4.4"|DOCKER_OPTS="--dns 1.1.1.1 --dns 1.0.0.1"|g' /etc/default/docker
-sudo service docker restart
+echo -e "\e[34m[INFO]\e[39m Enter username for basic auth"
+read -ep "Username: " DEMYX_INSTALL_USER
+if [ -z "$DEMYX_INSTALL_USER" ]; then
+    echo -e "\e[31m[CRITICAL]\e[39m Username cannot be empty"
+    exit 1
+fi
 
-# Pull the necessary images
-sudo docker pull demyx/nginx-php-wordpress
-sudo docker pull demyx/mariadb
-sudo docker pull demyx/logrotate
-sudo docker pull demyx/utilities
-sudo docker pull demyx/ssh
-sudo docker pull demyx/browsersync
-sudo docker pull traefik
-sudo docker pull wordpress:cli
-sudo docker pull phpmyadmin/phpmyadmin
-sudo docker pull pyouroboros/ouroboros
-sudo docker pull quay.io/vektorlab/ctop
+echo -e "\e[34m[INFO]\e[39m Enter password for basic auth"
+read -ep "Password: " DEMYX_INSTALL_USER
+if [ -z "$DEMYX_INSTALL_USER" ]; then
+    echo -e "\e[31m[CRITICAL]\e[39m Password cannot be empty"
+    exit 1
+fi
 
-# Create our proxy network and group
-sudo docker network create traefik
-#sudo groupadd demyx -g 82
-#sudo usermod -aG 82 "$USER"
+docker pull demyx/demyx
+docker pull demyx/browsersync
+docker pull demyx/docker-compose
+docker pull demyx/logrotate
+docker pull demyx/mariadb
+docker pull demyx/nginx-php-wordpress
+docker pull demyx/ssh
+docker pull demyx/utilities
+docker pull wordpress:cli
+docker pull phpmyadmin/phpmyadmin
+docker pull pyouroboros/ouroboros
+docker pull quay.io/vektorlab/ctop
+docker network create demyx
 
-# Create the initial directories and files
-DIR="/srv/demyx"
-PWGEN=$(sudo docker run -it --rm demyx/utilities sh -c "pwgen -cns 50 1" | sed -e 's/\r//g')
-HTPASSWD=$(sudo docker run -it --rm demyx/utilities sh -c "htpasswd -nb $TRAEFIK_USER '$PWGEN'" | sed -e 's/\r//g')
+docker run -dt --rm \
+--name demyx_install_container \
+-v demyx_ssh:/home/demyx/.ssh \
+demyx/utilities bash
 
-sudo mkdir -p "$DIR"/etc
-sudo chown -R "$USER":"$USER" "$DIR"
-mkdir -p "$DIR"/apps
-mkdir -p "$DIR"/backup
-mkdir -p "$DIR"/logs
-git -C $DIR clone https://github.com/demyxco/demyx.git
-mv "$DIR"/demyx "$DIR"/git
-cp -R "$DIR"/git/etc/functions "$DIR"/etc
-cp -R "$DIR"/git/etc/traefik "$DIR"/etc
-sed -i "s|BASIC_AUTH|$HTPASSWD|g" "$DIR"/etc/traefik/traefik.toml
-sed -i "s|EMAIL|$EMAIL|g" "$DIR"/etc/traefik/traefik.toml
-sed -i "s|DOMAIN|$DOMAIN|g" "$DIR"/etc/traefik/traefik.toml
-touch "$DIR"/logs/traefik.access.log
-touch "$DIR"/logs/traefik.error.log
-touch "$DIR"/etc/traefik/acme.json
-chmod 600 "$DIR"/etc/traefik/acme.json
+docker cp "$HOME"/.ssh/authorized_keys demyx_install_container:/home/demyx/.ssh
+docker stop demyx_install_container
 
-# Generate core .env and .yml
-bash "$DIR"/etc/functions/etc-env.sh "$DOMAIN" "$TRAEFIK_USER" "$PWGEN"
-bash "$DIR"/etc/functions/etc-yml.sh
+if [ -f /usr/local/bin/demyx ]; then
+    rm /usr/local/bin/demyx
+fi
 
-# Create links
-ln -s /srv/demyx "$HOME"/demyx
-sudo ln -s /srv/demyx/git/demyx.sh /usr/local/bin/demyx
+wget demyx.sh/chroot -qO /usr/local/bin/demyx
+chmod +x /usr/local/bin/demyx
 
-# Add WP cron
-crontab -l > "$DIR"/etc/cron_tmp
-echo "* * * * * /bin/bash $ETC/cron/every-minute.sh" >> "$DIR"/etc/cron_tmp
-echo "0 * * * * /bin/bash $ETC/cron/every-1-hour.sh" >> "$DIR"/etc/cron_tmp
-echo "0 */6 * * * /bin/bash $ETC/cron/every-6-hour.sh" >> "$DIR"/etc/cron_tmp
-echo "0 0 * * * /bin/bash $ETC/cron/every-day.sh" >> "$DIR"/etc/cron_tmp
-echo "0 0 1 * * /bin/bash $ETC/cron/every-month.sh" >> "$DIR"/etc/cron_tmp
-crontab "$DIR"/etc/cron_tmp
-rm "$DIR"/etc/cron_tmp
+if [ -n "$DEMYX_BASH_CHECK" ]; then
+    sed -i "s|#!/bin/sh|#!/bin/bash|g" /usr/local/bin/demyx
+    echo "demyx" >> "$HOME"/.bashrc
+else
+    echo "demyx" >> "$HOME"/.profile
+fi
 
-# Change directory and finally start the stack
-cd "$DIR"/etc && sudo docker-compose up -d
+if [ -n "$DEMYX_ZSH_CHECK" ]; then
+    echo "demyx" >> "$HOME"/.zshrc
+fi
 
-echo
-echo traefik."$DOMAIN"
-echo Username: "$TRAEFIK_USER"
-echo Password: "$PWGEN"
-echo
-echo "To create your first site, run: demyx wp --dom=$DOMAIN --run --cdn --cache"
-echo
-
-echo -e "\e[33m[WARNING] You must relogin or switch to another shell for new permissions to take effect.\e[39m"
-read -ep "Switch shell? [yY]: " SWITCH
-[[ "$SWITCH" = [yY] ]] && su "$USER"
+docker exec -t demyx demyx install --domain="$DEMYX_INSTALL_DOMAIN" --email="$DEMYX_INSTALL_EMAIL" --user="$DEMYX_INSTALL_USER" --pass="$DEMYX_INSTALL_PASS"
+demyx

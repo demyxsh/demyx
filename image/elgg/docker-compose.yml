@@ -1,0 +1,32 @@
+version: "3.7"
+
+services:
+  db:
+    image: demyx/mariadb
+    restart: unless-stopped
+    networks:
+      - proxy
+    volumes:
+      - ./db:/var/lib/mysql
+    environment:
+      MARIADB_DATABASE: demyx_db
+      MARIADB_USERNAME: demyx_user
+      MARIADB_PASSWORD: demyx_password
+      MARIADB_ROOT_PASSWORD: demyx_root_password
+  elgg:
+    image: demyx/elgg
+    restart: unless-stopped
+    networks:
+      - proxy
+    volumes:
+      - ./data:/var/www/html
+    environment:
+      ELGG_DOMAIN: elgg.tk
+      TZ: America/Los_Angeles
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.rule=Host:elgg.tk,www.elgg.tk"
+      - "traefik.port=80"
+networks:
+  proxy:
+    name: proxy
