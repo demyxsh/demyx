@@ -85,11 +85,6 @@ et example
 wget demyx.sh/install && sudo bash install
 ```
 
-### Upgrade
-Only execute this script if you have Demyx (Version 1) installed on the host
-```
-wget demyx.sh/upgrade && sudo bash upgrade
-```
 What's changed from "Version 1?"
 * Demyx code base has been rewritten
 * No more bind mounts, all data are stored in volumes
