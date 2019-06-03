@@ -41,27 +41,6 @@ Since the image needs docker.sock to be mounted and the Docker binary is include
 * jq
 
 ### Eternal Terminal
-REMOTE MACHINE: Run eternal terminal server first
-```
-docker run -dit \
---name demyx_et \
--v demyx_ssh:/home/demyx/.ssh \
--p 2222:22 \
--p 2022:2022 \
-demyx/eternal-terminal
-```
-REMOTE MACHINE: Copy authorized_keys to volume
-```
-docker cp /home/"$USER"/.ssh/authorized_keys demyx_et:/home/demyx/.ssh
-```
-REMOTE MACHINE: Verify authorized_keys is in the volume
-```
-docker exec -t demyx_et ls -al /home/demyx/.ssh
-```
-REMOTE MACHINE: Restart container so permissions are set
-```
-docker restart demyx_et
-```
 LOCAL MACHINE: Make ssh alias (~/.ssh/config)
 ```
 Host example
