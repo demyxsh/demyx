@@ -99,7 +99,7 @@ elif [ -n "$DEMYX_UPDATE" ]; then
     fi
     if wget --spider demyx.sh/chroot 2>/dev/null; then
         if [ -f /usr/local/bin/demyx ]; then
-            rm /usr/local/bin/demyx
+            rm /usr/local/bin/demyx 
         fi
         wget demyx.sh/chroot -qO /usr/local/bin/demyx
         chmod +x /usr/local/bin/demyx
