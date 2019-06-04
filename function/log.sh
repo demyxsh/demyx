@@ -51,10 +51,7 @@ function demyx_log() {
                 done
             fi
         else
-            docker run -it --rm \
-            --name demyx_utilities \
-            --volumes-from demyx \
-            demyx/utilities less +G /var/log/demyx/demyx.log
+            tac /var/log/demyx/demyx.log | less
         fi
     fi
 }
