@@ -149,7 +149,7 @@ You can reach me by these avenues
 * #demyx at freenode
 
 ### Resources
-*  [Demyx](https://hub.docker.com/u/demyx) - NGINX, PHP, MariaDB, Logrotate, Utilities
+*  [Demyx](https://github.com/demyxco/demyx) - Demyx GitHub
 *  [Traefik](https://hub.docker.com/_/traefik) - Reverse Proxy with Lets Encrypt SSL
 *  [ouroboros](https://hub.docker.com/r/pyouroboros/ouroboros) - Auto pull new images from Docker Hub
 *  [WordPress](https://hub.docker.com/_/wordpress) - Using their `wordpress:cli` image
