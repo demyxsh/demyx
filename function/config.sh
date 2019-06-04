@@ -431,8 +431,15 @@ function demyx_config() {
             fi
         elif [[ -n "$DEMYX_GET_APP" ]]; then
             if [[ -n "$DEMYX_CONFIG_UPDATE" ]]; then
+                DEMYX_APP_ENTRYPOINT_CHECK=$(docker exec -t "$DEMYX_APP_CONTAINER" ls /demyx | grep entrypoint || true)
+                
                 demyx_echo 'Updating configs'
                 demyx_execute docker cp "$DEMYX_APP_CONFIG"/. "$DEMYX_APP_CONTAINER":/demyx
+
+                if [[ -n "$DEMYX_APP_ENTRYPOINT_CHECK" ]]; then
+                    demyx_echo 'Making custom entrypoint executable'
+                    demyx_execute docker exec -t "$DEMYX_APP_CONTAINER" chmod +x /demyx/entrypoint
+                fi
 
                 demyx_execute -v demyx compose "$DEMYX_TARGET" up -d --remove-orphans
             fi
