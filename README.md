@@ -104,7 +104,6 @@ docker run -dit \
     -e DEMYX_DEVELOPMENT_MODE="$DEMYX_DEVELOPMENT_MODE" \
     -e DEMYX_SSH="$DEMYX_SSH" \
     -v /var/run/docker.sock:/var/run/docker.sock:ro \
-    -v /usr/local/bin/demyx:/demyx/etc/chroot.sh:ro \
     -v demyx:/demyx \
     -v demyx_user:/home/demyx \
     -v demyx_log:/var/log/demyx \
