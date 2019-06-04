@@ -7,6 +7,11 @@ while :; do
         --dev)
             DEMYX_DEVELOPMENT_MODE=true
             ;;
+        -e)
+            DEMYX_EXEC=1
+            shift
+            break
+            ;;
         --et)
             DEMYX_ET=${1#*=}
             ;;
@@ -21,6 +26,11 @@ while :; do
             ;;
         --ssh)
             DEMYX_SSH=${1#*=}
+            ;;
+        -t)
+            DEMYX_TTY=1
+            shift
+            break
             ;;
         --update)
             DEMYX_UPDATE=1
@@ -79,17 +89,42 @@ demyx_run() {
     demyx/demyx
 }
 
-if [[ -n "$DEMYX_HELP" ]]; then
+if [[ -n "$DEMYX_DEVELOPMENT_MODE" ]]; then
+    if [[ -n "$DEMYX_CONTAINER_CHECK" ]]; then
+        docker stop demyx
+        docker rm -f demyx
+    fi
+    demyx_run
+    if [[ -z "$DEMYX_NO_CHROOT" ]]; then
+        docker exec -it demyx zsh
+    fi
+elif [[ "$DEMYX_EXEC" ]]; then
+    docker exec -t demyx demyx "$@"
+elif [[ -n "$DEMYX_HELP" ]]; then
     echo
     echo "demyx <args>          Chroot into the demyx container"
     echo "      --dev           Puts demyx container into development mode"
-    echo "      --et            Override et port"
+    echo "      -e              Send demyx commands from host"
+    echo "      --et            Override et port"    
     echo "      --help          Demyx help"
     echo "      --nc            Prevent chrooting into container"
     echo "      --rs            Stops, removes, and starts demyx container"
     echo "      --ssh           Override ssh port"
+    echo "      -t              Execute root commands to demyx container from host"
     echo "      --update        Update the demyx chroot"
     echo
+elif [[ -n "$DEMYX_RESTART" ]]; then
+    if [[ -n "$DEMYX_CONTAINER_CHECK" ]]; then
+        docker stop demyx
+        docker rm -f demyx
+    fi
+    if [[ -z "$DEMYX_NO_CHROOT" ]]; then
+        demyx --nc
+    else
+        demyx
+    fi
+elif [[ "$DEMYX_TTY" ]]; then
+    docker exec -t demyx "$@"
 elif [[ -n "$DEMYX_UPDATE" ]]; then
     # sudo check
     DEMYX_SUDO_CHECK=$(id -u)
@@ -107,30 +142,15 @@ elif [[ -n "$DEMYX_UPDATE" ]]; then
     fi
     echo -e "\e[32m[SUCCESS]\e[39m Demyx chroot has successfully updated"
     chmod +x /usr/local/bin/demyx
-elif [[ -n "$DEMYX_DEVELOPMENT_MODE" ]]; then
-    if [[ -n "$DEMYX_CONTAINER_CHECK" ]]; then
-        docker stop demyx
-        docker rm -f demyx
-    fi
-    demyx_run
-    if [[ -z "$DEMYX_NO_CHROOT" ]]; then
-        docker exec -it demyx zsh
-    fi
-elif [[ -n "$DEMYX_RESTART" ]]; then
-    if [[ -n "$DEMYX_CONTAINER_CHECK" ]]; then
-        docker stop demyx
-        docker rm -f demyx
-    fi
-    if [[ -z "$DEMYX_NO_CHROOT" ]]; then
-        demyx --nc
-    else
-        demyx
-    fi
-elif [[ -n "$DEMYX_CONTAINER_CHECK" ]]; then
-    docker exec -it demyx zsh
 else
-    demyx_run
-    if [[ -z "$DEMYX_NO_CHROOT" ]]; then
-        docker exec -it demyx zsh
+    if [[ -n "$DEMYX_CONTAINER_CHECK" ]]; then
+        if [[ "$DEMYX_NO_CHROOT" ]]; then
+            demyx_run
+        else
+            docker exec -it demyx zsh
+        fi
+    else
+        demyx_run
+        demyx "$@"
     fi
 fi

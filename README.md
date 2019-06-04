@@ -87,8 +87,8 @@ What's changed from "Version 1?"
 
 ### Getting Started
 ```
-# You can create a WordPress site on the host
-docker exec -t demyx demyx run domain.tld --auth --cdn --cache
+# You can create a WordPress site on the host OS using demyx's chroot
+demyx -e run domain.tld --auth --cdn --cache
 
 # Chroot by typing demyx on the host
 demyx run domain.tld --auth --cdn --cache
@@ -115,12 +115,15 @@ docker run -dit \
 demyx (host) --help
 ```
 demyx <args>          Chroot into the demyx container
-      --dev           Restarts the demyx container into development mode
+      --dev           Puts demyx container into development mode
+      -e              Execute demyx commands from host OS
       --et            Override et port
       --help          Demyx help
       --nc            Prevent chrooting into container
       --rs            Stops, removes, and starts demyx container
       --ssh           Override ssh port
+      -t              Execute root commands to demyx container from host OS
+      --update        Update the demyx chroot
 ```
 
 ### Commands
