@@ -131,7 +131,7 @@ if [[ "$1" = wp ]]; then
             continue
         fi
 
-        [[ -z "$WP_ID" ]] && echo -e "\e[31m[CRITICAL]\e[39m Already migrated, continuing" && continue
+        [[ -z "$WP_ID" ]] && echo -e "\e[31m[$i]\e[39m Already migrated, continuing" && continue;
 
         mv /srv/demyx/apps/"$i"/conf /srv/demyx/apps/"$i"/config
     
@@ -234,7 +234,7 @@ if [[ "$1" = test ]]; then
             exit 1
         fi
 
-        [[ -z "$WP_ID" ]] && echo -e "\e[31m[CRITICAL]\e[39m Already migrated" && exit 1
+        [[ -z "$WP_ID" ]] && echo -e "\e[31m[$i]\e[39m Already migrated" && exit 1
 
         echo
         echo -e "\e[34m[INFO]\e[39m You will see some WARNINGS, it's perfectly normal. Beginning migration in few seconds."
