@@ -39,7 +39,7 @@ function demyx_restore() {
         fi
 
         demyx_echo 'Extracting archive'
-        demyx_execute tar -xzf "$DEMYX_BACKUP"/"$DEMYX_TARGET".tgz -C "$DEMYX_WP"
+        demyx_execute tar -xzf "$DEMYX_BACKUP"/wp/"$DEMYX_TARGET".tgz -C "$DEMYX_WP"
 
         demyx_app_config
 

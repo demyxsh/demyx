@@ -16,6 +16,8 @@ function demyx_backup() {
         demyx_app_config
 
         if [[ "$DEMYX_APP_TYPE" = wp ]]; then
+            [[ ! -d "$DEMYX_BACKUP"/wp ]] && mkdir -p "$DEMYX_BACKUP"/wp
+
             demyx_echo 'Exporting database'
             demyx_execute demyx wp "$DEMYX_APP_DOMAIN" db export "$DEMYX_APP_CONTAINER".sql
 
@@ -26,7 +28,7 @@ function demyx_backup() {
             demyx_execute docker cp "$DEMYX_APP_WP_CONTAINER":/var/log/demyx "$DEMYX_APP_PATH"
 
             demyx_echo 'Archiving directory' 
-            demyx_execute tar -czf "$DEMYX_BACKUP"/"$DEMYX_APP_DOMAIN".tgz -C "$DEMYX_WP" "$DEMYX_APP_DOMAIN"
+            demyx_execute tar -czf "$DEMYX_BACKUP"/wp/"$DEMYX_APP_DOMAIN".tgz -C "$DEMYX_WP" "$DEMYX_APP_DOMAIN"
             
             demyx_echo 'Cleaning up'
             demyx_execute rm -rf "$DEMYX_APP_PATH"/html; \
