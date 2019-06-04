@@ -18,7 +18,7 @@ if [[ -z "$DEMYX_DOCKER_CHECK" ]]; then
 fi
 
 echo -e "\e[34m[INFO]\e[39m Enter top level domain for Traefik dashboard"
-read -ep "Domain: " DEMYX_INSTALL_DOMAIN 
+read -rep "Domain: " DEMYX_INSTALL_DOMAIN
 if [[ -z "$DEMYX_INSTALL_DOMAIN" ]]; then
     echo -e "\e[31m[CRITICAL]\e[39m Domain cannot be empty"
     exit 1
@@ -31,21 +31,21 @@ if [[ -z "$DEMYX_WILDCARD_CHECK" ]]; then
 fi
 
 echo -e "\e[34m[INFO\e[39m] Lets Encrypt SSL notifications"
-read -ep "Email: " DEMYX_INSTALL_EMAIL
+read -rep "Email: " DEMYX_INSTALL_EMAIL
 if [[ -z "$DEMYX_INSTALL_EMAIL" ]]; then
     echo -e "\e[31m[CRITICAL]\e[39m Email cannot be empty"
     exit 1
 fi
 
 echo -e "\e[34m[INFO]\e[39m Enter username for basic auth"
-read -ep "Username: " DEMYX_INSTALL_USER
+read -rep "Username: " DEMYX_INSTALL_USER
 if [[ -z "$DEMYX_INSTALL_USER" ]]; then
     echo -e "\e[31m[CRITICAL]\e[39m Username cannot be empty"
     exit 1
 fi
 
 echo -e "\e[34m[INFO]\e[39m Enter password for basic auth"
-read -ep "Password: " DEMYX_INSTALL_PASS
+read -rep "Password: " DEMYX_INSTALL_PASS
 if [[ -z "$DEMYX_INSTALL_PASS" ]]; then
     echo -e "\e[31m[CRITICAL]\e[39m Password cannot be empty"
     exit 1
@@ -56,7 +56,7 @@ docker pull demyx/browsersync
 docker pull demyx/docker-compose
 docker pull demyx/logrotate
 docker pull demyx/mariadb
-docker pull demyx/nginx-php-wordpress
+docker pull demyx/nginx-rephp-wordpress
 docker pull demyx/ssh
 docker pull demyx/utilities
 docker pull wordpress:cli
@@ -102,4 +102,4 @@ fi
 demyx --nc
 echo -e "\e[34m[INFO\e[39m] Waiting for demyx container to fully initialize"
 sleep 10
-docker exec -t demyx demyx install --domain="$DEMYX_INSTALL_DOMAIN" --email="$DEMYX_INSTALL_EMAIL" --user="$DEMYX_INSTALL_USER" --pass="$DEMYX_INSTALL_PASS"
+docker exec -t demyx demyx install --domain="$DEMYX_INSTALL_DOMAIN" --email="$DEMYX_INSTALL_EMAIL" --user="$DEMYX_INSTALL_USER" --repass="$DEMYX_INSTALL_PASS"

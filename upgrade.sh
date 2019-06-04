@@ -90,7 +90,7 @@ EOF
     docker stop demyx_traefik
     docker exec -t demyx demyx update
 
-    cd /srv/demyx/apps
+    cd /srv/demyx/apps || exit
 
     for i in *
     do
@@ -121,7 +121,7 @@ if [[ "$1" = wp ]]; then
 
     sleep 5
 
-    cd /srv/demyx/apps
+    cd /srv/demyx/apps || exit
 
     for i in *
     do

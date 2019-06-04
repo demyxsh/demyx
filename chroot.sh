@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Demyx
 # https://demyx.sh
 
@@ -30,7 +30,7 @@ while :; do
             break
             ;;
         -?*)
-            printf '\e[31m[CRITICAL]\e[39m Unknown option: %s\n' "$1" >&2
+            echo -e '\e[31m[CRITICAL]\e[39m Unknown option: %s\n' "$1" >&2
             exit 1
             ;;
         *)
@@ -47,7 +47,7 @@ demyx_run() {
     
     while true; do
         DEMYX_SFTP_OPEN_PORT=$(netstat -tuplen 2>/dev/null | grep :"$DEMYX_SSH" || true)
-        if [ -z "$DEMYX_SFTP_OPEN_PORT" ]; then
+        if [[ -z "$DEMYX_SFTP_OPEN_PORT" ]]; then
             break
         else
             DEMYX_SSH=$((DEMYX_SSH+1))
@@ -56,7 +56,7 @@ demyx_run() {
 
     while true; do
         DEMYX_ET_OPEN_PORT=$(netstat -tuplen 2>/dev/null | grep :"$DEMYX_ET" || true)
-        if [ -z "$DEMYX_ET_OPEN_PORT" ]; then
+        if [[ -z "$DEMYX_ET_OPEN_PORT" ]]; then
             break
         else
             DEMYX_ET=$((DEMYX_ET+1))
@@ -79,7 +79,7 @@ demyx_run() {
     demyx/demyx
 }
 
-if [ -n "$DEMYX_HELP" ]; then
+if [[ -n "$DEMYX_HELP" ]]; then
     echo
     echo "demyx <args>          Chroot into the demyx container"
     echo "      --dev           Puts demyx container into development mode"
@@ -90,48 +90,48 @@ if [ -n "$DEMYX_HELP" ]; then
     echo "      --ssh           Override ssh port"
     echo "      --update        Update the demyx chroot"
     echo
-elif [ -n "$DEMYX_UPDATE" ]; then
+elif [[ -n "$DEMYX_UPDATE" ]]; then
     # sudo check
     DEMYX_SUDO_CHECK=$(id -u)
-    if [ "$DEMYX_SUDO_CHECK" != 0 ]; then
-        print "\e[31m[CRITICAL]\e[39m --update must be ran as root or sudo"
+    if [[ "$DEMYX_SUDO_CHECK" != 0 ]]; then
+        echo -e "\e[31m[CRITICAL]\e[39m --update must be ran as root or sudo"
         exit 1
     fi
     if wget --spider demyx.sh/chroot 2>/dev/null; then
-        if [ -f /usr/local/bin/demyx ]; then
+        if [[ -f /usr/local/bin/demyx ]]; then
             rm /usr/local/bin/demyx 
         fi
         wget demyx.sh/chroot -qO /usr/local/bin/demyx
         chmod +x /usr/local/bin/demyx
-        print "\e[32m[SUCCESS]\e[39m Demyx chroot has successfully updated"
+        echo -e "\e[32m[SUCCESS]\e[39m Demyx chroot has successfully updated"
     else
-        print "\e[31m[CRITICAL]\e[39m Update URL is offline at the moment"
+        echo -e "\e[31m[CRITICAL]\e[39m Update URL is offline at the moment"
         exit 1
     fi
-elif [ -n "$DEMYX_DEVELOPMENT_MODE" ]; then
-    if [ -n "$DEMYX_CONTAINER_CHECK" ]; then
+elif [[ -n "$DEMYX_DEVELOPMENT_MODE" ]]; then
+    if [[ -n "$DEMYX_CONTAINER_CHECK" ]]; then
         docker stop demyx
         docker rm -f demyx
     fi
     demyx_run
-    if [ -z "$DEMYX_NO_CHROOT" ]; then
+    if [[ -z "$DEMYX_NO_CHROOT" ]]; then
         docker exec -it demyx zsh
     fi
-elif [ -n "$DEMYX_RESTART" ]; then
-    if [ -n "$DEMYX_CONTAINER_CHECK" ]; then
+elif [[ -n "$DEMYX_RESTART" ]]; then
+    if [[ -n "$DEMYX_CONTAINER_CHECK" ]]; then
         docker stop demyx
         docker rm -f demyx
     fi
-    if [ -z "$DEMYX_NO_CHROOT" ]; then
+    if [[ -z "$DEMYX_NO_CHROOT" ]]; then
         demyx --nc
     else
         demyx
     fi
-elif [ -n "$DEMYX_CONTAINER_CHECK" ]; then
+elif [[ -n "$DEMYX_CONTAINER_CHECK" ]]; then
     docker exec -it demyx zsh
 else
     demyx_run
-    if [ -z "$DEMYX_NO_CHROOT" ]; then
+    if [[ -z "$DEMYX_NO_CHROOT" ]]; then
         docker exec -it demyx zsh
     fi
 fi
