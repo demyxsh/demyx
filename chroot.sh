@@ -144,13 +144,15 @@ elif [[ -n "$DEMYX_UPDATE" ]]; then
     chmod +x /usr/local/bin/demyx
 else
     if [[ -n "$DEMYX_CONTAINER_CHECK" ]]; then
-        if [[ "$DEMYX_NO_CHROOT" ]]; then
+        if [[ -n "$DEMYX_NO_CHROOT" ]]; then
             demyx_run
         else
             docker exec -it demyx zsh
         fi
     else
         demyx_run
-        demyx "$@"
+        if [[ -z "$DEMYX_NO_CHROOT" ]]; then
+            demyx "$@"
+        fi
     fi
 fi
