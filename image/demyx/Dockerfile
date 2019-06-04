@@ -63,6 +63,13 @@ RUN set -ex; \
     echo 'cd /demyx && bash /demyx/.motd' >> /root/.zshrc; \
     echo 'cd /demyx && bash /demyx/.motd' >> /home/demyx/.zshrc
 
+# Git user for my use
+RUN set -ex; \
+    addgroup -g 1001 -S git; \
+    adduser -u 1001 -D -S -G git git; \
+    echo git:git | chpasswd; \
+    sed -i "s|/home/git:/sbin/nologin|/home/git:/bin/ash|g" /etc/passwd
+
 # Fix the annoying "prompt_git:40: vcs_info: function definition file not found"
 COPY vcs_info /
 
