@@ -102,4 +102,4 @@ fi
 demyx --nc
 echo -e "\e[34m[INFO\e[39m] Waiting for demyx container to fully initialize"
 sleep 10
-docker exec -t demyx demyx install --domain="$DEMYX_INSTALL_DOMAIN" --email="$DEMYX_INSTALL_EMAIL" --user="$DEMYX_INSTALL_USER" --repass="$DEMYX_INSTALL_PASS"
+demyx -e install --domain="$DEMYX_INSTALL_DOMAIN" --email="$DEMYX_INSTALL_EMAIL" --user="$DEMYX_INSTALL_USER" --pass="$DEMYX_INSTALL_PASS"
