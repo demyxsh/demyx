@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # Demyx
 # https://demyx.sh
 
@@ -41,7 +41,7 @@ done
 
 DEMYX_CONTAINER_CHECK=$(docker ps | awk '{print $NF}' | grep -w demyx)
 
-function demyx_run() {
+demyx_run() {
     DEMYX_SSH=2222
     DEMYX_ET=2022
     
@@ -94,7 +94,7 @@ elif [ -n "$DEMYX_UPDATE" ]; then
     # sudo check
     DEMYX_SUDO_CHECK=$(id -u)
     if [ "$DEMYX_SUDO_CHECK" != 0 ]; then
-        echo -e "\e[31m[CRITICAL]\e[39m --update must be ran as root or sudo"
+        print "\e[31m[CRITICAL]\e[39m --update must be ran as root or sudo"
         exit 1
     fi
     if wget --spider demyx.sh/chroot 2>/dev/null; then
@@ -103,9 +103,9 @@ elif [ -n "$DEMYX_UPDATE" ]; then
         fi
         wget demyx.sh/chroot -qO /usr/local/bin/demyx
         chmod +x /usr/local/bin/demyx
-        echo -e "\e[32m[SUCCESS]\e[39m Demyx chroot has successfully updated"
+        print "\e[32m[SUCCESS]\e[39m Demyx chroot has successfully updated"
     else
-        echo -e "\e[31m[CRITICAL]\e[39m Update URL is offline at the moment"
+        print "\e[31m[CRITICAL]\e[39m Update URL is offline at the moment"
         exit 1
     fi
 elif [ -n "$DEMYX_DEVELOPMENT_MODE" ]; then
