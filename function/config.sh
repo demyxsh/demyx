@@ -232,7 +232,7 @@ function demyx_config() {
                 fi
 
                 demyx_echo 'Creating BrowserSync config'
-                demyx_execute -v echo "module.exports={rewriteRules:[{match:/${DEMYX_APP_DOMAIN}/g,fn:function(e,r,t){return'${DEMYX_BROWSERSYNC_SUB}.${DEMYX_DOMAIN}'}}],socket:{domain:'${DEMYX_BROWSERSYNC_SUB}.${DEMYX_DOMAIN}'}};" > "$DEMYX_APP_CONFIG"/bs.js \
+                demyx_execute -v echo "module.exports={rewriteRules:[{match:/${DEMYX_APP_DOMAIN}/g,fn:function(e,r,t){return'${DEMYX_BROWSERSYNC_SUB}.${DEMYX_APP_DOMAIN}'}}],socket:{domain:'${DEMYX_BROWSERSYNC_SUB}.${DEMYX_APP_DOMAIN}'}};" > "$DEMYX_APP_CONFIG"/bs.js \
                     && docker cp "$DEMYX_APP_CONFIG"/bs.js "$DEMYX_APP_WP_CONTAINER":/var/www/html
 
                 demyx_echo 'Creating BrowserSync container' 
@@ -241,7 +241,7 @@ function demyx_config() {
                     --net demyx \
                     --volumes-from "$DEMYX_APP_WP_CONTAINER" \
                     -l "traefik.enable=true" \
-                    -l "traefik.bs.frontend.rule=Host:${DEMYX_BROWSERSYNC_SUB}.${DEMYX_DOMAIN}" \
+                    -l "traefik.bs.frontend.rule=Host:${DEMYX_BROWSERSYNC_SUB}.${DEMYX_APP_DOMAIN}" \
                     -l "traefik.bs.port=3000" \
                     -l "traefik.bs.frontend.redirect.entryPoint=https" \
                     -l "traefik.bs.frontend.headers.forceSTSHeader=${DEMYX_APP_FORCE_STS_HEADER}" \
@@ -249,7 +249,7 @@ function demyx_config() {
                     -l "traefik.bs.frontend.headers.STSIncludeSubdomains=${DEMYX_APP_STS_INCLUDE_SUBDOMAINS}" \
                     -l "traefik.bs.frontend.headers.STSPreload=${DEMYX_APP_STS_PRELOAD}" \
                     -l "traefik.bs.frontend.auth.basic.users=${DEMYX_PARSE_BASIC_AUTH}" \
-                    -l "traefik.ui.frontend.rule=Host:${DEMYX_BROWSERSYNC_SUB_UI}.${DEMYX_DOMAIN}" \
+                    -l "traefik.ui.frontend.rule=Host:${DEMYX_BROWSERSYNC_SUB_UI}.${DEMYX_APP_DOMAIN}" \
                     -l "traefik.ui.port=3001" \
                     -l "traefik.ui.frontend.redirect.entryPoint=https" \
                     -l "traefik.ui.frontend.headers.forceSTSHeader=${DEMYX_APP_FORCE_STS_HEADER}" \
@@ -271,7 +271,7 @@ function demyx_config() {
                     -e PMA_HOST=db_"$DEMYX_APP_ID" \
                     -e MYSQL_ROOT_PASSWORD="${MARIADB_ROOT_PASSWORD}" \
                     -l "traefik.enable=true" \
-                    -l "traefik.frontend.rule=Host:${DEMYX_PHPMYADMIN_SUB}.${DEMYX_DOMAIN}" \
+                    -l "traefik.frontend.rule=Host:${DEMYX_PHPMYADMIN_SUB}.${DEMYX_APP_DOMAIN}" \
                     -l "traefik.port=80" \
                     -l "traefik.frontend.redirect.entryPoint=https" \
                     -l "traefik.frontend.headers.forceSTSHeader=${DEMYX_APP_FORCE_STS_HEADER}" \
@@ -315,11 +315,11 @@ function demyx_config() {
                 PRINT_TABLE+="SFTP, $DEMYX_APP_DOMAIN\n"
                 PRINT_TABLE+="SFTP USER, www-data\n"
                 PRINT_TABLE+="SFTP PORT, $DEMYX_SFTP_PORT\n"
-                PRINT_TABLE+="PHPMYADMIN, https://${DEMYX_PHPMYADMIN_SUB}.${DEMYX_DOMAIN}\n"
+                PRINT_TABLE+="PHPMYADMIN, https://${DEMYX_PHPMYADMIN_SUB}.${DEMYX_APP_DOMAIN}\n"
                 PRINT_TABLE+="PHPMYADMIN USERNAME, $WORDPRESS_DB_USER\n"
                 PRINT_TABLE+="PHPMYADMIN PASSWORD, $WORDPRESS_DB_PASSWORD\n"
-                PRINT_TABLE+="BROWSERSYNC, https://${DEMYX_BROWSERSYNC_SUB}.${DEMYX_DOMAIN}\n"
-                PRINT_TABLE+="BROWSERSYNC UI, https://${DEMYX_BROWSERSYNC_SUB_UI}.${DEMYX_DOMAIN}\n"
+                PRINT_TABLE+="BROWSERSYNC, https://${DEMYX_BROWSERSYNC_SUB}.${DEMYX_APP_DOMAIN}\n"
+                PRINT_TABLE+="BROWSERSYNC UI, https://${DEMYX_BROWSERSYNC_SUB_UI}.${DEMYX_APP_DOMAIN}\n"
                 PRINT_TABLE+="BROWSERSYNC FILES, $DEMYX_BS_FILES"
                 demyx_execute -v sed -i "s/DEMYX_APP_DEV=off/DEMYX_APP_DEV=on/g" "$DEMYX_APP_PATH"/.env && \
                     demyx_table "$PRINT_TABLE"
