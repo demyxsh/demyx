@@ -21,7 +21,7 @@ ALPINE | NGINX | MARIADB | PHP | WORDPRESS
 * CDN provided by Staticaly
 * FastCGI cache with nginx-helper plugin by rtCamp (WooCommerce ready)
 * Development mode includes the tools SSH, BrowserSync with UI, phpMyAdmin, and Demyx BrowserSync plugin
-* Auto scale containers with callback (see etc/functions/example-callback.sh)
+* Auto scale containers with callback (see the custom folder)
 * WP-CLI
 
 ### Demyx Image

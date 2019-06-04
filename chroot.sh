@@ -39,7 +39,7 @@ while :; do
     shift
 done
 
-DEMYX_CONTAINER_CHECK=$(docker ps | awk '{print $NF}' | grep -w demyx)
+DEMYX_CONTAINER_CHECK=$(docker ps -a | awk '{print $NF}' | grep -w demyx)
 
 demyx_run() {
     DEMYX_SSH=2222
