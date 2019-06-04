@@ -429,6 +429,13 @@ function demyx_config() {
                 demyx_echo 'Reloading NGINX and PHP'
                 demyx_execute demyx config "$DEMYX_APP_DOMAIN" --restart=nginx-php
             fi
+        elif [[ -n "$DEMYX_GET_APP" ]]; then
+            if [[ -n "$DEMYX_CONFIG_UPDATE" ]]; then
+                demyx_echo 'Updating configs'
+                demyx_execute docker cp "$DEMYX_APP_CONFIG"/. "$DEMYX_APP_CONTAINER":/demyx
+
+                demyx_execute -v demyx compose "$DEMYX_TARGET" up -d --remove-orphans
+            fi
         else
             demyx_die --not-found
         fi
