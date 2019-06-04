@@ -38,10 +38,13 @@ echo
 
 EOF
 
-if [ ! -f /etc/ssh/ssh_host_rsa_key ]; then
+if [[ ! -d /home/demyx/.ssh ]]; then
+    mkdir -p /home/demyx/.ssh
+fi
+if [[ ! -f /etc/ssh/ssh_host_rsa_key ]]; then
 	ssh-keygen -f /etc/ssh/ssh_host_rsa_key -N '' -t rsa
 fi
-if [ -f /home/demyx/.ssh/ssh_host_rsa_key ]; then
+if [[ -f /home/demyx/.ssh/ssh_host_rsa_key ]]; then
 	cp /home/demyx/.ssh/ssh_host_rsa_key /etc/ssh
 	cp /home/demyx/.ssh/ssh_host_rsa_key.pub /etc/ssh
 else

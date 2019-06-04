@@ -55,6 +55,7 @@ et example
 
 ### Requirements
 * Docker
+* Bash
 * Dedicated/KVM server with Linux
 * Port 80 and 443 must be open
 * Primary domain must be pointed to server's IP and must have a wildcard CNAME subdomain
@@ -62,6 +63,20 @@ et example
 ### Install
 ```
 wget demyx.sh/install && sudo bash install
+```
+
+### Upgrade
+The script script takes 1 parameter (stack/test/wp) to upgrade each component individually, starting with the stack first. This will move the stack's configs to the demyx container, create a new Docker network, and update all docker-compose.yml to use the new network.
+```
+wget demyx.sh/upgrade && sudo bash upgrade stack
+```
+It is RECOMMENDED to test out a single site first to see if the site migrated successfully
+```
+sudo bash upgrade test domain.tld
+```
+Then you can migrate all sites in a loop. You can individually migrate them by just using the test parameter.
+```
+sudo bash upgrade wp
 ```
 
 What's changed from "Version 1?"

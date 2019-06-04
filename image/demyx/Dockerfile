@@ -47,7 +47,6 @@ RUN set -ex; \
 
 RUN set -ex; \
     sed -i "s|/home/demyx:/sbin/nologin|/home/demyx:/bin/zsh|g" /etc/passwd; \
-    sed -i "s|/root:/bin/ash|/root:/sbin/nologin|g" /etc/passwd; \
     \
     sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"; \
     git clone https://github.com/zsh-users/zsh-autosuggestions.git /root/.oh-my-zsh/plugins/zsh-autosuggestions; \
@@ -80,9 +79,9 @@ RUN echo "demyx ALL=(ALL) NOPASSWD:/usr/local/bin/demyx" >> /etc/sudoers; \
     \
     chown -R demyx:demyx /demyx
 
-RUN echo "* * * * * /demyx/etc/cron/every-minute.sh" > /var/spool/cron/crontabs/root; \
-    echo "0 */6 * * * /demyx/etc/cron/every-6-hour.sh" >> /var/spool/cron/crontabs/root; \
-    echo "0 0 * * * /demyx/etc/cron/every-day.sh" >> /var/spool/cron/crontabs/root; \
+RUN (echo "* * * * * /demyx/etc/cron/every-minute.sh") | crontab - ; \
+    (crontab -l 2>/dev/null; echo "0 */6 * * * /demyx/etc/cron/every-6-hour.sh") | crontab - ; \
+    (crontab -l 2>/dev/null; echo "0 0 * * * /demyx/etc/cron/every-day.sh") | crontab - ; \
     mkdir -p /var/log/demyx; \
     touch /var/log/demyx/demyx.log
 

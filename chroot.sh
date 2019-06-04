@@ -117,7 +117,11 @@ elif [ -n "$DEMYX_RESTART" ]; then
         docker stop demyx
         docker rm -f demyx
     fi
-    demyx
+    if [ -z "$DEMYX_NO_CHROOT" ]; then
+        demyx --nc
+    else
+        demyx
+    fi
 elif [ -n "$DEMYX_CONTAINER_CHECK" ]; then
     docker exec -it demyx zsh
 else
