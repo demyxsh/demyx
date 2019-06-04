@@ -49,6 +49,9 @@ function demyx_help() {
         echo "demyx install <args>      Install the demyx stack"
         echo "              --domain    Primary domain required"
         echo "              --email     Email for Lets Encrypt notifications"
+        echo "              --force     Force reinstall the stack"
+        echo "              --user      Username for basic auth"
+        echo "              --pass      Password for basic auth"
         echo
     elif [[ "$2" = log ]]; then
         echo

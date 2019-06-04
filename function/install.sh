@@ -59,7 +59,6 @@ function demyx_install() {
     source "$DEMYX_FUNCTION"/env.sh
     source "$DEMYX_FUNCTION"/yml.sh
 
-    DEMYX_STACK_DOMAIN="$DEMYX_INSTALL_DOMAIN"
     DEMYX_STACK_AUTH=$(demyx util --user="$DEMYX_INSTALL_USER" --htpasswd="$DEMYX_INSTALL_PASS" --raw)
 
     demyx_echo 'Creating stack .env'
