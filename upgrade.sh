@@ -228,12 +228,6 @@ EOF
 fi
 
 if [[ "$1" = test ]]; then
-    echo
-    echo -e "\e[34m[INFO]\e[39m You will see some WARNINGS, it's perfectly normal. Beginning migration in few seconds."
-    echo
-
-    sleep 5
-
     if [[ -f /srv/demyx/apps/"$2"/.env ]]; then
             source /srv/demyx/apps/"$2"/.env
         else
@@ -241,6 +235,12 @@ if [[ "$1" = test ]]; then
         fi
 
         [[ -z "$WP_ID" ]] && echo -e "\e[31m[CRITICAL]\e[39m Already migrated" && exit 1
+
+        echo
+        echo -e "\e[34m[INFO]\e[39m You will see some WARNINGS, it's perfectly normal. Beginning migration in few seconds."
+        echo
+
+        sleep 5
 
         mv /srv/demyx/apps/"$2"/conf /srv/demyx/apps/"$2"/config
     
