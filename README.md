@@ -1,6 +1,6 @@
 
 # Demyx
-A simple CLI wrapper for Docker to automate WordPress installations written in bash. Traefik for reverse proxy with Lets Encrypt SSL. WordPress sites are powered by NGINX, PHP, and MariaDB.
+A simple bash CLI wrapper for Docker to automate WordPress installations. Traefik for reverse proxy with Lets Encrypt SSL. WordPress sites are powered by NGINX, PHP, and MariaDB.
 
 Demyx is now a Docker image and the code base has been completely rewritten, think of this as a "Version 2." The plan was to not "pollute" the host OS and go full Docker mode. This makes it easier to have a controlled and predictable environment. One can say Demyx is "Linux OS agnostic," as long as you have Docker installed.
 
