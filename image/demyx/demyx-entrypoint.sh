@@ -14,12 +14,19 @@ if [[ ! -d /demyx/etc ]]; then
     cp /demyx/etc/example/example-callback.sh /demyx/custom
 fi
 
+if [[ "$DEMYX_MODE" = development ]]; then
+    DEMYX_MODE=DEVELOMENT
+else
+    DEMYX_MODE=PRODUCTION
+fi
+
 cat > /demyx/.motd <<-EOF
 #!/bin/bash
 
-PRINT_TABLE="DEMYX, PRODUCTION\n"
+PRINT_TABLE="DEMYX, $DEMYX_MODE\n"
 PRINT_TABLE+="USER, DEMYX\n"
-PRINT_TABLE+="SSH/SFTP, 2222"
+PRINT_TABLE+="SSH/SFTP, $DEMYX_SSH\n"
+PRINT_TABLE+="ETSERVER, $DEMYX_ET"
 
 echo "
 Demyx

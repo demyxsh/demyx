@@ -51,6 +51,8 @@ Host example
 LOCAL MACHINE: Run et command using alias (assuming et is installed on local machine)
 ```
 et example
+# If you override the et port to something else than 2022, for example 3000
+et example:3000
 ```
 
 ### Requirements
@@ -101,29 +103,32 @@ docker run -dit \
     --name demyx \
     --restart unless-stopped \
     --network demyx \
-    -e DEMYX_DEVELOPMENT_MODE="$DEMYX_DEVELOPMENT_MODE" \
-    -e DEMYX_SSH="$DEMYX_SSH" \
+    -e DEMYX_SSH="$DEMYX_CHROOT_SSH" \
+    -e DEMYX_ET="$DEMYX_CHROOT_ET" \
+    -e DEMYX_MODE="$DEMYX_CHROOT_MODE" \
     -v /var/run/docker.sock:/var/run/docker.sock:ro \
     -v demyx:/demyx \
     -v demyx_user:/home/demyx \
     -v demyx_log:/var/log/demyx \
     -e TZ=America/Los_Angeles \
-    -p "$DEMYX_SSH":22 \
-    -p "$DEMYX_ET":2022 \
+    -p "$DEMYX_CHROOT_SSH":22 \
+    -p "$DEMYX_CHROOT_ET":2022 \
     demyx/demyx
 ```
 demyx (host) --help
 ```
 demyx <args>          Chroot into the demyx container
+      exec            Send demyx commands from host
+      help            Demyx help
+      rm              Stops and removes demyx container
+      rs              Stops, removes, and starts demyx container
+      tty             Execute root commands to demyx container from host
+      update          Update the demyx chroot
       --dev           Puts demyx container into development mode
-      -e              Execute demyx commands from host OS
+      --nc            Starts demyx containr but prevent chrooting into container
       --et            Override et port
-      --help          Demyx help
-      --nc            Prevent chrooting into container
-      --rs            Stops, removes, and starts demyx container
+      --prod          Puts demyx container into production mode
       --ssh           Override ssh port
-      -t              Execute root commands to demyx container from host OS
-      --update        Update the demyx chroot
 ```
 
 ### Commands
