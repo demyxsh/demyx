@@ -224,6 +224,7 @@ EOF
         demyx exec config "$i" --ssl
         demyx exec config "$i" --refresh
         demyx exec compose "$i" du
+        [[ "$FASTCGI_CACHE" = on ]] && demyx exec config "$i" --cache -f
     done
 fi
 
