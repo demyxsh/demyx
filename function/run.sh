@@ -168,6 +168,8 @@ function demyx_run() {
         demyx_echo 'Creating log volume'
         demyx_execute docker volume create wp_"$DEMYX_APP_ID"_log
         
+        demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" up -d db_"$DEMYX_APP_ID"
+
         if [[ -z "$DEMYX_RUN_CLONE" ]]; then
             demyx_echo 'Creating temporary container'
             demyx_execute docker run -dt --rm \
@@ -203,12 +205,7 @@ function demyx_run() {
         demyx_echo 'Stopping temporary container' 
         demyx_execute docker stop "$DEMYX_APP_ID"
 
-        cd "$DEMYX_APP_PATH"
-
-        demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" up -d
-
-        demyx_echo 'Initializing MariaDB'
-        demyx_execute sleep 10
+        demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" up -d wp_"$DEMYX_APP_ID"
 
         if [[ -z "$DEMYX_RUN_CLONE" ]]; then
             demyx_echo 'Configuring wp-config.php'
