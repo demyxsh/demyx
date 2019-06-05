@@ -171,21 +171,12 @@ elif [[ "$DEMYX_CHROOT" = update ]]; then
     chmod +x /usr/local/bin/demyx
 else
     if [[ -n "$DEMYX_CHROOT_CONTAINER_CHECK" ]]; then
-        if [[ -n "$DEMYX_CHROOT_NC" ]]; then
-            demyx_run
-            demyx_mode
-        else
-            demyx_run
-            demyx_mode
+        if [[ -z "$DEMYX_CHROOT_NC" ]]; then
             docker exec -it demyx zsh
         fi
     else
-        if [[ -n "$DEMYX_CHROOT_NC" ]]; then
-            demyx_run
-            demyx_mode
-        else
-            demyx_run
-            demyx_mode
+        demyx_run
+        if [[ -z "$DEMYX_CHROOT_NC" ]]; then
             docker exec -it demyx zsh
         fi
     fi
