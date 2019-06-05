@@ -232,8 +232,9 @@ function demyx_config() {
                 fi
 
                 demyx_echo 'Creating BrowserSync config'
-                demyx_execute -v echo "module.exports={rewriteRules:[{match:/${DEMYX_APP_DOMAIN}/g,fn:function(e,r,t){return'${DEMYX_BROWSERSYNC_SUB}.${DEMYX_APP_DOMAIN}'}}],socket:{domain:'${DEMYX_BROWSERSYNC_SUB}.${DEMYX_APP_DOMAIN}'}};" > "$DEMYX_APP_CONFIG"/bs.js \
-                    && docker cp "$DEMYX_APP_CONFIG"/bs.js "$DEMYX_APP_WP_CONTAINER":/var/www/html
+                demyx_execute -v echo "module.exports={rewriteRules:[{match:/${DEMYX_APP_DOMAIN}/g,fn:function(e,r,t){return'${DEMYX_BROWSERSYNC_SUB}.${DEMYX_APP_DOMAIN}'}}],socket:{domain:'${DEMYX_BROWSERSYNC_SUB}.${DEMYX_APP_DOMAIN}'}};" > "$DEMYX_APP_CONFIG"/bs.js; \
+                    docker cp "$DEMYX_APP_CONFIG"/bs.js "$DEMYX_APP_WP_CONTAINER":/var/www/html; \
+                    rm "$DEMYX_APP_CONFIG"/bs.js
 
                 demyx_echo 'Creating BrowserSync container' 
                 demyx_execute docker run -d --rm \
@@ -300,7 +301,8 @@ function demyx_config() {
                 else
                     demyx_echo 'Creating demyx_browsersync plugin'
                     demyx_execute demyx_plugin; \
-                    docker cp "$DEMYX_APP_CONFIG"/demyx_browsersync.php "$DEMYX_APP_WP_CONTAINER":/var/www/html/wp-content/plugins
+                    docker cp "$DEMYX_APP_CONFIG"/demyx_browsersync.php "$DEMYX_APP_WP_CONTAINER":/var/www/html/wp-content/plugins; \
+                    rm "$DEMYX_APP_CONFIG"/demyx_browsersync.php
                 
                     demyx_echo 'Activating demyx_browsersync plugin'
                     demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin activate demyx_browsersync
@@ -336,15 +338,13 @@ function demyx_config() {
                 demyx_execute docker stop "$DEMYX_APP_ID"_pma
 
                 demyx_echo 'Stopping BrowserSync container'
-                demyx_execute docker stop "$DEMYX_APP_ID"_bs; \
-                    rm "$DEMYX_APP_CONFIG"/bs.js
+                demyx_execute docker stop "$DEMYX_APP_ID"_bs
 
                 demyx_echo 'Deactivating autover' 
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin deactivate autover
 
                 demyx_echo 'Deactivating demyx_browsersync' 
-                demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin deactivate demyx_browsersync && \
-                    rm "$DEMYX_APP_CONFIG"/demyx_browsersync.php && \
+                demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin deactivate demyx_browsersync; \
                     sed -i "s/DEMYX_APP_DEV=on/DEMYX_APP_DEV=off/g" "$DEMYX_APP_PATH"/.env
 
                 if [[ -f "$DEMYX_APP_CONFIG"/.cache ]]; then
