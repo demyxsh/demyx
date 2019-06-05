@@ -5,7 +5,7 @@
 while :; do
     case "$1" in
         --dev)
-            DEMYX_DEVELOPMENT_MODE=true
+            DEMYX_DEVELOPMENT_MODE=1
             ;;
         -e)
             DEMYX_EXEC=1
@@ -20,6 +20,9 @@ while :; do
             ;;
         --nc)
             DEMYX_NO_CHROOT=1
+            ;;
+        --prod)
+            DEMYX_PRODUCTION_MODE=1
             ;;
         --rs)
             DEMYX_RESTART=1
@@ -51,6 +54,30 @@ done
 
 DEMYX_CONTAINER_CHECK=$(docker ps -a | awk '{print $NF}' | grep -w demyx)
 
+demyx_permission() {
+    docker exec -t demyx bash -c "chown -R demyx:demyx /home/demyx; \
+        chown -R demyx:demyx /demyx; \
+        chmod +x /demyx/etc/demyx.sh; \
+        chmod +x /demyx/etc/cron/every-minute.sh; \
+        chmod +x /demyx/etc/cron/every-6-hour.sh; \
+        chmod +x /demyx/etc/cron/every-day.sh"
+}
+demyx_dev() {
+    if [[ -z "$DEMYX_CONTAINER_CHECK" ]]; then
+        demyx_run
+    fi
+    docker exec -t demyx bash -c "find /demyx -type d -print0 | xargs -0 chmod 0755; \
+        find /demyx -type f -print0 | xargs -0 chmod 0644; \
+        sed -i 's/PRODUCTION/DEVELOPMENT/g' /demyx/.motd"
+    demyx_permission
+}
+demyx_prod() {
+    if [[ -z "$DEMYX_CONTAINER_CHECK" ]]; then
+        demyx_run
+    fi
+    docker exec -t demyx bash -c "chmod -R a=X /demyx; sed -i 's/DEVELOPMENT/PRODUCTION/g' /demyx/.motd"
+    demyx_permission
+}
 demyx_run() {
     DEMYX_SSH=2222
     DEMYX_ET=2022
@@ -77,7 +104,6 @@ demyx_run() {
     --name demyx \
     --restart unless-stopped \
     --network demyx \
-    -e DEMYX_DEVELOPMENT_MODE="$DEMYX_DEVELOPMENT_MODE" \
     -e DEMYX_SSH="$DEMYX_SSH" \
     -v /var/run/docker.sock:/var/run/docker.sock:ro \
     -v demyx:/demyx \
@@ -87,18 +113,12 @@ demyx_run() {
     -p "$DEMYX_SSH":22 \
     -p "$DEMYX_ET":2022 \
     demyx/demyx
+
+    [[ -n "$DEMYX_DEVELOPMENT_MODE" ]] && demyx_dev
+    [[ -n "$DEMYX_PRODUCTION_MODE" ]] && demyx_prod
 }
 
-if [[ -n "$DEMYX_DEVELOPMENT_MODE" ]]; then
-    if [[ -n "$DEMYX_CONTAINER_CHECK" ]]; then
-        docker stop demyx
-        docker rm -f demyx
-    fi
-    demyx_run
-    if [[ -z "$DEMYX_NO_CHROOT" ]]; then
-        docker exec -it demyx zsh
-    fi
-elif [[ "$DEMYX_EXEC" ]]; then
+if [[ "$DEMYX_EXEC" ]]; then
     docker exec -t demyx demyx "$@"
 elif [[ -n "$DEMYX_HELP" ]]; then
     echo
@@ -108,21 +128,19 @@ elif [[ -n "$DEMYX_HELP" ]]; then
     echo "      --et            Override et port"    
     echo "      --help          Demyx help"
     echo "      --nc            Prevent chrooting into container"
+    echo "      --prod          Puts demyx container into production mode"
     echo "      --rs            Stops, removes, and starts demyx container"
     echo "      --ssh           Override ssh port"
     echo "      -t              Execute root commands to demyx container from host"
     echo "      --update        Update the demyx chroot"
-    echo
+    echo    
 elif [[ -n "$DEMYX_RESTART" ]]; then
-    if [[ -n "$DEMYX_CONTAINER_CHECK" ]]; then
-        docker stop demyx
-        docker rm -f demyx
-    fi
-    if [[ -z "$DEMYX_NO_CHROOT" ]]; then
-        demyx --nc
-    else
-        demyx
-    fi
+    docker stop demyx
+    docker rm -f demyx
+    demyx --nc
+    [[ -n "$DEMYX_DEVELOPMENT_MODE" ]] && demyx_dev
+    [[ -n "$DEMYX_PRODUCTION_MODE" ]] && demyx_prod
+    demyx
 elif [[ "$DEMYX_TTY" ]]; then
     docker exec -t demyx "$@"
 elif [[ -n "$DEMYX_UPDATE" ]]; then
@@ -147,11 +165,15 @@ else
         if [[ -n "$DEMYX_NO_CHROOT" ]]; then
             demyx_run
         else
+            [[ -n "$DEMYX_DEVELOPMENT_MODE" ]] && demyx_dev
+            [[ -n "$DEMYX_PRODUCTION_MODE" ]] && demyx_prod
             docker exec -it demyx zsh
         fi
     else
         demyx_run
         if [[ -z "$DEMYX_NO_CHROOT" ]]; then
+            [[ -n "$DEMYX_DEVELOPMENT_MODE" ]] && demyx_dev
+            [[ -n "$DEMYX_PRODUCTION_MODE" ]] && demyx_prod
             demyx "$@"
         fi
     fi

@@ -14,16 +14,10 @@ if [[ ! -d /demyx/etc ]]; then
     cp /demyx/etc/example/example-callback.sh /demyx/custom
 fi
 
-if [[ "$DEMYX_DEVELOPMENT_MODE" = true ]]; then
-    DEMYX_MODE="DEVELOPMENT MODE"
-else
-    DEMYX_MODE="PRODUCTION MODE"
-fi
-
 cat > /demyx/.motd <<-EOF
 #!/bin/bash
 
-PRINT_TABLE="DEMYX, $DEMYX_MODE\n"
+PRINT_TABLE="DEMYX, PRODUCTION\n"
 PRINT_TABLE+="USER, DEMYX\n"
 PRINT_TABLE+="SSH/SFTP, 2222"
 
@@ -56,20 +50,13 @@ chmod 700 /home/demyx/.ssh
 chmod 644 /home/demyx/.ssh/authorized_keys
 chown -R demyx:demyx /home/demyx
 chown -R demyx:demyx /demyx
-
-if [[ "$DEMYX_DEVELOPMENT_MODE" = true ]]; then
-    find /demyx -type d -print0 | xargs -0 chmod 0755
-    find /demyx -type f -print0 | xargs -0 chmod 0644
-else
-    chmod -R a=X /demyx
-fi
-
-ln -s /demyx/etc/demyx.sh /usr/local/bin/demyx
+chmod -R a=X /demyx
 chmod +x /usr/local/bin/demyx
 chmod +x /demyx/etc/demyx.sh
 chmod +x /demyx/etc/cron/every-minute.sh
 chmod +x /demyx/etc/cron/every-6-hour.sh
 chmod +x /demyx/etc/cron/every-day.sh
+ln -s /demyx/etc/demyx.sh /usr/local/bin/demyx
 
 crond
 /usr/sbin/sshd
