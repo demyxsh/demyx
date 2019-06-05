@@ -68,7 +68,7 @@ docker network create demyx
 echo -e "\e[34m[INFO\e[39m] Copying authorized_keys to installer container. If you can't SSH or if this fails, then please run on the host OS: 
 
 docker cp \"\$HOME\"/.ssh/authorized_keys demyx:/home/demyx/.ssh
-demyx --rs
+demyx rs
 "
 docker run -dt --rm \
 --name demyx_install_container \
@@ -102,4 +102,4 @@ fi
 demyx --nc
 echo -e "\e[34m[INFO\e[39m] Waiting for demyx container to fully initialize"
 sleep 10
-demyx -e install --domain="$DEMYX_INSTALL_DOMAIN" --email="$DEMYX_INSTALL_EMAIL" --user="$DEMYX_INSTALL_USER" --pass="$DEMYX_INSTALL_PASS"
+demyx exec install --domain="$DEMYX_INSTALL_DOMAIN" --email="$DEMYX_INSTALL_EMAIL" --user="$DEMYX_INSTALL_USER" --pass="$DEMYX_INSTALL_PASS"

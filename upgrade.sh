@@ -88,7 +88,7 @@ EOF
     docker cp /srv/demyx/etc/.new-env demyx:/demyx/app/stack/.env
     docker exec -t demyx_traefik chmod 600 /demyx/acme.json
     docker stop demyx_traefik
-    demyx -e update
+    demyx exec update
 
     cd /srv/demyx/apps || exit
 
@@ -104,7 +104,7 @@ EOF
     done
 
     docker cp /srv/demyx/custom/. demyx:/demyx/custom
-    demyx --rs --nc
+    demyx rs --nc
 
     docker network rm traefik
     
@@ -220,10 +220,10 @@ EOF
         docker cp "$DB":/var/lib/mysql /srv/demyx/apps/"$i"
         docker cp /srv/demyx/apps/"$i"/mysql/. "$WP_ID":/var/lib/mysql
         docker stop "$WP_ID"
-        demyx -e compose "$i" up -d --remove-orphans
-        demyx -e config "$i" --ssl
-        demyx -e config "$i" --refresh
-        demyx -e compose "$i" du
+        demyx exec compose "$i" up -d --remove-orphans
+        demyx exec config "$i" --ssl
+        demyx exec config "$i" --refresh
+        demyx exec compose "$i" du
     done
 fi
 
@@ -329,9 +329,9 @@ EOF
         docker cp "$DB":/var/lib/mysql /srv/demyx/apps/"$2"
         docker cp /srv/demyx/apps/"$2"/mysql/. "$WP_ID":/var/lib/mysql
         docker stop "$WP_ID"
-        demyx -e compose "$2" up -d --remove-orphans
-        demyx -e config "$2" --ssl
-        demyx -e config "$2" --refresh
-        demyx -e compose "$2" du
-        [[ "$FASTCGI_CACHE" = on ]] && demyx -e config "$2" --cache -f
+        demyx exec compose "$2" up -d --remove-orphans
+        demyx exec config "$2" --ssl
+        demyx exec config "$2" --refresh
+        demyx exec compose "$2" du
+        [[ "$FASTCGI_CACHE" = on ]] && demyx exec config "$2" --cache -f
 fi

@@ -124,7 +124,7 @@ demyx_run() {
 
     demyx_mode
 }
-if [[ "$DEMYX_CHROOT" = exec ]]; then
+if [[ "$DEMYX_CHROOT" = execute ]]; then
     docker exec -t demyx demyx "$@"
 elif [[ "$DEMYX_CHROOT" = help ]]; then
     echo
@@ -146,7 +146,10 @@ elif [[ "$DEMYX_CHROOT" = remove ]]; then
 elif [[ "$DEMYX_CHROOT" = restart ]]; then
     demyx_rm
     demyx_run
-    docker exec -it demyx zsh
+    demyx_mode
+    if [[ -z "$DEMYX_CHROOT_NC" ]]; then
+        docker exec -it demyx zsh
+    fi
 elif [[ "$DEMYX_CHROOT" = tty ]]; then
     docker exec -t demyx "$@"
 elif [[ "$DEMYX_CHROOT" = update ]]; then
@@ -170,15 +173,20 @@ else
     if [[ -n "$DEMYX_CHROOT_CONTAINER_CHECK" ]]; then
         if [[ -n "$DEMYX_CHROOT_NC" ]]; then
             demyx_run
+            demyx_mode
         else
+            demyx_run
             demyx_mode
             docker exec -it demyx zsh
         fi
     else
-        demyx_run
-        if [[ -z "$DEMYX_CHROOT_NC" ]]; then
+        if [[ -n "$DEMYX_CHROOT_NC" ]]; then
+            demyx_run
             demyx_mode
-            demyx
+        else
+            demyx_run
+            demyx_mode
+            docker exec -it demyx zsh
         fi
     fi
 fi
