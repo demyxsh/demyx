@@ -153,7 +153,7 @@ function demyx_run() {
             demyx_execute docker cp "$DEMYX_RUN_CLONE_APP":/var/www/html "$DEMYX_APP_PATH"
 
             demyx_echo 'Removing exported clone database'
-            demyx_execute demyx exec "$DEMYX_APP_DOMAIN" rm clone.sql
+            demyx_execute demyx exec "$DEMYX_RUN_CLONE_APP" rm clone.sql
         fi
 
         demyx_echo 'Creating WordPress volume'
@@ -169,6 +169,9 @@ function demyx_run() {
         demyx_execute docker volume create wp_"$DEMYX_APP_ID"_log
         
         demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" up -d db_"$DEMYX_APP_ID"
+
+        demyx_echo 'Initilizing MariaDB'
+        demyx_execute sleep 10
 
         if [[ -z "$DEMYX_RUN_CLONE" ]]; then
             demyx_echo 'Creating temporary container'
@@ -194,9 +197,7 @@ function demyx_run() {
         else
             demyx_echo 'Copying files' 
             demyx_execute docker cp "$DEMYX_APP_PATH"/html "$DEMYX_APP_ID":/var/www; \
-                docker cp "$DEMYX_APP_CONFIG"/. "$DEMYX_APP_ID":/demyx; \
-                docker cp "$DEMYX_APP_PATH"/"$DEMYX_APP_DOMAIN".access.log "$DEMYX_APP_ID":/var/log/demyx; \
-                docker cp "$DEMYX_APP_PATH"/"$DEMYX_APP_DOMAIN".error.log "$DEMYX_APP_ID":/var/log/demyx
+                docker cp "$DEMYX_APP_CONFIG"/. "$DEMYX_APP_ID":/demyx
 
             demyx_echo 'Removing old wp-config.php'
             demyx_execute docker exec -t "$DEMYX_APP_ID" rm /var/www/html/wp-config.php
@@ -230,7 +231,7 @@ function demyx_run() {
             demyx_echo 'Configuring wp-config.php for reverse proxy'
             demyx_execute docker run -t \
                 --volumes-from "$DEMYX_APP_WP_CONTAINER" \
-                demyx/utilities demyx wp-proxy
+                demyx/utilities "chmod +x /proxy.sh && /proxy.sh"
         
             demyx_echo 'Installing WordPress' 
             demyx_execute demyx wp "$DEMYX_APP_DOMAIN" core install \
@@ -247,13 +248,11 @@ function demyx_run() {
             demyx_echo 'Replacing old URLs' 
             demyx_execute demyx wp "$DEMYX_APP_DOMAIN" search-replace "$DEMYX_RUN_CLONE" "$DEMYX_APP_DOMAIN"
 
-            demyx_echo 'Removing clone database' 
+            demyx_echo 'Removing clone database'
             demyx_execute demyx exec "$DEMYX_APP_DOMAIN" rm clone.sql
 
             demyx_echo 'Cleaning up'
-            demyx_execute rm "$DEMYX_APP_PATH"/"$DEMYX_APP_DOMAIN".access.log; \
-                rm "$DEMYX_APP_PATH"/"$DEMYX_APP_DOMAIN".error.log; \
-                rm -rf "$DEMYX_APP_PATH"/html
+            demyx_execute rm -rf "$DEMYX_APP_PATH"/html
         fi
 
         if [[ -z "$DEMYX_RUN_CLONE" ]]; then
