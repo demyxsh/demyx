@@ -3,6 +3,7 @@
 # https://demyx.sh
 
 DEMYX_CHROOT_CONTAINER_CHECK=$(docker ps -a | awk '{print $NF}' | grep -w demyx)
+DEMYX_CHROOT_HOST=$(hostname)
 DEMYX_CHROOT_SSH=2222
 DEMYX_CHROOT_ET=2022
 
@@ -109,6 +110,7 @@ demyx_run() {
     --name demyx \
     --restart unless-stopped \
     --network demyx \
+    -e DEMYX_HOST="$DEMYX_CHROOT_HOST" \
     -e DEMYX_SSH="$DEMYX_CHROOT_SSH" \
     -e DEMYX_ET="$DEMYX_CHROOT_ET" \
     -e DEMYX_MODE="$DEMYX_CHROOT_MODE" \
