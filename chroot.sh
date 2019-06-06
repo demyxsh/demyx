@@ -109,6 +109,7 @@ demyx_run() {
     docker run -dit \
     --name demyx \
     --restart unless-stopped \
+    --hostname "$DEMYX_CHROOT_HOST" \
     --network demyx \
     -e DEMYX_HOST="$DEMYX_CHROOT_HOST" \
     -e DEMYX_SSH="$DEMYX_CHROOT_SSH" \

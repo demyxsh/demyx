@@ -20,7 +20,7 @@ else
     DEMYX_MODE=PRODUCTION
 fi
 
-DEMYX_HOST_UPPERCASE=$(echo "$DEMYX_HOST" | tr [a-z] [A-Z])
+DEMYX_HOST_UPPERCASE=$(hostname | tr [a-z] [A-Z])
 [[ -z "$DEMYX_SSH" ]] && DEMYX_SSH=2222
 [[ -z "$DEMYX_ET" ]] && DEMYX_ET=2022
 
