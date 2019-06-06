@@ -51,6 +51,7 @@ Host example
 LOCAL MACHINE: Run et command using alias (assuming et is installed on local machine)
 ```
 et example
+
 # If you override the et port to something else than 2022, for example 3000
 et example:3000
 ```
@@ -89,10 +90,10 @@ What's changed from "Version 1?"
 
 ### Getting Started
 ```
-# You can create a WordPress site on the host OS using demyx's chroot
-demyx -e run domain.tld --auth --cdn --cache
+# Create a WordPress site on the host OS
+demyx exec run domain.tld --auth --cdn --cache
 
-# Chroot by typing demyx on the host
+# Create a WordPress site in the demyx container
 demyx run domain.tld --auth --cdn --cache
 ```
 
@@ -115,7 +116,7 @@ docker run -dit \
     -p "$DEMYX_CHROOT_ET":2022 \
     demyx/demyx
 ```
-demyx (host) --help
+(host) demyx help
 ```
 demyx <args>          Chroot into the demyx container
       exec            Send demyx commands from host
