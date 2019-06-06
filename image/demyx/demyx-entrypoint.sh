@@ -58,6 +58,9 @@ else
 	cp /etc/ssh/ssh_host_rsa_key.pub /home/demyx/.ssh
 fi
 
+# Update demyx user motd in .zshrc
+sed -i "s|bash /demyx/.motd|sudo demyx motd|g" /home/demyx/.zshrc
+
 chmod 700 /home/demyx/.ssh
 chmod 644 /home/demyx/.ssh/authorized_keys
 chown -R demyx:demyx /home/demyx

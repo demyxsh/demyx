@@ -60,8 +60,8 @@ RUN set -ex; \
     \
     ln -s /home/demyx/.zsh_history /root; \
     echo "" > /etc/motd; \
-    echo 'cd /demyx && bash /demyx/.motd' >> /root/.zshrc; \
-    echo 'cd /demyx && bash /demyx/.motd' >> /home/demyx/.zshrc
+    echo 'cd /demyx && demyx motd' >> /root/.zshrc; \
+    echo 'cd /demyx && sudo demyx motd' >> /home/demyx/.zshrc
 
 # Git user for my use
 RUN set -ex; \

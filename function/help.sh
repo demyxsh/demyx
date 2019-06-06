@@ -125,6 +125,7 @@ function demyx_help() {
         echo "      info        Shows an app's .env and filter output"
         echo "      log         Show or follow demyx.log"
         echo "      monitor     For auto scaling purposes"
+        echo "      motd        Message of the day"
         echo "      restore     Restore an app"
         echo "      rm          Removes an app and its volumes"
         echo "      run         Creates a new app"

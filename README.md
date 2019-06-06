@@ -142,6 +142,7 @@ demyx <arg>       Main demyx command
       info        Shows an app's .env and filter output
       log         Show or follow demyx.log
       monitor     For auto scaling purposes
+      motd        Message of the day
       restore     Restore an app
       rm          Removes an app and its volumes
       run         Creates a new app
