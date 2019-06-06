@@ -5,7 +5,6 @@
 DEMYX_CHROOT_CONTAINER_CHECK=$(docker ps -a | awk '{print $NF}' | grep -w demyx)
 DEMYX_CHROOT_SSH=2222
 DEMYX_CHROOT_ET=2022
-DEMYX_CHROOT_MODE=production
 
 while :; do
     case "$1" in
@@ -171,11 +170,21 @@ elif [[ "$DEMYX_CHROOT" = update ]]; then
     chmod +x /usr/local/bin/demyx
 else
     if [[ -n "$DEMYX_CHROOT_CONTAINER_CHECK" ]]; then
+        DEMYX_MODE_CHECK=$(docker exec -t demyx bash -c "cat .motd | grep 'DEMYX, '")
+        if [[ -z "$DEMYX_CHROOT_MODE" ]] ; then
+            if [[ "$DEMYX_MODE_CHECK" == *"DEVELOPMENT"* ]] ; then
+                DEMYX_CHROOT_MODE=development
+            else
+                DEMYX_CHROOT_MODE=production
+            fi
+        fi
         if [[ -z "$DEMYX_CHROOT_NC" ]]; then
+            demyx_mode
             docker exec -it demyx zsh
         fi
     else
         demyx_run
+        demyx_mode
         if [[ -z "$DEMYX_CHROOT_NC" ]]; then
             docker exec -it demyx zsh
         fi

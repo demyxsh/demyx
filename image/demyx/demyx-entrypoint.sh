@@ -15,10 +15,13 @@ if [[ ! -d /demyx/etc ]]; then
 fi
 
 if [[ "$DEMYX_MODE" = development ]]; then
-    DEMYX_MODE=DEVELOMENT
+    DEMYX_MODE=DEVELOPMENT
 else
     DEMYX_MODE=PRODUCTION
 fi
+
+[[ -z "$DEMYX_SSH" ]] && DEMYX_SSH=2222
+[[ -z "$DEMYX_ET" ]] && DEMYX_ET=2022
 
 cat > /demyx/.motd <<-EOF
 #!/bin/bash
