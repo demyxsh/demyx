@@ -122,3 +122,18 @@ demyx_app_config() {
     DEMYX_GET_APP=$(find "$DEMYX_APP" -name "$DEMYX_TARGET")
     [[ -f "$DEMYX_GET_APP"/.env ]] && source "$DEMYX_GET_APP"/.env
 }
+demyx_open_port() {
+    DEMYX_SFTP_PORT="$DEMYX_SFTP_PORT_DEFAULT"
+    while true
+        DEMYX_SFTP_PORT_CHECK=$(nc -z "$DEMYX_APP_DOMAIN" "$DEMYX_SFTP_PORT" && echo $?)
+        if [[ "$DEMYX_SFTP_PORT_CHECK" = 0 ]]; then
+            DEMYX_SFTP_PORT=$((DEMYX_SFTP_PORT+1))
+            continue
+        else
+            break
+        fi
+    do
+        continue
+    done
+    echo "$DEMYX_SFTP_PORT"
+}

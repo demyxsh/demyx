@@ -3,9 +3,10 @@
 # 
 # demyx config <app> <args>
 #
-function demyx_config() {
-    DEMYX_SFTP_PORT=2223
 
+DEMYX_SFTP_PORT_DEFAULT=2223
+
+function demyx_config() {
     while :; do
         case "$3" in
             --auth|--auth=on)
@@ -84,7 +85,7 @@ function demyx_config() {
         esac
         shift
     done
-    
+
     if [[ "$DEMYX_TARGET" = all ]]; then
         cd "$DEMYX_WP" || exit
         for i in *
@@ -188,6 +189,7 @@ function demyx_config() {
 
                 source "$DEMYX_STACK"/.env
 
+                DEMYX_SFTP_PORT=$(demyx_open_port)
                 DEMYX_SFTP_VOLUME_CHECK=$(docker volume ls | grep demyx_sftp || true)
                 DEMYX_SFTP_CONTAINER_CHECK=$(docker ps | grep "$DEMYX_APP_ID"_sftp || true)
                 DEMYX_PARSE_BASIC_AUTH=$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}' || true)
@@ -216,15 +218,6 @@ function demyx_config() {
                     demyx_echo 'Stopping temporary SSH container'
                     demyx_execute docker stop demyx_sftp
                 fi
-
-                while true; do
-                    DEMYX_SFTP_OPEN_PORT=$(netstat -tuplen 2>/dev/null | grep :"$DEMYX_SFTP_PORT" || true)
-                    if [ -z "$DEMYX_SFTP_OPEN_PORT" ]; then
-                        break
-                    else
-                        DEMYX_SFTP_PORT=$((DEMYX_SFTP_PORT+1))
-                    fi
-                done
 
                 demyx_echo 'Creating SFTP container' 
                 demyx_execute docker run -d --rm \
@@ -414,6 +407,8 @@ function demyx_config() {
                 demyx_execute demyx exec "$DEMYX_APP_DOMAIN" bash -c "pkill php-fpm; php-fpm -D"
             fi
             if [[ "$DEMYX_CONFIG_SFTP" = on ]]; then
+
+                DEMYX_SFTP_PORT=$(demyx_open_port)
                 DEMYX_SFTP_VOLUME_CHECK=$(docker volume ls | grep demyx_sftp || true)
                 DEMYX_SFTP_CONTAINER_CHECK=$(docker ps | grep "$DEMYX_APP_ID"_sftp || true)
 
@@ -435,15 +430,6 @@ function demyx_config() {
                     demyx_echo 'Stopping temporary SSH container'
                     demyx_execute docker stop demyx_sftp
                 fi
-
-                while true; do
-                    DEMYX_SFTP_OPEN_PORT=$(netstat -tuplen 2>/dev/null | grep :"$DEMYX_SFTP_PORT" || true)
-                    if [ -z "$DEMYX_SFTP_OPEN_PORT" ]; then
-                        break
-                    else
-                        DEMYX_SFTP_PORT=$((DEMYX_SFTP_PORT+1))
-                    fi
-                done
 
                 demyx_echo 'Creating SFTP container' 
                 demyx_execute docker run -d --rm \
