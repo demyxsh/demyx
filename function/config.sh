@@ -174,6 +174,9 @@ function demyx_config() {
                     DEMYX_APP_DEV_CHECK=$(demyx info "$DEMYX_APP_DOMAIN" --filter=DEMYX_APP_DEV)
                     [[ "$DEMYX_APP_DEV_CHECK" = on ]] && demyx_die 'Dev mode is already turned on'
                 fi
+ 
+                DEMYX_CONFIG_WILDCARD_CHECK=$(docker run -t --rm demyx/utilities "dig +short '*.$DEMYX_APP_DOMAIN'")
+                [[ -z "$DEMYX_CONFIG_WILDCARD_CHECK" ]] && demyx_die "Wildcard CNAME not detected, please add * as a CNAME to your domain's DNS"
 
                 source "$DEMYX_STACK"/.env
 
