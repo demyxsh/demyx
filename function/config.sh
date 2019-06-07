@@ -189,10 +189,16 @@ function demyx_config() {
                 source "$DEMYX_STACK"/.env
 
                 DEMYX_SFTP_VOLUME_CHECK=$(docker volume ls | grep demyx_sftp || true)
+                DEMYX_SFTP_CONTAINER_CHECK=$(docker ps | grep "$DEMYX_APP_ID"_sftp || true)
                 DEMYX_PARSE_BASIC_AUTH=$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}' || true)
                 DEMYX_BROWSERSYNC_SUB="$DEMYX_APP_ID"
                 DEMYX_BROWSERSYNC_SUB_UI="$DEMYX_APP_ID"-ui
                 DEMYX_PHPMYADMIN_SUB="$DEMYX_APP_ID"-pma
+
+                if [[ -n "$DEMYX_SFTP_CONTAINER_CHECK" ]]; then
+                    demyx_echo 'Stopping SFTP container' 
+                    demyx_execute docker stop "$DEMYX_APP_ID"_sftp
+                fi
 
                 if [ -z "$DEMYX_SFTP_VOLUME_CHECK" ]; then
                     demyx_echo 'SFTP volume not found, creating now' 
@@ -447,6 +453,12 @@ function demyx_config() {
                     --workdir /var/www/html \
                     -p "$DEMYX_SFTP_PORT":22 \
                     demyx/ssh
+
+                PRINT_TABLE="DEMYX, SFTP\n"
+                PRINT_TABLE+="SFTP, $DEMYX_APP_DOMAIN\n"
+                PRINT_TABLE+="SFTP USER, www-data\n"
+                PRINT_TABLE+="SFTP PORT, $DEMYX_SFTP_PORT\n"
+                demyx_table "$PRINT_TABLE"
             elif [[ "$DEMYX_CONFIG_SFTP" = off ]]; then
                 demyx_echo 'Stopping SFTP container' 
                 demyx_execute docker stop "$DEMYX_APP_ID"_sftp
