@@ -410,7 +410,6 @@ RUN set -ex; \
 
 RUN set -ex \
     && apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS imagemagick-dev libtool \
-    && export CFLAGS="$PHP_CFLAGS" CPPFLAGS="$PHP_CPPFLAGS" LDFLAGS="$PHP_LDFLAGS" \
     && pecl install imagick \
     && docker-php-ext-enable imagick \
     && docker-php-ext-install exif sockets pdo_mysql \

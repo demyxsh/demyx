@@ -407,7 +407,6 @@ function demyx_config() {
                 demyx_execute demyx exec "$DEMYX_APP_DOMAIN" bash -c "pkill php-fpm; php-fpm -D"
             fi
             if [[ "$DEMYX_CONFIG_SFTP" = on ]]; then
-
                 DEMYX_SFTP_PORT=$(demyx_open_port)
                 DEMYX_SFTP_VOLUME_CHECK=$(docker volume ls | grep demyx_sftp || true)
                 DEMYX_SFTP_CONTAINER_CHECK=$(docker ps | grep "$DEMYX_APP_ID"_sftp || true)

@@ -409,11 +409,10 @@ RUN set -ex; \
 	apk del .build-deps
 
 RUN set -ex \
-    && apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS imagemagick-dev libtool \
-    && export CFLAGS="$PHP_CFLAGS" CPPFLAGS="$PHP_CPPFLAGS" LDFLAGS="$PHP_LDFLAGS" \
+    && apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS imagemagick-dev libtool libxml2-dev \
     && pecl install imagick \
     && docker-php-ext-enable imagick \
-    && docker-php-ext-install exif sockets \
+    && docker-php-ext-install exif sockets soap \
     && apk add --no-cache --virtual .imagick-runtime-deps imagemagick \
     && apk del .phpize-deps
 
