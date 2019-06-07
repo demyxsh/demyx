@@ -273,6 +273,8 @@ function demyx_config() {
                     --name "$DEMYX_APP_ID"_pma \
                     --network demyx \
                     -e PMA_HOST=db_"$DEMYX_APP_ID" \
+                    -e PMA_USER="$WORDPRESS_DB_USER" \
+                    -e PMA_PASSWORD="$WORDPRESS_DB_PASSWORD" \
                     -e MYSQL_ROOT_PASSWORD="${MARIADB_ROOT_PASSWORD}" \
                     -l "traefik.enable=true" \
                     -l "traefik.frontend.rule=Host:${DEMYX_PHPMYADMIN_SUB}.${DEMYX_APP_DOMAIN}" \
@@ -321,8 +323,6 @@ function demyx_config() {
                 PRINT_TABLE+="SFTP USER, www-data\n"
                 PRINT_TABLE+="SFTP PORT, $DEMYX_SFTP_PORT\n"
                 PRINT_TABLE+="PHPMYADMIN, https://${DEMYX_PHPMYADMIN_SUB}.${DEMYX_APP_DOMAIN}\n"
-                PRINT_TABLE+="PHPMYADMIN USERNAME, $WORDPRESS_DB_USER\n"
-                PRINT_TABLE+="PHPMYADMIN PASSWORD, $WORDPRESS_DB_PASSWORD\n"
                 PRINT_TABLE+="BROWSERSYNC, https://${DEMYX_BROWSERSYNC_SUB}.${DEMYX_APP_DOMAIN}\n"
                 PRINT_TABLE+="BROWSERSYNC UI, https://${DEMYX_BROWSERSYNC_SUB_UI}.${DEMYX_APP_DOMAIN}\n"
                 PRINT_TABLE+="BROWSERSYNC FILES, $DEMYX_BS_FILES"
