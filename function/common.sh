@@ -124,16 +124,15 @@ demyx_app_config() {
 }
 demyx_open_port() {
     DEMYX_SFTP_PORT="$DEMYX_SFTP_PORT_DEFAULT"
-    while true
-        DEMYX_SFTP_PORT_CHECK=$(nc -z "$DEMYX_APP_DOMAIN" "$DEMYX_SFTP_PORT" && echo $?)
-        if [[ "$DEMYX_SFTP_PORT_CHECK" = 0 ]]; then
+    while true; do
+        nc -z -w 1 "$DEMYX_APP_DOMAIN" "$DEMYX_SFTP_PORT" 2>/dev/null
+        if [[ "$?" = 0 ]]; then
             DEMYX_SFTP_PORT=$((DEMYX_SFTP_PORT+1))
-            continue
-        else
+            break
+        elif [[ "$?" = 1 ]]; then
+            DEMYX_SFTP_PORT=$((DEMYX_SFTP_PORT+1))
             break
         fi
-    do
-        continue
     done
     echo "$DEMYX_SFTP_PORT"
 }
