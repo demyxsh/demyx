@@ -30,6 +30,7 @@ function demyx_help() {
         echo "                   --rate-limit     Turns on/off NGINX rate limting"
         echo "                   --refresh        Regenerate config files and uploaded to container"
         echo "                   --restart        Restart NGINX/PHP services"
+        echo "                   --sftp           Turns on/off SFTP container"
         echo "                   --ssl            Turns on/off SSL"
         echo "                   --update         Pushes updated config files to container"
         echo
