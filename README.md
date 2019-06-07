@@ -103,7 +103,9 @@ This script helps you change root to the demyx container, it's installed on the 
 docker run -dit \
     --name demyx \
     --restart unless-stopped \
+    --hostname "$DEMYX_CHROOT_HOST" \
     --network demyx \
+    -e DEMYX_HOST="$DEMYX_CHROOT_HOST" \
     -e DEMYX_SSH="$DEMYX_CHROOT_SSH" \
     -e DEMYX_ET="$DEMYX_CHROOT_ET" \
     -e DEMYX_MODE="$DEMYX_CHROOT_MODE" \
