@@ -188,9 +188,7 @@ function demyx_config() {
                 DEMYX_PHPMYADMIN_SUB="$DEMYX_APP_ID"-pma
 
                 if [ -z "$DEMYX_SFTP_VOLUME_CHECK" ]; then
-                    echo -e "\e[34m[INFO]\e[39m SFTP volume not found, creating now..."
-                    
-                    demyx_echo 'Creating SSH volume' 
+                    demyx_echo 'SFTP volume not found, creating now' 
                     demyx_execute docker volume create demyx_sftp
                     
                     demyx_echo 'Creating temporary SSH container'
@@ -327,7 +325,7 @@ function demyx_config() {
                 PRINT_TABLE+="BROWSERSYNC UI, https://${DEMYX_BROWSERSYNC_SUB_UI}.${DEMYX_APP_DOMAIN}\n"
                 PRINT_TABLE+="BROWSERSYNC FILES, $DEMYX_BS_FILES"
                 demyx_execute -v sed -i "s/DEMYX_APP_DEV=off/DEMYX_APP_DEV=on/g" "$DEMYX_APP_PATH"/.env && \
-                    demyx_table "$PRINT_TABLE"
+                demyx_table "$PRINT_TABLE"
             elif [[ "$DEMYX_CONFIG_DEV" = off ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     DEMYX_APP_DEV_CHECK=$(demyx info "$DEMYX_APP_DOMAIN" --filter=DEMYX_APP_DEV)
