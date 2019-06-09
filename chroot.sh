@@ -60,25 +60,6 @@ while :; do
     shift
 done
 
-demyx_mode() {
-    if [[ -z "$DEMYX_CHROOT_CONTAINER_CHECK" ]]; then
-        demyx --nc
-    fi
-    if [[ "$DEMYX_CHROOT_MODE" = development ]]; then
-        docker exec -t demyx bash -c "find /demyx -type d -print0 | xargs -0 chmod 0755; \
-            find /demyx -type f -print0 | xargs -0 chmod 0644; \
-            sed -i 's/PRODUCTION/DEVELOPMENT/g' /demyx/.motd"
-    else
-        docker exec -t demyx bash -c "chmod -R a=X /demyx; sed -i 's/DEVELOPMENT/PRODUCTION/g' /demyx/.motd"
-    fi
-    demyx_permission
-}
-demyx_rm() {
-    if [[ -n "$DEMYX_CHROOT_CONTAINER_CHECK" ]]; then
-        docker stop demyx
-        docker rm -f demyx
-    fi
-}
 demyx_permission() {
     docker exec -t demyx bash -c "chown -R demyx:demyx /home/demyx; \
         chown -R demyx:demyx /demyx; \
@@ -86,6 +67,24 @@ demyx_permission() {
         chmod +x /demyx/etc/cron/every-minute.sh; \
         chmod +x /demyx/etc/cron/every-6-hour.sh; \
         chmod +x /demyx/etc/cron/every-day.sh"
+}
+demyx_mode() {
+    if [[ "$DEMYX_CHROOT_MODE" = development ]]; then
+        DEMYX_CHROOT_MODE=development
+        docker exec -t demyx bash -c "find /demyx -type d -print0 | xargs -0 chmod 0755; \
+            find /demyx -type f -print0 | xargs -0 chmod 0644"
+    else
+        DEMYX_CHROOT_MODE=production
+        docker exec -t demyx bash -c "chmod -R a=X /demyx"
+    fi
+    demyx_permission
+    docker exec -it -e DEMYX_MODE="$DEMYX_CHROOT_MODE" demyx demyx motd init
+}
+demyx_rm() {
+    if [[ -n "$DEMYX_CHROOT_CONTAINER_CHECK" ]]; then
+        docker stop demyx
+        docker rm -f demyx
+    fi
 }
 demyx_run() {
     while true; do
@@ -123,8 +122,6 @@ demyx_run() {
     -p "$DEMYX_CHROOT_SSH":22 \
     -p "$DEMYX_CHROOT_ET":2022 \
     demyx/demyx
-
-    demyx_mode
 }
 if [[ "$DEMYX_CHROOT" = execute ]]; then
     docker exec -t demyx demyx "$@"
@@ -152,6 +149,7 @@ elif [[ "$DEMYX_CHROOT" = restart ]]; then
     if [[ -z "$DEMYX_CHROOT_NC" ]]; then
         docker exec -it demyx zsh
     fi
+    #demyx
 elif [[ "$DEMYX_CHROOT" = tty ]]; then
     docker exec -t demyx "$@"
 elif [[ "$DEMYX_CHROOT" = update ]]; then
@@ -173,13 +171,9 @@ elif [[ "$DEMYX_CHROOT" = update ]]; then
     chmod +x /usr/local/bin/demyx
 else
     if [[ -n "$DEMYX_CHROOT_CONTAINER_CHECK" ]]; then
-        DEMYX_MODE_CHECK=$(docker exec -t demyx bash -c "cat .motd | grep 'DEMYX, '")
+        DEMYX_MODE_CHECK=$(docker exec -t demyx bash -c "grep DEMYX_MOTD_MODE /demyx/.env | awk -F '[=]' '{print $2}'")
         if [[ -z "$DEMYX_CHROOT_MODE" ]] ; then
-            if [[ "$DEMYX_MODE_CHECK" == *"DEVELOPMENT"* ]] ; then
-                DEMYX_CHROOT_MODE=development
-            else
-                DEMYX_CHROOT_MODE=production
-            fi
+            DEMYX_CHROOT_MODE="$DEMYX_MODE_CHECK"
         fi
         if [[ -z "$DEMYX_CHROOT_NC" ]]; then
             demyx_mode
