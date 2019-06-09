@@ -149,7 +149,6 @@ elif [[ "$DEMYX_CHROOT" = restart ]]; then
     if [[ -z "$DEMYX_CHROOT_NC" ]]; then
         docker exec -it demyx zsh
     fi
-    #demyx
 elif [[ "$DEMYX_CHROOT" = tty ]]; then
     docker exec -t demyx "$@"
 elif [[ "$DEMYX_CHROOT" = update ]]; then
