@@ -44,7 +44,8 @@ elif [[ "$DEMYX_COMMAND" = monitor ]]; then
     source "$DEMYX_FUNCTION"/monitor.sh
     demyx_monitor "$@"
 elif [[ "$DEMYX_COMMAND" = motd ]]; then
-    demyx_execute -v bash "$DEMYX"/.motd
+    source "$DEMYX_FUNCTION"/motd.sh
+    demyx_motd "$@"
 elif [[ "$DEMYX_COMMAND" = restore ]]; then
     source "$DEMYX_FUNCTION"/restore.sh
     demyx_restore "$@"
