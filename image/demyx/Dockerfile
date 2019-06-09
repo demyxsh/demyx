@@ -24,7 +24,7 @@ RUN set -ex; \
 
 RUN set -ex; \
     sed -i 's|http://dl-cdn.alpinelinux.org/alpine/edge/testing/||g' /etc/apk/repositories; \
-    apk --no-cache --update add bash tzdata curl zsh openssh sudo gnupg jq; \
+    apk add --no-cache --update bash tzdata curl zsh openssh sudo gnupg jq dumb-init; \
     rm -rf /var/cache/apk/*
 
 ENV DEMYX_DOCKER_BINARY=18.09.6
@@ -62,13 +62,6 @@ RUN set -ex; \
     echo "" > /etc/motd; \
     echo 'cd /demyx && demyx motd' >> /root/.zshrc; \
     echo 'cd /demyx && sudo demyx motd' >> /home/demyx/.zshrc
-
-# Git user for my use
-RUN set -ex; \
-    addgroup -g 1001 -S git; \
-    adduser -u 1001 -D -S -G git git; \
-    echo git:git | chpasswd; \
-    sed -i "s|/home/git:/sbin/nologin|/home/git:/bin/ash|g" /etc/passwd
 
 # Fix the annoying "prompt_git:40: vcs_info: function definition file not found"
 COPY vcs_info /
@@ -116,4 +109,4 @@ RUN chmod +x /usr/local/bin/demyx-entrypoint
 
 WORKDIR /demyx
 
-ENTRYPOINT ["demyx-entrypoint"]
+ENTRYPOINT ["dumb-init", "demyx-entrypoint"]

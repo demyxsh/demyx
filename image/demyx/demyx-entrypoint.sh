@@ -33,4 +33,4 @@ demyx motd init
 
 crond
 /usr/sbin/sshd
-/usr/local/bin/etserver -v 9 -logtostdout true
+etserver -v 9 -logtostdout true

@@ -428,7 +428,7 @@ RUN set -ex; \
 	chown -R www-data:www-data /usr/src/wordpress;
 
 RUN set -ex; \
-	apk add ed
+	apk add ed dumb-init
 
 COPY common /etc/nginx/common
 COPY cache /etc/nginx/cache
