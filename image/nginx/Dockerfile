@@ -7,8 +7,8 @@ LABEL github="https://github.com/demyxco/demyx"
 LABEL registry="https://hub.docker.com/u/demyx"
 
 ENV TZ=America/Los_Angeles
-ENV NGINX_VERSION 1.16.0
-ENV NJS_VERSION 0.3.1
+ENV NGINX_VERSION 1.17.0
+ENV NJS_VERSION   0.3.2
 ENV PKG_RELEASE 1
 ENV NGX_CACHE_PURGE_VERSION 2.3
 ENV NGX_CACHE_PURGE_SHA1 69ed46a23435e8dfd5579422c0c3996cf9a44291
@@ -161,7 +161,12 @@ geoip-dev \
 # END BUILD CUSTOM MODULES
 #
 
+RUN set -ex; \
+    apk add --update --no-cache dumb-init
+
 COPY nginx.conf /etc/nginx/nginx.conf
 EXPOSE 80
-STOPSIGNAL SIGQUIT
+
+ENTRYPOINT ["dumb-init"]
+
 CMD ["nginx", "-g", "daemon off;"]

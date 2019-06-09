@@ -9,6 +9,8 @@ LABEL registry="https://hub.docker.com/u/demyx"
 ENV TZ=America/Los_Angeles
 
 RUN set ex; \
-	apk add --no-cache --update tzdata
+	apk add --no-cache --update tzdata dumb-init
 
-STOPSIGNAL SIGQUIT
+ENTRYPOINT ["dumb-init"]
+
+CMD ["entrypoint", "/bin/s6-svscan", "/etc/s6"]

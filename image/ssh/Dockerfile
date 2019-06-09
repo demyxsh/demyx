@@ -7,7 +7,7 @@ LABEL github="https://github.com/demyxco/demyx"
 LABEL registry="https://hub.docker.com/u/demyx"
 
 RUN set -ex; \
-	apk add --no-cache --update openssh; \
+	apk add --no-cache --update openssh dumb-init; \
 	addgroup -g 82 -S www-data; \
 	adduser -u 82 -D -S -G www-data www-data; \
 	echo www-data:www-data | chpasswd; \
@@ -20,5 +20,9 @@ RUN set -ex; \
 	sed -i "s|#PermitEmptyPasswords no|PermitEmptyPasswords no|g" /etc/ssh/sshd_config; 
 
 COPY demyx-entrypoint.sh /usr/local/bin/demyx-entrypoint
+
 RUN chmod +x /usr/local/bin/demyx-entrypoint
-ENTRYPOINT ["demyx-entrypoint"]
+
+ENTRYPOINT ["dumb-init"]
+
+CMD ["demyx-entrypoint"]

@@ -8,7 +8,7 @@ LABEL registry="https://hub.docker.com/u/demyx"
 
 RUN set -ex; \
     echo 'http://dl-cdn.alpinelinux.org/alpine/edge/testing/' >> /etc/apk/repositories; \
-    apk add --no-cache --update protobuf-dev libsodium-dev gflags-dev g++ gcc libc-dev libutempter-dev libexecinfo-dev ncurses-dev boost-dev; \
+    apk add --no-cache --update dumb-init protobuf-dev libsodium-dev gflags-dev g++ gcc libc-dev libutempter-dev libexecinfo-dev ncurses-dev boost-dev; \
     apk add --no-cache --virtual .build-deps git make cmake m4 perl; \
     apk del .build-deps && rm -rf /var/cache/apk/*
 
@@ -42,4 +42,6 @@ COPY demyx-entrypoint.sh /usr/local/bin/demyx-entrypoint
 
 RUN chmod +x /usr/local/bin/demyx-entrypoint
 
-ENTRYPOINT ["demyx-entrypoint"]
+ENTRYPOINT ["dumb-init"]
+
+CMD ["demyx-entrypoint"]

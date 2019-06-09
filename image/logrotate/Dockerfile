@@ -7,7 +7,7 @@ LABEL github="https://github.com/demyxco/demyx"
 LABEL registry="https://hub.docker.com/u/demyx"
 
 RUN set -ex; \
-	apk add --no-cache --update logrotate tzdata
+	apk add --no-cache --update logrotate tzdata dumb-init
     
 COPY demyx.conf /etc/logrotate.d
 
@@ -17,4 +17,6 @@ RUN chmod +x /usr/local/bin/demyx-entrypoint
 
 WORKDIR /var/log/demyx
 
-ENTRYPOINT ["demyx-entrypoint"]
+ENTRYPOINT ["dumb-init"]
+
+CMD ["demyx-entrypoint"]

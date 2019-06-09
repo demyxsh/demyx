@@ -7,8 +7,8 @@ LABEL github="https://github.com/demyxco/demyx"
 LABEL registry="https://hub.docker.com/u/demyx"
 
 ENV TZ=America/Los_Angeles
-ENV NGINX_VERSION 1.16.0
-ENV NJS_VERSION 0.3.1
+ENV NGINX_VERSION 1.17.0
+ENV NJS_VERSION   0.3.2
 ENV PKG_RELEASE 1
 ENV NGX_CACHE_PURGE_VERSION 2.3
 ENV NGX_CACHE_PURGE_SHA1 69ed46a23435e8dfd5579422c0c3996cf9a44291
@@ -428,7 +428,7 @@ RUN set -ex; \
 	chown -R www-data:www-data /usr/src/wordpress;
 
 RUN set -ex; \
-	apk add ed dumb-init
+	apk add --no-cache ed dumb-init
 
 COPY common /etc/nginx/common
 COPY cache /etc/nginx/cache
@@ -440,6 +440,7 @@ COPY www.conf /usr/local/etc/php-fpm.d
 RUN chmod +x /usr/local/bin/demyx-entrypoint
 
 EXPOSE 80
-VOLUME ["/var/www/html"]
-STOPSIGNAL SIGQUIT
-ENTRYPOINT ["demyx-entrypoint"]
+
+ENTRYPOINT ["dumb-init"]
+
+CMD ["demyx-entrypoint"]

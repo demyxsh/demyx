@@ -7,8 +7,8 @@ LABEL github="https://github.com/demyxco/demyx"
 LABEL registry="https://hub.docker.com/u/demyx"
 
 ENV TZ=America/Los_Angeles
-ENV NGINX_VERSION 1.16.0
-ENV NJS_VERSION 0.3.1
+ENV NGINX_VERSION 1.17.0
+ENV NJS_VERSION   0.3.2
 ENV PKG_RELEASE 1
 ENV NGX_CACHE_PURGE_VERSION 2.3
 ENV NGX_CACHE_PURGE_SHA1 69ed46a23435e8dfd5579422c0c3996cf9a44291
@@ -385,7 +385,8 @@ RUN apk add --no-cache \
 # in theory, docker-entrypoint.sh is POSIX-compliant, but priority is a working, consistent image
 		bash \
 # BusyBox sed is not sufficient for some of our sed expressions
-		sed
+		sed \
+		dumb-init
 
 # install the PHP extensions we need
 RUN set -ex; \
@@ -436,6 +437,7 @@ RUN mkdir -p /var/log/demyx; \
 	chmod +x /usr/local/bin/demyx-entrypoint;
 
 EXPOSE 80
-VOLUME ["/var/www/html"]
-STOPSIGNAL SIGQUIT
-ENTRYPOINT ["demyx-entrypoint"]
+
+ENTRYPOINT ["dumb-init"]
+
+CMD ["demyx-entrypoint"]

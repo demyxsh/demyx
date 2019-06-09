@@ -21,6 +21,7 @@ RUN set -ex; \
     bsdmainutils \
     less \
 	apache2-utils \
+	dumb-init \
     nano
 
 RUN apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
@@ -31,4 +32,6 @@ RUN mkdir /demyx
 COPY table.sh /
 COPY proxy.sh /
 
-ENTRYPOINT ["bash", "-c"]
+ENTRYPOINT ["dumb-init"]
+
+CMD ["bash", "-c"]
