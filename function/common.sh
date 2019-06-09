@@ -112,7 +112,6 @@ demyx_execute() {
 }
 demyx_table() {
     docker run -t --rm \
-    --name demyx_utilities \
     demyx/utilities "source /table.sh && printTable ',' '$@'"
 }
 demyx_permission() {
