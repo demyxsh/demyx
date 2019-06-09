@@ -73,7 +73,8 @@ RUN set -ex; \
 # Fix the annoying "prompt_git:40: vcs_info: function definition file not found"
 COPY vcs_info /
 
-RUN echo "demyx ALL=(ALL) NOPASSWD:/usr/local/bin/demyx" >> /etc/sudoers; \
+RUN set -ex; \
+    echo "demyx ALL=(ALL) NOPASSWD:/usr/local/bin/demyx" >> /etc/sudoers; \
     mkdir -p /demyx; \
     ln -s /demyx /home/demyx; \
     \
@@ -86,11 +87,28 @@ RUN echo "demyx ALL=(ALL) NOPASSWD:/usr/local/bin/demyx" >> /etc/sudoers; \
     \
     chown -R demyx:demyx /demyx
 
-RUN (echo "* * * * * /demyx/etc/cron/every-minute.sh") | crontab - ; \
+RUN set -ex; \
+    (echo "* * * * * /demyx/etc/cron/every-minute.sh") | crontab - ; \
     (crontab -l 2>/dev/null; echo "0 */6 * * * /demyx/etc/cron/every-6-hour.sh") | crontab - ; \
     (crontab -l 2>/dev/null; echo "0 0 * * * /demyx/etc/cron/every-day.sh") | crontab - ; \
     mkdir -p /var/log/demyx; \
     touch /var/log/demyx/demyx.log
+
+RUN set -ex; \
+    git clone https://github.com/demyxco/demyx.git /demyx/etc; \
+    mkdir -p /demyx/app/html; \
+    mkdir -p /demyx/app/php; \
+    mkdir -p /demyx/app/wp; \
+    mkdir -p /demyx/app/stack; \
+    mkdir -p /demyx/backup; \
+    mkdir -p /demyx/custom; \
+    cp /demyx/etc/example/example-callback.sh /demyx/custom; \
+    chown -R demyx:demyx /demyx; \
+    chmod +x /demyx/etc/demyx.sh; \
+    chmod +x /demyx/etc/cron/every-minute.sh; \
+    chmod +x /demyx/etc/cron/every-6-hour.sh; \
+    chmod +x /demyx/etc/cron/every-day.sh; \
+    ln -s /demyx/etc/demyx.sh /usr/local/bin/demyx
 
 COPY demyx-entrypoint.sh /usr/local/bin/demyx-entrypoint
 
