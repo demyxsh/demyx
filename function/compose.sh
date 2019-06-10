@@ -12,7 +12,7 @@ function demyx_compose() {
         cd "$DEMYX_WP" || exit
         for i in *
         do 
-            demyx compose "$i" "$DEMYX_COMPOSE"
+            demyx compose "$i" "$@"
         done
     elif [[ "$DEMYX_APP_TYPE" = wp ]]; then
         if [[ "$DEMYX_COMPOSE" = db ]]; then
