@@ -13,6 +13,4 @@ RUN apk --no-cache add --virtual .build-deps python-dev libffi-dev openssl-dev g
 	pip install docker-compose; \
 	apk del .build-deps
 
-ENTRYPOINT ["dumb-init"]
-
-CMD ["docker-compose"]
+ENTRYPOINT ["dumb-init", "docker-compose"]

@@ -17,6 +17,5 @@ RUN chmod +x /usr/local/bin/demyx-entrypoint
 
 WORKDIR /var/log/demyx
 
-ENTRYPOINT ["dumb-init"]
+ENTRYPOINT ["dumb-init", "demyx-entrypoint"]
 
-CMD ["demyx-entrypoint"]

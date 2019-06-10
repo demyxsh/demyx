@@ -32,6 +32,4 @@ RUN mkdir /demyx
 COPY table.sh /
 COPY proxy.sh /
 
-ENTRYPOINT ["dumb-init"]
-
-CMD ["bash", "-c"]
+ENTRYPOINT ["dumb-init", "bash", "-c"]

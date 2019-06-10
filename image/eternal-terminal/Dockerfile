@@ -6,24 +6,21 @@ LABEL url="https://demyx.sh"
 LABEL github="https://github.com/demyxco/demyx"
 LABEL registry="https://hub.docker.com/u/demyx"
 
+COPY CMakeLists.txt /
+
 RUN set -ex; \
     echo 'http://dl-cdn.alpinelinux.org/alpine/edge/testing/' >> /etc/apk/repositories; \
     apk add --no-cache --update dumb-init protobuf-dev libsodium-dev gflags-dev g++ gcc libc-dev libutempter-dev libexecinfo-dev ncurses-dev boost-dev; \
-    apk add --no-cache --virtual .build-deps git make cmake m4 perl; \
-    apk del .build-deps && rm -rf /var/cache/apk/*
-
-RUN set -ex; \
+    apk add --no-cache --virtual .build-deps git make cmake m4 perl git; \
     mkdir -p /usr/src; \
-    git clone https://github.com/MisterTea/EternalTerminal.git /usr/src/EternalTerminal
-
-COPY CMakeLists.txt /usr/src/EternalTerminal/CMakeLists.txt
-
-RUN set -ex; \
+    git clone https://github.com/MisterTea/EternalTerminal.git /usr/src/EternalTerminal; \
+    mv /CMakeLists.txt /usr/src/EternalTerminal; \
     cd /usr/src/EternalTerminal; \
     mkdir build; \
     cd build; \
     cmake ../; \
-    make && make install;
+    make && make install; \
+    apk del .build-deps && rm -rf /var/cache/apk/*
 
 RUN set -ex; \
     apk add --no-cache tzdata openssh; \
@@ -42,6 +39,4 @@ COPY demyx-entrypoint.sh /usr/local/bin/demyx-entrypoint
 
 RUN chmod +x /usr/local/bin/demyx-entrypoint
 
-ENTRYPOINT ["dumb-init"]
-
-CMD ["demyx-entrypoint"]
+ENTRYPOINT ["dumb-init", "demyx-entrypoint"]

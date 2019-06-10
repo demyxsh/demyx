@@ -8,13 +8,16 @@ LABEL registry="https://hub.docker.com/u/demyx"
 
 ENV TZ=America/Los_Angeles
 ENV NGINX_VERSION 1.17.0
-ENV NJS_VERSION   0.3.2
+ENV NJS_VERSION 0.3.2
 ENV PKG_RELEASE 1
 ENV NGX_CACHE_PURGE_VERSION 2.3
 ENV NGX_CACHE_PURGE_SHA1 69ed46a23435e8dfd5579422c0c3996cf9a44291
 ENV HEADERS_MORE_NGINX_MODULE_VERSION 0.33
 
 RUN set -x \
+# create nginx user/group first, to be consistent throughout docker variants
+    && addgroup -g 101 -S nginx \
+    && adduser -S -D -H -u 101 -h /var/cache/nginx -s /sbin/nologin -G nginx -g nginx nginx \
     && apkArch="$(cat /etc/apk/arch)" \
     && nginxPackages=" \
         nginx=${NGINX_VERSION}-r${PKG_RELEASE} \
@@ -39,7 +42,7 @@ RUN set -x \
                  exit 1; \
                fi \
             && printf "%s%s%s\n" \
-                "http://nginx.org/packages/alpine/v" \
+                "http://nginx.org/packages/mainline/alpine/v" \
                 `egrep -o '^[0-9]+\.[0-9]+' /etc/alpine-release` \
                 "/main" \
             | tee -a /etc/apk/repositories \
@@ -118,7 +121,7 @@ RUN set -x \
 #    
 # BUILD CUSTOM MODULES
 #
-RUN apk add --no-cache --update --virtual .build-deps \
+RUN apk add --no-cache --virtual .build-deps \
 	gcc \
 	libc-dev \
 	make \
@@ -184,7 +187,7 @@ RUN apk add --no-cache \
 		openssl
 
 # ensure www-data user exists
-RUN set -x \
+RUN set -ex \
 	&& adduser -u 82 -D -S -G www-data www-data
 # 82 is the standard uid/gid for "www-data" in Alpine
 # https://git.alpinelinux.org/aports/tree/main/apache2/apache2.pre-install?h=3.9-stable
@@ -220,7 +223,7 @@ ENV PHP_VERSION 7.3.6
 ENV PHP_URL="https://www.php.net/get/php-7.3.6.tar.xz/from/this/mirror" PHP_ASC_URL="https://www.php.net/get/php-7.3.6.tar.xz.asc/from/this/mirror"
 ENV PHP_SHA256="fefc8967daa30ebc375b2ab2857f97da94ca81921b722ddac86b29e15c54a164" PHP_MD5=""
 
-RUN set -xe; \
+RUN set -ex; \
 	\
 	apk add --no-cache --virtual .fetch-deps \
 		gnupg \
@@ -255,7 +258,7 @@ RUN set -xe; \
 COPY docker-php-source /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-php-source
 
-RUN set -xe \
+RUN set -ex \
 	&& apk add --no-cache --virtual .build-deps \
 		$PHPIZE_DEPS \
 		argon2-dev \
@@ -441,6 +444,4 @@ RUN chmod +x /usr/local/bin/demyx-entrypoint
 
 EXPOSE 80
 
-ENTRYPOINT ["dumb-init"]
-
-CMD ["demyx-entrypoint"]
+ENTRYPOINT ["dumb-init", "demyx-entrypoint"]

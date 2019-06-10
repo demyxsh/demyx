@@ -15,6 +15,4 @@ WORKDIR /var/www/html
 
 EXPOSE 3000
 
-ENTRYPOINT ["dumb-init"]
-
-CMD ["browser-sync"]
+ENTRYPOINT ["dumb-init", "browser-sync"]
