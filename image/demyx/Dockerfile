@@ -67,7 +67,7 @@ RUN set -ex; \
 COPY vcs_info /
 
 RUN set -ex; \
-    echo "demyx ALL=(ALL) NOPASSWD:/usr/local/bin/demyx" >> /etc/sudoers; \
+    echo "demyx ALL=(ALL) NOPASSWD:/demyx/etc/demyx.sh" >> /etc/sudoers; \
     mkdir -p /demyx; \
     ln -s /demyx /home/demyx; \
     \
@@ -101,7 +101,9 @@ RUN set -ex; \
     chmod +x /demyx/etc/cron/every-minute.sh; \
     chmod +x /demyx/etc/cron/every-6-hour.sh; \
     chmod +x /demyx/etc/cron/every-day.sh; \
-    ln -s /demyx/etc/demyx.sh /usr/local/bin/demyx
+    echo '#!/usr/bin/dumb-init /bin/bash' >> /usr/local/bin/demyx; \
+    echo 'sudo /demyx/etc/demyx.sh "$@"' >> /usr/local/bin/demyx; \
+    chmod +x /usr/local/bin/demyx
 
 COPY demyx-entrypoint.sh /usr/local/bin/demyx-entrypoint
 
