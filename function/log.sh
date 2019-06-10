@@ -33,7 +33,7 @@ function demyx_log() {
         docker logs "$DEMYX_APP_WP_CONTAINER" "$@"
     else
         if [[ -n "$DEMYX_LOG_FOLLOW" ]]; then
-            tail -f /var/log/demyx/demyx.log
+            tail -f /var/log/demyx/demyx.log | less
         elif [[ -n "$DEMYX_LOG_ROTATE" ]]; then
             if [[ "$DEMYX_LOG_ROTATE" = demyx ]]; then
                 demyx_echo 'Rotating demyx log'
