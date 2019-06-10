@@ -1,8 +1,6 @@
 #!/bin/bash
 # Demyx
 # https://demyx.sh
-
-set -x
  
 DEMYX_CHROOT_CONTAINER_CHECK=$(docker ps -a | awk '{print $NF}' | grep -w demyx)
 DEMYX_CHROOT_HOST=$(hostname)
