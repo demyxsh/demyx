@@ -110,15 +110,15 @@ demyx_run() {
     --restart unless-stopped \
     --hostname "$DEMYX_CHROOT_HOST" \
     --network demyx \
+    -e DEMYX_MODE="$DEMYX_CHROOT_MODE" \
     -e DEMYX_HOST="$DEMYX_CHROOT_HOST" \
     -e DEMYX_SSH="$DEMYX_CHROOT_SSH" \
     -e DEMYX_ET="$DEMYX_CHROOT_ET" \
-    -e DEMYX_MODE="$DEMYX_CHROOT_MODE" \
+    -e TZ=America/Los_Angeles \
     -v /var/run/docker.sock:/var/run/docker.sock:ro \
     -v demyx:/demyx \
     -v demyx_user:/home/demyx \
     -v demyx_log:/var/log/demyx \
-    -e TZ=America/Los_Angeles \
     -p "$DEMYX_CHROOT_SSH":22 \
     -p "$DEMYX_CHROOT_ET":2022 \
     demyx/demyx

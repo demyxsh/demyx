@@ -2,7 +2,7 @@
 # https://demyx.sh
 
 function demyx_motd() {
-    if [[ "$2" = init ]]; then
+    if [[ "$1" = init ]]; then
         DEMYX_MOTD_MODE="$DEMYX_MODE"
         DEMYX_HOST_UPPERCASE=$(hostname | tr [a-z] [A-Z])
         [[ -z "$DEMYX_SSH" ]] && DEMYX_SSH=2222

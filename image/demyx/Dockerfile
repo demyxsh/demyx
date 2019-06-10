@@ -68,6 +68,11 @@ COPY vcs_info /
 
 RUN set -ex; \
     echo "demyx ALL=(ALL) NOPASSWD:/demyx/etc/demyx.sh" >> /etc/sudoers; \
+    echo 'Defaults env_keep +="DEMYX_MODE"' >> /etc/sudoers; \
+    echo 'Defaults env_keep +="DEMYX_HOST"' >> /etc/sudoers; \
+    echo 'Defaults env_keep +="DEMYX_SSH"' >> /etc/sudoers; \
+    echo 'Defaults env_keep +="DEMYX_ET"' >> /etc/sudoers; \
+    echo 'Defaults env_keep +="TZ"' >> /etc/sudoers; \
     mkdir -p /demyx; \
     ln -s /demyx /home/demyx; \
     \
