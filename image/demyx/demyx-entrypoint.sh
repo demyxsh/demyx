@@ -2,9 +2,9 @@
 # Demyx
 # https://demyx.sh
 
-[[ "$DEMYX_MODE" != development ]] && DEMYX_MODE=production; chmod -R a=X /demyx
-[[ -z "$DEMYX_SSH" ]] && DEMYX_SSH=2222
-[[ -z "$DEMYX_ET" ]] && DEMYX_ET=2022
+[[ "$DEMYX_MODE" != development ]] && export DEMYX_MODE=production; chmod -R a=X /demyx
+[[ -z "$DEMYX_SSH" ]] && export DEMYX_SSH=2222
+[[ -z "$DEMYX_ET" ]] && export DEMYX_ET=2022
 
 if [[ ! -d /home/demyx/.ssh ]]; then
     mkdir -p /home/demyx/.ssh

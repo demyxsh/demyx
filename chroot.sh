@@ -2,6 +2,8 @@
 # Demyx
 # https://demyx.sh
 
+set -x
+ 
 DEMYX_CHROOT_CONTAINER_CHECK=$(docker ps -a | awk '{print $NF}' | grep -w demyx)
 DEMYX_CHROOT_HOST=$(hostname)
 DEMYX_CHROOT_SSH=2222
@@ -143,6 +145,9 @@ elif [[ "$DEMYX_CHROOT" = help ]]; then
 elif [[ "$DEMYX_CHROOT" = remove ]]; then
     demyx_rm
 elif [[ "$DEMYX_CHROOT" = restart ]]; then
+    if [[ -z "$DEMYX_CHROOT_MODE" ]]; then
+        DEMYX_CHROOT_MODE=production
+    fi
     demyx_rm
     demyx_run
     demyx_mode
@@ -171,7 +176,7 @@ elif [[ "$DEMYX_CHROOT" = update ]]; then
 else
     if [[ -n "$DEMYX_CHROOT_CONTAINER_CHECK" ]]; then
         DEMYX_MODE_CHECK=$(docker exec -t demyx bash -c "grep DEMYX_MOTD_MODE /demyx/.env | awk -F '[=]' '{print \$2}'")
-        if [[ -z "$DEMYX_CHROOT_MODE" ]] ; then
+        if [[ -z "$DEMYX_CHROOT_MODE" ]]; then
             DEMYX_CHROOT_MODE="$DEMYX_MODE_CHECK"
         fi
         if [[ -z "$DEMYX_CHROOT_NC" ]]; then
