@@ -24,7 +24,6 @@ chmod 700 /home/demyx/.ssh
 chmod 644 /home/demyx/.ssh/authorized_keys
 chown -R demyx:demyx /home/demyx
 chown -R demyx:demyx /demyx
-chmod +x /usr/local/bin/demyx
 chmod +x /demyx/etc/demyx.sh
 chmod +x /demyx/etc/cron/every-minute.sh
 chmod +x /demyx/etc/cron/every-6-hour.sh
