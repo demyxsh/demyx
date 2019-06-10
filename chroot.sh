@@ -73,7 +73,7 @@ demyx_mode() {
         DEMYX_CHROOT_MODE=development
         docker exec -t demyx bash -c "find /demyx -type d -print0 | xargs -0 chmod 0755; \
             find /demyx -type f -print0 | xargs -0 chmod 0644"
-    else
+    elif [[ "$DEMYX_CHROOT_MODE" = production ]]; then
         DEMYX_CHROOT_MODE=production
         docker exec -t demyx bash -c "chmod -R a=X /demyx"
     fi
@@ -170,7 +170,7 @@ elif [[ "$DEMYX_CHROOT" = update ]]; then
     chmod +x /usr/local/bin/demyx
 else
     if [[ -n "$DEMYX_CHROOT_CONTAINER_CHECK" ]]; then
-        DEMYX_MODE_CHECK=$(docker exec -t demyx bash -c "grep DEMYX_MOTD_MODE /demyx/.env | awk -F '[=]' '{print $2}'")
+        DEMYX_MODE_CHECK=$(docker exec -t demyx bash -c "grep DEMYX_MOTD_MODE /demyx/.env | awk -F '[=]' '{print \$2}'")
         if [[ -z "$DEMYX_CHROOT_MODE" ]] ; then
             DEMYX_CHROOT_MODE="$DEMYX_MODE_CHECK"
         fi
