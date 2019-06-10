@@ -11,7 +11,7 @@ Demyx is now a Docker image and the code base has been completely rewritten, thi
 ### Stack
 ALPINE | NGINX | MARIADB | PHP | WORDPRESS
 ------------- | ------------- | ------------- | ------------- | -------------
-3.9.4 | 1.16.0 | 10.3.15 | 7.3.6 | 5.2.1
+3.9.4 | 1.17.0 | 10.3.15 | 7.3.6 | 5.2.1
 
 ### WordPress Features
 * SSL turned on by default
@@ -30,6 +30,7 @@ Since the image needs docker.sock to be mounted and the Docker binary is include
 * User/Group: demyx:demyx
 * Docker binary
 * Eternal Terminal
+* dumb-init
 * bash
 * curl
 * zsh
