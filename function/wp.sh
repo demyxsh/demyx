@@ -10,7 +10,7 @@ function demyx_wp() {
             demyx wp "$i" "$@"
         done
     elif [[ "$DEMYX_APP_TYPE" = wp ]]; then
-        docker run -t --rm \
+        demyx_execute -v docker run -t --rm \
             --volumes-from "$DEMYX_APP_WP_CONTAINER" \
             --network container:"$DEMYX_APP_WP_CONTAINER" \
             wordpress:cli "$@"
