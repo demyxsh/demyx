@@ -3,7 +3,8 @@
 
 function demyx_motd() {
     if [[ "$1" = init ]]; then
-        DEMYX_MOTD_MODE="$DEMYX_MODE"
+        [[ -z "$DEMYX_MODE" ]] && DEMYX_MODE=production
+        DEMYX_MOTD_MODE=$(echo "$DEMYX_MODE" | tr [a-z] [A-Z])
         DEMYX_HOST_UPPERCASE=$(hostname | tr [a-z] [A-Z])
         [[ -z "$DEMYX_SSH" ]] && DEMYX_SSH=2222
         [[ -z "$DEMYX_ET" ]] && DEMYX_ET=2022
@@ -18,7 +19,7 @@ function demyx_motd() {
             DEMYX_MOTD_ET=$DEMYX_ET
             DEMYX_MOTD_STATUS=$DEMYX_STATUS
 EOF
-        sed -i 's/            //' /demyx/.env
+        sed -i 's/            //g' /demyx/.env
     else
         source /demyx/.env
         
@@ -35,9 +36,9 @@ EOF
             https://demyx.sh
 
             Welcome to Demyx! To see all demyx commands, run: demyx help
-        " | sed 's/            //'
+        " | sed 's/            //g'
 
-        PRINT_TABLE="DEMYX, $(echo $DEMYX_MOTD_MODE | tr [a-z] [A-Z])\n"
+        PRINT_TABLE="DEMYX, $DEMYX_MOTD_MODE\n"
         PRINT_TABLE+="HOST, $DEMYX_MOTD_HOST\n"
         PRINT_TABLE+="USER, DEMYX\n"
         PRINT_TABLE+="SSH/SFTP, $DEMYX_MOTD_SSH\n"
