@@ -22,14 +22,31 @@ RUN set -ex; \
     less \
 	apache2-utils \
 	dumb-init \
-    nano
+    nano \
+	clamav \
+	clamdscan
 
 RUN apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
 	rm -rf /var/lib/apt/lists/*
 
+ENV MALDET_VERSION=1.6.4
+
+RUN set -ex; \
+	cd /tmp; \
+	curl -O http://www.rfxn.com/downloads/maldetect-current.tar.gz; \
+	tar -xzf maldetect-current.tar.gz; \
+	cd maldetect-${MALDET_VERSION}; \
+	bash install.sh; \
+	sed -i 's/scan_ignore_root="1"/scan_ignore_root="0"/g' /usr/local/maldetect/conf.maldet; \
+	maldet -u; \
+	rm -rf /tmp/*
+	
 RUN mkdir /demyx
 
 COPY table.sh /
 COPY proxy.sh /
+COPY maldet.sh /
+
+RUN chmod +x /maldet.sh
 
 ENTRYPOINT ["dumb-init", "bash", "-c"]

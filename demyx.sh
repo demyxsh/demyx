@@ -41,6 +41,9 @@ elif [[ "$DEMYX_COMMAND" = install ]]; then
 elif [[ "$DEMYX_COMMAND" = log ]]; then
     source "$DEMYX_FUNCTION"/log.sh
     demyx_log "$@"
+elif [[ "$DEMYX_COMMAND" = maldet ]]; then
+    source "$DEMYX_FUNCTION"/maldet.sh
+    demyx_maldet "$@"
 elif [[ "$DEMYX_COMMAND" = monitor ]]; then
     source "$DEMYX_FUNCTION"/monitor.sh
     demyx_monitor "$@"

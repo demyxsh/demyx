@@ -145,6 +145,7 @@ demyx <arg>       Main demyx command
       exec        Accepts all docker exec arguments
       info        Shows an app's .env and filter output
       log         Show or follow demyx.log
+      maldet      Linux Malware Detect
       monitor     For auto scaling purposes
       motd        Message of the day
       restore     Restore an app

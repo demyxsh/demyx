@@ -60,6 +60,11 @@ function demyx_help() {
         echo "                -f|--follow     Follow log"
         echo "                --rotate        Rotate logs for demyx, stack, and WP sites"
         echo
+    elif [[ "$2" = maldet ]]; then
+        echo
+        echo "demyx maldet <app> <args>     Default scan is the WordPress container"
+        echo "                   db         Scan the database container"
+        echo
     elif [[ "$2" = monitor ]]; then
         echo
         echo "demyx monitor     Auto scale containers"
@@ -125,6 +130,7 @@ function demyx_help() {
         echo "      exec        Accepts all docker exec arguments"
         echo "      info        Shows an app's .env and filter output"
         echo "      log         Show or follow demyx.log"
+        echo "      maldet      Linux Malware Detect"
         echo "      monitor     For auto scaling purposes"
         echo "      motd        Message of the day"
         echo "      restore     Restore an app"
