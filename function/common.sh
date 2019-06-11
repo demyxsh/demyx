@@ -122,16 +122,10 @@ demyx_app_config() {
     [[ -f "$DEMYX_GET_APP"/.env ]] && source "$DEMYX_GET_APP"/.env
 }
 demyx_open_port() {
-    DEMYX_SFTP_PORT="$DEMYX_SFTP_PORT_DEFAULT"
-    while true; do
-        nc -z -w 1 "$DEMYX_APP_DOMAIN" "$DEMYX_SFTP_PORT" 2>/dev/null
-        if [[ "$?" = 0 ]]; then
-            DEMYX_SFTP_PORT=$((DEMYX_SFTP_PORT+1))
-            break
-        elif [[ "$?" = 1 ]]; then
-            DEMYX_SFTP_PORT=$((DEMYX_SFTP_PORT+1))
-            break
-        fi
-    done
-    echo "$DEMYX_SFTP_PORT"
+    DEMYX_SFTP_PORT=$(docker run -it --rm \
+    --network host \
+    -e DEMYX_SFTP_PORT="$DEMYX_SFTP_PORT_DEFAULT" \
+    demyx/utilities "/port.sh")
+    
+    echo "$DEMYX_SFTP_PORT" | sed -e 's/\r//g'
 }

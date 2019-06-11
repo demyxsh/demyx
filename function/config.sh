@@ -4,7 +4,7 @@
 # demyx config <app> <args>
 #
 
-DEMYX_SFTP_PORT_DEFAULT=2223
+DEMYX_SFTP_PORT_DEFAULT=22222
 
 function demyx_config() {
     while :; do
@@ -189,7 +189,6 @@ function demyx_config() {
 
                 source "$DEMYX_STACK"/.env
 
-                DEMYX_SFTP_PORT=$(demyx_open_port)
                 DEMYX_SFTP_VOLUME_CHECK=$(docker volume ls | grep demyx_sftp || true)
                 DEMYX_SFTP_CONTAINER_CHECK=$(docker ps | grep "$DEMYX_APP_ID"_sftp || true)
                 DEMYX_PARSE_BASIC_AUTH=$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}' || true)
@@ -219,7 +218,8 @@ function demyx_config() {
                     demyx_execute docker stop demyx_sftp
                 fi
 
-                demyx_echo 'Creating SFTP container' 
+                demyx_echo 'Creating SFTP container'
+                DEMYX_SFTP_PORT=$(demyx_open_port)
                 demyx_execute docker run -d --rm \
                     --name "$DEMYX_APP_ID"_sftp \
                     -v demyx_sftp:/home/www-data/.ssh \
@@ -407,7 +407,6 @@ function demyx_config() {
                 demyx_execute demyx exec "$DEMYX_APP_DOMAIN" bash -c "pkill php-fpm; php-fpm -D"
             fi
             if [[ "$DEMYX_CONFIG_SFTP" = on ]]; then
-                DEMYX_SFTP_PORT=$(demyx_open_port)
                 DEMYX_SFTP_VOLUME_CHECK=$(docker volume ls | grep demyx_sftp || true)
                 DEMYX_SFTP_CONTAINER_CHECK=$(docker ps | grep "$DEMYX_APP_ID"_sftp || true)
 
@@ -429,8 +428,9 @@ function demyx_config() {
                     demyx_echo 'Stopping temporary SSH container'
                     demyx_execute docker stop demyx_sftp
                 fi
-
+                
                 demyx_echo 'Creating SFTP container' 
+                DEMYX_SFTP_PORT=$(demyx_open_port)
                 demyx_execute docker run -d --rm \
                     --name "$DEMYX_APP_ID"_sftp \
                     -v demyx_sftp:/home/www-data/.ssh \

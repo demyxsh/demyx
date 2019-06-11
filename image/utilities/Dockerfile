@@ -24,7 +24,8 @@ RUN set -ex; \
 	dumb-init \
     nano \
 	clamav \
-	clamdscan
+	clamdscan \
+	net-tools
 
 RUN apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
 	rm -rf /var/lib/apt/lists/*
@@ -46,7 +47,9 @@ RUN mkdir /demyx
 COPY table.sh /
 COPY proxy.sh /
 COPY maldet.sh /
+COPY port.sh /
 
-RUN chmod +x /maldet.sh
+RUN chmod +x /maldet.sh; \
+	chmod +x /port.sh
 
 ENTRYPOINT ["dumb-init", "bash", "-c"]
