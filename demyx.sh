@@ -23,6 +23,10 @@ elif [[ "$DEMYX_COMMAND" = compose ]]; then
 elif [[ "$DEMYX_COMMAND" = config ]]; then
     source "$DEMYX_FUNCTION"/config.sh
     demyx_config "$@"
+elif [[ "$DEMYX_COMMAND" = cp ]]; then
+    source "$DEMYX_FUNCTION"/cp.sh
+    shift
+    demyx_cp "$@"
 elif [[ "$DEMYX_COMMAND" = ctop ]]; then
     source "$DEMYX_FUNCTION"/ctop.sh
     demyx_ctop

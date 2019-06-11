@@ -15,6 +15,9 @@ function demyx_info() {
             --filter=)
                 demyx_die '"--filter" cannot be empty'
                 ;;
+            --quiet)
+                DEMYX_INFO_QUIET=1
+                ;;
             --)
                 shift
                 break
@@ -67,6 +70,6 @@ function demyx_info() {
             demyx_execute -v demyx_table "$(echo -e $PRINT_TABLE)"
         fi
     else
-        demyx_die --not-found
+        [[ -z "$DEMYX_INFO_QUIET" ]] && demyx_die --not-found
     fi
 }

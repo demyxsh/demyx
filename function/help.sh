@@ -34,6 +34,11 @@ function demyx_help() {
         echo "                   --ssl            Turns on/off SSL"
         echo "                   --update         Pushes updated config files to container"
         echo
+    elif [[ "$2" = cp ]]; then
+        echo
+        echo "demyx cp <app/path>:<path> <app/path>:<path>      Wrapper for docker cp"
+        echo "         db                                       Target docker cp for MariaDB container"
+        echo
     elif [[ "$2" = exec ]]; then
         echo
         echo "demyx exec <app> <args>    Accepts all docker exec arguments"
@@ -44,6 +49,7 @@ function demyx_help() {
         echo "demyx info <app> <args>       Show environment info for an app"
         echo "                 --all        Show all environment info"
         echo "                 --filter     Filter environment variables"
+        echo "                 --quiet      Prevent output of error if filter not found"
         echo
     elif [[ "$2" = install ]]; then
         echo
@@ -126,6 +132,7 @@ function demyx_help() {
         echo "      backup      Back up an app"
         echo "      compose     Accepts all docker-compose arguments"
         echo "      config      Modifies an app's configuration"
+        echo "      cp          Wrapper for docker cp"
         echo "      ctop        Htop but for containers"
         echo "      exec        Accepts all docker exec arguments"
         echo "      info        Shows an app's .env and filter output"
