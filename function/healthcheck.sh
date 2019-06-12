@@ -12,7 +12,7 @@ function demyx_healthcheck() {
         
         DEMYX_HEALTHCHECK_STATUS=$(curl --write-out %{http_code} --silent --output /dev/null --head "$DEMYX_APP_WP_CONTAINER")
 
-        if [[ "$DEMYX_HEALTHCHECK_STATUS" != 200 ]]; then
+        if [[ "$DEMYX_HEALTHCHECK_STATUS" != 200 ]] || [[ "$DEMYX_HEALTHCHECK_STATUS" != 301 ]]; then
             if [[ ! -f "$DEMYX_WP"/"$i"/.healthcheck ]]; then
                 demyx_execute -v echo "DEMYX_APP_HEALTHCHECK_COUNT=0" > "$DEMYX_WP"/"$i"/.healthcheck 
             fi
