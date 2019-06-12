@@ -443,7 +443,7 @@ function demyx_config() {
                 PRINT_TABLE+="SFTP, $DEMYX_APP_DOMAIN\n"
                 PRINT_TABLE+="SFTP USER, www-data\n"
                 PRINT_TABLE+="SFTP PORT, $DEMYX_SFTP_PORT\n"
-                demyx_table "$PRINT_TABLE"
+                demyx_execute -v demyx_table "$PRINT_TABLE"
             elif [[ "$DEMYX_CONFIG_SFTP" = off ]]; then
                 DEMYX_SFTP_CONTAINER_CHECK=$(docker ps | grep "$DEMYX_APP_ID"_sftp || true)
                 [[ -z "$DEMYX_SFTP_CONTAINER_CHECK" ]] && demyx_die 'No SFTP container running'
