@@ -90,8 +90,7 @@ RUN set -ex; \
     (crontab -l 2>/dev/null; echo "0 */6 * * * /demyx/etc/cron/every-6-hour.sh") | crontab - ; \
     (crontab -l 2>/dev/null; echo "0 0 * * * /demyx/etc/cron/every-day.sh") | crontab - ; \
     mkdir -p /var/log/demyx; \
-    touch /var/log/demyx/demyx.log; \
-    ln -sf /proc/1/fd/1 /var/log/demyx/demyx.log
+    touch /var/log/demyx/demyx.log
 
 RUN set -ex; \
     git clone https://github.com/demyxco/demyx.git /demyx/etc; \
@@ -107,7 +106,7 @@ RUN set -ex; \
     chmod +x /demyx/etc/cron/every-minute.sh; \
     chmod +x /demyx/etc/cron/every-6-hour.sh; \
     chmod +x /demyx/etc/cron/every-day.sh; \
-    echo '#!/usr/bin/dumb-init /bin/bash' >> /usr/local/bin/demyx; \
+    echo '#!/bin/bash' >> /usr/local/bin/demyx; \
     echo 'sudo /demyx/etc/demyx.sh "$@"' >> /usr/local/bin/demyx; \
     chmod +x /usr/local/bin/demyx
 
