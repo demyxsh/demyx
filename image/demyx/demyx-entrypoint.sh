@@ -30,6 +30,6 @@ chmod +x /demyx/etc/cron/every-6-hour.sh
 chmod +x /demyx/etc/cron/every-day.sh
 demyx motd init
 
-crond
+crond -L /var/log/demyx/cron.log
 /usr/sbin/sshd
-etserver -v 9 -logtostdout true
+etserver
