@@ -34,6 +34,9 @@ elif [[ "$DEMYX_COMMAND" = exec ]]; then
     source "$DEMYX_FUNCTION"/exec.sh
     shift 2
     demyx_exec "$@"
+elif [[ "$DEMYX_COMMAND" = healthcheck ]]; then
+    source "$DEMYX_FUNCTION"/healthcheck.sh
+    demyx_healthcheck
 elif [[ "$DEMYX_COMMAND" = help ]]; then
     demyx_help "$@"
 elif [[ "$DEMYX_COMMAND" = info ]]; then

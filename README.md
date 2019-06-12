@@ -137,24 +137,26 @@ demyx <args>          Chroot into the demyx container
 
 ### Commands
 ```
-demyx <arg>       Main demyx command
-      backup      Back up an app
-      compose     Accepts all docker-compose arguments
-      config      Modifies an app's configuration
-      ctop        Htop but for containers
-      exec        Accepts all docker exec arguments
-      info        Shows an app's .env and filter output
-      log         Show or follow demyx.log
-      maldet      Linux Malware Detect
-      monitor     For auto scaling purposes
-      motd        Message of the day
-      restore     Restore an app
-      rm          Removes an app and its volumes
-      run         Creates a new app
-      stack       Control the stack via docker-compose arguments
-      update      Update demyx code base
-      util        Generates credentials or access util container
-      wp          Execute wp-cli commands
+demyx <arg>           Main demyx command
+      backup          Back up an app
+      compose         Accepts all docker-compose arguments
+      config          Modifies an app's configuration
+      cp              Wrapper for docker cp
+      ctop            Htop but for containers
+      exec            Accepts all docker exec arguments
+      healthcheck     Checks if WordPress apps are up
+      info            Shows an app's .env and filter output
+      log             Show or follow demyx.log
+      maldet          Linux Malware Detect
+      monitor         For auto scaling purposes
+      motd            Message of the day
+      restore         Restore an app
+      rm              Removes an app and its volumes
+      run             Creates a new app
+      stack           Control the stack via docker-compose arguments
+      update          Update demyx code base
+      util            Generates credentials or access util container
+      wp              Execute wp-cli commands
 ```
 
 ### Questions?
