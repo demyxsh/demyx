@@ -7,4 +7,4 @@
 /usr/local/bin/demyx monitor
 
 # Health checks
-/usr/local/bin/demyx healthcheck
+#/usr/local/bin/demyx healthcheck
