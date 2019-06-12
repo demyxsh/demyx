@@ -131,7 +131,7 @@ demyx_open_port() {
 }
 demyx_mariadb_ready() {
     while true; do
-    DEMYX_MARIADB_STATUS=$(docker exec -t "$DEMYX_APP_DB_CONTAINER" mysql -u "$WORDPRESS_DB_USER" -p"$WORDPRESS_DB_PASSWORD" -e "select 1" > /dev/null 2>&1; echo $?)
+        DEMYX_MARIADB_STATUS=$(docker exec -t "$DEMYX_APP_DB_CONTAINER" mysqladmin -u "$WORDPRESS_DB_USER" -p"$WORDPRESS_DB_PASSWORD" status > /dev/null; echo "$?")
         if [[ "$DEMYX_MARIADB_STATUS" = 0 ]]; then
             break
         else
