@@ -42,6 +42,12 @@ function demyx_config() {
             -f|--force)
                 DEMYX_CONFIG_FORCE=1
                 ;;
+            --healthcheck|--healthcheck=on)
+                DEMYX_CONFIG_HEALTHCHECK=on
+                ;;
+            --healthcheck=off)
+                DEMYX_CONFIG_HEALTHCHECK=off
+                ;;
             --rate-limit|--rate-limit=on)
                 DEMYX_CONFIG_RATE_LIMIT=on
                 ;;
@@ -358,6 +364,17 @@ function demyx_config() {
                     rm "$DEMYX_APP_CONFIG"/.cache
                     demyx config "$DEMYX_APP_DOMAIN" --cache
                 fi
+            fi
+            if [[ "$DEMYX_CONFIG_HEALTHCHECK" = on ]]; then
+                DEMYX_CONFIG_HEALTHCHECK_CHECK=$(demyx info "$DEMYX_APP_DOMAIN" --filter=DEMYX_APP_HEALTHCHECK)
+                [[ "$DEMYX_CONFIG_HEALTHCHECK_CHECK" = on ]] && demyx_die 'Healthcheck is already on'
+                demyx_echo 'Turning on healthcheck'
+                demyx_execute sed -i "s/DEMYX_APP_HEALTHCHECK=off/DEMYX_APP_HEALTHCHECK=on/g" "$DEMYX_APP_PATH"/.env
+            elif [[ "$DEMYX_CONFIG_HEALTHCHECK" = off ]]; then
+                DEMYX_CONFIG_HEALTHCHECK_CHECK=$(demyx info "$DEMYX_APP_DOMAIN" --filter=DEMYX_APP_HEALTHCHECK)
+                [[ "$DEMYX_CONFIG_HEALTHCHECK_CHECK" = off ]] && demyx_die 'Healthcheck is already off'
+                demyx_echo 'Turning off healthcheck'
+                demyx_execute sed -i "s/DEMYX_APP_HEALTHCHECK=on/DEMYX_APP_HEALTHCHECK=off/g" "$DEMYX_APP_PATH"/.env
             fi
             if [[ "$DEMYX_CONFIG_RATE_LIMIT" = on ]]; then
                 demyx_echo 'Turning on rate limiting'

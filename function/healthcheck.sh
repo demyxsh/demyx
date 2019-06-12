@@ -10,6 +10,8 @@ function demyx_healthcheck() {
     do
         source "$DEMYX_WP"/"$i"/.env
         
+        [[ "$DEMYX_APP_HEALTHCHECK" = off ]] && continue
+
         DEMYX_HEALTHCHECK_STATUS=$(curl -sSf "$DEMYX_APP_WP_CONTAINER" > /dev/null; echo "$?")
 
         if [[ "$DEMYX_HEALTHCHECK_STATUS" != 0 ]]; then

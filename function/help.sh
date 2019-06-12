@@ -29,6 +29,7 @@ function demyx_help() {
         echo "                   --dev            Turns on/off development mode"
         echo "                   --files          BrowserSync arg: themes, plugins, or custom path"
         echo "                   --force          Force config"
+        echo "                   --healthcheck    Turns on/off healthcheck for WordPress container"
         echo "                   --rate-limit     Turns on/off NGINX rate limting"
         echo "                   --refresh        Regenerate config files and uploaded to container"
         echo "                   --restart        Restart NGINX/PHP services"
