@@ -60,7 +60,7 @@ function demyx_restore() {
         demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" db up -d --remove-orphans
 
         demyx_echo 'Initializing MariaDB' 
-        demyx_execute sleep 10
+        demyx_execute demyx_mariadb_ready
 
         demyx_echo 'Creating temporary container' 
         demyx_execute docker run -dt --rm \

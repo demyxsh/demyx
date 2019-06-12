@@ -170,8 +170,8 @@ function demyx_run() {
         
         demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" up -d db_"$DEMYX_APP_ID"
 
-        demyx_echo 'Initilizing MariaDB'
-        demyx_execute sleep 10
+        demyx_echo 'Initializing MariaDB'
+        demyx_execute demyx_mariadb_ready
 
         if [[ -z "$DEMYX_RUN_CLONE" ]]; then
             demyx_echo 'Creating temporary container'

@@ -129,3 +129,13 @@ demyx_open_port() {
     
     echo "$DEMYX_SFTP_PORT" | sed -e 's/\r//g'
 }
+demyx_mariadb_ready() {
+    while true; do
+    DEMYX_MARIADB_STATUS=$(docker exec -t "$DEMYX_APP_DB_CONTAINER" mysql -u "$WORDPRESS_DB_USER" -p"$WORDPRESS_DB_PASSWORD" -e "select 1" > /dev/null 2>&1; echo $?)
+        if [[ "$DEMYX_MARIADB_STATUS" = 0 ]]; then
+            break
+        else
+            sleep 1
+        fi
+    done
+}
