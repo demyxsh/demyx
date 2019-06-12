@@ -51,7 +51,7 @@ function demyx_log() {
                 done
             fi
         else
-            tac /var/log/demyx/demyx.log | less
+            tail -100 /var/log/demyx/demyx.log
         fi
     fi
 }
