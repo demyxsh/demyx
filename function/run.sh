@@ -231,7 +231,7 @@ function demyx_run() {
             demyx_echo 'Configuring wp-config.php for reverse proxy'
             demyx_execute docker run -t \
                 --volumes-from "$DEMYX_APP_WP_CONTAINER" \
-                demyx/utilities "chmod +x /proxy.sh && /proxy.sh"
+                demyx/utilities demyx-proxy
         
             demyx_echo 'Installing WordPress' 
             demyx_execute demyx wp "$DEMYX_APP_DOMAIN" core install \

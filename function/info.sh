@@ -42,7 +42,7 @@ function demyx_info() {
             do
                 PRINT_TABLE+="$(echo "$i" | awk -F '[=]' '{print $1}'), $(echo "$i" | awk -F '[=]' '{print $2}')\n"
             done
-            demyx_execute -v -q demyx_table "$(echo -e $PRINT_TABLE)"
+            demyx_execute -v -q demyx_table "$PRINT_TABLE"
         elif [[ -n "$DEMYX_INFO_FILTER" ]]; then
             DEMYX_INFO_FILTER=$(cat "$DEMYX_APP_PATH"/.env | grep -s "$DEMYX_INFO_FILTER")
             if [[ -n "$DEMYX_INFO_FILTER" ]]; then

@@ -44,12 +44,14 @@ RUN set -ex; \
 	
 RUN mkdir /demyx
 
-COPY table.sh /
-COPY proxy.sh /
-COPY maldet.sh /
-COPY port.sh /
+COPY table.sh /usr/local/bin/demyx-table
+COPY proxy.sh /usr/local/bin/demyx-proxy
+COPY maldet.sh /usr/local/bin/demyx-maldet
+COPY port.sh /usr/local/bin/demyx-port
 
-RUN chmod +x /maldet.sh; \
-	chmod +x /port.sh
+RUN chmod +x /usr/local/bin/demyx-table; \
+	chmod +x /usr/local/bin/demyx-proxy; \
+	chmod +x /usr/local/bin/demyx-maldet; \
+	chmod +x /usr/local/bin/demyx-port
 
 ENTRYPOINT ["dumb-init", "bash", "-c"]

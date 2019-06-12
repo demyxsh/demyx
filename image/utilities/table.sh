@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Borrowed code
 # https://github.com/gdbtek/linux-cookbooks/blob/master/libraries/util.bash
 
@@ -91,3 +93,5 @@ function trimString() {
 
     sed 's,^[[:blank:]]*,,' <<< "${string}" | sed 's,[[:blank:]]*$,,'
 }
+
+printTable ',' "$@"

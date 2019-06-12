@@ -116,4 +116,4 @@ RUN chmod +x /usr/local/bin/demyx-entrypoint
 
 WORKDIR /demyx
 
-ENTRYPOINT ["demyx-entrypoint"]
+ENTRYPOINT ["dumb-init", "demyx-entrypoint"]

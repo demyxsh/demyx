@@ -112,7 +112,7 @@ demyx_execute() {
 }
 demyx_table() {
     docker run -t --rm \
-    demyx/utilities "source /table.sh && printTable ',' '$@'"
+    demyx/utilities "demyx-table '$@'"
 }
 demyx_permission() {
     chown -R demyx:demyx "$DEMYX"
@@ -125,7 +125,7 @@ demyx_open_port() {
     DEMYX_SFTP_PORT=$(docker run -it --rm \
     --network host \
     -e DEMYX_SFTP_PORT="$DEMYX_SFTP_PORT_DEFAULT" \
-    demyx/utilities "/port.sh")
+    demyx/utilities demyx-port)
     
     echo "$DEMYX_SFTP_PORT" | sed -e 's/\r//g'
 }
