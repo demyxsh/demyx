@@ -41,8 +41,8 @@ function demyx_help() {
         echo
     elif [[ "$2" = exec ]]; then
         echo
-        echo "demyx exec <app> <args>    Accepts all docker exec arguments"
-        echo "                 --db      Targets MariaDB container"
+        echo "demyx exec <app> <args>       Accepts all docker exec arguments"
+        echo "                 db           Targets MariaDB container"
         echo
     elif [[ "$2" = info ]]; then
         echo

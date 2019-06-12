@@ -7,7 +7,7 @@
 function demyx_exec() {
     while :; do
         case "$1" in
-            --db)
+            db)
                 DEMYX_EXEC_DB=1
                 ;;
             --)
