@@ -150,6 +150,7 @@ demyx <arg>           Main demyx command
       maldet          Linux Malware Detect
       monitor         For auto scaling purposes
       motd            Message of the day
+      pull            Pull one or all demyx images from Docker hub
       restore         Restore an app
       rm              Removes an app and its volumes
       run             Creates a new app

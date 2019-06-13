@@ -58,6 +58,10 @@ elif [[ "$DEMYX_COMMAND" = motd ]]; then
     source "$DEMYX_FUNCTION"/motd.sh
     shift
     demyx_motd "$@"
+elif [[ "$DEMYX_COMMAND" = pull ]]; then
+    source "$DEMYX_FUNCTION"/pull.sh
+    shift
+    demyx_pull "$@"
 elif [[ "$DEMYX_COMMAND" = restore ]]; then
     source "$DEMYX_FUNCTION"/restore.sh
     demyx_restore "$@"

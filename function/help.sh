@@ -82,6 +82,17 @@ function demyx_help() {
         echo
         echo "demyx monitor     Auto scale containers"
         echo
+    elif [[ "$DEMYX_HELP" = pull ]]; then
+        echo
+        echo "demyx pull <args>     Enter specific image or blank to pull all"
+        echo "           demyx"
+        echo "           browsersync"
+        echo "           docker-compose"
+        echo "           logrotate"
+        echo "           mariadb"
+        echo "           nginx-rephp-wordpress"
+        echo "           ssh"
+        echo
     elif [[ "$DEMYX_HELP" = restore ]]; then
         echo
         echo "demyx restore <app> <args>        Restore an app from a backup"
@@ -148,6 +159,7 @@ function demyx_help() {
         echo "      maldet          Linux Malware Detect"
         echo "      monitor         For auto scaling purposes"
         echo "      motd            Message of the day"
+        echo "      pull            Pull one or all demyx images from Docker hub"
         echo "      restore         Restore an app"
         echo "      rm              Removes an app and its volumes"
         echo "      run             Creates a new app"
