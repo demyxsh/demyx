@@ -1,6 +1,6 @@
 # Demyx
 # https://demyx.sh
-set -x
+
 function demyx_motd() {
     if [[ "$1" = init ]]; then
         [[ -z "$DEMYX_MODE" ]] && DEMYX_MODE=production
