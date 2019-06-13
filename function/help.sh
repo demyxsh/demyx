@@ -24,6 +24,7 @@ function demyx_help() {
         echo "demyx config <app> <args>           Config"
         echo "             all                    Targets all apps (only works with --refresh and --restart)"
         echo "                   --auth           Turns on/off basic auth"
+        echo "                   --auth-wp        Turns on/off basic auth for wp-login.php"
         echo "                   --cache          Turns on/off fastcgi cache"
         echo "                   --cdn            Turns on/off CDN, powered by Staticaly"
         echo "                   --dev            Turns on/off development mode"

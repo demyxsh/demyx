@@ -15,6 +15,12 @@ function demyx_config() {
             --auth=off)
                 DEMYX_CONFIG_AUTH=off
                 ;;
+            --auth-wp|--auth-wp=on)
+                DEMYX_CONFIG_AUTH_WP=on
+                ;;
+            --auth-wp=off)
+                DEMYX_CONFIG_AUTH_WP=off
+                ;;
             --cache|--cache=on)
                 DEMYX_CONFIG_CACHE=on
                 ;;
@@ -125,6 +131,29 @@ function demyx_config() {
                     demyx_yml
 
                 demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" wp up -d --remove-orphans
+            fi
+            if [[ "$DEMYX_CONFIG_AUTH_WP" = on ]]; then
+                source "$DEMYX_FUNCTION"/nginx.sh
+                DEMYX_PARSE_BASIC_AUTH=$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}' || true)
+
+                demyx_echo 'Generating auth.conf'
+                demyx_execute demyx_nginx_auth
+
+                demyx_echo 'Generating htpasswd'
+                demyx_execute -v echo "$DEMYX_PARSE_BASIC_AUTH" > "$DEMYX_APP_CONFIG"/htpasswd
+
+                demyx_echo "Turning on NGINX basic auth"
+                demyx_execute docker cp "$DEMYX_APP_CONFIG"/htpasswd "$DEMYX_APP_WP_CONTAINER":/demyx; \
+                    docker cp "$DEMYX_APP_CONFIG"/auth.conf "$DEMYX_APP_WP_CONTAINER":/etc/nginx/common
+
+                demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
+            elif [[ "$DEMYX_CONFIG_AUTH_WP" = off ]]; then
+                demyx_echo "Turning off NGINX basic auth"
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" rm /etc/nginx/common/auth.conf; \
+                    rm "$DEMYX_APP_CONFIG"/auth.conf; \
+                    rm "$DEMYX_APP_CONFIG"/htpasswd
+
+                demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
             fi
             if [[ "$DEMYX_CONFIG_CACHE" = on ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then

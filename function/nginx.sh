@@ -2,8 +2,6 @@
 # https://demyx.sh
 
 function demyx_nginx() {
-    demyx_app_config
-
     if [[ "$DEMYX_APP_TYPE" = wp ]]; then
         cat > "$DEMYX_APP_CONFIG"/nginx.conf <<-EOF
             # AUTO GENERATED
@@ -123,4 +121,18 @@ function demyx_nginx() {
 EOF
         sed -i 's/            //' "$DEMYX_APP_CONFIG"/nginx.conf
     fi
+}
+
+demyx_nginx_auth() {
+    cat > "$DEMYX_APP_CONFIG"/auth.conf <<-EOF
+        # AUTO GENERATED
+        location = /wp-login.php {
+            auth_basic "Restricted";
+            auth_basic_user_file /demyx/htpasswd;
+            include fastcgi_params;
+            fastcgi_pass php;
+            fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        }
+EOF
+    sed -i 's/        //' "$DEMYX_APP_CONFIG"/auth.conf
 }
