@@ -67,7 +67,19 @@ function demyx_compose() {
             demyx/docker-compose "$@"
         fi
     elif [[ -n "$DEMYX_GET_APP" ]]; then
-        if [[ "$DEMYX_COMPOSE" = du ]]; then
+        if [[ "$DEMYX_COMPOSE" = down ]]; then
+            demyx_execute -v docker run -t --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock:ro \
+            --volumes-from demyx \
+            --workdir "$DEMYX_APP"/"$DEMYX_TARGET" \
+            demyx/docker-compose stop
+
+            demyx_execute -v docker run -t --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock:ro \
+            --volumes-from demyx \
+            --workdir "$DEMYX_APP"/"$DEMYX_TARGET" \
+            demyx/docker-compose rm -f
+        elif [[ "$DEMYX_COMPOSE" = du ]]; then
             demyx_execute -v docker run -t --rm \
             -v /var/run/docker.sock:/var/run/docker.sock:ro \
             --volumes-from demyx \
