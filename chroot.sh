@@ -177,8 +177,8 @@ else
         if [[ -z "$DEMYX_CHROOT_MODE" ]]; then
             DEMYX_CHROOT_MODE="$DEMYX_MODE_CHECK"
         fi
+        demyx_mode
         if [[ -z "$DEMYX_CHROOT_NC" ]]; then
-            demyx_mode
             docker exec -it demyx zsh
         fi
     else
