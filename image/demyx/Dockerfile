@@ -93,19 +93,6 @@ RUN set -ex; \
     touch /var/log/demyx/demyx.log
 
 RUN set -ex; \
-    git clone https://github.com/demyxco/demyx.git /demyx/etc; \
-    mkdir -p /demyx/app/html; \
-    mkdir -p /demyx/app/php; \
-    mkdir -p /demyx/app/wp; \
-    mkdir -p /demyx/app/stack; \
-    mkdir -p /demyx/backup; \
-    mkdir -p /demyx/custom; \
-    cp /demyx/etc/example/example-callback.sh /demyx/custom; \
-    chown -R demyx:demyx /demyx; \
-    chmod +x /demyx/etc/demyx.sh; \
-    chmod +x /demyx/etc/cron/every-minute.sh; \
-    chmod +x /demyx/etc/cron/every-6-hour.sh; \
-    chmod +x /demyx/etc/cron/every-day.sh; \
     echo '#!/bin/bash' >> /usr/local/bin/demyx; \
     echo 'sudo /demyx/etc/demyx.sh "$@"' >> /usr/local/bin/demyx; \
     chmod +x /usr/local/bin/demyx

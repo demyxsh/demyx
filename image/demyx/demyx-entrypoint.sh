@@ -2,6 +2,18 @@
 # Demyx
 # https://demyx.sh
 
+if [[ ! -d /demyx/etc ]]; then
+	git clone https://github.com/demyxco/demyx.git /demyx/etc
+    mkdir -p /demyx/app/html
+    mkdir -p /demyx/app/php
+    mkdir -p /demyx/app/wp
+    mkdir -p /demyx/app/stack
+    mkdir -p /demyx/backup
+    mkdir -p /demyx/custom
+    cp /demyx/etc/example/example-callback.sh /demyx/custom
+    chown -R demyx:demyx /demyx
+fi
+
 [[ "$DEMYX_MODE" != development ]] && export DEMYX_MODE=production; chmod -R a=X /demyx
 [[ -z "$DEMYX_SSH" ]] && export DEMYX_SSH=2222
 [[ -z "$DEMYX_ET" ]] && export DEMYX_ET=2022

@@ -43,6 +43,8 @@ function demyx_restore() {
 
         demyx_app_config
 
+        demyx config "$DEMYX_APP_DOMAIN" --healthcheck=off
+
         demyx_echo 'Creating WordPress volume'
         demyx_execute docker volume create wp_"$DEMYX_APP_ID"
 
@@ -88,6 +90,8 @@ function demyx_restore() {
         
         demyx_echo 'Stopping temporary container'
         demyx_execute docker stop "$DEMYX_APP_ID"
+
+        demyx config "$DEMYX_APP_DOMAIN" --healthcheck
 
         demyx_echo 'Cleaning up'
         demyx_execute rm -rf "$DEMYX_APP_PATH"/html; \
