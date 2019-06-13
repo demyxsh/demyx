@@ -67,11 +67,31 @@ function demyx_compose() {
             demyx/docker-compose "$@"
         fi
     elif [[ -n "$DEMYX_GET_APP" ]]; then
-        demyx_execute -v docker run -t --rm \
-        -v /var/run/docker.sock:/var/run/docker.sock:ro \
-        --volumes-from demyx \
-        --workdir "$DEMYX_APP"/"$DEMYX_TARGET" \
-        demyx/docker-compose "$@"
+        if [[ "$DEMYX_COMPOSE" = du ]]; then
+            demyx_execute -v docker run -t --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock:ro \
+            --volumes-from demyx \
+            --workdir "$DEMYX_APP"/"$DEMYX_TARGET" \
+            demyx/docker-compose stop
+
+            demyx_execute -v docker run -t --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock:ro \
+            --volumes-from demyx \
+            --workdir "$DEMYX_APP"/"$DEMYX_TARGET" \
+            demyx/docker-compose rm -f
+
+            demyx_execute -v docker run -t --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock:ro \
+            --volumes-from demyx \
+            --workdir "$DEMYX_APP"/"$DEMYX_TARGET" \
+            demyx/docker-compose up -d --remove-orphans
+        else
+            demyx_execute -v docker run -t --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock:ro \
+            --volumes-from demyx \
+            --workdir "$DEMYX_APP"/"$DEMYX_TARGET" \
+            demyx/docker-compose "$@"
+        fi
     else
         demyx_die --not-found
     fi
