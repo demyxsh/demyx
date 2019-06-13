@@ -25,8 +25,10 @@ demyx_ctop() {
     DEMYX_CTOP_CHECK=$(docker ps | grep quay.io/vektorlab/ctop || true)
 
     if [[ "$DEMYX_CTOP_FORCE" ]]; then
-        demyx_echo 'Restarting ctop'
-        demyx_execute docker stop demyx_ctop
+        if [[ -n "$DEMYX_CTOP_CHECK" ]]; then
+            demyx_echo 'Restarting ctop'
+            demyx_execute docker stop demyx_ctop
+        fi
         demyx_execute -v docker run -it --rm --name demyx_ctop -v /var/run/docker.sock:/var/run/docker.sock:ro quay.io/vektorlab/ctop
     elif [[ -n "$DEMYX_CTOP_CHECK" ]]; then
         demyx_execute -v docker exec -it demyx_ctop /ctop
