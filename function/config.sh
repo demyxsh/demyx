@@ -140,7 +140,7 @@ function demyx_config() {
                 demyx_execute demyx_nginx_auth
 
                 demyx_echo 'Generating htpasswd'
-                demyx_execute -v echo "$DEMYX_PARSE_BASIC_AUTH" > "$DEMYX_APP_CONFIG"/htpasswd
+                demyx_execute -v -q echo "$DEMYX_PARSE_BASIC_AUTH" > "$DEMYX_APP_CONFIG"/htpasswd
 
                 demyx_echo "Turning on NGINX basic auth"
                 demyx_execute docker cp "$DEMYX_APP_CONFIG"/htpasswd "$DEMYX_APP_WP_CONTAINER":/demyx; \
