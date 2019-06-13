@@ -7,7 +7,7 @@ function demyx_info() {
     while :; do
         case "$3" in
             --all)
-                DEMYX_INFO=all
+                DEMYX_INFO_ALL=all
                 ;;
             --filter=?*)
                 DEMYX_INFO_FILTER=${3#*=}
@@ -34,7 +34,18 @@ function demyx_info() {
     
     demyx_app_config
 
-    if [[ "$DEMYX_APP_TYPE" = wp ]]; then
+    if [[ "$DEMYX_TARGET" = all ]]; then
+        [[ -z "$DEMYX_INFO_FILTER" ]] && demyx_die '--filter is required'
+        cd "$DEMYX_WP"
+        PRINT_TABLE="DEMYX, $DEMYX_INFO_FILTER\n"
+        for i in *
+        do
+            DEMYX_INFO_ALL_FILTER=$(grep "$DEMYX_INFO_FILTER" "$DEMYX_WP"/"$i"/.env | awk -F '[=]' '{print $2}')
+            [[ -z "$DEMYX_INFO_ALL_FILTER" ]] && demyx_die "$DEMYX_INFO_FILTER is not a valid filter"
+            PRINT_TABLE+="$i, $DEMYX_INFO_ALL_FILTER\n"
+        done
+        demyx_execute -v -q demyx_table "$PRINT_TABLE"
+    elif [[ "$DEMYX_APP_TYPE" = wp ]]; then
         if [[ -n "$DEMYX_INFO_ALL" ]]; then
             DEMYX_INFO_ALL=$(cat $DEMYX_APP_PATH/.env | sed '1d')
             PRINT_TABLE="DEMYX, INFO\n"

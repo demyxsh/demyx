@@ -54,6 +54,7 @@ function demyx_help() {
     elif [[ "$DEMYX_HELP" = info ]]; then
         echo
         echo "demyx info <app> <args>       Show environment info for an app"
+        echo "           all                Use --filter for all WordPress sites"
         echo "                 --all        Show all environment info"
         echo "                 --filter     Filter environment variables"
         echo "                 --quiet      Prevent output of error if filter not found"
