@@ -29,7 +29,8 @@ elif [[ "$DEMYX_COMMAND" = cp ]]; then
     demyx_cp "$@"
 elif [[ "$DEMYX_COMMAND" = ctop ]]; then
     source "$DEMYX_FUNCTION"/ctop.sh
-    demyx_ctop
+    shift
+    demyx_ctop "$@"
 elif [[ "$DEMYX_COMMAND" = exec ]]; then
     source "$DEMYX_FUNCTION"/exec.sh
     shift 2
