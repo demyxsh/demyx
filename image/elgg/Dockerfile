@@ -420,7 +420,7 @@ RUN set -ex \
     && apk add --no-cache --virtual .imagick-runtime-deps imagemagick \
     && apk del .phpize-deps
 
-ENV ELGG_VERSION 3.0.3
+ENV ELGG_VERSION 3.0.4
 
 RUN set -ex; \
 	mkdir -p /usr/src; \
