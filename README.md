@@ -16,12 +16,14 @@ ALPINE | NGINX | MARIADB | PHP | WORDPRESS
 ### WordPress Features
 * SSL turned on by default
 * Site-wide request rate limiting
+* Basic auth site-wide or wp-login.php
 * Secure NGINX/PHP configurations
 * Backup/Restore/Clone
 * CDN provided by Staticaly
 * FastCGI cache with nginx-helper plugin by rtCamp (WooCommerce ready)
 * Development mode includes the tools SSH, BrowserSync with UI, phpMyAdmin, and Demyx BrowserSync plugin
 * Auto scale containers with callback (see the custom folder)
+* Custom healthchecks
 * WP-CLI
 
 ### Demyx Image

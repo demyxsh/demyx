@@ -30,6 +30,7 @@ function demyx_env() {
         [[ -z "$DEMYX_APP_CACHE" ]] && DEMYX_APP_CACHE=off
         [[ -z "$DEMYX_APP_CDN" ]] && DEMYX_APP_CDN=off
         [[ -z "$DEMYX_APP_AUTH" ]] && DEMYX_APP_AUTH=off
+        [[ -z "$DEMYX_APP_AUTH_WP" ]] && DEMYX_APP_AUTH_WP=off
         [[ -z "$DEMYX_APP_DEV" ]] && DEMYX_APP_DEV=off
         [[ -z "$DEMYX_APP_HEALTHCHECK" ]] && DEMYX_APP_HEALTHCHECK=on
 
@@ -44,6 +45,7 @@ function demyx_env() {
             DEMYX_APP_SSL=$DEMYX_APP_SSL
             DEMYX_APP_RATE_LIMIT=$DEMYX_APP_RATE_LIMIT
             DEMYX_APP_AUTH=$DEMYX_APP_AUTH
+            DEMYX_APP_AUTH_WP=$DEMYX_APP_AUTH_WP
             DEMYX_APP_CACHE=$DEMYX_APP_CACHE
             DEMYX_APP_CDN=$DEMYX_APP_CDN
             DEMYX_APP_DEV=$DEMYX_APP_DEV
