@@ -72,7 +72,7 @@ demyx rs
 "
 docker run -dt --rm \
 --name demyx_install_container \
--v demyx_ssh:/home/demyx/.ssh \
+-v demyx_user:/home/demyx/.ssh \
 demyx/utilities bash
 
 DEMYX_AUTHORIZED_KEY=$(find /home -name "authorized_keys" | head -n 1)

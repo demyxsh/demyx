@@ -130,6 +130,8 @@ function demyx_run() {
 
         demyx_app_config
 
+        demyx config "$DEMYX_APP_DOMAIN" --healthcheck=off
+
         demyx_echo 'Creating .yml'
         demyx_execute demyx_yml
 
@@ -268,6 +270,8 @@ function demyx_run() {
             [[ "$DEMYX_RUN_CLONE_ENV_CDN_CHECK" = on ]] && demyx config "$DEMYX_APP_DOMAIN" --cdn && DEMYX_RUN_CDN=on
             [[ "$DEMYX_RUN_CLONE_ENV_AUTH_CHECK" = on ]] && demyx config "$DEMYX_APP_DOMAIN" --auth && DEMYX_RUN_AUTH=on
         fi
+
+        demyx config "$DEMYX_APP_DOMAIN" --healthcheck
 
         PRINT_TABLE="DEMYX, $DEMYX_RUN_PROTO/wp-admin\n"
         PRINT_TABLE+="WORDPRESS USER, $WORDPRESS_USER\n"
