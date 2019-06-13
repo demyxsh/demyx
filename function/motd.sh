@@ -1,10 +1,10 @@
 # Demyx
 # https://demyx.sh
-
+set -x
 function demyx_motd() {
     if [[ "$1" = init ]]; then
         [[ -z "$DEMYX_MODE" ]] && DEMYX_MODE=production
-        DEMYX_MOTD_MODE=$(echo "$DEMYX_MODE" | tr [a-z] [A-Z])
+        DEMYX_MOTD_MODE=$(echo "$DEMYX_MODE" | tr [a-z] [A-Z] | sed -e 's/\r//g')
         DEMYX_HOST_UPPERCASE=$(hostname | tr [a-z] [A-Z])
         [[ -z "$DEMYX_SSH" ]] && DEMYX_SSH=2222
         [[ -z "$DEMYX_ET" ]] && DEMYX_ET=2022
