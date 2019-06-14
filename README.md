@@ -148,6 +148,7 @@ demyx <arg>           Main demyx command
       exec            Accepts all docker exec arguments
       healthcheck     Checks if WordPress apps are up
       info            Shows an app's .env and filter output
+      list            List all apps
       log             Show or follow demyx.log
       maldet          Linux Malware Detect
       monitor         For auto scaling purposes

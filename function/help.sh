@@ -69,6 +69,11 @@ function demyx_help() {
         echo "              --user      Username for basic auth"
         echo "              --pass      Password for basic auth"
         echo
+    elif [[ "$DEMYX_HELP" = list ]]; then
+        echo
+        echo "demyx list <args>         List all apps"
+        echo "           --raw          Raw list with no tables"
+        echo
     elif [[ "$DEMYX_HELP" = log ]]; then
         echo
         echo "demyx log <app> <args>          Show demyx/container logs"
@@ -157,6 +162,7 @@ function demyx_help() {
         echo "      exec            Accepts all docker exec arguments"
         echo "      healthcheck     Checks if WordPress apps are up"
         echo "      info            Shows an app's .env and filter output"
+        echo "      list            List all apps"
         echo "      log             Show or follow demyx.log"
         echo "      maldet          Linux Malware Detect"
         echo "      monitor         For auto scaling purposes"

@@ -46,6 +46,9 @@ elif [[ "$DEMYX_COMMAND" = info ]]; then
 elif [[ "$DEMYX_COMMAND" = install ]]; then
     source "$DEMYX_FUNCTION"/install.sh
     demyx_install "$@"
+elif [[ "$DEMYX_COMMAND" = list ]]; then
+    source "$DEMYX_FUNCTION"/list.sh
+    demyx_list "$@"
 elif [[ "$DEMYX_COMMAND" = log ]]; then
     source "$DEMYX_FUNCTION"/log.sh
     demyx_log "$@"
