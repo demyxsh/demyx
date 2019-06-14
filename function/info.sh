@@ -7,7 +7,7 @@ function demyx_info() {
     while :; do
         case "$3" in
             --all)
-                DEMYX_INFO_ALL=all
+                DEMYX_INFO_ALL=1
                 ;;
             --filter=?*)
                 DEMYX_INFO_FILTER=${3#*=}
@@ -55,7 +55,7 @@ function demyx_info() {
             done
             demyx_execute -v -q demyx_table "$PRINT_TABLE"
         elif [[ -n "$DEMYX_INFO_FILTER" ]]; then
-            DEMYX_INFO_FILTER=$(cat "$DEMYX_APP_PATH"/.env | grep -s "$DEMYX_INFO_FILTER")
+            DEMYX_INFO_FILTER=$(cat "$DEMYX_APP_PATH"/.env | grep -w "$DEMYX_INFO_FILTER")
             if [[ -n "$DEMYX_INFO_FILTER" ]]; then
                 demyx_execute -v -q echo "$DEMYX_INFO_FILTER" | awk -F '[=]' '{print $2}'
             else
