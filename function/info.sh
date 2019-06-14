@@ -80,7 +80,7 @@ function demyx_info() {
             PRINT_TABLE+="WP AUTH, $DEMYX_APP_AUTH_WP\n"
             PRINT_TABLE+="DEV, $DEMYX_APP_DEV\n"
             PRINT_TABLE+="HEALTHCHECK, $DEMYX_APP_HEALTHCHECK"
-            demyx_execute -v demyx_table "$(echo -e $PRINT_TABLE)"
+            demyx_execute -v demyx_table "$PRINT_TABLE"
         fi
     else
         [[ -z "$DEMYX_INFO_QUIET" ]] && demyx_die --not-found
