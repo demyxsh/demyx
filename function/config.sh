@@ -417,6 +417,8 @@ function demyx_config() {
                     sed -i "s/DEMYX_APP_RATE_LIMIT=on/DEMYX_APP_RATE_LIMIT=off/g" "$DEMYX_APP_PATH"/.env
             fi
             if [[ -n "$DEMYX_CONFIG_REFRESH" ]]; then
+                demyx backup "$DEMYX_APP_DOMAIN"
+
                 source "$DEMYX_FUNCTION"/nginx.sh
                 source "$DEMYX_FUNCTION"/php.sh
                 source "$DEMYX_FUNCTION"/php-fpm.sh
