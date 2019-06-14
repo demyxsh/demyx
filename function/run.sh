@@ -261,8 +261,7 @@ function demyx_run() {
         demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin install flush-opcache --activate
 
         demyx_echo 'Configuring opcache helper'
-        demyx_execute demyx wp "$DEMYX_APP_DOMAIN" option update flush-opcache-upgrade 1; \
-            demyx wp "$DEMYX_APP_DOMAIN" option update flush-opcache-preload 1 > /dev/null
+        demyx_execute demyx wp "$DEMYX_APP_DOMAIN" option update flush-opcache-upgrade 1
 
         if [[ -z "$DEMYX_RUN_CLONE" ]]; then
             [[ "$DEMYX_RUN_CACHE" = on ]] && demyx config "$DEMYX_APP_DOMAIN" --cache
