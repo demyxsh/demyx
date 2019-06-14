@@ -142,14 +142,14 @@ function demyx_config() {
                 demyx_echo 'Generating htpasswd'
                 demyx_execute -v -q echo "$DEMYX_PARSE_BASIC_AUTH" > "$DEMYX_APP_CONFIG"/htpasswd
 
-                demyx_echo "Turning on NGINX basic auth"
+                demyx_echo "Turning on wp-login.php basic auth"
                 demyx_execute docker cp "$DEMYX_APP_CONFIG"/htpasswd "$DEMYX_APP_WP_CONTAINER":/demyx; \
                     docker cp "$DEMYX_APP_CONFIG"/auth.conf "$DEMYX_APP_WP_CONTAINER":/etc/nginx/common; \
                     sed -i "s/DEMYX_APP_AUTH_WP=off/DEMYX_APP_AUTH_WP=on/g" "$DEMYX_APP_PATH"/.env
 
                 demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
             elif [[ "$DEMYX_CONFIG_AUTH_WP" = off ]]; then
-                demyx_echo "Turning off NGINX basic auth"
+                demyx_echo "Turning off wp-login.php basic auth"
                 demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" rm /etc/nginx/common/auth.conf; \
                     sed -i "s/DEMYX_APP_AUTH_WP=on/DEMYX_APP_AUTH_WP=off/g" "$DEMYX_APP_PATH"/.env; \
                     rm "$DEMYX_APP_CONFIG"/auth.conf; \
