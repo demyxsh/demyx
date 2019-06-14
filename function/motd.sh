@@ -38,12 +38,17 @@ EOF
             Welcome to Demyx! To see all demyx commands, run: demyx help
         " | sed 's/            //g'
 
-        PRINT_TABLE="DEMYX, $DEMYX_MOTD_MODE\n"
-        PRINT_TABLE+="HOST, $DEMYX_MOTD_HOST\n"
-        PRINT_TABLE+="USER, DEMYX\n"
-        PRINT_TABLE+="SSH/SFTP, $DEMYX_MOTD_SSH\n"
-        PRINT_TABLE+="ETSERVER, $DEMYX_MOTD_ET\n"
-        PRINT_TABLE+="STATUS, $DEMYX_MOTD_STATUS"
+        cd "$DEMYX_ETC" || exit
+
+        DEMYX_MOTD_NEWS_FETCH=$(git --no-pager log --pretty=oneline -5 --pretty=format:"%ad %s" --date=short)
+        readarray -t DEMYX_MOTD_NEWS <<< "$DEMYX_MOTD_NEWS_FETCH"
+
+        PRINT_TABLE="DEMYX, $DEMYX_MOTD_MODE, UPDATES\n"
+        PRINT_TABLE+="HOST, $DEMYX_MOTD_HOST, ${DEMYX_MOTD_NEWS[0]}\n"
+        PRINT_TABLE+="USER, DEMYX, ${DEMYX_MOTD_NEWS[1]}\n"
+        PRINT_TABLE+="SSH/SFTP, $DEMYX_MOTD_SSH, ${DEMYX_MOTD_NEWS[2]}\n"
+        PRINT_TABLE+="ETSERVER, $DEMYX_MOTD_ET, ${DEMYX_MOTD_NEWS[3]}\n"
+        PRINT_TABLE+="STATUS, $DEMYX_MOTD_STATUS, ${DEMYX_MOTD_NEWS[4]}"
         demyx_execute -v demyx_table "$PRINT_TABLE"
         echo
     fi
