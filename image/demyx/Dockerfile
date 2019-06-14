@@ -73,7 +73,7 @@ RUN set -ex; \
     echo 'Defaults env_keep +="DEMYX_SSH"' >> /etc/sudoers; \
     echo 'Defaults env_keep +="DEMYX_ET"' >> /etc/sudoers; \
     echo 'Defaults env_keep +="TZ"' >> /etc/sudoers; \
-    mkdir -p /demyx; \
+    mkdir /demyx; \
     ln -s /demyx /home/demyx; \
     \
     echo 'export GPG_TTY=$(tty)' >> /root/.zshrc; \

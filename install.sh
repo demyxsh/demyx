@@ -89,3 +89,4 @@ demyx --nc
 echo -e "\e[34m[INFO\e[39m] Waiting for demyx container to fully initialize"
 sleep 5
 demyx exec install --domain="$DEMYX_INSTALL_DOMAIN" --email="$DEMYX_INSTALL_EMAIL" --user="$DEMYX_INSTALL_USER" --pass="$DEMYX_INSTALL_PASS"
+demyx
