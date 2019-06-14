@@ -40,10 +40,10 @@ EOF
 
         cd "$DEMYX_ETC" || exit
 
-        DEMYX_MOTD_NEWS_FETCH=$(git --no-pager log --pretty=oneline -5 --pretty=format:"%ad %s" --date=short)
+        DEMYX_MOTD_NEWS_FETCH=$(git --no-pager log --pretty=oneline -5 --pretty=format:"%s")
         readarray -t DEMYX_MOTD_NEWS <<< "$DEMYX_MOTD_NEWS_FETCH"
 
-        PRINT_TABLE="DEMYX, $DEMYX_MOTD_MODE, UPDATES\n"
+        PRINT_TABLE="DEMYX, $DEMYX_MOTD_MODE, NEWS\n"
         PRINT_TABLE+="HOST, $DEMYX_MOTD_HOST, ${DEMYX_MOTD_NEWS[0]}\n"
         PRINT_TABLE+="USER, DEMYX, ${DEMYX_MOTD_NEWS[1]}\n"
         PRINT_TABLE+="SSH/SFTP, $DEMYX_MOTD_SSH, ${DEMYX_MOTD_NEWS[2]}\n"
