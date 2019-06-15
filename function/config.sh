@@ -238,8 +238,8 @@ function demyx_config() {
 
                 demyx_app_config
 
-                demyx compose "$DEMYX_APP_DOMAIN" stop db_"$DEMYX_APP_ID"
-                demyx compose "$DEMYX_APP_DOMAIN" rm -f db_"$DEMYX_APP_ID"
+                demyx compose "$DEMYX_APP_DOMAIN" db stop
+                demyx compose "$DEMYX_APP_DOMAIN" db rm -f
 
                 demyx_echo 'Deleting old MariaDB volume'
                 demyx_execute docker volume rm wp_"$DEMYX_APP_ID"_db
