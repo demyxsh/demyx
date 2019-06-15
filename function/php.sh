@@ -188,8 +188,8 @@ function demyx_php() {
             opcache.max_wasted_percentage=10
             opcache.memory_consumption=256
             opcache.save_comments=1
-            opcache.revalidate_freq=0
-            opcache.validate_timestamps=0
+            opcache.revalidate_freq=60
+            opcache.validate_timestamps=1
             opcache.consistency_checks=0
 
             [curl]
