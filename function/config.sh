@@ -237,10 +237,9 @@ function demyx_config() {
                 DEMYX_CONFIG_CLEAN_MARIADB_ROOT_PASSWORD=$(demyx util pwgen -cns 50 1 | sed -e 's/\r//g')
 
                 demyx_echo 'Genearting new MariaDB credentials'
-                demyx_execute -q sed -i "s|$WORDPRESS_DB_PASSWORD|$DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD|g" "$DEMYX_APP_PATH"/.env ;\
-                    sed -i "s|$MARIADB_ROOT_PASSWORD|$DEMYX_CONFIG_CLEAN_MARIADB_ROOT_PASSWORD|g" "$DEMYX_APP_PATH"/.env ;\
-                    docker exec -t "$DEMYX_APP_WP_CONTAINER" sed -i "s|$WORDPRESS_DB_PASSWORD|$DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD|g" /var/www/html/wp-config.php
-
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" bash -c "sed -i \"s|$WORDPRESS_DB_PASSWORD|$DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD|g\" /var/www/html/wp-config.php"
+                demyx_execute -v -q sed -i "s|$WORDPRESS_DB_PASSWORD|$DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD|g" "$DEMYX_APP_PATH"/.env; \
+                    demyx_execute -v -q sed -i "s|$MARIADB_ROOT_PASSWORD|$DEMYX_CONFIG_CLEAN_MARIADB_ROOT_PASSWORD|g" "$DEMYX_APP_PATH"/.env
                 demyx_app_config
 
                 demyx compose "$DEMYX_APP_DOMAIN" db stop
@@ -279,6 +278,9 @@ function demyx_config() {
 
                 demyx config "$DEMYX_APP_DOMAIN" --restart=nginx-php
                 demyx config "$DEMYX_APP_DOMAIN" --healthcheck
+
+                demyx_echo 'Cleaning salts'
+                demyx_execute demyx wp "$DEMYX_APP_DOMAIN" config shuffle-salts
             fi
             if [[ "$DEMYX_CONFIG_DEV" = on ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
