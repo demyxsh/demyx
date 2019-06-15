@@ -130,7 +130,8 @@ demyx_open_port() {
     echo "$DEMYX_SFTP_PORT" | sed -e 's/\r//g'
 }
 demyx_mariadb_ready() {
-    until docker exec -t "$DEMYX_APP_DB_CONTAINER" mysqladmin -u root -p"$MARIADB_ROOT_PASSWORD" status
+    DEMYX_MARIADB_READY_PASSWORD=$(echo "$MARIADB_ROOT_PASSWORD" | sed -e 's/\r//g')
+    until docker exec -t "$DEMYX_APP_DB_CONTAINER" mysqladmin -u root -p"$DEMYX_MARIADB_READY_PASSWORD" status
     do
         sleep 1
     done
