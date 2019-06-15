@@ -51,10 +51,10 @@ function demyx_utility() {
         DEMYX_UTILITY_USER=$(demyx util gpw 1 10 | sed -e 's/\r//g')
         DEMYX_UTILITY_PASS=$(demyx util pwgen -cns 50 1 | sed -e 's/\r//g')
         DEMYX_UTILITY_HTPASSWD_OUTPUT=$(demyx util htpasswd -nb $DEMYX_UTILITY_USER $DEMYX_UTILITY_PASS | sed -e 's/\r//g')
-        PRINT_TABLE="DEMYX, UTILITY\n"
-        PRINT_TABLE+="USERNAME, $DEMYX_UTILITY_USER\n"
-        PRINT_TABLE+="PASSWORD, $DEMYX_UTILITY_PASS\n"
-        PRINT_TABLE+="HTPASSWD, $DEMYX_UTILITY_HTPASSWD_OUTPUT"
+        PRINT_TABLE="DEMYX^ UTILITY\n"
+        PRINT_TABLE+="USERNAME^ $DEMYX_UTILITY_USER\n"
+        PRINT_TABLE+="PASSWORD^ $DEMYX_UTILITY_PASS\n"
+        PRINT_TABLE+="HTPASSWD^ $DEMYX_UTILITY_HTPASSWD_OUTPUT"
 
         if [[ -n "$DEMYX_UTILITY_RAW" ]]; then
             demyx_execute -v echo $DEMYX_UTILITY_USER
@@ -66,8 +66,8 @@ function demyx_utility() {
     elif [[ -n "$DEMYX_UTILITY_HTPASSWD" ]]; then
         [[ -z "$DEMYX_UTILITY_USER" ]] && demyx_die 'Missing --user'
         DEMYX_UTILITY_HTPASSWD_OUTPUT=$(demyx util htpasswd -nb $DEMYX_UTILITY_USER $DEMYX_UTILITY_HTPASSWD | sed -e 's/\r//g')
-        PRINT_TABLE="DEMYX, UTILITY\n"
-        PRINT_TABLE+="HTPASSWD, $DEMYX_UTILITY_HTPASSWD_OUTPUT"
+        PRINT_TABLE="DEMYX^ UTILITY\n"
+        PRINT_TABLE+="HTPASSWD^ $DEMYX_UTILITY_HTPASSWD_OUTPUT"
         
         if [[ -n "$DEMYX_UTILITY_RAW" ]]; then
             demyx_execute -v -q echo $DEMYX_UTILITY_HTPASSWD_OUTPUT
@@ -76,8 +76,8 @@ function demyx_utility() {
         fi
     elif [[ -n "$DEMYX_UTILITY_PASS" ]]; then
         DEMYX_UTILITY_PASS=$(demyx util pwgen -cns 50 1 | sed -e 's/\r//g')
-        PRINT_TABLE="DEMYX, UTILITY\n"
-        PRINT_TABLE+="PASSWORD, $DEMYX_UTILITY_PASS"
+        PRINT_TABLE="DEMYX^ UTILITY\n"
+        PRINT_TABLE+="PASSWORD^ $DEMYX_UTILITY_PASS"
     
         if [[ -n "$DEMYX_UTILITY_RAW" ]]; then
             demyx_execute -v -q echo $DEMYX_UTILITY_PASS
@@ -86,8 +86,8 @@ function demyx_utility() {
         fi
     elif [[ -n "$DEMYX_UTILITY_USER" ]]; then
         DEMYX_UTILITY_USER=$(demyx util gpw 1 10 | sed -e 's/\r//g')
-        PRINT_TABLE="DEMYX, UTILITY\n"
-        PRINT_TABLE+="USERNAME, $DEMYX_UTILITY_USER"
+        PRINT_TABLE="DEMYX^ UTILITY\n"
+        PRINT_TABLE+="USERNAME^ $DEMYX_UTILITY_USER"
         
         if [[ -n "$DEMYX_UTILITY_RAW" ]]; then
             demyx_execute -v echo $DEMYX_UTILITY_USER

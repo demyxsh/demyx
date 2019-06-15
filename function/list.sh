@@ -35,7 +35,7 @@ function demyx_list() {
         PRINT_TABLE="DEMYX, WORDPRESS ($DEMYX_LIST_WP_COUNT)\n"
         for i in *
         do
-            PRINT_TABLE+=", $i\n"
+            PRINT_TABLE+="^ $i\n"
         done
         demyx_execute -v demyx_table "$PRINT_TABLE"
     fi

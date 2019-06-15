@@ -94,4 +94,4 @@ function trimString() {
     sed 's,^[[:blank:]]*,,' <<< "${string}" | sed 's,[[:blank:]]*$,,'
 }
 
-printTable ',' "$@"
+printTable '^' "$@"
