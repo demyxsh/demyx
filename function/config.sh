@@ -266,7 +266,7 @@ function demyx_config() {
                     chown -R www-data:www-data /var/www/html
                 "
 
-                demyx compose "$DEMYX_APP_DOMAIN" up -d db_"$DEMYX_APP_ID"
+                demyx compose "$DEMYX_APP_DOMAIN" db up -d
 
                 demyx_echo 'Initializing MariaDB'
                 demyx_execute demyx_mariadb_ready
