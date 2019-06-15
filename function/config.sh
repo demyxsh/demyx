@@ -221,18 +221,18 @@ function demyx_config() {
             if [[ -n "$DEMYX_CONFIG_CLEAN" ]]; then
                 demyx backup "$DEMYX_APP_DOMAIN"
                 demyx config "$DEMYX_APP_DOMAIN" --healthcheck=off
-                
+
                 demyx_echo 'Stopping php-fpm'
                 demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" pkill php-fpm
-                
+
                 demyx_echo 'Exporting database'
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" db export "$DEMYX_APP_CONTAINER".sql
 
                 DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD=$(demyx util pwgen -cns 50 1 | sed -e 's/\r//g')
                 DEMYX_CONFIG_CLEAN_MARIADB_ROOT_PASSWORD=$(demyx util pwgen -cns 50 1 | sed -e 's/\r//g')
-                
+
                 demyx_echo 'Genearting new MariaDB credentials'
-                demyx_execute sed -i "s|$WORDPRESS_DB_PASSWORD|$DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD|g" "$DEMYX_APP_PATH"/.env ;\
+                demyx_execute -q sed -i "s|$WORDPRESS_DB_PASSWORD|$DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD|g" "$DEMYX_APP_PATH"/.env ;\
                     sed -i "s|$MARIADB_ROOT_PASSWORD|$DEMYX_CONFIG_CLEAN_MARIADB_ROOT_PASSWORD|g" "$DEMYX_APP_PATH"/.env ;\
                     docker exec -t "$DEMYX_APP_WP_CONTAINER" sed -i "s|$WORDPRESS_DB_PASSWORD|$DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD|g" /var/www/html/wp-config.php
 
@@ -240,7 +240,7 @@ function demyx_config() {
 
                 demyx compose "$DEMYX_APP_DOMAIN" stop db_"$DEMYX_APP_ID"
                 demyx compose "$DEMYX_APP_DOMAIN" rm -f db_"$DEMYX_APP_ID"
-                
+
                 demyx_echo 'Deleting old MariaDB volume'
                 demyx_execute docker volume rm wp_"$DEMYX_APP_ID"_db
 
@@ -262,13 +262,13 @@ function demyx_config() {
                 "
 
                 demyx compose "$DEMYX_APP_DOMAIN" up -d db_"$DEMYX_APP_ID"
-                
+
                 demyx_echo 'Initializing MariaDB'
                 demyx_execute demyx_mariadb_ready
 
                 demyx_echo 'Importing database'
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" db import "$DEMYX_APP_CONTAINER".sql
-                
+
                 demyx_echo 'Deleting exported database'
                 demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" rm "$DEMYX_APP_CONTAINER".sql
 
