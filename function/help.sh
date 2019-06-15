@@ -27,6 +27,7 @@ function demyx_help() {
         echo "                   --auth-wp        Turns on/off basic auth for wp-login.php"
         echo "                   --cache          Turns on/off fastcgi cache"
         echo "                   --cdn            Turns on/off CDN, powered by Staticaly"
+        echo "                   --clean          Creates new MariaDB credentials and reinstalls WordPress core files"
         echo "                   --dev            Turns on/off development mode"
         echo "                   --files          BrowserSync arg: themes, plugins, or custom path"
         echo "                   --force          Force config"

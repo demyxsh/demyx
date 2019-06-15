@@ -33,6 +33,9 @@ function demyx_config() {
             --cdn=off)
                 DEMYX_CONFIG_CDN=off
                 ;;
+            --clean)
+                DEMYX_CONFIG_CLEAN=1
+                ;;
             --dev|--dev=on)
                 DEMYX_CONFIG_DEV=on
                 ;;
@@ -214,6 +217,63 @@ function demyx_config() {
                 demyx_echo 'Deactivating cdn-enabler' 
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin deactivate cdn-enabler && \
                     sed -i "s/DEMYX_APP_CDN=on/DEMYX_APP_CDN=off/g" "$DEMYX_APP_PATH"/.env
+            fi
+            if [[ -n "$DEMYX_CONFIG_CLEAN" ]]; then
+                demyx backup "$DEMYX_APP_DOMAIN"
+                demyx config "$DEMYX_APP_DOMAIN" --healthcheck=off
+                
+                demyx_echo 'Stopping php-fpm'
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" pkill php-fpm
+                
+                demyx_echo 'Exporting database'
+                demyx_execute demyx wp "$DEMYX_APP_DOMAIN" db export "$DEMYX_APP_CONTAINER".sql
+
+                DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD=$(demyx util pwgen -cns 50 1 | sed -e 's/\r//g')
+                DEMYX_CONFIG_CLEAN_MARIADB_ROOT_PASSWORD=$(demyx util pwgen -cns 50 1 | sed -e 's/\r//g')
+                
+                demyx_echo 'Genearting new MariaDB credentials'
+                demyx_execute sed -i "s|$WORDPRESS_DB_PASSWORD|$DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD|g" "$DEMYX_APP_PATH"/.env ;\
+                    sed -i "s|$MARIADB_ROOT_PASSWORD|$DEMYX_CONFIG_CLEAN_MARIADB_ROOT_PASSWORD|g" "$DEMYX_APP_PATH"/.env ;\
+                    docker exec -t "$DEMYX_APP_WP_CONTAINER" sed -i "s|$WORDPRESS_DB_PASSWORD|$DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD|g" /var/www/html/wp-config.php
+
+                demyx_app_config
+
+                demyx compose "$DEMYX_APP_DOMAIN" stop db_"$DEMYX_APP_ID"
+                demyx compose "$DEMYX_APP_DOMAIN" rm -f db_"$DEMYX_APP_ID"
+                
+                demyx_echo 'Deleting old MariaDB volume'
+                demyx_execute docker volume rm wp_"$DEMYX_APP_ID"_db
+
+                demyx_echo 'Creating new MariaDB volume'
+                demyx_execute docker volume create wp_"$DEMYX_APP_ID"_db
+
+                demyx_echo 'Replacing WordPress core files'
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" bash -c "
+                    wget -P /var/www https://wordpress.org/latest.tar.gz; \
+                    tar -xzf /var/www/latest.tar.gz -C /var/www; \
+                    pkill php-fpm; \
+                    rm -rf /var/www/wordpress/wp-content; \
+                    rm -rf /var/www/html/wp-admin; \
+                    rm -rf /var/www/html/wp-includes; \
+                    mv /var/www/wordpress/* /var/www/html
+                    rm -rf /var/www/wordpress; \
+                    rm /var/www/latest.tar.gz; \
+                    chown -R www-data:www-data /var/www/html
+                "
+
+                demyx compose "$DEMYX_APP_DOMAIN" up -d db_"$DEMYX_APP_ID"
+                
+                demyx_echo 'Initializing MariaDB'
+                demyx_execute demyx_mariadb_ready
+
+                demyx_echo 'Importing database'
+                demyx_execute demyx wp "$DEMYX_APP_DOMAIN" db import "$DEMYX_APP_CONTAINER".sql
+                
+                demyx_echo 'Deleting exported database'
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" rm "$DEMYX_APP_CONTAINER".sql
+
+                demyx config "$DEMYX_APP_DOMAIN" --restart=nginx-php
+                demyx config "$DEMYX_APP_DOMAIN" --healthcheck
             fi
             if [[ "$DEMYX_CONFIG_DEV" = on ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
