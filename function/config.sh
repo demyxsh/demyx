@@ -109,7 +109,11 @@ function demyx_config() {
         for i in *
         do
             if [[ -n "$DEMYX_CONFIG_REFRESH" ]]; then
-                demyx config "$i" --refresh
+                if [[ -n "$DEMYX_CONFIG_NO_BACKUP" ]]; then
+                    demyx config "$i" --refresh --no-backup
+                else
+                    demyx config "$i" --refresh
+                fi
             fi
             if [[ -n "$DEMYX_CONFIG_RESTART" ]]; then
                 echo -e "\e[34m[INFO]\e[39m Restarting service for $i"
