@@ -57,6 +57,9 @@ function demyx_config() {
             --healthcheck=off)
                 DEMYX_CONFIG_HEALTHCHECK=off
                 ;;
+            --no-backup)
+                DEMYX_CONFIG_NO_BACKUP=1
+                ;;
             --rate-limit|--rate-limit=on)
                 DEMYX_CONFIG_RATE_LIMIT=on
                 ;;
@@ -219,7 +222,9 @@ function demyx_config() {
                     sed -i "s/DEMYX_APP_CDN=on/DEMYX_APP_CDN=off/g" "$DEMYX_APP_PATH"/.env
             fi
             if [[ -n "$DEMYX_CONFIG_CLEAN" ]]; then
-                demyx backup "$DEMYX_APP_DOMAIN"
+                if [[ -z "$DEMYX_CONFIG_NO_BACKUP" ]]; then
+                    demyx backup "$DEMYX_APP_DOMAIN"
+                fi
                 demyx config "$DEMYX_APP_DOMAIN" --healthcheck=off
 
                 demyx_echo 'Stopping php-fpm'
@@ -477,7 +482,9 @@ function demyx_config() {
                     sed -i "s/DEMYX_APP_RATE_LIMIT=on/DEMYX_APP_RATE_LIMIT=off/g" "$DEMYX_APP_PATH"/.env
             fi
             if [[ -n "$DEMYX_CONFIG_REFRESH" ]]; then
-                demyx backup "$DEMYX_APP_DOMAIN"
+                if [[ -z "$DEMYX_CONFIG_NO_BACKUP" ]]; then
+                    demyx backup "$DEMYX_APP_DOMAIN"
+                fi
 
                 source "$DEMYX_FUNCTION"/nginx.sh
                 source "$DEMYX_FUNCTION"/php.sh
