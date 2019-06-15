@@ -97,6 +97,7 @@ demyx_execute() {
         echo -e "[$(date +%F-%T)] ECHO: $DEMYX_ECHO" >> /var/log/demyx/demyx.log
         echo -e "[$(date +%F-%T)] EXECUTE: ***" >> /var/log/demyx/demyx.log
         echo -e "[$(date +%F-%T)] STDOUT: ***" >> /var/log/demyx/demyx.log
+        DEMYX_EXECUTE_QUIET=
     elif [[ "$DEMYX_COMMAND" = monitor ]]; then
         echo -e "[$(date +%F-%T)] DEMYX: $DEMYX_COMMAND $DEMYX_APP_DOMAIN" >> /var/log/demyx/demyx.log
         echo -e "[$(date +%F-%T)] ECHO: $DEMYX_ECHO" >> /var/log/demyx/demyx.log
