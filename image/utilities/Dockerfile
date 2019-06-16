@@ -39,6 +39,7 @@ RUN set -ex; \
 	cd maldetect-${MALDET_VERSION}; \
 	bash install.sh; \
 	sed -i 's/scan_ignore_root="1"/scan_ignore_root="0"/g' /usr/local/maldetect/conf.maldet; \
+	freshclam; \
 	maldet -u; \
 	rm -rf /tmp/*
 	
