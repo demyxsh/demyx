@@ -35,7 +35,11 @@ EOF
             Demyx
             https://demyx.sh
 
-            Welcome to Demyx! To see all demyx commands, run: demyx help
+            Welcome to Demyx! Please report any bugs you see.
+
+            - Help: demyx help
+            - Bugs: github.com/demyxco/demyx/issues
+            - Contact: info@demyx.sh
         " | sed 's/            //g'
 
         cd "$DEMYX_ETC" || exit
