@@ -430,14 +430,14 @@ function demyx_config() {
                     demyx config "$DEMYX_APP_DOMAIN" --cache=off
                 fi
 
-                PRINT_TABLE="DEMYX, DEVELOPMENT MODE\n"
-                PRINT_TABLE+="SFTP, $DEMYX_APP_DOMAIN\n"
-                PRINT_TABLE+="SFTP USER, www-data\n"
-                PRINT_TABLE+="SFTP PORT, $DEMYX_SFTP_PORT\n"
-                PRINT_TABLE+="PHPMYADMIN, https://${DEMYX_PHPMYADMIN_SUB}.${DEMYX_APP_DOMAIN}\n"
-                PRINT_TABLE+="BROWSERSYNC, https://${DEMYX_BROWSERSYNC_SUB}.${DEMYX_APP_DOMAIN}\n"
-                PRINT_TABLE+="BROWSERSYNC UI, https://${DEMYX_BROWSERSYNC_SUB_UI}.${DEMYX_APP_DOMAIN}\n"
-                PRINT_TABLE+="BROWSERSYNC FILES, $DEMYX_BS_FILES"
+                PRINT_TABLE="DEMYX^ DEVELOPMENT MODE\n"
+                PRINT_TABLE+="SFTP^ $DEMYX_APP_DOMAIN\n"
+                PRINT_TABLE+="SFTP USER^ www-data\n"
+                PRINT_TABLE+="SFTP PORT^ $DEMYX_SFTP_PORT\n"
+                PRINT_TABLE+="PHPMYADMIN^ https://${DEMYX_PHPMYADMIN_SUB}.${DEMYX_APP_DOMAIN}\n"
+                PRINT_TABLE+="BROWSERSYNC^ https://${DEMYX_BROWSERSYNC_SUB}.${DEMYX_APP_DOMAIN}\n"
+                PRINT_TABLE+="BROWSERSYNC UI^ https://${DEMYX_BROWSERSYNC_SUB_UI}.${DEMYX_APP_DOMAIN}\n"
+                PRINT_TABLE+="BROWSERSYNC FILES^ $DEMYX_BS_FILES"
                 demyx_execute -v sed -i "s/DEMYX_APP_DEV=off/DEMYX_APP_DEV=on/g" "$DEMYX_APP_PATH"/.env && \
                 demyx_table "$PRINT_TABLE"
             elif [[ "$DEMYX_CONFIG_DEV" = off ]]; then
@@ -562,10 +562,10 @@ function demyx_config() {
                     -p "$DEMYX_SFTP_PORT":22 \
                     demyx/ssh
 
-                PRINT_TABLE="DEMYX, SFTP\n"
-                PRINT_TABLE+="SFTP, $DEMYX_APP_DOMAIN\n"
-                PRINT_TABLE+="SFTP USER, www-data\n"
-                PRINT_TABLE+="SFTP PORT, $DEMYX_SFTP_PORT\n"
+                PRINT_TABLE="DEMYX^ SFTP\n"
+                PRINT_TABLE+="SFTP^ $DEMYX_APP_DOMAIN\n"
+                PRINT_TABLE+="SFTP USER^ www-data\n"
+                PRINT_TABLE+="SFTP PORT^ $DEMYX_SFTP_PORT\n"
                 demyx_execute -v demyx_table "$PRINT_TABLE"
             elif [[ "$DEMYX_CONFIG_SFTP" = off ]]; then
                 DEMYX_SFTP_CONTAINER_CHECK=$(docker ps | grep "$DEMYX_APP_ID"_sftp || true)
