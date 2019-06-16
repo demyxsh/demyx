@@ -60,6 +60,12 @@ function demyx_config() {
             --no-backup)
                 DEMYX_CONFIG_NO_BACKUP=1
                 ;;
+            --pma|--pma=on)
+                DEMYX_CONFIG_PMA=on
+                ;;
+            --pma=off)
+                DEMYX_CONFIG_PMA=off
+                ;;
             --rate-limit|--rate-limit=on)
                 DEMYX_CONFIG_RATE_LIMIT=on
                 ;;
@@ -477,6 +483,42 @@ function demyx_config() {
                 [[ "$DEMYX_CONFIG_HEALTHCHECK_CHECK" = off ]] && demyx_die 'Healthcheck is already off'
                 demyx_echo 'Turning off healthcheck'
                 demyx_execute sed -i "s/DEMYX_APP_HEALTHCHECK=on/DEMYX_APP_HEALTHCHECK=off/g" "$DEMYX_APP_PATH"/.env
+            fi
+            if [[ "$DEMYX_CONFIG_PMA" = on ]]; then
+                DEMYX_CONFIG_PMA_CONTAINER_CHECK=$(docker ps | grep "$DEMYX_APP_ID"_pma || true)
+                [[ -n "$DEMYX_CONFIG_PMA_CONTAINER_CHECK" ]] && demyx_die 'phpMyAdmin container is already running'
+
+                DEMYX_PHPMYADMIN_SUB="$DEMYX_APP_ID"-pma
+                DEMYX_PARSE_BASIC_AUTH=$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}' || true)
+
+                demyx_echo 'Creating phpMyAdmin container'
+                demyx_execute docker run -d --rm \
+                    --name "$DEMYX_APP_ID"_pma \
+                    --network demyx \
+                    -e PMA_HOST=db_"$DEMYX_APP_ID" \
+                    -e PMA_USER="$WORDPRESS_DB_USER" \
+                    -e PMA_PASSWORD="$WORDPRESS_DB_PASSWORD" \
+                    -e MYSQL_ROOT_PASSWORD="${MARIADB_ROOT_PASSWORD}" \
+                    -l "traefik.enable=true" \
+                    -l "traefik.frontend.rule=Host:${DEMYX_PHPMYADMIN_SUB}.${DEMYX_APP_DOMAIN}" \
+                    -l "traefik.port=80" \
+                    -l "traefik.frontend.redirect.entryPoint=https" \
+                    -l "traefik.frontend.headers.forceSTSHeader=${DEMYX_APP_FORCE_STS_HEADER}" \
+                    -l "traefik.frontend.headers.STSSeconds=${DEMYX_APP_STS_SECONDS}" \
+                    -l "traefik.frontend.headers.STSIncludeSubdomains=${DEMYX_APP_STS_INCLUDE_SUBDOMAINS}" \
+                    -l "traefik.frontend.headers.STSPreload=${DEMYX_APP_STS_PRELOAD}" \
+                    -l "traefik.frontend.auth.basic.users=${DEMYX_PARSE_BASIC_AUTH}" \
+                    phpmyadmin/phpmyadmin
+
+                PRINT_TABLE="DEMYX^ PHPMYADMIN\n"
+                PRINT_TABLE+="URL^ https://${DEMYX_PHPMYADMIN_SUB}.${DEMYX_APP_DOMAIN}\n"
+                demyx_execute -v demyx_table "$PRINT_TABLE"
+            elif [[ "$DEMYX_CONFIG_PMA" = off ]]; then
+                DEMYX_CONFIG_PMA_CONTAINER_CHECK=$(docker ps | grep "$DEMYX_APP_ID"_pma || true)
+                [[ -z "$DEMYX_CONFIG_PMA_CONTAINER_CHECK" ]] && demyx_die 'No phpMyAdmin container running'
+
+                demyx_echo 'Stopping phpMyAdmin container'
+                demyx_execute docker stop "$DEMYX_APP_ID"_pma
             fi
             if [[ "$DEMYX_CONFIG_RATE_LIMIT" = on ]]; then
                 demyx_echo 'Turning on rate limiting'
