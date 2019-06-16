@@ -291,6 +291,8 @@ function demyx_config() {
 
                 demyx_echo 'Cleaning salts'
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" config shuffle-salts
+
+                demyx compose "$DEMYX_APP_DOMAIN" du
             fi
             if [[ "$DEMYX_CONFIG_DEV" = on ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
