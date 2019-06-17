@@ -149,23 +149,35 @@ function demyx_config() {
                 demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" wp up -d --remove-orphans
             fi
             if [[ "$DEMYX_CONFIG_AUTH_WP" = on ]]; then
-                source "$DEMYX_FUNCTION"/nginx.sh
+                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
+                    [[ "$DEMYX_APP_AUTH_WP" = on ]] && demyx_die 'Basic WP Auth is already turned on'
+                fi
+
                 DEMYX_PARSE_BASIC_AUTH=$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}' || true)
 
-                demyx_echo 'Generating htpasswd'
-                demyx_execute -v -q echo "$DEMYX_PARSE_BASIC_AUTH" > "$DEMYX_APP_CONFIG"/htpasswd
+                if [[ ! -f "$DEMYX_APP_CONFIG"/htpasswd ]]; then
+                    demyx_echo 'Generating htpasswd'
+                    demyx_execute -v -q echo "$DEMYX_PARSE_BASIC_AUTH" > "$DEMYX_APP_CONFIG"/htpasswd
+                fi
 
                 demyx_echo "Turning on wp-login.php basic auth"
-                demyx_execute docker cp "$DEMYX_APP_CONFIG"/htpasswd "$DEMYX_APP_WP_CONTAINER":/demyx; \
-                    docker exec -t "$DEMYX_APP_WP_CONTAINER" bash -c "sed -i 's/#auth_basic/auth_basic/g' /demyx/nginx.conf"; \
+                demyx_execute sed -i 's/#auth_basic/auth_basic/g' "$DEMYX_APP_CONFIG"/nginx.conf; \
                     sed -i "s/DEMYX_APP_AUTH_WP=off/DEMYX_APP_AUTH_WP=on/g" "$DEMYX_APP_PATH"/.env
+
+                demyx_echo 'Updating configs'
+                demyx_execute docker cp "$DEMYX_APP_CONFIG"/. "$DEMYX_APP_WP_CONTAINER":/demyx
 
                 demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
             elif [[ "$DEMYX_CONFIG_AUTH_WP" = off ]]; then
+                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
+                    [[ "$DEMYX_APP_AUTH_WP" = off ]] && demyx_die 'Basic WP Auth is already turned off'
+                fi
                 demyx_echo "Turning off wp-login.php basic auth"
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" bash -c "sed -i 's/auth_basic/#auth_basic/g' /demyx/nginx.conf"; \
-                    sed -i "s/DEMYX_APP_AUTH_WP=on/DEMYX_APP_AUTH_WP=off/g" "$DEMYX_APP_PATH"/.env; \
-                    rm "$DEMYX_APP_CONFIG"/htpasswd
+                demyx_execute sed -i 's/auth_basic/#auth_basic/g' "$DEMYX_APP_CONFIG"/nginx.conf; \
+                    sed -i "s/DEMYX_APP_AUTH_WP=on/DEMYX_APP_AUTH_WP=off/g" "$DEMYX_APP_PATH"/.env
+
+                demyx_echo 'Updating configs'
+                demyx_execute docker cp "$DEMYX_APP_CONFIG"/. "$DEMYX_APP_WP_CONTAINER":/demyx
 
                 demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
             fi
