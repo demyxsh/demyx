@@ -225,6 +225,10 @@ function demyx_config() {
                 demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
             fi
             if [[ "$DEMYX_CONFIG_CDN" = on ]]; then
+                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
+                    [[ "$DEMYX_APP_CDN" = on ]] && demyx_die 'CDN is already turned on'
+                fi
+
                 DEMYX_CONFIG_CDN_ENABLER_CHECK=$(demyx exec "$DEMYX_APP_DOMAIN" ls wp-content/plugins | grep cdn-enabler || true)
 
                 if [[ -n "$DEMYX_CONFIG_CDN_ENABLER_CHECK" ]]; then
@@ -239,6 +243,9 @@ function demyx_config() {
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" option update cdn_enabler "{\"url\":\"https:\/\/cdn.staticaly.com\/img\/$DEMYX_APP_DOMAIN\",\"dirs\":\"wp-content,wp-includes\",\"excludes\":\".3g2, .3gp, .aac, .aiff, .alac, .apk, .avi, .css, .doc, .docx, .flac, .flv, .h264, .js, .json, .m4v, .mkv, .mov, .mp3, .mp4, .mpeg, .mpg, .ogg, .pdf, .php, .rar, .rtf, .svg, .tex, .ttf, .txt, .wav, .wks, .wma, .wmv, .woff, .woff2, .wpd, .wps, .xml, .zip, wp-content\/plugins, wp-content\/themes\",\"relative\":1,\"https\":1,\"keycdn_api_key\":\"\",\"keycdn_zone_id\":0}" --format=json && \
                     sed -i "s/DEMYX_APP_CDN=off/DEMYX_APP_CDN=on/g" "$DEMYX_APP_PATH"/.env
             elif [[ "$DEMYX_CONFIG_CDN" = off ]]; then
+                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
+                    [[ "$DEMYX_APP_CDN" = off ]] && demyx_die 'CDN is already turned off'
+                fi
                 demyx_echo 'Deactivating cdn-enabler' 
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin deactivate cdn-enabler && \
                     sed -i "s/DEMYX_APP_CDN=on/DEMYX_APP_CDN=off/g" "$DEMYX_APP_PATH"/.env
@@ -308,8 +315,7 @@ function demyx_config() {
             fi
             if [[ "$DEMYX_CONFIG_DEV" = on ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    DEMYX_APP_DEV_CHECK=$(demyx info "$DEMYX_APP_DOMAIN" --filter=DEMYX_APP_DEV)
-                    [[ "$DEMYX_APP_DEV_CHECK" = on ]] && demyx_die 'Dev mode is already turned on'
+                    [[ "$DEMYX_APP_DEV" = on ]] && demyx_die 'Dev mode is already turned on'
                 fi
  
                 DEMYX_CONFIG_WILDCARD_CHECK=$(docker run -t --rm demyx/utilities "dig +short '*.$DEMYX_APP_DOMAIN'")
@@ -462,8 +468,7 @@ function demyx_config() {
                 demyx_table "$PRINT_TABLE"
             elif [[ "$DEMYX_CONFIG_DEV" = off ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    DEMYX_APP_DEV_CHECK=$(demyx info "$DEMYX_APP_DOMAIN" --filter=DEMYX_APP_DEV)
-                    [[ "$DEMYX_APP_DEV_CHECK" = off ]] && demyx_die 'Dev mode is already turned off'
+                    [[ "$DEMYX_APP_DEV" = off ]] && demyx_die 'Dev mode is already turned off'
                 fi
 
                 demyx_echo 'Stopping SFTP container' 
@@ -631,17 +636,25 @@ function demyx_config() {
                 demyx_execute docker stop "$DEMYX_APP_ID"_sftp
             fi
             if [[ "$DEMYX_CONFIG_SSL" = on ]]; then
+                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
+                    [[ "$DEMYX_APP_SSL" = on ]] && demyx_die 'SSL is already turned on'
+                fi
+
                 demyx_echo 'Updating .env'
                 demyx_execute sed -i "s/DEMYX_APP_SSL=off/DEMYX_APP_SSL=on/g" "$DEMYX_APP_PATH"/.env
 
                 demyx_echo 'Turning on SSL'
-                demyx_execute demyx_yml
+                demyx_execute demy_app_config; demyx_yml
 
                 demyx_echo 'Replacing URLs to HTTPS' 
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" search-replace http://"$DEMYX_APP_DOMAIN" https://"$DEMYX_APP_DOMAIN"
 
                 demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" wp up -d --remove-orphans
             elif [[ "$DEMYX_CONFIG_SSL" = off ]]; then
+                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
+                    [[ "$DEMYX_APP_SSL" = off ]] && demyx_die 'SSL is already turned off'
+                fi
+
                 demyx_echo 'Updating .env'
                 demyx_execute sed -i "s/DEMYX_APP_SSL=on/DEMYX_APP_SSL=off/g" "$DEMYX_APP_PATH"/.env
 
