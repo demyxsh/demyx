@@ -7,9 +7,6 @@ function demyx_php_fpm() {
     if [[ "$DEMYX_APP_TYPE" = wp ]]; then
         cat > "$DEMYX_APP_CONFIG"/php-fpm.conf <<-EOF
             ; AUTO GENERATED
-            ; This file is not used in the docker-compose file so you can edit it.
-            ; Please run the command below to push it inside the container:
-            ; demyx config domain.tld --update
             
             [www]
             user = www-data

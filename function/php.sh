@@ -7,9 +7,6 @@ function demyx_php() {
     if [[ "$DEMYX_APP_TYPE" = wp ]]; then
         cat > "$DEMYX_APP_CONFIG"/php.ini <<-EOF
             ; AUTO GENERATED
-            ; This file is not used in the docker-compose file so you can edit it.
-            ; Please run the command below to push it inside the container:
-            ; demyx config domain.tld --update
 
             [PHP]
             engine = On

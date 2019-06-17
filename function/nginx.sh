@@ -5,9 +5,6 @@ function demyx_nginx() {
     if [[ "$DEMYX_APP_TYPE" = wp ]]; then
         cat > "$DEMYX_APP_CONFIG"/nginx.conf <<-EOF
             # AUTO GENERATED
-            # This file is not used in the docker-compose file so you can edit it.
-            # Please run the command below to push it inside the container:
-            # demyx config domain.tld --update
 
             load_module modules/ngx_http_cache_purge_module.so;
             load_module modules/ngx_http_headers_more_filter_module.so;
@@ -115,24 +112,18 @@ function demyx_nginx() {
                         #include /etc/nginx/cache/location.conf;
                     }
 
+                    location = /wp-login.php {
+                        #auth_basic "Restricted";
+                        #auth_basic_user_file /demyx/htpasswd;
+                        include fastcgi_params;
+                        fastcgi_pass php;
+                        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+                    }
+
                     include /etc/nginx/common/*.conf;
                 }
             }
 EOF
         sed -i 's/            //' "$DEMYX_APP_CONFIG"/nginx.conf
     fi
-}
-
-demyx_nginx_auth() {
-    cat > "$DEMYX_APP_CONFIG"/auth.conf <<-EOF
-        # AUTO GENERATED
-        location = /wp-login.php {
-            auth_basic "Restricted";
-            auth_basic_user_file /demyx/htpasswd;
-            include fastcgi_params;
-            fastcgi_pass php;
-            fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
-        }
-EOF
-    sed -i 's/        //' "$DEMYX_APP_CONFIG"/auth.conf
 }
