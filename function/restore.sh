@@ -9,6 +9,9 @@ function demyx_restore() {
             -f|--force)
                 DEMYX_RESTORE_FORCE=1
                 ;;
+            --date=?*)
+                DEMYX_RESTORE_DATE=${3#*=}
+                ;;
             --)
                 shift
                 break
@@ -24,6 +27,8 @@ function demyx_restore() {
         shift
     done
 
+    DEMYX_RESTORE_TODAYS_DATE=$(date +%Y/%m/%d)
+
     demyx_app_config
     
     if [[ "$DEMYX_APP_TYPE" = wp ]] || [[ -n "$DEMYX_RESTORE_FORCE" ]]; then
@@ -38,8 +43,13 @@ function demyx_restore() {
             fi
         fi
 
-        demyx_echo 'Extracting archive'
-        demyx_execute tar -xzf "$DEMYX_BACKUP"/wp/"$DEMYX_TARGET".tgz -C "$DEMYX_WP"
+        if [[ -n "$DEMYX_RESTORE_DATE" ]]; then
+            demyx_echo "Extracting archive from $DEMYX_RESTORE_DATE"
+            demyx_execute tar -xzf "$DEMYX_BACKUP"/wp/"$DEMYX_RESTORE_DATE"/"$DEMYX_TARGET".tgz -C "$DEMYX_WP"
+        else
+            demyx_echo 'Extracting archive'
+            demyx_execute tar -xzf "$DEMYX_BACKUP"/wp/"$DEMYX_RESTORE_TODAYS_DATE"/"$DEMYX_TARGET".tgz -C "$DEMYX_WP"
+        fi
 
         demyx_app_config
 
