@@ -200,11 +200,13 @@ function demyx_config() {
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" option update rt_wp_nginx_helper_options '{"enable_purge":"1","cache_method":"enable_fastcgi","purge_method":"get_request","enable_map":null,"enable_log":null,"log_level":"INFO","log_filesize":"5","enable_stamp":null,"purge_homepage_on_edit":"1","purge_homepage_on_del":"1","purge_archive_on_edit":"1","purge_archive_on_del":"1","purge_archive_on_new_comment":"1","purge_archive_on_deleted_comment":"1","purge_page_on_mod":"1","purge_page_on_new_comment":"1","purge_page_on_deleted_comment":"1","redis_hostname":"127.0.0.1","redis_port":"6379","redis_prefix":"nginx-cache:","purge_url":"","redis_enabled_by_constant":0}' --format=json
 
                 demyx_echo 'Configuring NGINX' 
-                demyx_execute demyx exec "$DEMYX_APP_DOMAIN" sed -i "s|#include /etc/nginx/cache|include /etc/nginx/cache|g" /demyx/nginx.conf
+                demyx_execute sed -i "s|#include /etc/nginx/cache|include /etc/nginx/cache|g" "$DEMYX_APP_CONFIG"/nginx.conf
 
-                demyx_echo 'Reloading NGINX'
-                demyx_execute demyx exec "$DEMYX_APP_DOMAIN" nginx -s reload && \
+                demyx_echo 'Updating configs'
+                demyx_execute docker cp "$DEMYX_APP_CONFIG"/. "$DEMYX_APP_WP_CONTAINER":/demyx; \
                     sed -i "s/DEMYX_APP_CACHE=off/DEMYX_APP_CACHE=on/g" "$DEMYX_APP_PATH"/.env
+
+                demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
             elif [[ "$DEMYX_CONFIG_CACHE" = off ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ "$DEMYX_APP_CACHE" = off ]] && demyx_die 'Cache is already turned off'
@@ -214,11 +216,13 @@ function demyx_config() {
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin deactivate nginx-helper
                 
                 demyx_echo 'Configuring NGINX' 
-                demyx_execute demyx exec "$DEMYX_APP_DOMAIN" sed -i "s|include /etc/nginx/cache|#include /etc/nginx/cache|g" /demyx/nginx.conf
+                demyx_execute sed -i "s|include /etc/nginx/cache|#include /etc/nginx/cache|g" "$DEMYX_APP_CONFIG"/nginx.conf
 
-                demyx_echo 'Reloading NGINX'
-                demyx_execute demyx exec "$DEMYX_APP_DOMAIN" nginx -s reload && \
+                demyx_echo 'Updating configs'
+                demyx_execute docker cp "$DEMYX_APP_CONFIG"/. "$DEMYX_APP_WP_CONTAINER":/demyx; \
                     sed -i "s/DEMYX_APP_CACHE=on/DEMYX_APP_CACHE=off/g" "$DEMYX_APP_PATH"/.env
+
+                demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
             fi
             if [[ "$DEMYX_CONFIG_CDN" = on ]]; then
                 DEMYX_CONFIG_CDN_ENABLER_CHECK=$(demyx exec "$DEMYX_APP_DOMAIN" ls wp-content/plugins | grep cdn-enabler || true)
