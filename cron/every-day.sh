@@ -12,6 +12,9 @@
 # Rotate WordPress log
 /usr/local/bin/demyx log --rotate=wp
 
+# Backup WordPress sites at midnight
+/usr/local/bin/demyx backup all
+
 # Check for Demyx updates
 cd /demyx/etc
 git remote update
