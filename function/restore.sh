@@ -31,6 +31,12 @@ function demyx_restore() {
 
     demyx_app_config
     
+    if [[ -n "$DEMYX_RESTORE_DATE" ]]; then
+        [[ ! -f "$DEMYX_BACKUP"/"$DEMYX_RESTORE_DATE"/wp/"$DEMYX_TARGET".tgz ]] && demyx_die 'No file found'
+    else
+        [[ ! -f "$DEMYX_BACKUP"/"$DEMYX_RESTORE_TODAYS_DATE"/wp/"$DEMYX_TARGET".tgz ]] && demyx_die 'No file found'
+    fi
+
     if [[ "$DEMYX_APP_TYPE" = wp ]] || [[ -n "$DEMYX_RESTORE_FORCE" ]]; then
         if [[ -d "$DEMYX_APP_PATH" ]] && [[ -z "$DEMYX_RESTORE_FORCE" ]]; then
             echo -en "\e[33m"
@@ -45,10 +51,10 @@ function demyx_restore() {
 
         if [[ -n "$DEMYX_RESTORE_DATE" ]]; then
             demyx_echo "Extracting archive from $DEMYX_RESTORE_DATE"
-            demyx_execute tar -xzf "$DEMYX_BACKUP"/wp/"$DEMYX_RESTORE_DATE"/"$DEMYX_TARGET".tgz -C "$DEMYX_WP"
+            demyx_execute tar -xzf "$DEMYX_BACKUP"/"$DEMYX_RESTORE_DATE"/wp/"$DEMYX_TARGET".tgz -C "$DEMYX_WP"
         else
             demyx_echo 'Extracting archive'
-            demyx_execute tar -xzf "$DEMYX_BACKUP"/wp/"$DEMYX_RESTORE_TODAYS_DATE"/"$DEMYX_TARGET".tgz -C "$DEMYX_WP"
+            demyx_execute tar -xzf "$DEMYX_BACKUP"/"$DEMYX_RESTORE_TODAYS_DATE"/wp/"$DEMYX_TARGET".tgz -C "$DEMYX_WP"
         fi
 
         demyx_app_config
