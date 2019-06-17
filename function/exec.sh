@@ -36,6 +36,8 @@ function demyx_exec() {
         DEMYX_EXEC_CONTAINER="$DEMYX_APP_WP_CONTAINER"
         [[ -n "$DEMYX_EXEC_DB" ]] && DEMYX_EXEC_CONTAINER="$DEMYX_APP_DB_CONTAINER"
         docker exec -it "$DEMYX_EXEC_CONTAINER" "$@"
+    elif [[ -n "$DEMYX_GET_APP" ]]; then
+        docker exec -it "$DEMYX_GET_APP" "$@"
     else
         demyx_die --not-found
     fi
