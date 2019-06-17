@@ -542,10 +542,18 @@ function demyx_config() {
                 demyx_execute docker stop "$DEMYX_APP_ID"_pma
             fi
             if [[ "$DEMYX_CONFIG_RATE_LIMIT" = on ]]; then
+                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
+                    [[ "$DEMYX_APP_RATE_LIMIT" = on ]] && demyx_die 'Rate limit is already turned on'
+                fi
+
                 demyx_echo 'Turning on rate limiting'
                 demyx_execute demyx exec "$DEMYX_APP_DOMAIN" bash -c "printf ',s/#limit_req/limit_req/g\nw\n' | ed /etc/nginx/nginx.conf; nginx -s reload" && \
                     sed -i "s/DEMYX_APP_RATE_LIMIT=off/DEMYX_APP_RATE_LIMIT=on/g" "$DEMYX_APP_PATH"/.env
             elif [[ "$DEMYX_CONFIG_RATE_LIMIT" = off ]]; then
+                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
+                    [[ "$DEMYX_APP_RATE_LIMIT" = off ]] && demyx_die 'Rate limit is already turned off'
+                fi
+
                 demyx_echo 'Turning off rate limiting'
                 demyx_execute demyx exec "$DEMYX_APP_DOMAIN" bash -c "printf ',s/limit_req/#limit_req/g\nw\n' | ed /etc/nginx/nginx.conf; nginx -s reload" && \
                     sed -i "s/DEMYX_APP_RATE_LIMIT=on/DEMYX_APP_RATE_LIMIT=off/g" "$DEMYX_APP_PATH"/.env

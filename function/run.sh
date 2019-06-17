@@ -97,7 +97,7 @@ function demyx_run() {
     fi
 
     [[ -z "$DEMYX_RUN_TYPE" ]] && DEMYX_RUN_TYPE=wp
-    [[ -z "$DEMYX_RUN_RATE_LIMIT" ]] && DEMYX_RUN_RATE_LIMIT=on
+    [[ -z "$DEMYX_RUN_RATE_LIMIT" ]] && DEMYX_RUN_RATE_LIMIT=off
     [[ -z "$DEMYX_RUN_CDN" ]] && DEMYX_RUN_CDN=off
     [[ -z "$DEMYX_RUN_CACHE" ]] && DEMYX_RUN_CACHE=off
     [[ -z "$DEMYX_RUN_AUTH" ]] && DEMYX_RUN_AUTH=off

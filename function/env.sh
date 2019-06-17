@@ -26,7 +26,7 @@ function demyx_env() {
         [[ -z "$MARIADB_ROOT_PASSWORD" ]] && MARIADB_ROOT_PASSWORD=$(demyx util pwgen -cns 50 1 | sed -e 's/\r//g')
         
         [[ -n "$DEMYX_RUN_SSL" ]] && DEMYX_APP_SSL="$DEMYX_RUN_SSL"
-        [[ -n "$DEMYX_RUN_RATE_LIMIT" ]] && DEMYX_APP_RATE_LIMIT=on
+        [[ -n "$DEMYX_RUN_RATE_LIMIT" ]] && DEMYX_APP_RATE_LIMIT=off
         [[ -z "$DEMYX_APP_CACHE" ]] && DEMYX_APP_CACHE=off
         [[ -z "$DEMYX_APP_CDN" ]] && DEMYX_APP_CDN=off
         [[ -z "$DEMYX_APP_AUTH" ]] && DEMYX_APP_AUTH=off
