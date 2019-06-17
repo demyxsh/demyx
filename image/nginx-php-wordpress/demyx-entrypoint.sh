@@ -21,7 +21,7 @@ if [[ -d /demyx ]]; then
     rm /usr/local/etc/php/php.ini
     rm /usr/local/etc/php-fpm.d/www.conf
     ln -s /demyx/nginx.conf /etc/nginx
-	[[ -f /demyx/auth.conf ]] && ln -s /demyx/auth.conf /etc/nginx/common
+    [[ -f /demyx/auth.conf ]] && ln -s /demyx/auth.conf /etc/nginx/common
     ln -s /demyx/php.ini /usr/local/etc/php
     ln -s /demyx/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
 fi
