@@ -44,17 +44,11 @@ EOF
 
         cd "$DEMYX_ETC" || exit
 
-        DEMYX_MOTD_NEWS_FETCH=$(git --no-pager log -5 --pretty=oneline --pretty=format:"%s" | sed "s|'|\`|g")
-        DEMYX_MOTD_NEWS_LATEST_COMMIT="LATEST COMMIT $(git --no-pager log --pretty=oneline -1 --pretty=format:"%h %ar" | tr [a-z] [A-Z] | sed -e 's/\r//g')"
-        readarray -t DEMYX_MOTD_NEWS <<< "$DEMYX_MOTD_NEWS_FETCH"
-
-        PRINT_TABLE="DEMYX^ $DEMYX_MOTD_MODE^ $DEMYX_MOTD_NEWS_LATEST_COMMIT\n"
-        PRINT_TABLE+="HOST^ $DEMYX_MOTD_HOST^ ${DEMYX_MOTD_NEWS[0]}\n"
-        PRINT_TABLE+="USER^ DEMYX^ ${DEMYX_MOTD_NEWS[1]}\n"
-        PRINT_TABLE+="SSH/SFTP^ $DEMYX_MOTD_SSH^ ${DEMYX_MOTD_NEWS[2]}\n"
-        PRINT_TABLE+="ETSERVER^ $DEMYX_MOTD_ET^ ${DEMYX_MOTD_NEWS[3]}\n"
-        PRINT_TABLE+="STATUS^ $DEMYX_MOTD_STATUS^ ${DEMYX_MOTD_NEWS[4]}"
+        PRINT_TABLE="DEMYX^ HOST^ USER^ SSH/ETSERVER^ STATUS\n"
+        PRINT_TABLE+="$DEMYX_MOTD_MODE^ $DEMYX_MOTD_HOST^ DEMYX^ $DEMYX_MOTD_SSH/$DEMYX_MOTD_ET^ $DEMYX_MOTD_STATUS"
         demyx_execute -v demyx_table "$PRINT_TABLE"
-        echo
+        demyx_execute -v echo -e "\nLatest Updates\n"
+        demyx_execute -v git --no-pager log -5 --format=format:'%C(white dim)(%ar)%C(reset) %C(white)%s%C(reset)%C(reset)'
+        demyx_execute -v echo -e "\n"
     fi
 }
