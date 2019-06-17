@@ -13,10 +13,12 @@ function demyx_backup() {
             demyx backup "$i"
         done
     else
+        DEMYX_BACKUP_TODAYS_DATE=$(date +%Y/%m/%d)
+
         demyx_app_config
 
         if [[ "$DEMYX_APP_TYPE" = wp ]]; then
-            [[ ! -d "$DEMYX_BACKUP"/wp ]] && mkdir -p "$DEMYX_BACKUP"/wp
+            [[ ! -d "$DEMYX_BACKUP"/wp/"$DEMYX_BACKUP_TODAYS_DATE" ]] && mkdir -p "$DEMYX_BACKUP"/wp/"$DEMYX_BACKUP_TODAYS_DATE"
 
             demyx_echo 'Exporting database'
             demyx_execute demyx wp "$DEMYX_APP_DOMAIN" db export "$DEMYX_APP_CONTAINER".sql
@@ -24,11 +26,11 @@ function demyx_backup() {
             demyx_echo 'Exporting WordPress'
             demyx_execute docker cp "$DEMYX_APP_WP_CONTAINER":/var/www/html "$DEMYX_APP_PATH"
 
-            demyx_echo 'Exporting logs'
+            demyx_echo 'Exporting logs'S
             demyx_execute docker cp "$DEMYX_APP_WP_CONTAINER":/var/log/demyx "$DEMYX_APP_PATH"
 
             demyx_echo 'Archiving directory' 
-            demyx_execute tar -czf "$DEMYX_BACKUP"/wp/"$DEMYX_APP_DOMAIN".tgz -C "$DEMYX_WP" "$DEMYX_APP_DOMAIN"
+            demyx_execute tar -czf "$DEMYX_BACKUP"/wp/"$DEMYX_BACKUP_TODAYS_DATE"/"$DEMYX_APP_DOMAIN".tgz -C "$DEMYX_WP" "$DEMYX_APP_DOMAIN"
             
             demyx_echo 'Cleaning up'
             demyx_execute rm -rf "$DEMYX_APP_PATH"/html; \
