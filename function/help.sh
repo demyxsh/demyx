@@ -106,6 +106,7 @@ function demyx_help() {
     elif [[ "$DEMYX_HELP" = restore ]]; then
         echo
         echo "demyx restore <app> <args>        Restore an app from a backup"
+        echo "                    --date        Restore from a specific date in format: YY/mm/dd"
         echo "                    -f|--force    Force restore"
         echo
     elif [[ "$DEMYX_HELP" = rm ]]; then
