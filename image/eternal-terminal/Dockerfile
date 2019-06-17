@@ -26,6 +26,7 @@ RUN set -ex; \
     apk add --no-cache tzdata openssh; \
     addgroup -g 1000 -S demyx; \
     adduser -u 1000 -D -S -G demyx demyx; \
+    mkdir -p /home/demyx/.ssh; \
     echo demyx:demyx | chpasswd; \
     sed -i "s|/home/demyx:/sbin/nologin|/home/demyx:/bin/ash|g" /etc/passwd; \
     sed -i "s|#PermitRootLogin prohibit-password|PermitRootLogin no|g" /etc/ssh/sshd_config; \
