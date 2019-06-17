@@ -493,13 +493,15 @@ function demyx_config() {
                 fi
             fi
             if [[ "$DEMYX_CONFIG_HEALTHCHECK" = on ]]; then
-                DEMYX_CONFIG_HEALTHCHECK_CHECK=$(demyx info "$DEMYX_APP_DOMAIN" --filter=DEMYX_APP_HEALTHCHECK)
-                [[ "$DEMYX_CONFIG_HEALTHCHECK_CHECK" = on ]] && demyx_die 'Healthcheck is already on'
+                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
+                    [[ "$DEMYX_APP_HEALTHCHECK" = on ]] && demyx_die 'Healthcheck is already turned on'
+                fi
                 demyx_echo 'Turning on healthcheck'
                 demyx_execute sed -i "s/DEMYX_APP_HEALTHCHECK=off/DEMYX_APP_HEALTHCHECK=on/g" "$DEMYX_APP_PATH"/.env
             elif [[ "$DEMYX_CONFIG_HEALTHCHECK" = off ]]; then
-                DEMYX_CONFIG_HEALTHCHECK_CHECK=$(demyx info "$DEMYX_APP_DOMAIN" --filter=DEMYX_APP_HEALTHCHECK)
-                [[ "$DEMYX_CONFIG_HEALTHCHECK_CHECK" = off ]] && demyx_die 'Healthcheck is already off'
+                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
+                    [[ "$DEMYX_APP_HEALTHCHECK" = off ]] && demyx_die 'Healthcheck is already turned off'
+                fi
                 demyx_echo 'Turning off healthcheck'
                 demyx_execute sed -i "s/DEMYX_APP_HEALTHCHECK=on/DEMYX_APP_HEALTHCHECK=off/g" "$DEMYX_APP_PATH"/.env
             fi
@@ -576,6 +578,13 @@ function demyx_config() {
                 demyx_execute demyx config "$DEMYX_APP_DOMAIN" --update
 
                 demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" up -d
+
+                [[ "$DEMYX_APP_RATE_LIMIT" = on ]] && demyx config "$DEMYX_APP_DOMAIN" --rate-limit -f
+                [[ "$DEMYX_APP_CACHE" = on ]] && demyx config "$DEMYX_APP_DOMAIN" --cache -f
+                [[ "$DEMYX_APP_AUTH" = on ]] && demyx config "$DEMYX_APP_DOMAIN" --auth -f
+                [[ "$DEMYX_APP_AUTH_WP" = on ]] && demyx config "$DEMYX_APP_DOMAIN" --auth-wp -f
+                [[ "$DEMYX_APP_CDN" = on ]] && demyx config "$DEMYX_APP_DOMAIN" --cdn -f
+                [[ "$DEMYX_APP_HEALTHCHECK" = on ]] && demyx config "$DEMYX_APP_DOMAIN" --healthcheck -f
             fi
             if [ "$DEMYX_CONFIG_RESTART" = nginx-php ]; then
                 demyx_echo "Restarting NGINX"
