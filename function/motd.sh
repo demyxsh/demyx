@@ -48,7 +48,7 @@ EOF
         PRINT_TABLE+="$DEMYX_MOTD_MODE^ $DEMYX_MOTD_HOST^ DEMYX^ $DEMYX_MOTD_SSH/$DEMYX_MOTD_ET^ $DEMYX_MOTD_STATUS"
         demyx_execute -v demyx_table "$PRINT_TABLE"
         demyx_execute -v echo -e "\nLatest Updates\n--------------"
-        demyx_execute -v git --no-pager log -5 --format=format:'%C(white dim)(%ar)%C(reset) %C(white)%s%C(reset)%C(reset)'
+        demyx_execute -v git --no-pager log -5 --format=format:'%C(white dim)(%ar)%C(reset) %s'
         demyx_execute -v echo -e "\n"
     fi
 }
