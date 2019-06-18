@@ -24,7 +24,7 @@ RUN set -ex; \
 
 RUN set -ex; \
     sed -i 's|http://dl-cdn.alpinelinux.org/alpine/edge/testing/||g' /etc/apk/repositories; \
-    apk add --no-cache --update bash tzdata curl zsh openssh sudo gnupg jq dumb-init htop; \
+    apk add --no-cache --update bash tzdata curl zsh openssh sudo gnupg jq dumb-init htop rsync; \
     rm -rf /var/cache/apk/*
 
 ENV DEMYX_DOCKER_BINARY=18.09.6
