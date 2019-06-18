@@ -547,16 +547,28 @@ function demyx_config() {
                 fi
 
                 demyx_echo 'Turning on rate limiting'
-                demyx_execute demyx exec "$DEMYX_APP_DOMAIN" bash -c "printf ',s/#limit_req/limit_req/g\nw\n' | ed /etc/nginx/nginx.conf; nginx -s reload" && \
+                demyx_execute sed -i 's/#limit_req/limit_req/g' "$DEMYX_APP_CONFIG"/nginx.conf; \
                     sed -i "s/DEMYX_APP_RATE_LIMIT=off/DEMYX_APP_RATE_LIMIT=on/g" "$DEMYX_APP_PATH"/.env
+
+                demyx_echo 'Updating configs'
+                demyx_execute docker cp "$DEMYX_APP_CONFIG"/. "$DEMYX_APP_WP_CONTAINER":/demyx
+
+                demyx_echo 'Reloading NGINX'
+                demyx_execute demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
             elif [[ "$DEMYX_CONFIG_RATE_LIMIT" = off ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ "$DEMYX_APP_RATE_LIMIT" = off ]] && demyx_die 'Rate limit is already turned off'
                 fi
 
                 demyx_echo 'Turning off rate limiting'
-                demyx_execute demyx exec "$DEMYX_APP_DOMAIN" bash -c "printf ',s/limit_req/#limit_req/g\nw\n' | ed /etc/nginx/nginx.conf; nginx -s reload" && \
+                demyx_execute sed -i 's/limit_req/#limit_req/g' "$DEMYX_APP_CONFIG"/nginx.conf; \
                     sed -i "s/DEMYX_APP_RATE_LIMIT=on/DEMYX_APP_RATE_LIMIT=off/g" "$DEMYX_APP_PATH"/.env
+
+                demyx_echo 'Updating configs'
+                demyx_execute docker cp "$DEMYX_APP_CONFIG"/. "$DEMYX_APP_WP_CONTAINER":/demyx
+
+                demyx_echo 'Reloading NGINX'
+                demyx_execute demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
             fi
             if [[ -n "$DEMYX_CONFIG_REFRESH" ]]; then
                 if [[ -z "$DEMYX_CONFIG_NO_BACKUP" ]]; then
