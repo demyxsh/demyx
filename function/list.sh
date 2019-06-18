@@ -32,7 +32,7 @@ function demyx_list() {
         done
     else
         DEMYX_LIST_WP_COUNT=$(find * -maxdepth 0 -type d | wc -l)
-        PRINT_TABLE="DEMYX, WORDPRESS ($DEMYX_LIST_WP_COUNT)\n"
+        PRINT_TABLE="DEMYX^ WORDPRESS ($DEMYX_LIST_WP_COUNT)\n"
         for i in *
         do
             PRINT_TABLE+="^ $i\n"
