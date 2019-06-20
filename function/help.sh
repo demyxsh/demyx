@@ -133,9 +133,12 @@ function demyx_help() {
         echo
     elif [[ "$DEMYX_HELP" = stack ]]; then
         echo
-        echo "demyx stack <arg>     Target stack containers"
-        echo "            down      Shorthand for docker-compose stop/rm -f"
-        echo "            --du      Shorthand for docker-compose stop/rm -f/up -d"
+        echo "demyx stack <arg>             Target stack containers"
+        echo "            down              Shorthand for docker-compose stop/rm -f"
+        echo "            --du              Shorthand for docker-compose stop/rm -f/up -d"
+        echo "            --healthcheck     Turns on/off healthcheck globally"
+        echo "            --monitor         Turns on/off auto scaling globally"
+        echo "            --refresh         Refresh env and yml stack files"
         echo
     elif [[ "$DEMYX_HELP" = update ]]; then
         echo
