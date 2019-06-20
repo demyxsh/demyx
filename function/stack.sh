@@ -12,6 +12,21 @@ function demyx_stack() {
             --du)
                 DEMYX_STACK_DU=1
                 ;;
+            --healthcheck|--healthcheck=on)
+                DEMYX_STACK_HEALTHCHECK=on
+                ;;
+            --healthcheck=off)
+                DEMYX_STACK_HEALTHCHECK=off
+                ;;
+            --monitor|--monitor=on)
+                DEMYX_STACK_MONITOR=on
+                ;;
+            --monitor=off)
+                DEMYX_STACK_MONITOR=off
+                ;;
+            --refresh)
+                DEMYX_STACK_REFRESH=1
+                ;;
             --)
                 shift
                 break
@@ -33,6 +48,29 @@ function demyx_stack() {
         demyx_execute -v demyx stack stop
         demyx_execute -v demyx stack rm -f
         demyx_execute -v demyx stack up -d --remove-orphans
+    elif [[ "$DEMYX_STACK_HEALTHCHECK" = on ]]; then
+        demyx_echo 'Turn on stack healthcheck'
+        demyx_execute sed -i 's/DEMYX_STACK_HEALTHCHECK=off/DEMYX_STACK_HEALTHCHECK=on/g' "$DEMYX_STACK"/.env
+    elif [[ "$DEMYX_STACK_HEALTHCHECK" = off ]]; then
+        demyx_echo 'Turn off stack healthcheck'
+        demyx_execute sed -i 's/DEMYX_STACK_HEALTHCHECK=on/DEMYX_STACK_HEALTHCHECK=off/g' "$DEMYX_STACK"/.env
+    elif [[ "$DEMYX_STACK_MONITOR" = on ]]; then
+        demyx_echo 'Turn on stack monitor'
+        demyx_execute sed -i 's/DEMYX_STACK_MONITOR=off/DEMYX_STACK_MONITOR=on/g' "$DEMYX_STACK"/.env
+    elif [[ "$DEMYX_STACK_MONITOR" = off ]]; then
+        demyx_echo 'Turn off stack monitor'
+        demyx_execute sed -i 's/DEMYX_STACK_MONITOR=on/DEMYX_STACK_MONITOR=off/g' "$DEMYX_STACK"/.env
+    elif [[ -n "$DEMYX_STACK_REFRESH" ]]; then
+        demyx_echo 'Backing up stack directory as /demyx/backup/stack.tgz'
+        demyx_execute tar -czf /demyx/backup/stack.tgz -C /demyx/app stack
+
+        source "$DEMYX_FUNCTION"/env.sh
+        source "$DEMYX_FUNCTION"/yml.sh
+
+        demyx_echo 'Refreshing stack env and yml'
+        demyx_execute demyx_stack_env; demyx_stack_yml
+
+        demyx stack up -d --remove-orphans
     else
         shift
         docker run -t --rm \
