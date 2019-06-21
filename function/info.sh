@@ -46,8 +46,8 @@ function demyx_info() {
         done
         demyx_execute -v -q demyx_table "$PRINT_TABLE"
     elif [[ "$DEMYX_TARGET" = dash ]]; then
-        DEMYX_INFO_CONTAINER_RUNNING=$(docker container ls -f 'status=running' | wc -l)
-        DEMYX_INFO_CONTAINER_DEAD=$(docker container ls -f 'status=dead' | wc -l)
+        DEMYX_INFO_CONTAINER_RUNNING=$(/usr/bin/docker container ls -f 'status=running' | wc -l)
+        DEMYX_INFO_CONTAINER_DEAD=$(/usr/bin/docker container ls -f 'status=dead' | wc -l)
         DEMYX_INFO_CONTAINER_RUNNING=$((DEMYX_INFO_CONTAINER_RUNNING - DEMYX_INFO_CONTAINER_DEAD))
         echo '{'
         echo '
