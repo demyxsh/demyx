@@ -49,8 +49,7 @@ function demyx_info() {
         DEMYX_INFO_CONTAINER_RUNNING=$(/usr/local/bin/docker container ls -f 'status=running' | wc -l)
         DEMYX_INFO_CONTAINER_DEAD=$(/usr/local/bin/docker container ls -f 'status=dead' | wc -l)
         DEMYX_INFO_CONTAINER_RUNNING=$((DEMYX_INFO_CONTAINER_RUNNING - DEMYX_INFO_CONTAINER_DEAD))
-        echo '{'
-        echo '
+        echo '{
             "hostname": "'$(hostname)'",
             "disk_used": "'$(df -h /demyx | sed '1d' | awk '{print $3}')'",
             "disk_available": "'$(df -h /demyx | sed '1d' | awk '{print $4}')'",
@@ -60,8 +59,7 @@ function demyx_info() {
             "uptime": "'$(uptime | awk '{print $1 " " $2 " " $3 " " $4 " " $5}')'",
             "load_average": "'$(cat /proc/loadavg | awk '{print $1 " " $2 " " $3}')'",
             "container_running": "'$DEMYX_INFO_CONTAINER_RUNNING'",
-            "container_dead": "'$DEMYX_INFO_CONTAINER_DEAD'"
-        '
+            "container_dead": "'$DEMYX_INFO_CONTAINER_DEAD'"' | sed 's/            /    /g'
         echo '}'
     elif [[ "$DEMYX_APP_TYPE" = wp ]]; then
         if [[ -n "$DEMYX_INFO_ALL" ]]; then
