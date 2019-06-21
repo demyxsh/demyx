@@ -45,6 +45,24 @@ function demyx_info() {
             PRINT_TABLE+="$i^ $DEMYX_INFO_ALL_FILTER\n"
         done
         demyx_execute -v -q demyx_table "$PRINT_TABLE"
+    elif [[ "$DEMYX_TARGET" = dash ]]; then
+        DEMYX_INFO_CONTAINER_RUNNING=$(docker container ls -f 'status=running' | wc -l)
+        DEMYX_INFO_CONTAINER_DEAD=$(docker container ls -f 'status=dead' | wc -l)
+        DEMYX_INFO_CONTAINER_RUNNING=$((DEMYX_INFO_CONTAINER_RUNNING - DEMYX_INFO_CONTAINER_DEAD))
+        echo '{'
+        echo '
+            "hostname": "'$(hostname)'",
+            "disk_used": "'$(df -h /demyx | sed '1d' | awk '{print $3}')'",
+            "disk_available": "'$(df -h /demyx | sed '1d' | awk '{print $4}')'",
+            "disk_used_percentage": "'$(df -h /demyx | sed '1d' | awk '{print $5}')'",
+            "memory_used_percentage": "'$(free | grep Mem | awk '{print $3/$2 * 100.0}' | python -c "print round(float(raw_input()))")'%",
+            "memory_free_percentage": "'$(free | grep Mem | awk '{print $4/$2 * 100.0}' | python -c "print round(float(raw_input()))")'%",
+            "uptime": "'$(uptime | awk '{print $1 " " $2 " " $3 " " $4 " " $5}')'",
+            "load_average": "'$(cat /proc/loadavg | awk '{print $1 " " $2 " " $3}')'",
+            "container_running": "'$DEMYX_INFO_CONTAINER_RUNNING'",
+            "container_dead": "'$DEMYX_INFO_CONTAINER_DEAD'"
+        '
+        echo '}'
     elif [[ "$DEMYX_APP_TYPE" = wp ]]; then
         if [[ -n "$DEMYX_INFO_ALL" ]]; then
             DEMYX_INFO_ALL=$(cat $DEMYX_APP_PATH/.env | sed '1d')
