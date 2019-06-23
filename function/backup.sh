@@ -26,7 +26,7 @@ function demyx_backup() {
             demyx_echo 'Exporting WordPress'
             demyx_execute docker cp "$DEMYX_APP_WP_CONTAINER":/var/www/html "$DEMYX_APP_PATH"
 
-            demyx_echo 'Exporting logs'S
+            demyx_echo 'Exporting logs'
             demyx_execute docker cp "$DEMYX_APP_WP_CONTAINER":/var/log/demyx "$DEMYX_APP_PATH"
 
             demyx_echo 'Archiving directory' 
