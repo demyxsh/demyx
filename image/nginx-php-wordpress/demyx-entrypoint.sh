@@ -29,5 +29,5 @@ find /var/www/html -type d -print0 | xargs -0 chmod 0755
 find /var/www/html -type f -print0 | xargs -0 chmod 0644
 chown -R www-data:www-data /var/www/html
 
-php-fpm -D
+docker-php-entrypoint php-fpm -D
 nginx -g 'daemon off;'

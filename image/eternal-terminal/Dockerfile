@@ -1,4 +1,4 @@
-FROM alpine:3.9.4
+FROM alpine:3.10.0
 
 LABEL image="demyx/eternal-terminal"
 LABEL maintainer="Demyx <info@demyx.sh>"

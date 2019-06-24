@@ -1,4 +1,4 @@
-FROM alpine:3.9.4
+FROM alpine:3.10.0
 
 LABEL image="demyx/nginx"
 LABEL maintainer="Demyx <info@demyx.sh>"
@@ -42,8 +42,8 @@ RUN set -x \
                  exit 1; \
                fi \
             && printf "%s%s%s\n" \
-                "http://nginx.org/packages/mainline/alpine/v" \
-                `egrep -o '^[0-9]+\.[0-9]+' /etc/alpine-release` \
+                "http://nginx.org/packages/mainline/alpine/v3.9" \
+                #`egrep -o '^[0-9]+\.[0-9]+' /etc/alpine-release` \
                 "/main" \
             | tee -a /etc/apk/repositories \
             && apk del .cert-deps \

@@ -1,4 +1,4 @@
-FROM alpine:3.9.4
+FROM alpine:3.10.0
 
 LABEL image="demyx/nginx-php-wordpress"
 LABEL maintainer="Demyx <info@demyx.sh>"
@@ -42,8 +42,8 @@ RUN set -x \
                  exit 1; \
                fi \
             && printf "%s%s%s\n" \
-                "http://nginx.org/packages/mainline/alpine/v" \
-                `egrep -o '^[0-9]+\.[0-9]+' /etc/alpine-release` \
+                "http://nginx.org/packages/mainline/alpine/v3.9" \
+                #`egrep -o '^[0-9]+\.[0-9]+' /etc/alpine-release` \
                 "/main" \
             | tee -a /etc/apk/repositories \
             && apk del .cert-deps \
@@ -419,8 +419,8 @@ RUN set -ex \
     && apk add --no-cache --virtual .imagick-runtime-deps imagemagick \
     && apk del .phpize-deps
 
-ENV WORDPRESS_VERSION 5.2.1
-ENV WORDPRESS_SHA1 65913a39b2e8990ece54efbfa8966fc175085794
+ENV WORDPRESS_VERSION 5.2.2
+ENV WORDPRESS_SHA1 3605bcbe9ea48d714efa59b0eb2d251657e7d5b0
 ENV TZ=America/Los_Angeles
 
 RUN set -ex; \
