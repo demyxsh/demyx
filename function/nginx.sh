@@ -120,6 +120,14 @@ function demyx_nginx() {
                         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
                     }
 
+                    location = /xmlrpc.php {
+                        #auth_basic "Restricted";
+                        #auth_basic_user_file /demyx/htpasswd;
+                        include fastcgi_params;
+                        fastcgi_pass php;
+                        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+                    }
+
                     include /etc/nginx/common/*.conf;
                 }
             }
