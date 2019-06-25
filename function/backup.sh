@@ -35,7 +35,7 @@ function demyx_backup() {
             demyx_echo 'Cleaning up'
             demyx_execute rm -rf "$DEMYX_APP_PATH"/html; \
                 rm -rf "$DEMYX_APP_PATH"/demyx; \
-                demyx exec "$DEMYX_APP_DOMAIN" rm "$DEMYX_APP_CONTAINER".sql
+                demyx exec "$DEMYX_APP_DOMAIN" bash -c "rm $DEMYX_APP_CONTAINER.sql"
         else
             demyx_die --not-found
         fi

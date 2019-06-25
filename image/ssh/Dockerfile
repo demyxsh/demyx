@@ -25,4 +25,3 @@ COPY demyx-entrypoint.sh /usr/local/bin/demyx-entrypoint
 RUN chmod +x /usr/local/bin/demyx-entrypoint
 
 ENTRYPOINT ["dumb-init", "demyx-entrypoint"]
-
