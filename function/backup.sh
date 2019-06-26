@@ -33,9 +33,9 @@ function demyx_backup() {
             demyx_execute tar -czf "$DEMYX_BACKUP"/"$DEMYX_BACKUP_TODAYS_DATE"/wp/"$DEMYX_APP_DOMAIN".tgz -C "$DEMYX_WP" "$DEMYX_APP_DOMAIN"
             
             demyx_echo 'Cleaning up'
-            demyx_execute rm -rf "$DEMYX_APP_PATH"/html; \
-                rm -rf "$DEMYX_APP_PATH"/demyx; \
-                demyx exec "$DEMYX_APP_DOMAIN" bash -c "rm $DEMYX_APP_CONTAINER.sql"
+            demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" rm "$DEMYX_APP_CONTAINER".sql; \
+                rm -rf "$DEMYX_APP_PATH"/html; \
+                rm -rf "$DEMYX_APP_PATH"/demyx
         else
             demyx_die --not-found
         fi
