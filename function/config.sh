@@ -328,7 +328,6 @@ function demyx_config() {
                 DEMYX_PARSE_BASIC_AUTH=$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}' || true)
                 DEMYX_BROWSERSYNC_SUB="$DEMYX_APP_ID"
                 DEMYX_BROWSERSYNC_SUB_UI="$DEMYX_APP_ID"-ui
-                DEMYX_PHPMYADMIN_SUB="$DEMYX_APP_ID"-pma
 
                 if [[ -n "$DEMYX_SFTP_CONTAINER_CHECK" ]]; then
                     demyx_echo 'Stopping SFTP container' 
@@ -506,40 +505,43 @@ function demyx_config() {
                 demyx_execute sed -i "s/DEMYX_APP_HEALTHCHECK=on/DEMYX_APP_HEALTHCHECK=off/g" "$DEMYX_APP_PATH"/.env
             fi
             if [[ "$DEMYX_CONFIG_PMA" = on ]]; then
-                DEMYX_CONFIG_PMA_CONTAINER_CHECK=$(docker ps | grep "$DEMYX_APP_ID"_pma || true)
+                DEMYX_CONFIG_PMA_CONTAINER_CHECK=$(docker ps | grep "$DEMYX_APP_COMPOSE_PROJECT"_pma || true)
                 [[ -n "$DEMYX_CONFIG_PMA_CONTAINER_CHECK" ]] && demyx_die 'phpMyAdmin container is already running'
 
-                DEMYX_PHPMYADMIN_SUB="$DEMYX_APP_ID"-pma
-                DEMYX_PARSE_BASIC_AUTH=$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}' || true)
+                if [[ "$DEMYX_APP_SSL" = on ]]; then
+                    DEMYX_CONFIG_PMA_PROTO="https://$DEMYX_APP_DOMAIN"
+                else
+                    DEMYX_CONFIG_PMA_PROTO="http://$DEMYX_APP_DOMAIN"
+                fi
 
                 demyx_echo 'Creating phpMyAdmin container'
                 demyx_execute docker run -d --rm \
-                    --name "$DEMYX_APP_ID"_pma \
+                    --name "$DEMYX_APP_COMPOSE_PROJECT"_pma \
                     --network demyx \
                     -e PMA_HOST=db_"$DEMYX_APP_ID" \
-                    -e PMA_USER="$WORDPRESS_DB_USER" \
-                    -e PMA_PASSWORD="$WORDPRESS_DB_PASSWORD" \
-                    -e MYSQL_ROOT_PASSWORD="${MARIADB_ROOT_PASSWORD}" \
+                    -e MYSQL_ROOT_PASSWORD="$MARIADB_ROOT_PASSWORD" \
+                    -e PMA_ABSOLUTE_URI=${DEMYX_CONFIG_PMA_PROTO}/demyx-pma/ \
                     -l "traefik.enable=true" \
-                    -l "traefik.frontend.rule=Host:${DEMYX_PHPMYADMIN_SUB}.${DEMYX_APP_DOMAIN}" \
+                    -l "traefik.frontend.rule=Host:${DEMYX_APP_DOMAIN}; PathPrefixStrip: /demyx-pma/" \
                     -l "traefik.port=80" \
                     -l "traefik.frontend.redirect.entryPoint=https" \
                     -l "traefik.frontend.headers.forceSTSHeader=${DEMYX_APP_FORCE_STS_HEADER}" \
                     -l "traefik.frontend.headers.STSSeconds=${DEMYX_APP_STS_SECONDS}" \
                     -l "traefik.frontend.headers.STSIncludeSubdomains=${DEMYX_APP_STS_INCLUDE_SUBDOMAINS}" \
                     -l "traefik.frontend.headers.STSPreload=${DEMYX_APP_STS_PRELOAD}" \
-                    -l "traefik.frontend.auth.basic.users=${DEMYX_PARSE_BASIC_AUTH}" \
                     phpmyadmin/phpmyadmin
 
                 PRINT_TABLE="DEMYX^ PHPMYADMIN\n"
-                PRINT_TABLE+="URL^ https://${DEMYX_PHPMYADMIN_SUB}.${DEMYX_APP_DOMAIN}\n"
+                PRINT_TABLE+="URL^ $DEMYX_CONFIG_PMA_PROTO/demyx-pma/\n"
+                PRINT_TABLE+="USERNAME^ $WORDPRESS_DB_USER\n"
+                PRINT_TABLE+="PASSWORD^ $WORDPRESS_DB_PASSWORD\n"
                 demyx_execute -v demyx_table "$PRINT_TABLE"
             elif [[ "$DEMYX_CONFIG_PMA" = off ]]; then
-                DEMYX_CONFIG_PMA_CONTAINER_CHECK=$(docker ps | grep "$DEMYX_APP_ID"_pma || true)
+                DEMYX_CONFIG_PMA_CONTAINER_CHECK=$(docker ps | grep "$DEMYX_APP_COMPOSE_PROJECT"_pma || true)
                 [[ -z "$DEMYX_CONFIG_PMA_CONTAINER_CHECK" ]] && demyx_die 'No phpMyAdmin container running'
 
                 demyx_echo 'Stopping phpMyAdmin container'
-                demyx_execute docker stop "$DEMYX_APP_ID"_pma
+                demyx_execute docker stop "$DEMYX_APP_COMPOSE_PROJECT"_pma
             fi
             if [[ "$DEMYX_CONFIG_RATE_LIMIT" = on ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
