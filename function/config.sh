@@ -623,7 +623,7 @@ function demyx_config() {
             fi
             if [[ "$DEMYX_CONFIG_SFTP" = on ]]; then
                 DEMYX_SFTP_VOLUME_CHECK=$(docker volume ls | grep demyx_sftp || true)
-                DEMYX_SFTP_CONTAINER_CHECK=$(docker ps | grep "$DEMYX_APP_ID"_sftp || true)
+                DEMYX_SFTP_CONTAINER_CHECK=$(docker ps | grep "$DEMYX_APP_COMPOSE_PROJECT"_sftp || true)
 
                 [[ -n "$DEMYX_SFTP_CONTAINER_CHECK" ]] && demyx_die 'SFTP container is already running'
                 
@@ -647,7 +647,7 @@ function demyx_config() {
                 demyx_echo 'Creating SFTP container' 
                 DEMYX_SFTP_PORT=$(demyx_open_port)
                 demyx_execute docker run -d --rm \
-                    --name "$DEMYX_APP_ID"_sftp \
+                    --name "$DEMYX_APP_COMPOSE_PROJECT"_sftp \
                     -v demyx_sftp:/home/www-data/.ssh \
                     --volumes-from "$DEMYX_APP_WP_CONTAINER" \
                     --workdir /var/www/html \
@@ -660,11 +660,11 @@ function demyx_config() {
                 PRINT_TABLE+="SFTP PORT^ $DEMYX_SFTP_PORT\n"
                 demyx_execute -v demyx_table "$PRINT_TABLE"
             elif [[ "$DEMYX_CONFIG_SFTP" = off ]]; then
-                DEMYX_SFTP_CONTAINER_CHECK=$(docker ps | grep "$DEMYX_APP_ID"_sftp || true)
+                DEMYX_SFTP_CONTAINER_CHECK=$(docker ps | grep "$DEMYX_APP_COMPOSE_PROJECT"_sftp || true)
                 [[ -z "$DEMYX_SFTP_CONTAINER_CHECK" ]] && demyx_die 'No SFTP container running'
 
                 demyx_echo 'Stopping SFTP container' 
-                demyx_execute docker stop "$DEMYX_APP_ID"_sftp
+                demyx_execute docker stop "$DEMYX_APP_COMPOSE_PROJECT"_sftp
             fi
             if [[ "$DEMYX_CONFIG_SSL" = on ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
