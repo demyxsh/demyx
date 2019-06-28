@@ -3,6 +3,14 @@
 
 function demyx_nginx() {
     if [[ "$DEMYX_APP_TYPE" = wp ]]; then
+        DEMYX_CLOUDFLARE_CHECK=$(curl -svo /dev/null "$DEMYX_APP_DOMAIN" 2>&1 | grep "Server: cloudflare" || true)
+        
+        if [[ -n "$DEMYX_CLOUDFLARE_CHECK" ]]; then
+            DEMYX_NGINX_REAL_IP='real_ip_header CF-Connecting-IP;'
+        else
+            DEMYX_NGINX_REAL_IP='real_ip_header X-Forwarded-For;'
+        fi
+
         cat > "$DEMYX_APP_CONFIG"/nginx.conf <<-EOF
             # AUTO GENERATED
 
@@ -26,6 +34,9 @@ function demyx_nginx() {
             }
 
             http {
+
+                $DEMYX_NGINX_REAL_IP
+                set_real_ip_from 0.0.0.0/0;
 
                 log_format  main  '\$remote_addr - \$remote_user [\$time_local] "\$request" '
                     '\$status \$body_bytes_sent "\$http_referer" '

@@ -12,7 +12,7 @@ function demyx_yml() {
             DEMYX_REGEX_PROTOCOL_REPLACEMENT="https://"
             DEMYX_SERVER_IP=$(demyx util curl -s https://ipecho.net/plain | sed -e 's/\r//g')
             DEMYX_SUBDOMAIN_CHECK=$(demyx util dig +short "$DEMYX_APP_DOMAIN" | sed -e '1d' | sed -e 's/\r//g')
-            DEMYX_CLOUDFLARE_SSL_CHECK=$(curl -svo /dev/null "$DEMYX_APP_DOMAIN" 2>&1 | grep "Server: cloudflare" || true)
+            DEMYX_CLOUDFLARE_CHECK=$(curl -svo /dev/null "$DEMYX_APP_DOMAIN" 2>&1 | grep "Server: cloudflare" || true)
         
             if [[ -n "$DEMYX_SUBDOMAIN_CHECK" ]]; then
                 DEMYX_DOMAIN_IP=$DEMYX_SUBDOMAIN_CHECK
@@ -20,7 +20,7 @@ function demyx_yml() {
                 DEMYX_DOMAIN_IP=$(demyx util dig +short "$DEMYX_APP_DOMAIN" | sed -e 's/\r//g')
             fi
 
-            if [[ "$DEMYX_SERVER_IP" = "$DEMYX_DOMAIN_IP" ]] || [[ -n "$DEMYX_CLOUDFLARE_SSL_CHECK" ]]; then
+            if [[ "$DEMYX_SERVER_IP" = "$DEMYX_DOMAIN_IP" ]] || [[ -n "$DEMYX_CLOUDFLARE_CHECK" ]]; then
                 DEMYX_PROTOCOL="- \"traefik.frontend.redirect.entryPoint=https\"
                         - \"traefik.frontend.headers.forceSTSHeader=\${DEMYX_APP_FORCE_STS_HEADER}\"
                         - \"traefik.frontend.headers.STSSeconds=\${DEMYX_APP_STS_SECONDS}\"
