@@ -318,20 +318,20 @@ function demyx_config() {
                     [[ "$DEMYX_APP_DEV" = on ]] && demyx_die 'Dev mode is already turned on'
                 fi
  
-                DEMYX_CONFIG_WILDCARD_CHECK=$(docker run -t --rm demyx/utilities "dig +short '*.$DEMYX_APP_DOMAIN'")
-                [[ -z "$DEMYX_CONFIG_WILDCARD_CHECK" ]] && demyx_die "Wildcard CNAME not detected, please add * as a CNAME to your domain's DNS"
+                if [[ "$DEMYX_APP_SSL" = on ]]; then
+                    DEMYX_CONFIG_DEV_PROTO="https://$DEMYX_APP_DOMAIN"
+                else
+                    DEMYX_CONFIG_DEV_PROTO="http://$DEMYX_APP_DOMAIN"
+                fi
 
                 source "$DEMYX_STACK"/.env
 
                 DEMYX_SFTP_VOLUME_CHECK=$(docker volume ls | grep demyx_sftp || true)
-                DEMYX_SFTP_CONTAINER_CHECK=$(docker ps | grep "$DEMYX_APP_ID"_sftp || true)
-                DEMYX_PARSE_BASIC_AUTH=$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}' || true)
-                DEMYX_BROWSERSYNC_SUB="$DEMYX_APP_ID"
-                DEMYX_BROWSERSYNC_SUB_UI="$DEMYX_APP_ID"-ui
+                DEMYX_SFTP_CONTAINER_CHECK=$(docker ps | grep "$DEMYX_APP_COMPOSE_PROJECT"_sftp || true)
 
                 if [[ -n "$DEMYX_SFTP_CONTAINER_CHECK" ]]; then
                     demyx_echo 'Stopping SFTP container' 
-                    demyx_execute docker stop "$DEMYX_APP_ID"_sftp
+                    demyx_execute docker stop "$DEMYX_APP_COMPOSE_PROJECT"_sftp
                 fi
 
                 if [ -z "$DEMYX_SFTP_VOLUME_CHECK" ]; then
@@ -354,7 +354,7 @@ function demyx_config() {
                 demyx_echo 'Creating SFTP container'
                 DEMYX_SFTP_PORT=$(demyx_open_port)
                 demyx_execute docker run -d --rm \
-                    --name "$DEMYX_APP_ID"_sftp \
+                    --name "$DEMYX_APP_COMPOSE_PROJECT"_sftp \
                     -v demyx_sftp:/home/www-data/.ssh \
                     --volumes-from "$DEMYX_APP_WP_CONTAINER" \
                     --workdir /var/www/html \
@@ -372,56 +372,56 @@ function demyx_config() {
                 fi
 
                 demyx_echo 'Creating BrowserSync config'
-                demyx_execute -v echo "module.exports={rewriteRules:[{match:/${DEMYX_APP_DOMAIN}/g,fn:function(e,r,t){return'${DEMYX_BROWSERSYNC_SUB}.${DEMYX_APP_DOMAIN}'}}],socket:{domain:'${DEMYX_BROWSERSYNC_SUB}.${DEMYX_APP_DOMAIN}'}};" > "$DEMYX_APP_CONFIG"/bs.js; \
-                    docker cp "$DEMYX_APP_CONFIG"/bs.js "$DEMYX_APP_WP_CONTAINER":/var/www/html; \
-                    rm "$DEMYX_APP_CONFIG"/bs.js
+                demyx_execute -v \
+                    echo 'module.exports={
+                        rewriteRules:[{
+                            match: /'$DEMYX_APP_DOMAIN'/g,
+                            fn: function (e,r,t) {
+                                return "'$DEMYX_APP_DOMAIN'/demyx-bs"
+                            }
+                        }],
+                        scriptPath: function (path) {
+                            return "/demyx-bs" + path;
+                        },
+                        socket: {
+                            domain: "'$DEMYX_APP_DOMAIN'"
+                        }
+                    };' | sed 's|                    ||g' > "$DEMYX_APP_CONFIG"/bs.js; \
+                    echo 'location /browser-sync/socket.io/ {
+                            proxy_pass http://'${DEMYX_APP_COMPOSE_PROJECT}_bs':3000/browser-sync/socket.io/;
+                            proxy_http_version 1.1;
+                            proxy_set_header Upgrade $http_upgrade;
+                            proxy_set_header Connection "upgrade";
+                            proxy_set_header Host $host;
+                            proxy_cache_bypass $http_upgrade;
+                        }' | sed 's|                        ||g' > "$DEMYX_APP_CONFIG"/bs.conf; \
+                    demyx_execute docker cp "$DEMYX_APP_CONFIG"/bs.js "$DEMYX_APP_WP_CONTAINER":/demyx; \
+                    docker cp "$DEMYX_APP_CONFIG"/bs.conf "$DEMYX_APP_WP_CONTAINER":/etc/nginx/common
 
                 demyx_echo 'Creating BrowserSync container' 
                 demyx_execute docker run -d --rm \
-                    --name "$DEMYX_APP_ID"_bs \
+                    --name "$DEMYX_APP_COMPOSE_PROJECT"_bs \
                     --net demyx \
                     --volumes-from "$DEMYX_APP_WP_CONTAINER" \
                     -l "traefik.enable=true" \
-                    -l "traefik.bs.frontend.rule=Host:${DEMYX_BROWSERSYNC_SUB}.${DEMYX_APP_DOMAIN}" \
+                    -l "traefik.bs.frontend.rule=Host:${DEMYX_APP_DOMAIN}; PathPrefixStrip: /demyx-bs" \
                     -l "traefik.bs.port=3000" \
-                    -l "traefik.bs.frontend.redirect.entryPoint=https" \
-                    -l "traefik.bs.frontend.headers.forceSTSHeader=${DEMYX_APP_FORCE_STS_HEADER}" \
-                    -l "traefik.bs.frontend.headers.STSSeconds=${DEMYX_APP_STS_SECONDS}" \
-                    -l "traefik.bs.frontend.headers.STSIncludeSubdomains=${DEMYX_APP_STS_INCLUDE_SUBDOMAINS}" \
-                    -l "traefik.bs.frontend.headers.STSPreload=${DEMYX_APP_STS_PRELOAD}" \
-                    -l "traefik.bs.frontend.auth.basic.users=${DEMYX_PARSE_BASIC_AUTH}" \
-                    -l "traefik.ui.frontend.rule=Host:${DEMYX_BROWSERSYNC_SUB_UI}.${DEMYX_APP_DOMAIN}" \
-                    -l "traefik.ui.port=3001" \
-                    -l "traefik.ui.frontend.redirect.entryPoint=https" \
-                    -l "traefik.ui.frontend.headers.forceSTSHeader=${DEMYX_APP_FORCE_STS_HEADER}" \
-                    -l "traefik.ui.frontend.headers.STSSeconds=${DEMYX_APP_STS_SECONDS}" \
-                    -l "traefik.ui.frontend.headers.STSIncludeSubdomains=${DEMYX_APP_STS_INCLUDE_SUBDOMAINS}" \
-                    -l "traefik.ui.frontend.headers.STSPreload=${DEMYX_APP_STS_PRELOAD}" \
-                    -l "traefik.ui.frontend.auth.basic.users=${DEMYX_PARSE_BASIC_AUTH}" \
                     demyx/browsersync start \
-                    --config "/var/www/html/bs.js" \
+                    --config "/demyx/bs.js" \
                     --proxy "$DEMYX_APP_WP_CONTAINER" \
-                    --files "$DEMYX_BS_FILES" \
-                    --port 3000 \
-                    --ui-port 3001
+                    --files "/var/www/html/**/*" \
+                    --no-ui
 
-                demyx_echo 'Creating phpMyAdmin container' 
+                demyx_echo 'Creating phpMyAdmin container'
                 demyx_execute docker run -d --rm \
-                    --name "$DEMYX_APP_ID"_pma \
+                    --name "$DEMYX_APP_COMPOSE_PROJECT"_pma \
                     --network demyx \
                     -e PMA_HOST=db_"$DEMYX_APP_ID" \
-                    -e PMA_USER="$WORDPRESS_DB_USER" \
-                    -e PMA_PASSWORD="$WORDPRESS_DB_PASSWORD" \
-                    -e MYSQL_ROOT_PASSWORD="${MARIADB_ROOT_PASSWORD}" \
+                    -e MYSQL_ROOT_PASSWORD="$MARIADB_ROOT_PASSWORD" \
+                    -e PMA_ABSOLUTE_URI=${DEMYX_CONFIG_DEV_PROTO}/demyx-pma/ \
                     -l "traefik.enable=true" \
-                    -l "traefik.frontend.rule=Host:${DEMYX_PHPMYADMIN_SUB}.${DEMYX_APP_DOMAIN}" \
+                    -l "traefik.frontend.rule=Host:${DEMYX_APP_DOMAIN}; PathPrefixStrip: /demyx-pma/" \
                     -l "traefik.port=80" \
-                    -l "traefik.frontend.redirect.entryPoint=https" \
-                    -l "traefik.frontend.headers.forceSTSHeader=${DEMYX_APP_FORCE_STS_HEADER}" \
-                    -l "traefik.frontend.headers.STSSeconds=${DEMYX_APP_STS_SECONDS}" \
-                    -l "traefik.frontend.headers.STSIncludeSubdomains=${DEMYX_APP_STS_INCLUDE_SUBDOMAINS}" \
-                    -l "traefik.frontend.headers.STSPreload=${DEMYX_APP_STS_PRELOAD}" \
-                    -l "traefik.frontend.auth.basic.users=${DEMYX_PARSE_BASIC_AUTH}" \
                     phpmyadmin/phpmyadmin
 
                 DEMYX_CONFIG_PLUGINS_CHECK=$(demyx wp "$DEMYX_APP_DOMAIN" plugin list --format=csv)
@@ -443,8 +443,7 @@ function demyx_config() {
                 else
                     demyx_echo 'Creating demyx_browsersync plugin'
                     demyx_execute demyx_plugin; \
-                    docker cp "$DEMYX_APP_CONFIG"/demyx_browsersync.php "$DEMYX_APP_WP_CONTAINER":/var/www/html/wp-content/plugins; \
-                    rm "$DEMYX_APP_CONFIG"/demyx_browsersync.php
+                    docker cp "$DEMYX_APP_CONFIG"/demyx_browsersync.php "$DEMYX_APP_WP_CONTAINER":/var/www/html/wp-content/plugins
                 
                     demyx_echo 'Activating demyx_browsersync plugin'
                     demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin activate demyx_browsersync
@@ -455,36 +454,44 @@ function demyx_config() {
                     demyx config "$DEMYX_APP_DOMAIN" --cache=off
                 fi
 
+                demyx config "$DEMYX_APP_DOMAIN" --restart=nginx; \
+                    demyx_execute -v sed -i "s/DEMYX_APP_DEV=off/DEMYX_APP_DEV=on/g" "$DEMYX_APP_PATH"/.env
+
                 PRINT_TABLE="DEMYX^ DEVELOPMENT MODE\n"
                 PRINT_TABLE+="SFTP^ $DEMYX_APP_DOMAIN\n"
                 PRINT_TABLE+="SFTP USER^ www-data\n"
                 PRINT_TABLE+="SFTP PORT^ $DEMYX_SFTP_PORT\n"
-                PRINT_TABLE+="PHPMYADMIN^ https://${DEMYX_PHPMYADMIN_SUB}.${DEMYX_APP_DOMAIN}\n"
-                PRINT_TABLE+="BROWSERSYNC^ https://${DEMYX_BROWSERSYNC_SUB}.${DEMYX_APP_DOMAIN}\n"
-                PRINT_TABLE+="BROWSERSYNC UI^ https://${DEMYX_BROWSERSYNC_SUB_UI}.${DEMYX_APP_DOMAIN}\n"
+                PRINT_TABLE+="PHPMYADMIN^ $DEMYX_CONFIG_DEV_PROTO/demyx-pma/\n"
+                PRINT_TABLE+="PHPMYADMIN USERNAME^ $WORDPRESS_DB_USER\n"
+                PRINT_TABLE+="PHPMYADMIN PASSWORD^ $WORDPRESS_DB_PASSWORD\n"
+                PRINT_TABLE+="BROWSERSYNC^ $DEMYX_CONFIG_DEV_PROTO/demyx-bs/\n"
                 PRINT_TABLE+="BROWSERSYNC FILES^ $DEMYX_BS_FILES"
-                demyx_execute -v sed -i "s/DEMYX_APP_DEV=off/DEMYX_APP_DEV=on/g" "$DEMYX_APP_PATH"/.env && \
-                demyx_table "$PRINT_TABLE"
+                demyx_execute -v demyx_table "$PRINT_TABLE"
             elif [[ "$DEMYX_CONFIG_DEV" = off ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ "$DEMYX_APP_DEV" = off ]] && demyx_die 'Dev mode is already turned off'
                 fi
 
                 demyx_echo 'Stopping SFTP container' 
-                demyx_execute docker stop "$DEMYX_APP_ID"_sftp
+                demyx_execute docker stop "$DEMYX_APP_COMPOSE_PROJECT"_sftp
                 
                 demyx_echo 'Stopping phpMyAdmin container'
-                demyx_execute docker stop "$DEMYX_APP_ID"_pma
+                demyx_execute docker stop "$DEMYX_APP_COMPOSE_PROJECT"_pma
 
                 demyx_echo 'Stopping BrowserSync container'
-                demyx_execute docker stop "$DEMYX_APP_ID"_bs
+                demyx_execute docker stop "$DEMYX_APP_COMPOSE_PROJECT"_bs
 
                 demyx_echo 'Deactivating autover' 
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin deactivate autover
 
                 demyx_echo 'Deactivating demyx_browsersync' 
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin deactivate demyx_browsersync; \
-                    sed -i "s/DEMYX_APP_DEV=on/DEMYX_APP_DEV=off/g" "$DEMYX_APP_PATH"/.env
+
+                demyx_echo 'Removing bs.conf'
+                demyx_execute demyx exec "$DEMYX_APP_DOMAIN" rm /etc/nginx/common/bs.conf; \
+
+                demyx config "$DEMYX_APP_DOMAIN" --restart=nginx; \
+                    demyx_execute -v sed -i "s/DEMYX_APP_DEV=on/DEMYX_APP_DEV=off/g" "$DEMYX_APP_PATH"/.env
 
                 if [[ -f "$DEMYX_APP_CONFIG"/.cache ]]; then
                     rm "$DEMYX_APP_CONFIG"/.cache
@@ -524,11 +531,6 @@ function demyx_config() {
                     -l "traefik.enable=true" \
                     -l "traefik.frontend.rule=Host:${DEMYX_APP_DOMAIN}; PathPrefixStrip: /demyx-pma/" \
                     -l "traefik.port=80" \
-                    -l "traefik.frontend.redirect.entryPoint=https" \
-                    -l "traefik.frontend.headers.forceSTSHeader=${DEMYX_APP_FORCE_STS_HEADER}" \
-                    -l "traefik.frontend.headers.STSSeconds=${DEMYX_APP_STS_SECONDS}" \
-                    -l "traefik.frontend.headers.STSIncludeSubdomains=${DEMYX_APP_STS_INCLUDE_SUBDOMAINS}" \
-                    -l "traefik.frontend.headers.STSPreload=${DEMYX_APP_STS_PRELOAD}" \
                     phpmyadmin/phpmyadmin
 
                 PRINT_TABLE="DEMYX^ PHPMYADMIN\n"
