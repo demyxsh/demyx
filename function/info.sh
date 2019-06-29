@@ -50,7 +50,7 @@ function demyx_info() {
         demyx_execute -v -q demyx_table "$PRINT_TABLE"
     elif [[ "$DEMYX_TARGET" = dash ]]; then
         DEMYX_INFO_CONTAINER_RUNNING=$(/usr/local/bin/docker ps -q | wc -l)
-        DEMYX_INFO_CONTAINER_DEAD=$(/usr/local/bin/docker ps -a | grep -v -F 'Exited (0)' | grep -c -F 'Exited (')
+        DEMYX_INFO_CONTAINER_DEAD=$(/usr/local/bin/docker ps --filter "status=exited" | wc -l)
         echo '{
             "hostname": "'$(hostname)'",
             "disk_used": "'$(df -h /demyx | sed '1d' | awk '{print $3}')'",
