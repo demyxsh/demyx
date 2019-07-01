@@ -1,12 +1,12 @@
 FROM alpine:3.10.0
 
-LABEL image="demyx/nginx"
-LABEL maintainer="Demyx <info@demyx.sh>"
-LABEL url="https://demyx.sh"
-LABEL github="https://github.com/demyxco/demyx"
-LABEL registry="https://hub.docker.com/u/demyx"
+LABEL sh.demyx.image demyx/nginx
+LABEL sh.demyx.maintainer Demyx <info@demyx.sh>
+LABEL sh.demyx.url https://demyx.sh
+LABEL sh.demyx.github https://github.com/demyxco/demyx
+LABEL sh.demyx.registry https://hub.docker.com/u/demyx
 
-ENV TZ=America/Los_Angeles
+ENV TZ America/Los_Angeles
 ENV NGINX_VERSION 1.17.0
 ENV NJS_VERSION   0.3.2
 ENV PKG_RELEASE 1

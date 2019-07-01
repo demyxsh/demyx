@@ -17,10 +17,8 @@ if [[ ! -d /var/www/html/wp-admin ]]; then
 fi
 
 if [[ -d /demyx ]]; then
-    rm /etc/nginx/nginx.conf
     rm /etc/php7/php.ini
     rm /etc/php7/php-fpm.d/www.conf
-    ln -s /demyx/nginx.conf /etc/nginx
     ln -s /demyx/php.ini /etc/php7
     ln -s /demyx/php-fpm.conf /etc/php7/php-fpm.d
 fi
@@ -29,5 +27,4 @@ find /var/www/html -type d -print0 | xargs -0 chmod 0755
 find /var/www/html -type f -print0 | xargs -0 chmod 0644
 chown -R www-data:www-data /var/www/html
 
-php-fpm -D
-nginx -g 'daemon off;'
+php-fpm -F

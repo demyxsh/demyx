@@ -1,10 +1,10 @@
 FROM alpine:3.10.0
 
-LABEL image="demyx/logrotate"
-LABEL maintainer="Demyx <info@demyx.sh>"
-LABEL url="https://demyx.sh"
-LABEL github="https://github.com/demyxco/demyx"
-LABEL registry="https://hub.docker.com/u/demyx"
+LABEL sh.demyx.image demyx/logrotate
+LABEL sh.demyx.maintainer Demyx <info@demyx.sh>
+LABEL sh.demyx.url https://demyx.sh
+LABEL sh.demyx.github https://github.com/demyxco/demyx
+LABEL sh.demyx.registry https://hub.docker.com/u/demyx
 
 RUN set -ex; \
 	apk add --no-cache --update logrotate tzdata dumb-init

@@ -1,10 +1,10 @@
 FROM node:alpine
 
-LABEL image="demyx/browsersyc"
-LABEL maintainer="Demyx <info@demyx.sh>"
-LABEL url="https://demyx.sh"
-LABEL github="https://github.com/demyxco/demyx"
-LABEL registry="https://hub.docker.com/u/demyx"
+LABEL sh.demyx.image demyx/browsersync
+LABEL sh.demyx.maintainer Demyx <info@demyx.sh>
+LABEL sh.demyx.url https://demyx.sh
+LABEL sh.demyx.github https://github.com/demyxco/demyx
+LABEL sh.demyx.registry https://hub.docker.com/u/demyx
 
 RUN set -ex; \
     apk add --update --no-cache dumb-init; \

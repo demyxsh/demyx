@@ -1,10 +1,10 @@
 FROM webhippie/mariadb
 
-LABEL image="demyx/mariadb"
-LABEL maintainer="Demyx <info@demyx.sh>"
-LABEL url="https://demyx.sh"
-LABEL github="https://github.com/demyxco/demyx"
-LABEL registry="https://hub.docker.com/u/demyx"
+LABEL sh.demyx.image demyx/mariadb
+LABEL sh.demyx.maintainer Demyx <info@demyx.sh>
+LABEL sh.demyx.url https://demyx.sh
+LABEL sh.demyx.github https://github.com/demyxco/demyx
+LABEL sh.demyx.registry https://hub.docker.com/u/demyx
 
 ENV TZ=America/Los_Angeles
 

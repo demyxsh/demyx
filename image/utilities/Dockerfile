@@ -1,10 +1,10 @@
 FROM ubuntu
 
-LABEL image="demyx/utilities"
-LABEL maintainer="Demyx <info@demyx.sh>"
-LABEL url="https://demyx.sh"
-LABEL github="https://github.com/demyxco/demyx"
-LABEL registry="https://hub.docker.com/u/demyx"
+LABEL sh.demyx.image demyx/utilities
+LABEL sh.demyx.maintainer Demyx <info@demyx.sh>
+LABEL sh.demyx.url https://demyx.sh
+LABEL sh.demyx.github https://github.com/demyxco/demyx
+LABEL sh.demyx.registry https://hub.docker.com/u/demyx
 
 RUN set -ex; \
 	apt-get update && apt-get install -y --no-install-recommends \

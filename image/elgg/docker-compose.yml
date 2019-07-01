@@ -5,9 +5,9 @@ services:
     image: demyx/mariadb
     restart: unless-stopped
     networks:
-      - proxy
+      - demyx
     volumes:
-      - ./db:/var/lib/mysql
+      - elgg_db:/var/lib/mysql
     environment:
       MARIADB_DATABASE: demyx_db
       MARIADB_USERNAME: demyx_user
@@ -17,16 +17,21 @@ services:
     image: demyx/elgg
     restart: unless-stopped
     networks:
-      - proxy
+      - demyx
     volumes:
-      - ./data:/var/www/html
+      - elgg:/var/www/html
     environment:
-      ELGG_DOMAIN: elgg.tk
+      ELGG_DOMAIN: domain.tld
       TZ: America/Los_Angeles
     labels:
       - "traefik.enable=true"
-      - "traefik.frontend.rule=Host:elgg.tk,www.elgg.tk"
+      - "traefik.frontend.rule=Host:domain.tld,www.domain.tld"
       - "traefik.port=80"
+volumes:
+  elgg:
+    name: elgg
+  elgg_db:
+    name: elgg_db
 networks:
-  proxy:
-    name: proxy
+  demyx:
+    name: demyx
