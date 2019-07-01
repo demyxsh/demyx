@@ -27,7 +27,7 @@ RUN set -ex; \
     apk add --no-cache --update bash tzdata curl zsh openssh sudo gnupg jq dumb-init htop rsync; \
     rm -rf /var/cache/apk/*
 
-ENV DEMYX_DOCKER_BINARY=18.09.6
+ENV DEMYX_DOCKER_BINARY=18.09.7
 
 RUN set -ex; \
     curl -sS https://download.docker.com/linux/static/stable/x86_64/docker-"$DEMYX_DOCKER_BINARY".tgz --output /usr/src/docker-"$DEMYX_DOCKER_BINARY".tgz; \

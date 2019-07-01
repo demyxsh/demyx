@@ -11,7 +11,7 @@ function demyx_php_fpm() {
             [www]
             user = www-data
             group = www-data
-            listen = 127.0.0.1:9000
+            listen = 9000
 
             pm = ondemand
             pm.max_children = 75
