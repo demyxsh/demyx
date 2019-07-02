@@ -54,10 +54,9 @@ function demyx_info() {
         echo '{
             "hostname": "'$(hostname)'",
             "disk_used": "'$(df -h /demyx | sed '1d' | awk '{print $3}')'",
-            "disk_available": "'$(df -h /demyx | sed '1d' | awk '{print $4}')'",
-            "disk_used_percentage": "'$(df -h /demyx | sed '1d' | awk '{print $5}')'",
-            "memory_used_percentage": "'$(free | grep Mem | awk '{print $3/$2 * 100.0}' | python -c "print round(float(raw_input()))")'%",
-            "memory_free_percentage": "'$(free | grep Mem | awk '{print $4/$2 * 100.0}' | python -c "print round(float(raw_input()))")'%",
+            "disk_total": "'$(df -h /demyx | sed '1d' | awk '{print $2}')'",
+            "memory_used": "'$(free -m | sed '1d' | sed '2d' | awk '{print $3}')'",
+            "memory_total": "'$(free -m | sed '1d' | sed '2d' | awk '{print $2}')'",
             "uptime": "'$(uptime | awk '{print $2 " " $3 " " $4 " " $5}' | sed 's/,//g')'",
             "load_average": "'$(cat /proc/loadavg | awk '{print $1 " " $2 " " $3}')'",
             "container_running": "'$DEMYX_INFO_CONTAINER_RUNNING'",
