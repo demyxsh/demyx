@@ -177,6 +177,7 @@ RUN set -ex; \
     php7-fpm \
 	php7-ftp \
 	php7-gd \
+    php7-gmp \
 	php7-iconv \
 	php7-imagick \
 	php7-json \
@@ -184,6 +185,7 @@ RUN set -ex; \
 	php7-mysqli \
     php7-opcache \
 	php7-openssl \
+    php7-pecl-mcrypt \
     php7-pecl-ssh2 \
     php7-phar \
 	php7-posix \
@@ -200,7 +202,7 @@ RUN set -ex; \
 	php7-zlib
 
 RUN set -ex; \
-	apk add --no-cache ed dumb-init bash; \
+	apk add --no-cache ed dumb-init bash libsodium; \
     ln -s /usr/sbin/php-fpm7 /usr/local/bin/php-fpm; \
     mkdir -p /var/log/demyx
 
