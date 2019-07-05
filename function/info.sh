@@ -57,7 +57,7 @@ function demyx_info() {
             "disk_total": "'$(df -h /demyx | sed '1d' | awk '{print $2}')'",
             "memory_used": "'$(free -m | sed '1d' | sed '2d' | awk '{print $3}')'",
             "memory_total": "'$(free -m | sed '1d' | sed '2d' | awk '{print $2}')'",
-            "uptime": "'$(uptime | awk -F '[,]' '{print $1}')'",
+            "uptime": "'$(uptime | awk -F '[,]' '{print $1}' | awk -F '[up]' '{print $3}')'",
             "load_average": "'$(cat /proc/loadavg | awk '{print $1 " " $2 " " $3}')'",
             "container_running": "'$DEMYX_INFO_CONTAINER_RUNNING'",
             "container_dead": "'$DEMYX_INFO_CONTAINER_DEAD'"' | sed 's/            /    /g'
