@@ -454,7 +454,11 @@ function demyx_config() {
                     demyx config "$DEMYX_APP_DOMAIN" --cache=off
                 fi
 
-                demyx config "$DEMYX_APP_DOMAIN" --restart=nginx; \
+                demyx_echo 'Disabling opcache'
+                demyx_execute sed -i "s|opcache.enable=1|opcache.enable=0|g" "$DEMYX_APP_CONFIG"/php.ini; \
+                    sed -i "s|opcache.enable_cli=1|opcache.enable_cli=0|g" "$DEMYX_APP_CONFIG"/php.ini
+
+                demyx config "$DEMYX_APP_DOMAIN" --update; \
                     demyx_execute -v sed -i "s/DEMYX_APP_DEV=off/DEMYX_APP_DEV=on/g" "$DEMYX_APP_PATH"/.env
 
                 PRINT_TABLE="DEMYX^ DEVELOPMENT MODE\n"
@@ -490,7 +494,11 @@ function demyx_config() {
                 demyx_echo 'Removing bs.conf'
                 demyx_execute demyx exec "$DEMYX_APP_DOMAIN" rm /etc/nginx/common/bs.conf; \
 
-                demyx config "$DEMYX_APP_DOMAIN" --restart=nginx; \
+                demyx_echo 'Enabling opcache'
+                demyx_execute sed -i "s|opcache.enable=0|opcache.enable=1|g" "$DEMYX_APP_CONFIG"/php.ini; \
+                    sed -i "s|opcache.enable_cli=0|opcache.enable_cli=1|g" "$DEMYX_APP_CONFIG"/php.ini
+
+                demyx config "$DEMYX_APP_DOMAIN" --update; \
                     demyx_execute -v sed -i "s/DEMYX_APP_DEV=on/DEMYX_APP_DEV=off/g" "$DEMYX_APP_PATH"/.env
 
                 if [[ -f "$DEMYX_APP_CONFIG"/.cache ]]; then
