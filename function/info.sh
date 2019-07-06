@@ -52,7 +52,7 @@ function demyx_info() {
         source "$DEMYX"/.env
         DEMYX_INFO_CONTAINER_RUNNING=$(/usr/local/bin/docker ps -q | wc -l)
         DEMYX_INFO_CONTAINER_DEAD=$(/usr/local/bin/docker ps -q --filter "status=exited" | wc -l)
-        DEMYX_INFO_WP_COUNT=$(find "$DEMYX_WP" -maxdepth 0 -type d | wc -l)
+        DEMYX_INFO_WP_COUNT=$(cd "$DEMYX_WP" && find * -maxdepth 0 -type d | wc -l)
         echo '{
             "hostname": "'$(hostname)'",
             "mode": "'$DEMYX_MOTD_MODE'",
