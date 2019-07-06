@@ -49,10 +49,14 @@ function demyx_info() {
         done
         demyx_execute -v -q demyx_table "$PRINT_TABLE"
     elif [[ "$DEMYX_TARGET" = dash ]]; then
+        source "$DEMYX"/.env
         DEMYX_INFO_CONTAINER_RUNNING=$(/usr/local/bin/docker ps -q | wc -l)
         DEMYX_INFO_CONTAINER_DEAD=$(/usr/local/bin/docker ps -q --filter "status=exited" | wc -l)
+        DEMYX_INFO_WP_COUNT=$(find "$DEMYX_WP" -maxdepth 0 -type d | wc -l)
         echo '{
             "hostname": "'$(hostname)'",
+            "mode": "'$DEMYX_MOTD_MODE'",
+            "wp_count": "'$DEMYX_INFO_WP_COUNT'",
             "disk_used": "'$(df -h /demyx | sed '1d' | awk '{print $3}')'",
             "disk_total": "'$(df -h /demyx | sed '1d' | awk '{print $2}')'",
             "memory_used": "'$(free -m | sed '1d' | sed '2d' | awk '{print $3}')'",
