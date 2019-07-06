@@ -8,6 +8,6 @@ if [ "$DEMYX_SUDO_CHECK" != 0 ]; then
     exit 1
 fi
 
-if [[ ! -d "$DEMYX"/custom/example-cron ]]; then
+if [[ ! -d "$DEMYX"/custom/cron ]]; then
     cp -r "$DEMYX_ETC"/example/example-cron "$DEMYX"/custom
 fi
