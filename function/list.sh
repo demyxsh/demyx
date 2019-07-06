@@ -6,6 +6,9 @@
 function demyx_list() {
     while :; do
         case "$2" in
+            --json)
+                DEMYX_LIST_JSON=1
+                ;;
             --raw)
                 DEMYX_LIST_RAW=1
                 ;;
@@ -25,10 +28,16 @@ function demyx_list() {
 
     cd "$DEMYX_WP" || exit
 
-    if [[ -n "$DEMYX_LIST_RAW" ]]; then
+    if [[ -n "$DEMYX_LIST_JSON" ]]; then
         for i in *
         do
-            echo $i
+            DEMYX_LIST_JSON_ARRAY+="\"$i\","
+        done
+        echo -e "{$DEMYX_LIST_JSON_ARRAY}" | sed 's/\(.*\),/\1/'
+    elif [[ -n "$DEMYX_LIST_RAW" ]]; then
+        for i in *
+        do
+            echo "$i"
         done
     else
         DEMYX_LIST_WP_COUNT=$(find * -maxdepth 0 -type d | wc -l)
