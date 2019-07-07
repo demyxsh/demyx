@@ -42,7 +42,7 @@ RUN set -ex; \
 	php7-zlib
 
 RUN set -ex; \
-	apk add --no-cache ed dumb-init bash tzdata; \
+	apk add --no-cache ed dumb-init bash tzdata libsodium; \
     ln -s /usr/sbin/php-fpm7 /usr/local/bin/php-fpm; \
     mkdir -p /var/log/demyx
 

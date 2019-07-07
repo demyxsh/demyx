@@ -10,6 +10,7 @@ COPY CMakeLists.txt /
 
 RUN set -ex; \
     echo 'http://dl-cdn.alpinelinux.org/alpine/edge/testing/' >> /etc/apk/repositories; \
+    echo 'http://dl-cdn.alpinelinux.org/alpine/edge/community/' >> /etc/apk/repositories; \
     apk add --no-cache --update dumb-init protobuf-dev libsodium-dev gflags-dev g++ gcc libc-dev libutempter-dev libexecinfo-dev ncurses-dev boost-dev; \
     apk add --no-cache --virtual .build-deps git make cmake m4 perl git; \
     mkdir -p /usr/src; \
@@ -20,6 +21,8 @@ RUN set -ex; \
     cd build; \
     cmake ../; \
     make && make install; \
+    sed -i 's|http://dl-cdn.alpinelinux.org/alpine/edge/testing/||g' /etc/apk/repositories; \
+    sed -i 's|http://dl-cdn.alpinelinux.org/alpine/edge/community/||g' /etc/apk/repositories; \
     apk del .build-deps && rm -rf /var/cache/apk/*
 
 RUN set -ex; \
@@ -33,7 +36,6 @@ RUN set -ex; \
     sed -i "s|#PubkeyAuthentication yes|PubkeyAuthentication yes|g" /etc/ssh/sshd_config; \
     sed -i "s|#PasswordAuthentication yes|PasswordAuthentication no|g" /etc/ssh/sshd_config; \
     sed -i "s|#PermitEmptyPasswords no|PermitEmptyPasswords no|g" /etc/ssh/sshd_config; \
-    sed -i 's|http://dl-cdn.alpinelinux.org/alpine/edge/testing/||g' /etc/apk/repositories; \
     rm -rf /usr/src/EternalTerminal
 
 COPY demyx-entrypoint.sh /usr/local/bin/demyx-entrypoint

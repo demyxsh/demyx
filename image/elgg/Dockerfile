@@ -7,9 +7,9 @@ LABEL sh.demyx.github https://github.com/demyxco/demyx
 LABEL sh.demyx.registry https://hub.docker.com/u/demyx
 
 ENV TZ America/Los_Angeles
-ENV NGINX_VERSION 1.17.0
-ENV NJS_VERSION   0.3.2
-ENV PKG_RELEASE 1
+ENV NGINX_VERSION 1.17.1
+ENV NJS_VERSION   0.3.3
+ENV PKG_RELEASE   1
 ENV NGX_CACHE_PURGE_VERSION 2.3
 ENV NGX_CACHE_PURGE_SHA1 69ed46a23435e8dfd5579422c0c3996cf9a44291
 ENV HEADERS_MORE_NGINX_MODULE_VERSION 0.33
@@ -204,7 +204,7 @@ RUN set -ex; \
 	php7-zlib
 
 RUN set -ex; \
-	apk add --no-cache ed dumb-init bash; \
+	apk add --no-cache ed dumb-init bash libsodium; \
     ln -s /usr/sbin/php-fpm7 /usr/local/bin/php-fpm; \
     mkdir -p /var/log/demyx
 

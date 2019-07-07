@@ -10,6 +10,7 @@ COPY CMakeLists.txt /
 
 RUN set -ex; \
     echo 'http://dl-cdn.alpinelinux.org/alpine/edge/testing/' >> /etc/apk/repositories; \
+    echo 'http://dl-cdn.alpinelinux.org/alpine/edge/community/' >> /etc/apk/repositories; \
     apk add --no-cache --update git protobuf-dev libsodium-dev gflags-dev g++ gcc libc-dev libutempter-dev libexecinfo-dev ncurses-dev boost-dev; \
     apk add --no-cache --virtual .build-deps make cmake m4 perl; \
     mkdir -p /usr/src; \
@@ -20,10 +21,11 @@ RUN set -ex; \
     cd build; \
     cmake ../; \
     make && make install; \
+    sed -i 's|http://dl-cdn.alpinelinux.org/alpine/edge/testing/||g' /etc/apk/repositories; \
+    sed -i 's|http://dl-cdn.alpinelinux.org/alpine/edge/community/||g' /etc/apk/repositories; \
     apk del .build-deps && rm -rf /var/cache/apk/*
 
 RUN set -ex; \
-    sed -i 's|http://dl-cdn.alpinelinux.org/alpine/edge/testing/||g' /etc/apk/repositories; \
     apk add --no-cache --update bash tzdata curl zsh openssh sudo gnupg jq dumb-init htop rsync; \
     rm -rf /var/cache/apk/*
 
