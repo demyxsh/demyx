@@ -34,6 +34,7 @@ fi
 
 chmod 700 /home/demyx/.ssh
 chmod 644 /home/demyx/.ssh/authorized_keys
+chmod 600 /etc/ssh/ssh_host_rsa_key
 chown -R demyx:demyx /home/demyx
 chown -R demyx:demyx /demyx
 chmod +x /demyx/etc/demyx.sh

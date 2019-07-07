@@ -15,5 +15,6 @@ fi
 chown -R www-data:www-data /home/www-data
 chmod 700 /home/www-data/.ssh
 chmod 644 /home/www-data/.ssh/authorized_keys
+chmod 600 /etc/ssh/ssh_host_rsa_key
 
 /usr/sbin/sshd -D
