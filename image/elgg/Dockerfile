@@ -208,7 +208,7 @@ RUN set -ex; \
     ln -s /usr/sbin/php-fpm7 /usr/local/bin/php-fpm; \
     mkdir -p /var/log/demyx
 
-ENV ELGG_VERSION 3.0.4
+ENV ELGG_VERSION 3.0.5
 
 RUN set -ex; \
 	apk add --no-cache --virtual .elgg-deps curl zip unzip; \
