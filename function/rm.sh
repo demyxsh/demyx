@@ -57,6 +57,16 @@ function demyx_rm() {
         demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" kill
         demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" rm -f
 
+        DEMYX_RM_STRAGGLERS=$(docker ps | grep "$DEMYX_APP_COMPOSE_PROJECT" | awk '{print $(NF)}' | awk 'BEGIN { ORS = " " } { print }')
+
+        if [[ -n "$DEMYX_RM_STRAGGLERS" ]]; then
+            for i in $DEMYX_RM_STRAGGLERS
+            do
+                demyx_echo "Killing $i"
+                demyx_execute docker kill "$i"
+            done
+        fi
+
         for i in $DEMYX_RM_VOLUMES
         do
             demyx_echo "Deleting $i"
