@@ -15,6 +15,10 @@
 # Backup WordPress sites at midnight
 /usr/local/bin/demyx backup all
 
+# Auto update Demyx core files
+DEMYX_STACK_AUTO_UPDATE_CHECK=$(grep DEMYX_STACK_AUTO_UPDATE /demyx/app/stack/.env | awk -F '[=]' '{print $2}' || true)
+[[ "$DEMYX_STACK_AUTO_UPDATE" = on ]] && /usr/local/bin/demyx update
+
 # Check for Demyx updates
 cd /demyx/etc
 git remote update

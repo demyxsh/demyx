@@ -9,6 +9,12 @@ function demyx_stack() {
             down)
                 DEMYX_STACK_DOWN=1
                 ;;
+            --auto-update|--auto-update=on)
+                DEMYX_STACK_AUTO_UPDATE=on
+                ;;
+            --auto-update=off)
+                DEMYX_STACK_AUTO_UPDATE=off
+                ;;
             --du)
                 DEMYX_STACK_DU=1
                 ;;
@@ -48,6 +54,12 @@ function demyx_stack() {
         demyx_execute -v demyx stack stop
         demyx_execute -v demyx stack rm -f
         demyx_execute -v demyx stack up -d --remove-orphans
+    elif [[ "$DEMYX_STACK_AUTO_UPDATE" = on ]]; then
+        demyx_echo 'Turn on stack auto update'
+        demyx_execute sed -i 's/DEMYX_STACK_AUTO_UPDATE=off/DEMYX_STACK_AUTO_UPDATE=on/g' "$DEMYX_STACK"/.env
+    elif [[ "$DEMYX_STACK_AUTO_UPDATE" = off ]]; then
+        demyx_echo 'Turn off stack auto update'
+        demyx_execute sed -i 's/DEMYX_STACK_AUTO_UPDATE=on/DEMYX_STACK_AUTO_UPDATE=off/g' "$DEMYX_STACK"/.env
     elif [[ "$DEMYX_STACK_HEALTHCHECK" = on ]]; then
         demyx_echo 'Turn on stack healthcheck'
         demyx_execute sed -i 's/DEMYX_STACK_HEALTHCHECK=off/DEMYX_STACK_HEALTHCHECK=on/g' "$DEMYX_STACK"/.env

@@ -137,6 +137,7 @@ function demyx_help() {
         echo
         echo "demyx stack <arg>             Target stack containers"
         echo "            down              Shorthand for docker-compose stop/rm -f"
+        echo "            --auto-update     Auto update Demyx core files"
         echo "            --du              Shorthand for docker-compose stop/rm -f/up -d"
         echo "            --healthcheck     Turns on/off healthcheck globally"
         echo "            --monitor         Turns on/off auto scaling globally"
