@@ -160,7 +160,7 @@ function demyx_stack_yml() {
                     - --docker
                     - --docker.watch=\${DEMYX_STACK_DOCKER_WATCH}
                     - --docker.exposedbydefault=\${DEMYX_STACK_DOCKER_EXPOSED_BY_DEFAULT}
-                    - "--entrypoints=Name:http Address::80 Redirect.EntryPoint:https"
+                    - "--entrypoints=Name:http Address::80"
                     - "--entrypoints=Name:https Address::443 TLS"
                     - --defaultentrypoints=\${DEMYX_STACK_ENTRYPOINT_DEFAULTENTRYPOINTS}
                     - --acme
