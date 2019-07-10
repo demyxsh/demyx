@@ -37,7 +37,9 @@ function demyx_yml() {
         DEMYX_REGEX="- \"traefik.frontend.redirect.regex=^${DEMYX_REGEX_PROTOCOL}\${DEMYX_APP_DOMAIN}/(.*)\"
                         - \"traefik.frontend.redirect.replacement=${DEMYX_REGEX_PROTOCOL_REPLACEMENT}\${DEMYX_APP_DOMAIN}/\$\$1\""
 
-        [[ -n "$DEMYX_SUBDOMAIN_CHECK" ]] && DEMYX_FRONTEND_RULE="- \"traefik.frontend.rule=Host:\${DEMYX_APP_DOMAIN}\""
+        if [[ -n "$DEMYX_SUBDOMAIN_CHECK" ]] && [[ -z "$DEMYX_CLOUDFLARE_CHECK" ]]; then
+            DEMYX_FRONTEND_RULE="- \"traefik.frontend.rule=Host:\${DEMYX_APP_DOMAIN}\""
+        fi
         
         DEMYX_YML_AUTH_CHECK=$(demyx info "$DEMYX_APP_DOMAIN" --filter=DEMYX_APP_AUTH)
 
