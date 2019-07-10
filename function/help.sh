@@ -10,6 +10,7 @@ function demyx_help() {
         echo
         echo "demyx backup <app> <args>     Backup an app by domain"
         echo "             all              Backup all apps"
+        echo "                   --path     Save backups to a specific path"
         echo
     elif [[ "$DEMYX_HELP" = compose ]]; then
         echo
