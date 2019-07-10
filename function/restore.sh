@@ -84,7 +84,6 @@ function demyx_restore() {
         demyx_execute docker run -dt --rm \
             --name "$DEMYX_APP_ID" \
             --network demyx \
-            --entrypoint "/usr/local/sbin/php-fpm" \
             -v wp_"$DEMYX_APP_ID":/var/www/html \
             -v wp_"$DEMYX_APP_ID"_config:/demyx \
             -v wp_"$DEMYX_APP_ID"_log:/var/log/demyx \
