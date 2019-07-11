@@ -374,6 +374,9 @@ function demyx_config() {
                 demyx_echo 'Creating BrowserSync config'
                 demyx_execute -v \
                     echo 'module.exports={
+                        ui: false,
+                        files: "'$DEMYX_BS_FILES'",
+                        proxy: "'$DEMYX_APP_WP_CONTAINER'",
                         rewriteRules:[{
                             match: /'$DEMYX_APP_DOMAIN'/g,
                             fn: function (e,r,t) {
@@ -407,10 +410,7 @@ function demyx_config() {
                     -l "traefik.bs.frontend.rule=Host:${DEMYX_APP_DOMAIN}; PathPrefixStrip: /demyx-bs" \
                     -l "traefik.bs.port=3000" \
                     demyx/browsersync start \
-                    --config "/demyx/bs.js" \
-                    --proxy "$DEMYX_APP_WP_CONTAINER" \
-                    --files "/var/www/html/**/*" \
-                    --no-ui
+                    --config "/demyx/bs.js"
 
                 demyx_echo 'Creating phpMyAdmin container'
                 demyx_execute docker run -d --rm \
