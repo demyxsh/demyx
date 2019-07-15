@@ -1,4 +1,4 @@
-FROM alpine:3.10.0
+FROM alpine:3.10.1
 
 LABEL sh.demyx.image demyx/wordpress
 LABEL sh.demyx.maintainer Demyx <info@demyx.sh>

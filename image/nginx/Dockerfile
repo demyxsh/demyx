@@ -1,4 +1,4 @@
-FROM alpine:3.10.0
+FROM alpine:3.10.1
 
 LABEL sh.demyx.image demyx/nginx
 LABEL sh.demyx.maintainer Demyx <info@demyx.sh>
@@ -11,7 +11,6 @@ ENV NGINX_VERSION 1.17.1
 ENV NJS_VERSION   0.3.3
 ENV PKG_RELEASE   1
 ENV NGX_CACHE_PURGE_VERSION 2.3
-ENV NGX_CACHE_PURGE_SHA1 69ed46a23435e8dfd5579422c0c3996cf9a44291
 ENV HEADERS_MORE_NGINX_MODULE_VERSION 0.33
 
 RUN set -x \
@@ -42,7 +41,7 @@ RUN set -x \
                  exit 1; \
                fi \
             && printf "%s%s%s\n" \
-                "http://nginx.org/packages/mainline/alpine/v3.9" \
+                "http://nginx.org/packages/mainline/alpine/v3.10" \
                 #`egrep -o '^[0-9]+\.[0-9]+' /etc/alpine-release` \
                 "/main" \
             | tee -a /etc/apk/repositories \
@@ -122,44 +121,43 @@ RUN set -x \
 # BUILD CUSTOM MODULES
 #
 RUN apk add --no-cache --update --virtual .build-deps \
-gcc \
-libc-dev \
-make \
-openssl-dev \
-pcre-dev \
-zlib-dev \
-linux-headers \
-curl \
-gnupg1 \
-libxslt-dev \
-gd-dev \
-geoip-dev \
-\
-&& mkdir -p /usr/src \
-&& curl -o ngx_cache_purge.tar.gz -fSL "http://labs.frickle.com/files/ngx_cache_purge-${NGX_CACHE_PURGE_VERSION}.tar.gz" \
-&& echo "$NGX_CACHE_PURGE_SHA1 *ngx_cache_purge.tar.gz" | sha1sum -c - \
-&& tar -xzf ngx_cache_purge.tar.gz -C /usr/src/ \
-&& rm ngx_cache_purge.tar.gz \
-&& curl -o headers-more-nginx-module.tar.gz -fSL "https://github.com/openresty/headers-more-nginx-module/archive/v${HEADERS_MORE_NGINX_MODULE_VERSION}.tar.gz" \
-&& tar -xzf headers-more-nginx-module.tar.gz -C /usr/src/ \
-&& rm headers-more-nginx-module.tar.gz \
-&& curl -o nginx.tar.gz -fSL "https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz" \
-&& tar -xzf nginx.tar.gz -C /usr/src/ \
-&& rm nginx.tar.gz \
-&& sed -i "s/HTTP_MODULES/#HTTP_MODULES/g" /usr/src/ngx_cache_purge-"$NGX_CACHE_PURGE_VERSION"/config \
-&& sed -i "s/NGX_ADDON_SRCS/#NGX_ADDON_SRCS/g" /usr/src/ngx_cache_purge-"$NGX_CACHE_PURGE_VERSION"/config \
-&& sed -i "s|ngx_addon_name=ngx_http_cache_purge_module|ngx_addon_name=ngx_http_cache_purge_module; if test -n \"\$ngx_module_link\"; then ngx_module_type=HTTP; ngx_module_name=ngx_http_cache_purge_module; ngx_module_srcs=\"\$ngx_addon_dir/ngx_cache_purge_module.c\"; . auto/module; else HTTP_MODULES=\"\$HTTP_MODULES ngx_http_cache_purge_module\"; NGX_ADDON_SRCS=\"\$NGX_ADDON_SRCS \$ngx_addon_dir/ngx_cache_purge_module.c\"; fi|g" /usr/src/ngx_cache_purge-${NGX_CACHE_PURGE_VERSION}/config \
-&& sed -i "s|ngx_addon_name=ngx_http_headers_more_filter_module|ngx_addon_name=ngx_http_headers_more_filter_module; if test -n \"\$ngx_module_link\"; then ngx_module_type=HTTP; ngx_module_name=ngx_http_headers_more_filter_module; ngx_module_srcs=\"\$ngx_addon_dir/ngx_http_headers_more_filter_module.c\"; . auto/module; else HTTP_MODULES=\"\$HTTP_MODULES ngx_http_headers_more_filter_module\"; NGX_ADDON_SRCS=\"\$NGX_ADDON_SRCS \$ngx_addon_dir/ngx_http_headers_more_filter_module.c\"; fi|g" /usr/src/headers-more-nginx-module-${HEADERS_MORE_NGINX_MODULE_VERSION}/config \
-&& cd /usr/src/nginx-"$NGINX_VERSION" \
-&& ./configure --with-compat --add-dynamic-module=/usr/src/ngx_cache_purge-"$NGX_CACHE_PURGE_VERSION" \
-&& make modules \
-&& cp objs/ngx_http_cache_purge_module.so /etc/nginx/modules \
-&& make clean \
-&& ./configure --with-compat --add-dynamic-module=/usr/src/headers-more-nginx-module-"$HEADERS_MORE_NGINX_MODULE_VERSION" \
-&& make modules \
-&& cp objs/ngx_http_headers_more_filter_module.so /etc/nginx/modules \
-&& rm -rf /usr/src/nginx-"$NGINX_VERSION" /usr/src/ngx_cache_purge-"$NGX_CACHE_PURGE_VERSION" /usr/src/headers-more-nginx-module-"$HEADERS_MORE_NGINX_MODULE_VERSION" \
-&& apk del .build-deps
+    gcc \
+    libc-dev \
+    make \
+    openssl-dev \
+    pcre-dev \
+    zlib-dev \
+    linux-headers \
+    curl \
+    gnupg1 \
+    libxslt-dev \
+    gd-dev \
+    geoip-dev \
+    \
+    && mkdir -p /usr/src \
+	&& curl -o ngx_cache_purge.tar.gz -fSL "https://github.com/FRiCKLE/ngx_cache_purge/archive/${NGX_CACHE_PURGE_VERSION}.tar.gz" \
+    && tar -xzf ngx_cache_purge.tar.gz -C /usr/src/ \
+    && rm ngx_cache_purge.tar.gz \
+    && curl -o headers-more-nginx-module.tar.gz -fSL "https://github.com/openresty/headers-more-nginx-module/archive/v${HEADERS_MORE_NGINX_MODULE_VERSION}.tar.gz" \
+    && tar -xzf headers-more-nginx-module.tar.gz -C /usr/src/ \
+    && rm headers-more-nginx-module.tar.gz \
+    && curl -o nginx.tar.gz -fSL "https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz" \
+    && tar -xzf nginx.tar.gz -C /usr/src/ \
+    && rm nginx.tar.gz \
+    && sed -i "s/HTTP_MODULES/#HTTP_MODULES/g" /usr/src/ngx_cache_purge-"$NGX_CACHE_PURGE_VERSION"/config \
+    && sed -i "s/NGX_ADDON_SRCS/#NGX_ADDON_SRCS/g" /usr/src/ngx_cache_purge-"$NGX_CACHE_PURGE_VERSION"/config \
+    && sed -i "s|ngx_addon_name=ngx_http_cache_purge_module|ngx_addon_name=ngx_http_cache_purge_module; if test -n \"\$ngx_module_link\"; then ngx_module_type=HTTP; ngx_module_name=ngx_http_cache_purge_module; ngx_module_srcs=\"\$ngx_addon_dir/ngx_cache_purge_module.c\"; . auto/module; else HTTP_MODULES=\"\$HTTP_MODULES ngx_http_cache_purge_module\"; NGX_ADDON_SRCS=\"\$NGX_ADDON_SRCS \$ngx_addon_dir/ngx_cache_purge_module.c\"; fi|g" /usr/src/ngx_cache_purge-${NGX_CACHE_PURGE_VERSION}/config \
+    && sed -i "s|ngx_addon_name=ngx_http_headers_more_filter_module|ngx_addon_name=ngx_http_headers_more_filter_module; if test -n \"\$ngx_module_link\"; then ngx_module_type=HTTP; ngx_module_name=ngx_http_headers_more_filter_module; ngx_module_srcs=\"\$ngx_addon_dir/ngx_http_headers_more_filter_module.c\"; . auto/module; else HTTP_MODULES=\"\$HTTP_MODULES ngx_http_headers_more_filter_module\"; NGX_ADDON_SRCS=\"\$NGX_ADDON_SRCS \$ngx_addon_dir/ngx_http_headers_more_filter_module.c\"; fi|g" /usr/src/headers-more-nginx-module-${HEADERS_MORE_NGINX_MODULE_VERSION}/config \
+    && cd /usr/src/nginx-"$NGINX_VERSION" \
+    && ./configure --with-compat --add-dynamic-module=/usr/src/ngx_cache_purge-"$NGX_CACHE_PURGE_VERSION" \
+    && make modules \
+    && cp objs/ngx_http_cache_purge_module.so /etc/nginx/modules \
+    && make clean \
+    && ./configure --with-compat --add-dynamic-module=/usr/src/headers-more-nginx-module-"$HEADERS_MORE_NGINX_MODULE_VERSION" \
+    && make modules \
+    && cp objs/ngx_http_headers_more_filter_module.so /etc/nginx/modules \
+    && rm -rf /usr/src/nginx-"$NGINX_VERSION" /usr/src/ngx_cache_purge-"$NGX_CACHE_PURGE_VERSION" /usr/src/headers-more-nginx-module-"$HEADERS_MORE_NGINX_MODULE_VERSION" \
+    && apk del .build-deps
 #    
 # END BUILD CUSTOM MODULES
 #
