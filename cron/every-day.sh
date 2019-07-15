@@ -19,6 +19,10 @@
 DEMYX_STACK_AUTO_UPDATE_CHECK=$(grep DEMYX_STACK_AUTO_UPDATE /demyx/app/stack/.env | awk -F '[=]' '{print $2}' || true)
 [[ "$DEMYX_STACK_AUTO_UPDATE_CHECK" = on ]] && /usr/local/bin/demyx update
 
+# Update Oh My Zsh and its plugin
+cd /home/demyx/.oh-my-zsh && git pull
+cd /home/demyx/.oh-my-zsh/plugins/zsh-autosuggestions && git pull
+
 # Check for Demyx updates
 cd /demyx/etc
 git remote update
