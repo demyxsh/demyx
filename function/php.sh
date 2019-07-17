@@ -57,7 +57,7 @@ function demyx_php() {
             cli_server.color = On
 
             [Date]
-            date.timezone = UTC
+            date.timezone = America/Los_Angeles
             [filter]
 
             [iconv]
