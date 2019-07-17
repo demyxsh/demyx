@@ -362,20 +362,20 @@ function demyx_config() {
                     demyx/ssh
 
                 if [ "$DEMYX_CONFIG_FILES" = themes ]; then
-                    DEMYX_BS_FILES="/var/www/html/wp-content/themes/**/*"
+                    DEMYX_BS_FILES="\"/var/www/html/wp-content/themes/**/*\""
                 elif [ "$DEMYX_CONFIG_FILES" = plugins ]; then
-                    DEMYX_BS_FILES="/var/www/html/wp-content/plugins/**/*"
+                    DEMYX_BS_FILES="\"/var/www/html/wp-content/plugins/**/*\""
                 elif [ -z "$DEMYX_CONFIG_FILES" ]; then
-                    DEMYX_BS_FILES="/var/www/html/wp-content/**/*"
+                    DEMYX_BS_FILES='["/var/www/html/wp-content/themes/**/*", "/var/www/html/wp-content/plugins/**/*"]'
                 else
-                    DEMYX_BS_FILES="$DEMYX_CONFIG_FILES/**/*"
+                    DEMYX_BS_FILES="\"$DEMYX_CONFIG_FILES/**/*\""
                 fi
 
                 demyx_echo 'Creating BrowserSync config'
                 demyx_execute -v \
                     echo 'module.exports={
                         ui: false,
-                        files: "'$DEMYX_BS_FILES'",
+                        files: '$DEMYX_BS_FILES',
                         proxy: "'$DEMYX_APP_WP_CONTAINER'",
                         rewriteRules:[{
                             match: /'$DEMYX_APP_DOMAIN'/g,
