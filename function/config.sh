@@ -620,13 +620,13 @@ function demyx_config() {
             fi
             if [ "$DEMYX_CONFIG_RESTART" = nginx-php ]; then
                 demyx_echo "Restarting NGINX"
-                demyx_execute demyx exec "$DEMYX_APP_DOMAIN" nginx -s reload
+                demyx_execute demyx exec "$DEMYX_APP_DOMAIN" bash -c "rm -rf /var/run/nginx-fastcgi-cache; nginx -s reload"
 
                 demyx_echo "Restarting PHP"
                 demyx_execute demyx exec "$DEMYX_APP_DOMAIN" bash -c "pkill php-fpm; php-fpm -D"
             elif [ "$DEMYX_CONFIG_RESTART" = nginx ]; then
                 demyx_echo "Restarting NGINX"
-                demyx_execute demyx exec "$DEMYX_APP_DOMAIN" nginx -s reload
+                demyx_execute demyx exec "$DEMYX_APP_DOMAIN" bash -c "rm -rf /var/run/nginx-fastcgi-cache; nginx -s reload"
             elif [ "$DEMYX_CONFIG_RESTART" = php ]; then
                 demyx_echo "Restarting PHP"
                 demyx_execute demyx exec "$DEMYX_APP_DOMAIN" bash -c "pkill php-fpm; php-fpm -D"
