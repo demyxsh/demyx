@@ -621,7 +621,7 @@ function demyx_config() {
             if [ "$DEMYX_CONFIG_RESTART" = nginx-php ]; then
                 demyx_echo "Restarting NGINX"
                 demyx_execute demyx exec "$DEMYX_APP_DOMAIN" bash -c "rm -rf /var/run/nginx-fastcgi-cache; nginx -s reload"
-
+                
                 demyx_echo "Restarting PHP"
                 demyx_execute demyx exec "$DEMYX_APP_DOMAIN" bash -c "pkill php-fpm; php-fpm -D"
             elif [ "$DEMYX_CONFIG_RESTART" = nginx ]; then

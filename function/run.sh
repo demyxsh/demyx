@@ -255,6 +255,8 @@ function demyx_run() {
 
             demyx_echo 'Cleaning up'
             demyx_execute rm -rf "$DEMYX_APP_PATH"/html
+
+            demyx config "$DEMYX_APP_DOMAIN" --refresh --no-backup
         fi
 
         if [[ -z "$DEMYX_RUN_CLONE" ]]; then
