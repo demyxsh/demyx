@@ -6,6 +6,9 @@ LABEL sh.demyx.url https://demyx.sh
 LABEL sh.demyx.github https://github.com/demyxco/demyx
 LABEL sh.demyx.registry https://hub.docker.com/u/demyx
 
+ENV WORDPRESS_VERSION 5.2.2
+ENV WORDPRESS_SHA1 3605bcbe9ea48d714efa59b0eb2d251657e7d5b0
+
 RUN set -ex; \
     addgroup -g 82 -S www-data; \
     adduser -u 82 -D -S -G www-data www-data; \
@@ -45,9 +48,6 @@ RUN set -ex; \
 	apk add --no-cache ed dumb-init bash tzdata libsodium; \
     ln -s /usr/sbin/php-fpm7 /usr/local/bin/php-fpm; \
     mkdir -p /var/log/demyx
-
-ENV WORDPRESS_VERSION 5.2.2
-ENV WORDPRESS_SHA1 3605bcbe9ea48d714efa59b0eb2d251657e7d5b0
 
 RUN set -ex; \
 	apk add --no-cache --virtual .wp-deps curl; \

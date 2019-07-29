@@ -6,6 +6,8 @@ LABEL sh.demyx.url https://demyx.sh
 LABEL sh.demyx.github https://github.com/demyxco/demyx
 LABEL sh.demyx.registry https://hub.docker.com/u/demyx
 
+ENV MALDET_VERSION=1.6.4
+
 RUN set -ex; \
 	apt-get update && apt-get install -y --no-install-recommends \
     bash \
@@ -29,8 +31,6 @@ RUN set -ex; \
 
 RUN apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
 	rm -rf /var/lib/apt/lists/*
-
-ENV MALDET_VERSION=1.6.4
 
 RUN set -ex; \
 	cd /tmp; \

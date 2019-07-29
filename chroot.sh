@@ -5,7 +5,6 @@
 DEMYX_CHROOT_CONTAINER_CHECK=$(docker ps -a | awk '{print $NF}' | grep -w demyx)
 DEMYX_CHROOT_HOST=$(hostname)
 DEMYX_CHROOT_SSH=2222
-DEMYX_CHROOT_ET=2022
 
 while :; do
     case "$1" in
@@ -36,9 +35,6 @@ while :; do
             ;;
         --nc)
             DEMYX_CHROOT_NC=1
-            ;;
-        --et=?*)
-            DEMYX_CHROOT_ET=${1#*=}
             ;;
         --prod)
             DEMYX_CHROOT_MODE=production
@@ -96,15 +92,6 @@ demyx_run() {
         fi
     done
 
-    while true; do
-        DEMYX_ET_OPEN_PORT=$(netstat -tuplen 2>/dev/null | grep :"$DEMYX_CHROOT_ET" || true)
-        if [[ -z "$DEMYX_ET_OPEN_PORT" ]]; then
-            break
-        else
-            DEMYX_CHROOT_ET=$((DEMYX_CHROOT_ET+1))
-        fi
-    done
-
     docker run -dit \
     --name demyx \
     --restart unless-stopped \
@@ -113,14 +100,12 @@ demyx_run() {
     -e DEMYX_MODE="$DEMYX_CHROOT_MODE" \
     -e DEMYX_HOST="$DEMYX_CHROOT_HOST" \
     -e DEMYX_SSH="$DEMYX_CHROOT_SSH" \
-    -e DEMYX_ET="$DEMYX_CHROOT_ET" \
     -e TZ=America/Los_Angeles \
     -v /var/run/docker.sock:/var/run/docker.sock:ro \
     -v demyx:/demyx \
     -v demyx_user:/home/demyx \
     -v demyx_log:/var/log/demyx \
     -p "$DEMYX_CHROOT_SSH":22 \
-    -p "$DEMYX_CHROOT_ET":2022 \
     demyx/demyx
 }
 if [[ "$DEMYX_CHROOT" = execute ]]; then
@@ -136,7 +121,6 @@ elif [[ "$DEMYX_CHROOT" = help ]]; then
     echo "      update          Update the demyx chroot"
     echo "      --dev           Puts demyx container into development mode"
     echo "      --nc            Starts demyx containr but prevent chrooting into container"
-    echo "      --et            Override et port"
     echo "      --prod          Puts demyx container into production mode"
     echo "      --ssh           Override ssh port"
     echo

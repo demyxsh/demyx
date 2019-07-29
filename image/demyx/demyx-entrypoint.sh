@@ -16,7 +16,6 @@ fi
 
 [[ "$DEMYX_MODE" != development ]] && export DEMYX_MODE=production; chmod -R a=X /demyx
 [[ -z "$DEMYX_SSH" ]] && export DEMYX_SSH=2222
-[[ -z "$DEMYX_ET" ]] && export DEMYX_ET=2022
 
 if [[ ! -d /home/demyx/.ssh ]]; then
     mkdir -p /home/demyx/.ssh
@@ -44,5 +43,4 @@ chmod +x /demyx/etc/cron/every-day.sh
 demyx motd init
 
 crond -L /var/log/demyx/cron.log
-/usr/sbin/sshd
-etserver
+/usr/sbin/sshd -D

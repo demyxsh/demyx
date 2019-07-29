@@ -6,12 +6,13 @@ LABEL sh.demyx.url https://demyx.sh
 LABEL sh.demyx.github https://github.com/demyxco/demyx
 LABEL sh.demyx.registry https://hub.docker.com/u/demyx
 
-ENV TZ America/Los_Angeles
-ENV NGINX_VERSION 1.17.1
+ENV NGINX_VERSION 1.17.2
 ENV NJS_VERSION   0.3.3
 ENV PKG_RELEASE   1
 ENV NGX_CACHE_PURGE_VERSION 2.3
 ENV HEADERS_MORE_NGINX_MODULE_VERSION 0.33
+ENV ELGG_VERSION 3.1.0
+ENV TZ America/Los_Angeles
 
 RUN set -x \
 # create nginx user/group first, to be consistent throughout docker variants
@@ -206,15 +207,13 @@ RUN set -ex; \
     ln -s /usr/sbin/php-fpm7 /usr/local/bin/php-fpm; \
     mkdir -p /var/log/demyx
 
-ENV ELGG_VERSION 3.0.6
-
 RUN set -ex; \
 	apk add --no-cache --virtual .elgg-deps curl zip unzip; \
 	mkdir -p /var/www/html; \
 	curl -o elgg.zip -fSL "https://elgg.org/about/getelgg?forward=elgg-${ELGG_VERSION}.zip"; \
 	unzip elgg.zip -d /usr/src/; \
 	rm elgg.zip; \
-	mv /usr/src/elgg-$ELGG_VERSION /usr/src/elgg; \
+	mv /usr/src/elgg-* /usr/src/elgg; \
 	chown -R www-data:www-data /usr/src/elgg; \
 	apk del .elgg-deps && rm -rf /var/cache/apk/*
 

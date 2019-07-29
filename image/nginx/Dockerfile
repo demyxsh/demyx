@@ -7,7 +7,7 @@ LABEL sh.demyx.github https://github.com/demyxco/demyx
 LABEL sh.demyx.registry https://hub.docker.com/u/demyx
 
 ENV TZ America/Los_Angeles
-ENV NGINX_VERSION 1.17.1
+ENV NGINX_VERSION 1.17.2
 ENV NJS_VERSION   0.3.3
 ENV PKG_RELEASE   1
 ENV NGX_CACHE_PURGE_VERSION 2.3

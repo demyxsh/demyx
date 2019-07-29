@@ -7,11 +7,13 @@ LABEL sh.demyx.github https://github.com/demyxco/demyx
 LABEL sh.demyx.registry https://hub.docker.com/u/demyx
 
 ENV TZ America/Los_Angeles
-ENV NGINX_VERSION 1.17.1
+ENV NGINX_VERSION 1.17.2
 ENV NJS_VERSION   0.3.3
 ENV PKG_RELEASE   1
 ENV NGX_CACHE_PURGE_VERSION 2.3
 ENV HEADERS_MORE_NGINX_MODULE_VERSION 0.33
+ENV WORDPRESS_VERSION 5.2.2
+ENV WORDPRESS_SHA1 3605bcbe9ea48d714efa59b0eb2d251657e7d5b0
 
 RUN set -x \
 # create nginx user/group first, to be consistent throughout docker variants
@@ -204,8 +206,7 @@ RUN set -ex; \
     ln -s /usr/sbin/php-fpm7 /usr/local/bin/php-fpm; \
     mkdir -p /var/log/demyx
 
-ENV WORDPRESS_VERSION 5.2.2
-ENV WORDPRESS_SHA1 3605bcbe9ea48d714efa59b0eb2d251657e7d5b0
+
 
 RUN set -ex; \
     apk add --no-cache --virtual .wp-deps curl; \

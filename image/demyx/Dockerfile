@@ -6,33 +6,14 @@ LABEL sh.demyx.url https://demyx.sh
 LABEL sh.demyx.github https://github.com/demyxco/demyx
 LABEL sh.demyx.registry https://hub.docker.com/u/demyx
 
-COPY CMakeLists.txt /
+ENV DEMYX_DOCKER_BINARY=19.03.1
 
 RUN set -ex; \
-    echo 'http://dl-cdn.alpinelinux.org/alpine/edge/testing/' >> /etc/apk/repositories; \
-    echo 'http://dl-cdn.alpinelinux.org/alpine/edge/community/' >> /etc/apk/repositories; \
-    apk add --no-cache --update git protobuf-dev libsodium-dev gflags-dev g++ gcc libc-dev libutempter-dev libexecinfo-dev ncurses-dev boost-dev; \
-    apk add --no-cache --virtual .build-deps make cmake m4 perl; \
-    mkdir -p /usr/src; \
-    git clone https://github.com/MisterTea/EternalTerminal.git /usr/src/EternalTerminal/; \
-    mv /CMakeLists.txt /usr/src/EternalTerminal; \
-    cd /usr/src/EternalTerminal; \
-    mkdir build; \
-    cd build; \
-    cmake ../; \
-    make && make install; \
-    sed -i 's|http://dl-cdn.alpinelinux.org/alpine/edge/testing/||g' /etc/apk/repositories; \
-    sed -i 's|http://dl-cdn.alpinelinux.org/alpine/edge/community/||g' /etc/apk/repositories; \
-    apk del .build-deps && rm -rf /var/cache/apk/*
+    apk add --no-cache --update bash tzdata curl zsh openssh sudo gnupg jq dumb-init htop rsync git
 
 RUN set -ex; \
-    apk add --no-cache --update bash tzdata curl zsh openssh sudo gnupg jq dumb-init htop rsync; \
-    rm -rf /var/cache/apk/*
-
-ENV DEMYX_DOCKER_BINARY=18.09.8
-
-RUN set -ex; \
-    curl -sS https://download.docker.com/linux/static/stable/x86_64/docker-"$DEMYX_DOCKER_BINARY".tgz --output /usr/src/docker-"$DEMYX_DOCKER_BINARY".tgz; \
+    mkdir /usr/src; \
+    wget -P /usr/src/ https://download.docker.com/linux/static/stable/x86_64/docker-"$DEMYX_DOCKER_BINARY".tgz; \
     tar -xzf /usr/src/docker-"$DEMYX_DOCKER_BINARY".tgz -C /usr/src; \
     mv /usr/src/docker/docker /usr/local/bin; \
     rm -rf /usr/src/*

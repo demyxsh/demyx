@@ -11,7 +11,7 @@ Demyx is now a Docker image and the code base has been completely rewritten, thi
 ### Stack
 ALPINE | NGINX | MARIADB | PHP | WORDPRESS
 ------------- | ------------- | ------------- | ------------- | -------------
-3.10.1 | 1.17.1 | 10.3.15 | 7.3.7 | 5.2.2
+3.10.1 | 1.17.2 | 10.3.15 | 7.3.7 | 5.2.2
 
 ### WordPress Features
 * SSL turned on by default
@@ -31,7 +31,6 @@ Since the image needs docker.sock to be mounted and the Docker binary is include
 
 * User/Group: demyx:demyx
 * Docker binary
-* Eternal Terminal
 * dumb-init
 * bash
 * curl
@@ -42,22 +41,6 @@ Since the image needs docker.sock to be mounted and the Docker binary is include
 * gnupg
 * tzdata
 * jq
-
-### Eternal Terminal
-LOCAL MACHINE: Make ssh alias (~/.ssh/config)
-```
-Host example
-     HostName example.com
-     User demyx
-     Port 2222
-```
-LOCAL MACHINE: Run et command using alias (assuming et is installed on local machine)
-```
-et example
-
-# If you override the et port to something else than 2022, for example 3000
-et example:3000
-```
 
 ### Requirements
 * Docker
@@ -110,7 +93,6 @@ docker run -dit \
     --network demyx \
     -e DEMYX_HOST="$DEMYX_CHROOT_HOST" \
     -e DEMYX_SSH="$DEMYX_CHROOT_SSH" \
-    -e DEMYX_ET="$DEMYX_CHROOT_ET" \
     -e DEMYX_MODE="$DEMYX_CHROOT_MODE" \
     -v /var/run/docker.sock:/var/run/docker.sock:ro \
     -v demyx:/demyx \
@@ -118,7 +100,6 @@ docker run -dit \
     -v demyx_log:/var/log/demyx \
     -e TZ=America/Los_Angeles \
     -p "$DEMYX_CHROOT_SSH":22 \
-    -p "$DEMYX_CHROOT_ET":2022 \
     demyx/demyx
 ```
 (host) demyx help
@@ -132,7 +113,6 @@ demyx <args>          Chroot into the demyx container
       update          Update the demyx chroot
       --dev           Puts demyx container into development mode
       --nc            Starts demyx containr but prevent chrooting into container
-      --et            Override et port
       --prod          Puts demyx container into production mode
       --ssh           Override ssh port
 ```
