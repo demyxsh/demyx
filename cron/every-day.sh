@@ -3,6 +3,10 @@
 # https://demyx.sh
 # 0 0 * * *
 
+# Auto update Demyx core files
+DEMYX_STACK_AUTO_UPDATE_CHECK=$(grep DEMYX_STACK_AUTO_UPDATE /demyx/app/stack/.env | awk -F '[=]' '{print $2}' || true)
+[[ "$DEMYX_STACK_AUTO_UPDATE_CHECK" = on ]] && /usr/local/bin/demyx update
+
 # Rotate demyx log
 /usr/local/bin/demyx log --rotate=demyx
 
@@ -11,13 +15,6 @@
 
 # Rotate WordPress log
 /usr/local/bin/demyx log --rotate=wp
-
-# Backup WordPress sites at midnight
-/usr/local/bin/demyx backup all
-
-# Auto update Demyx core files
-DEMYX_STACK_AUTO_UPDATE_CHECK=$(grep DEMYX_STACK_AUTO_UPDATE /demyx/app/stack/.env | awk -F '[=]' '{print $2}' || true)
-[[ "$DEMYX_STACK_AUTO_UPDATE_CHECK" = on ]] && /usr/local/bin/demyx update
 
 # Update Oh My Zsh and its plugin
 cd /home/demyx/.oh-my-zsh && git pull
@@ -34,3 +31,18 @@ echo "DEMYX_MOTD_STATUS=$DEMYX_CRON_UPDATES" >> /demyx/.env
 if [[ -f /demyx/custom/cron/every-day.sh ]]; then
     bash /demyx/custom/cron/every-day.sh
 fi
+
+# WP auto update
+cd /demyx/app/wp
+for i in *
+do
+    source /demyx/app/wp/"$i"/.env
+    if [[ "$DEMYX_APP_WP_UPDATE" = on ]]; then
+        demyx wp "$i" core update
+        demyx wp "$i" theme update --all
+        demyx wp "$i" plugin update --all
+    fi
+done
+
+# Backup WordPress sites at midnight
+/usr/local/bin/demyx backup all

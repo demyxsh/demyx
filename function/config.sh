@@ -96,6 +96,12 @@ function demyx_config() {
             --update)
                 DEMYX_CONFIG_UPDATE=1
                 ;;
+            --wp-update|--wp-update=on)
+                DEMYX_CONFIG_WP_UPDATE=on
+                ;;
+            --wp-update=off)
+                DEMYX_CONFIG_WP_UPDATE=off
+                ;;
             --)
                 shift
                 break
@@ -713,6 +719,21 @@ function demyx_config() {
 
                 demyx_echo 'Reloading NGINX and PHP'
                 demyx_execute demyx config "$DEMYX_APP_DOMAIN" --restart=nginx-php
+            fi
+            if [[ "$DEMYX_CONFIG_WP_UPDATE" = on ]]; then
+                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
+                    [[ "$DEMYX_APP_WP_UPDATE" = on ]] && demyx_die 'WordPress auto update is already turned on'
+                fi
+
+                demyx_echo 'Turning on WordPress auto update'
+                demyx_execute sed -i "s/DEMYX_APP_WP_UPDATE=off/DEMYX_APP_WP_UPDATE=on/g" "$DEMYX_APP_PATH"/.env
+            elif [[ "$DEMYX_CONFIG_WP_UPDATE" = off ]]; then
+                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
+                    [[ "$DEMYX_APP_WP_UPDATE" = off ]] && demyx_die 'WordPress auto update is already turned off'
+                fi
+
+                demyx_echo 'Turning off WordPress auto update'
+                demyx_execute sed -i "s/DEMYX_APP_WP_UPDATE=on/DEMYX_APP_WP_UPDATE=off/g" "$DEMYX_APP_PATH"/.env
             fi
         elif [[ -n "$DEMYX_GET_APP" ]]; then
             if [[ -n "$DEMYX_CONFIG_UPDATE" ]]; then

@@ -118,7 +118,8 @@ function demyx_info() {
                 PRINT_TABLE+="AUTH^ $DEMYX_APP_AUTH\n"
                 PRINT_TABLE+="WP AUTH^ $DEMYX_APP_AUTH_WP\n"
                 PRINT_TABLE+="DEV^ $DEMYX_APP_DEV\n"
-                PRINT_TABLE+="HEALTHCHECK^ $DEMYX_APP_HEALTHCHECK"
+                PRINT_TABLE+="HEALTHCHECK^ $DEMYX_APP_HEALTHCHECK\n"
+                PRINT_TABLE+="WP AUTO UPDATE^ $DEMYX_APP_WP_UPDATE"
                 demyx_execute -v demyx_table "$PRINT_TABLE"
             fi
         fi

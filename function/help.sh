@@ -41,6 +41,7 @@ function demyx_help() {
         echo "                   --sftp           Turns on/off SFTP container"
         echo "                   --ssl            Turns on/off SSL"
         echo "                   --update         Pushes updated config files to container"
+        echo "                   --wp-update      Auto update WordPress core, themes, and plugins"
         echo
     elif [[ "$DEMYX_HELP" = cp ]]; then
         echo

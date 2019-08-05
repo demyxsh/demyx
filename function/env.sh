@@ -34,6 +34,7 @@ function demyx_env() {
         [[ -z "$DEMYX_APP_AUTH_WP" ]] && DEMYX_APP_AUTH_WP=off
         [[ -z "$DEMYX_APP_DEV" ]] && DEMYX_APP_DEV=off
         [[ -z "$DEMYX_APP_HEALTHCHECK" ]] && DEMYX_APP_HEALTHCHECK=on
+        [[ -z "$DEMYX_APP_WP_UPDATE" ]] && DEMYX_APP_WP_UPDATE=off
 
         cat > "$DEMYX_WP"/"$DEMYX_TARGET"/.env <<-EOF
             # AUTO GENERATED
@@ -52,6 +53,7 @@ function demyx_env() {
             DEMYX_APP_CDN=$DEMYX_APP_CDN
             DEMYX_APP_DEV=$DEMYX_APP_DEV
             DEMYX_APP_HEALTHCHECK=$DEMYX_APP_HEALTHCHECK
+            DEMYX_APP_WP_UPDATE=$DEMYX_APP_WP_UPDATE
             DEMYX_APP_MONITOR_THRESHOLD=3
             DEMYX_APP_MONITOR_SCALE=5
             DEMYX_APP_MONITOR_CPU=25
