@@ -10,6 +10,9 @@ demyx_die() {
             --not-found)
                 DEMYX_DIE_NOT_FOUND=1
                 ;;
+            --no-help)
+                DEMYX_DIE_NO_HELP=1
+                ;;
             --restore-not-found)
                 DEMYX_DIE_RESTORE_NOT_FOUND=1
                 ;;
@@ -37,7 +40,7 @@ demyx_die() {
         printf '\e[31m[CRITICAL]\e[39m %s\n' "$1" >&2
     fi
 
-    demyx help "$DEMYX_COMMAND"
+    [[ -z "$DEMYX_DIE_NO_HELP" ]] && demyx help "$DEMYX_COMMAND"
 
     exit 1
 }
@@ -120,7 +123,7 @@ demyx_permission() {
 }
 demyx_app_config() {
     DEMYX_GET_APP=$(find "$DEMYX_APP" -name "$DEMYX_TARGET")
-    [[ -f "$DEMYX_GET_APP"/.env ]] && source "$DEMYX_GET_APP"/.env
+    [[ -f "$DEMYX_GET_APP"/.env ]] && source "$DEMYX_GET_APP"/.env && source "$DEMYX_FUNCTION"/app-check.sh
 }
 demyx_open_port() {
     DEMYX_SFTP_PORT=$(docker run -it --rm \
