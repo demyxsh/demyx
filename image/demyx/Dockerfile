@@ -6,7 +6,7 @@ LABEL sh.demyx.url https://demyx.sh
 LABEL sh.demyx.github https://github.com/demyxco/demyx
 LABEL sh.demyx.registry https://hub.docker.com/u/demyx
 
-ENV DEMYX_DOCKER_BINARY=19.03.1
+ENV DEMYX_DOCKER_BINARY=18.09.8
 
 RUN set -ex; \
     apk add --no-cache --update bash tzdata curl zsh openssh sudo gnupg jq dumb-init htop rsync git
