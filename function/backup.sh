@@ -4,7 +4,7 @@
 # demyx backup <app>
 # demyx backup <args>
 # 
-function demyx_backup() {
+demyx_backup() {
     while :; do
         case "$3" in
             --path=?*)

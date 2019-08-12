@@ -1,7 +1,7 @@
 # Demyx
 # https://demyx.sh
 
-function demyx_motd() {
+demyx_motd() {
     if [[ "$1" = init ]]; then
         [[ -z "$DEMYX_MODE" ]] && DEMYX_MODE=production
         DEMYX_MOTD_MODE=$(echo "$DEMYX_MODE" | tr [a-z] [A-Z] | sed -e 's/\r//g')

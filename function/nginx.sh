@@ -1,7 +1,7 @@
 # Demyx
 # https://demyx.sh
 
-function demyx_nginx() {
+demyx_nginx() {
     if [[ "$DEMYX_APP_TYPE" = wp ]]; then
         DEMYX_CLOUDFLARE_CHECK=$(curl -svo /dev/null "$DEMYX_APP_DOMAIN" 2>&1 | grep "Server: cloudflare" || true)
         

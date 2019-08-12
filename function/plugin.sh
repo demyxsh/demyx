@@ -19,7 +19,7 @@ demyx_plugin() {
     Author URI: https://demyx.sh
     */
 
-    function demyx_browsersync_init( \$redirect ) {
+    demyx_browsersync_init( \$redirect ) {
         if (is_page() && \$front_page = get_option('page_on_front')) {
             if (is_page( \$front_page)) {
                 \$redirect = false;

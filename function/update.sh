@@ -4,7 +4,7 @@
 # demyx update
 #
 
-function demyx_update() {
+demyx_update() {
     source "$DEMYX_FUNCTION"/env.sh
     source "$DEMYX_FUNCTION"/yml.sh
 

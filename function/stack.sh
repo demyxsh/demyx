@@ -3,7 +3,7 @@
 # 
 # demyx stack <docker-compose args>
 #
-function demyx_stack() {
+demyx_stack() {
     while :; do
         case "$2" in
             down)

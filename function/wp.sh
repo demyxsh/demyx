@@ -1,7 +1,7 @@
 # Demyx
 # https://demyx.sh
 
-function demyx_wp() {
+demyx_wp() {
     demyx_app_config
     if [[ "$DEMYX_TARGET" = all ]]; then
         cd "$DEMYX_WP" || exit

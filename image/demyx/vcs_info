@@ -1,4 +1,4 @@
-function zrcautoload() {
+zrcautoload() {
     emulate -L zsh
     setopt extended_glob
     local fdir ffile

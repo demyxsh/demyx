@@ -1,7 +1,7 @@
 # Demyx
 # https://demyx.sh
 
-function demyx_env() {
+demyx_env() {
     demyx_app_config
 
     [[ -z "$DEMYX_APP_CONTAINER" ]] && DEMYX_APP_CONTAINER=${DEMYX_TARGET//./_}
@@ -100,7 +100,7 @@ EOF
     fi
 }
 
-function demyx_stack_env() {
+demyx_stack_env() {
     if [[ -z "$DEMYX_INSTALL_FORCE" ]]; then
         if [[ -f "$DEMYX_STACK"/.env ]]; then
             DEMYX_PARSE_BASIC_AUTH=$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}' || true)

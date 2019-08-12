@@ -3,7 +3,7 @@
 # 
 # demyx log <args>
 #
-function demyx_log() {
+demyx_log() {
     while :; do
         case "$2" in
             -f|--follow)

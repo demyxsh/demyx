@@ -3,7 +3,7 @@
 # 
 # demyx run <app> <args>
 #
-function demyx_run() {
+demyx_run() {
     while :; do
         case "$3" in
             --auth)

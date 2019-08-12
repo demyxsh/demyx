@@ -4,7 +4,7 @@
 # demyx exec <app> <docker exec args>
 # demyx exec <app> <args> <docker exec args>
 #
-function demyx_exec() {
+demyx_exec() {
     while :; do
         case "$1" in
             db)

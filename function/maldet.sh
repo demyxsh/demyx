@@ -3,7 +3,7 @@
 # 
 # demyx maldet <app> <args>
 
-function demyx_maldet() {
+demyx_maldet() {
     demyx_app_config
 
     if [[ "$DEMYX_APP_TYPE" = wp ]]; then

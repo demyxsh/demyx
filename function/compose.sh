@@ -3,7 +3,7 @@
 # 
 # demyx compose <app> <args> <docker-compose args>
 #
-function demyx_compose() {
+demyx_compose() {
     demyx_app_config
 
     DEMYX_COMPOSE="$1"

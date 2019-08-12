@@ -3,7 +3,7 @@
 # 
 # demyx install <args>
 #
-function demyx_install() {
+demyx_install() {
     while :; do
         case "$2" in
             --domain=?*)

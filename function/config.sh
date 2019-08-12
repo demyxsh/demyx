@@ -6,7 +6,7 @@
 
 DEMYX_SFTP_PORT_DEFAULT=22222
 
-function demyx_config() {
+demyx_config() {
     while :; do
         case "$3" in
             --auth|--auth=on)

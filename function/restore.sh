@@ -3,7 +3,7 @@
 # 
 # demyx restore <app> <args>
 #
-function demyx_restore() {
+demyx_restore() {
     while :; do
         case "$3" in
             -f|--force)

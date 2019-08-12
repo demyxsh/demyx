@@ -3,7 +3,7 @@
 # 
 # demyx info <app> <args>
 #
-function demyx_info() {
+demyx_info() {
     while :; do
         case "$3" in
             --all)

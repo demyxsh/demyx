@@ -1,7 +1,7 @@
 # Demyx
 # https://demyx.sh
 
-function demyx_php() {
+demyx_php() {
     demyx_app_config
 
     if [[ "$DEMYX_APP_TYPE" = wp ]]; then

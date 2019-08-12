@@ -3,7 +3,7 @@
 # 
 # demyx monitor
 #
-function demyx_monitor() {
+demyx_monitor() {
     source "$DEMYX_STACK"/.env
     if [[ "$DEMYX_STACK_MONITOR" = on ]]; then
         DEMYX_APP_MONITOR_STATS=$(docker stats --no-stream)

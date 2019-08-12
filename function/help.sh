@@ -3,7 +3,7 @@
 # 
 # demyx help <args>
 #
-function demyx_help() {
+demyx_help() {
     DEMYX_HELP="$2"
 
     if [[ "$DEMYX_HELP" = backup ]]; then

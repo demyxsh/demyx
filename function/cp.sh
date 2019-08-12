@@ -3,7 +3,7 @@
 # 
 # demyx cp <app/path>:<path> <app/path>:<path>
 #
-function demyx_cp() {
+demyx_cp() {
     if [[ "$1" = db ]]; then
         DEMYX_CP_FIRST_ARG="$2"
         DEMYX_CP_SECOND_ARG="$3"

@@ -3,7 +3,7 @@
 # 
 # demyx healthcheck
 #
-function demyx_healthcheck() {
+demyx_healthcheck() {
     source "$DEMYX_STACK"/.env
     if [[ "$DEMYX_STACK_HEALTHCHECK" = on ]]; then
         cd "$DEMYX_WP" || exit

@@ -3,7 +3,7 @@
 # 
 # demyx list <args>
 #
-function demyx_list() {
+demyx_list() {
     while :; do
         case "$2" in
             --json)

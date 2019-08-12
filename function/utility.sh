@@ -3,7 +3,7 @@
 # 
 # demyx util <args>
 #
-function demyx_utility() {
+demyx_utility() {
     while :; do
         case "$2" in
             --cred)

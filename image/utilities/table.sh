@@ -3,7 +3,7 @@
 # Borrowed code
 # https://github.com/gdbtek/linux-cookbooks/blob/master/libraries/util.bash
 
-function printTable() {
+printTable() {
     local -r delimiter="${1}"
     local -r data="$(removeEmptyLines "${2}")"
 
@@ -60,13 +60,13 @@ function printTable() {
     fi
 }
 
-function removeEmptyLines() {
+removeEmptyLines() {
     local -r content="${1}"
 
     echo -e "${content}" | sed '/^\s*$/d'
 }
 
-function repeatString() {
+repeatString() {
     local -r string="${1}"
     local -r numberToRepeat="${2}"
 
@@ -77,7 +77,7 @@ function repeatString() {
     fi
 }
 
-function isEmptyString() {
+isEmptyString() {
     local -r string="${1}"
 
     if [[ "$(trimString "${string}")" = '' ]]
@@ -88,7 +88,7 @@ function isEmptyString() {
     echo 'false' && return 1
 }
 
-function trimString() {
+trimString() {
     local -r string="${1}"
 
     sed 's,^[[:blank:]]*,,' <<< "${string}" | sed 's,[[:blank:]]*$,,'

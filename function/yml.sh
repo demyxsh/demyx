@@ -1,7 +1,7 @@
 # Demyx
 # https://demyx.sh
 
-function demyx_yml() {
+demyx_yml() {
     if [[ "$DEMYX_APP_TYPE" = wp ]]; then
         DEMYX_PROTOCOL="- \"traefik.frontend.redirect.entryPoint=http\""
         DEMYX_REGEX_PROTOCOL="https://"
@@ -140,7 +140,7 @@ EOF
     fi
 }
 
-function demyx_stack_yml() {
+demyx_stack_yml() {
     if [[ -f "$DEMYX_STACK"/.env ]]; then
         DEMYX_PARSE_BASIC_AUTH=$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}' || true)
         source "$DEMYX_STACK"/.env
