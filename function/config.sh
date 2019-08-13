@@ -268,8 +268,8 @@ demyx_config() {
                 demyx_echo 'Exporting database'
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" db export "$DEMYX_APP_CONTAINER".sql
 
-                DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD=$(demyx util pwgen -cns 50 1 | sed -e 's/\r//g')
-                DEMYX_CONFIG_CLEAN_MARIADB_ROOT_PASSWORD=$(demyx util pwgen -cns 50 1 | sed -e 's/\r//g')
+                DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD=$(demyx util --pass --raw)
+                DEMYX_CONFIG_CLEAN_MARIADB_ROOT_PASSWORD=$(demyx util --pass --raw)
 
                 demyx_echo 'Genearting new MariaDB credentials'
                 demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" bash -c "sed -i \"s|$WORDPRESS_DB_PASSWORD|$DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD|g\" /var/www/html/wp-config.php"

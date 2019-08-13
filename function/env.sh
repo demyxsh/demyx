@@ -18,13 +18,13 @@ demyx_env() {
         [[ -z "$DEMYX_APP_PATH" ]] && DEMYX_APP_PATH="$DEMYX_WP"/"$DEMYX_TARGET"
         [[ -z "$DEMYX_APP_CONFIG" ]] && DEMYX_APP_CONFIG="$DEMYX_WP"/"$DEMYX_TARGET"/config
         [[ -z "$WORDPRESS_USER" ]] && WORDPRESS_USER=$(demyx util gpw 1 10 | sed -e 's/\r//g')
-        [[ -z "$WORDPRESS_USER_PASSWORD" ]] && WORDPRESS_USER_PASSWORD=$(demyx util pwgen -cns 50 1 | sed -e 's/\r//g')
+        [[ -z "$WORDPRESS_USER_PASSWORD" ]] && WORDPRESS_USER_PASSWORD=$(demyx util --pass --raw)
         [[ -z "$WORDPRESS_USER_EMAIL" ]] && WORDPRESS_USER_EMAIL="info@$DEMYX_TARGET"
         [[ -z "$WORDPRESS_DB_HOST" ]] && WORDPRESS_DB_HOST=$DEMYX_APP_DB_CONTAINER
         [[ -z "$WORDPRESS_DB_NAME" ]] && WORDPRESS_DB_NAME=$DEMYX_APP_CONTAINER
         [[ -z "$WORDPRESS_DB_USER" ]] && WORDPRESS_DB_USER=$DEMYX_APP_CONTAINER
-        [[ -z "$WORDPRESS_DB_PASSWORD" ]] && WORDPRESS_DB_PASSWORD=$(demyx util pwgen -cns 50 1 | sed -e 's/\r//g')
-        [[ -z "$MARIADB_ROOT_PASSWORD" ]] && MARIADB_ROOT_PASSWORD=$(demyx util pwgen -cns 50 1 | sed -e 's/\r//g')
+        [[ -z "$WORDPRESS_DB_PASSWORD" ]] && WORDPRESS_DB_PASSWORD=$(demyx util --pass --raw)
+        [[ -z "$MARIADB_ROOT_PASSWORD" ]] && MARIADB_ROOT_PASSWORD=$(demyx util --pass --raw)
         
         [[ -n "$DEMYX_RUN_SSL" ]] && DEMYX_APP_SSL="$DEMYX_RUN_SSL"
         [[ -n "$DEMYX_RUN_RATE_LIMIT" ]] && DEMYX_APP_RATE_LIMIT=off

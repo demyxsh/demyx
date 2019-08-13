@@ -140,3 +140,11 @@ demyx_mariadb_ready() {
         sleep 1
     done
 }
+demyx_generate_password() {
+    DEMYX_PASSWORD_1=$(tr -dc "[:xdigit:]" < /dev/urandom | head -c 10 | sed -e 's/\r//g')
+    DEMYX_PASSWORD_2=$(tr -dc "[:xdigit:]" < /dev/urandom | head -c 10 | sed -e 's/\r//g')
+    DEMYX_PASSWORD_3=$(tr -dc "[:xdigit:]" < /dev/urandom | head -c 10 | sed -e 's/\r//g')
+    DEMYX_PASSWORD_4=$(tr -dc "[:xdigit:]" < /dev/urandom | head -c 10 | sed -e 's/\r//g')
+    
+    echo "${DEMYX_PASSWORD_1}-${DEMYX_PASSWORD_2}-${DEMYX_PASSWORD_3}-${DEMYX_PASSWORD_4}"
+}
