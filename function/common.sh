@@ -148,3 +148,11 @@ demyx_generate_password() {
     
     echo "${DEMYX_PASSWORD_1}-${DEMYX_PASSWORD_2}-${DEMYX_PASSWORD_3}-${DEMYX_PASSWORD_4}"
 }
+demyx_nginx_cloudflare_check() {
+    DEMYX_CLOUDFLARE_CHECK=$(curl -svo /dev/null "$DEMYX_APP_DOMAIN" 2>&1 | grep "Server: cloudflare" || true)
+    if [[ -n "$DEMYX_CLOUDFLARE_CHECK" ]]; then
+        DEMYX_NGINX_REAL_IP='real_ip_header CF-Connecting-IP;'
+    else
+        DEMYX_NGINX_REAL_IP='real_ip_header X-Forwarded-For;'
+    fi
+}
