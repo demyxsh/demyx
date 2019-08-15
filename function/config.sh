@@ -604,7 +604,7 @@ demyx_config() {
                 demyx_execute demyx_yml
 
                 demyx_echo 'Refreshing nginx.conf'
-                demyx_execute demyx_nginx
+                demyx_execute demyx_nginx_wp
 
                 demyx_echo 'Refreshing php.ini'
                 demyx_execute demyx_php

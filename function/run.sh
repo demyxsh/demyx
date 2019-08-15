@@ -137,7 +137,7 @@ demyx_run() {
 
         if [[ -z "$DEMYX_RUN_CLONE" ]]; then
             demyx_echo 'Creating nginx.conf'
-            demyx_execute demyx_nginx
+            demyx_execute demyx_nginx_wp
 
             demyx_echo 'Creating php.ini'
             demyx_execute demyx_php
