@@ -287,18 +287,7 @@ demyx_config() {
                 demyx_execute docker volume create wp_"$DEMYX_APP_ID"_db
 
                 demyx_echo 'Replacing WordPress core files'
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" bash -c "
-                    wget -P /var/www https://wordpress.org/latest.tar.gz; \
-                    tar -xzf /var/www/latest.tar.gz -C /var/www; \
-                    pkill php-fpm; \
-                    rm -rf /var/www/wordpress/wp-content; \
-                    rm -rf /var/www/html/wp-admin; \
-                    rm -rf /var/www/html/wp-includes; \
-                    mv /var/www/wordpress/* /var/www/html
-                    rm -rf /var/www/wordpress; \
-                    rm /var/www/latest.tar.gz; \
-                    chown -R www-data:www-data /var/www/html
-                "
+                demyx_execute demyx wp "$DEMYX_APP_DOMAIN" core download --force
 
                 demyx compose "$DEMYX_APP_DOMAIN" db up -d
 
