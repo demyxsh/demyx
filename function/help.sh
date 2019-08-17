@@ -143,6 +143,7 @@ demyx_help() {
         echo "            --healthcheck     Turns on/off healthcheck globally"
         echo "            --monitor         Turns on/off auto scaling globally"
         echo "            --refresh         Refresh env and yml stack files"
+        echo "            --tracker         Pings to demyx.sh server to count active Demyx install"
         echo
     elif [[ "$DEMYX_HELP" = update ]]; then
         echo

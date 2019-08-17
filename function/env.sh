@@ -110,6 +110,7 @@ demyx_stack_env() {
     fi
 
     [[ -z "$DEMYX_STACK_SERVER_IP" ]] && DEMYX_STACK_SERVER_IP=$(demyx util curl -s https://ipecho.net/plain | sed -e 's/\r//g')
+    [[ -z "$DEMYX_STACK_TRACKER" ]] && DEMYX_STACK_TRACKER=on
     [[ -z "$DEMYX_STACK_AUTO_UPDATE" ]] && DEMYX_STACK_AUTO_UPDATE=on
     [[ -z "$DEMYX_STACK_MONITOR" ]] && DEMYX_STACK_MONITOR=on
     [[ -z "$DEMYX_STACK_HEALTHCHECK" ]] && DEMYX_STACK_HEALTHCHECK=on
@@ -128,6 +129,7 @@ demyx_stack_env() {
     cat > "$DEMYX_STACK"/.env <<-EOF
         # AUTO GENERATED
         DEMYX_STACK_SERVER_IP=$DEMYX_STACK_SERVER_IP
+        DEMYX_STACK_TRACKER=$DEMYX_STACK_TRACKER
         DEMYX_STACK_DOMAIN=$DEMYX_STACK_DOMAIN
         DEMYX_STACK_AUTH=$DEMYX_PARSE_BASIC_AUTH
         DEMYX_STACK_AUTO_UPDATE=$DEMYX_STACK_AUTO_UPDATE

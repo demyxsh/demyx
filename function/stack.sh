@@ -33,6 +33,12 @@ demyx_stack() {
             --refresh)
                 DEMYX_STACK_REFRESH=1
                 ;;
+            --tracker|--tracker=on)
+                DEMYX_STACK_TRACKER=on
+                ;;
+            --tracker=off)
+                DEMYX_STACK_TRACKER=off
+                ;;
             --)
                 shift
                 break
@@ -83,6 +89,12 @@ demyx_stack() {
         demyx_execute demyx_stack_env; demyx_stack_yml
 
         demyx stack up -d --remove-orphans
+    elif [[ "$DEMYX_STACK_TRACKER" = on ]]; then
+        demyx_echo 'Turn on stack tracker'
+        demyx_execute sed -i 's/DEMYX_STACK_TRACKER=off/DEMYX_STACK_TRACKER=on/g' "$DEMYX_STACK"/.env
+    elif [[ "$DEMYX_STACK_TRACKER" = off ]]; then
+        demyx_echo 'Turn off stack tracker'
+        demyx_execute sed -i 's/DEMYX_STACK_TRACKER=on/DEMYX_STACK_TRACKER=off/g' "$DEMYX_STACK"/.env
     else
         shift
         docker run -t --rm \
