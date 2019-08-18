@@ -11,7 +11,7 @@ Demyx is now a Docker image and the code base has been completely rewritten, thi
 ### Stack
 ALPINE | NGINX | MARIADB | PHP | WORDPRESS
 ------------- | ------------- | ------------- | ------------- | -------------
-3.10.1 | 1.17.2 | 10.3.15 | 7.3.8 | 5.2.2
+3.10.1 | 1.17.3 | 10.3.15 | 7.3.8 | 5.2.2
 
 ### WordPress Features
 * SSL turned on by default
