@@ -40,6 +40,7 @@ chmod +x /demyx/etc/demyx.sh
 chmod +x /demyx/etc/cron/every-minute.sh
 chmod +x /demyx/etc/cron/every-6-hour.sh
 chmod +x /demyx/etc/cron/every-day.sh
+chmod +x /demyx/etc/cron/every-week.sh
 demyx motd init
 
 crond -L /var/log/demyx/cron.log
