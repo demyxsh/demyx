@@ -72,6 +72,7 @@ RUN set -ex; \
     (echo "* * * * * /demyx/etc/cron/every-minute.sh") | crontab - ; \
     (crontab -l 2>/dev/null; echo "0 */6 * * * /demyx/etc/cron/every-6-hour.sh") | crontab - ; \
     (crontab -l 2>/dev/null; echo "0 0 * * * /demyx/etc/cron/every-day.sh") | crontab - ; \
+    (crontab -l 2>/dev/null; echo "0 0 * * 0 /demyx/etc/cron/every-week.sh") | crontab - ; \
     mkdir -p /var/log/demyx; \
     touch /var/log/demyx/demyx.log
 
