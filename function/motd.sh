@@ -45,9 +45,9 @@ EOF
         PRINT_TABLE="DEMYX^ HOST^ USER^ SSH^ STATUS\n"
         PRINT_TABLE+="$DEMYX_MOTD_MODE^ $DEMYX_MOTD_HOST^ DEMYX^ $DEMYX_MOTD_SSH^ $DEMYX_MOTD_STATUS"
         demyx_execute -v demyx_table "$PRINT_TABLE"
-        demyx_execute -v echo -e "\n\e[33m[NOTICE]\e[39m Please update chroot.sh from the host: demyx update"
         demyx_execute -v echo -e "\nLatest Updates\n--------------"
         demyx_execute -v git --no-pager log -5 --format=format:'- %s %C(white dim)(%ar)%C(reset)'
         demyx_execute -v echo -e "\n"
+        demyx_execute -v echo -e "\e[33m[NOTICE]\e[39m Please update chroot.sh from the host: demyx update \n"
     fi
 }
