@@ -1,10 +1,23 @@
 #!/bin/bash
 # Demyx
 # https://demyx.sh
+# 
  
 DEMYX_CHROOT_CONTAINER_CHECK=$(docker ps -a | awk '{print $NF}' | grep -w demyx)
 DEMYX_CHROOT_HOST=$(hostname)
 DEMYX_CHROOT_SSH=2222
+
+# Update checker
+if [[ -n "$DEMYX_CHROOT_CONTAINER_CHECK" ]]; then
+    docker cp demyx:/demyx/etc/chroot.sh /tmp
+    DEMYX_CHROOT_UPDATE_CHECK=$(diff /usr/local/bin/demyx /tmp/chroot.sh)
+
+    if [[ -n "$DEMYX_CHROOT_UPDATE_CHECK" ]]; then
+        docker cp demyx:/demyx/etc/chroot.sh /usr/local/bin/demyx
+        chmod +x /usr/local/bin/demyx
+        echo -e "\e[32m[SUCCESS]\e[39m Demyx chroot has been updated"
+    fi
+fi
 
 while :; do
     case "$1" in
@@ -26,9 +39,6 @@ while :; do
             DEMYX_CHROOT=tty
             shift
             break
-            ;;
-        update)
-            DEMYX_CHROOT=update
             ;;
         --dev)
             DEMYX_CHROOT_MODE=development
@@ -119,7 +129,6 @@ elif [[ "$DEMYX_CHROOT" = help ]]; then
     echo "      rm              Stops and removes demyx container"
     echo "      rs              Stops, removes, and starts demyx container"
     echo "      tty             Execute root commands to demyx container from host"
-    echo "      update          Update the demyx chroot"
     echo "      --dev           Puts demyx container into development mode"
     echo "      --nc            Starts demyx containr but prevent chrooting into container"
     echo "      --prod          Puts demyx container into production mode"
@@ -139,23 +148,6 @@ elif [[ "$DEMYX_CHROOT" = restart ]]; then
     fi
 elif [[ "$DEMYX_CHROOT" = tty ]]; then
     docker exec -t demyx "$@"
-elif [[ "$DEMYX_CHROOT" = update ]]; then
-    # sudo check
-    DEMYX_CHROOT_SUDO_CHECK=$(id -u)
-    if [[ "$DEMYX_CHROOT_SUDO_CHECK" != 0 ]]; then
-        echo -e "\e[31m[CRITICAL]\e[39m --update must be ran as root or sudo"
-        exit 1
-    fi
-    if [[ -f /usr/local/bin/demyx ]]; then
-        rm /usr/local/bin/demyx
-    fi
-    if wget --spider demyx.sh/chroot 2>/dev/null; then
-        wget demyx.sh/chroot -qO /usr/local/bin/demyx
-    else
-        wget https://raw.githubusercontent.com/demyxco/demyx/master/chroot.sh -qO /usr/local/bin/demyx
-    fi
-    echo -e "\e[32m[SUCCESS]\e[39m Demyx chroot has successfully updated"
-    chmod +x /usr/local/bin/demyx
 else
     if [[ -n "$DEMYX_CHROOT_CONTAINER_CHECK" ]]; then
         DEMYX_MODE_CHECK=$(docker exec -t demyx bash -c "grep DEMYX_MOTD_MODE /demyx/.env | awk -F '[=]' '{print \$2}'")
