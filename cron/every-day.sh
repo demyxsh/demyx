@@ -7,15 +7,6 @@
 DEMYX_STACK_AUTO_UPDATE_CHECK=$(grep DEMYX_STACK_AUTO_UPDATE /demyx/app/stack/.env | awk -F '[=]' '{print $2}' || true)
 [[ "$DEMYX_STACK_AUTO_UPDATE_CHECK" = on ]] && /usr/local/bin/demyx update
 
-# Rotate demyx log
-/usr/local/bin/demyx log --rotate=demyx
-
-# Rotate stack log
-/usr/local/bin/demyx log --rotate=stack
-
-# Rotate WordPress log
-/usr/local/bin/demyx log --rotate=wp
-
 # Update Oh My Zsh and its plugin
 cd /home/demyx/.oh-my-zsh && git pull
 cd /home/demyx/.oh-my-zsh/plugins/zsh-autosuggestions && git pull
