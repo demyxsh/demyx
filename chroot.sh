@@ -9,7 +9,7 @@ DEMYX_CHROOT_HOST=$(hostname)
 DEMYX_CHROOT_SSH=2222
 
 # Check for demyx directory
-if [[ ! -f /demyx ]]; then
+if [[ ! -d /demyx ]]; then
     if [[ "$DEMYX_CHROOT_SUDO_CHECK" != 0 ]]; then
         echo -e "\e[31m[CRITICAL]\e[39m demyx chroot.sh needs to be ran as sudo or root to update, this is a one time thing."
         exit 1
