@@ -9,12 +9,13 @@ DEMYX_CHROOT_SSH=2222
 
 # Update checker
 if [[ -n "$DEMYX_CHROOT_CONTAINER_CHECK" ]]; then
-    docker cp demyx:/demyx/etc/chroot.sh /tmp
-    DEMYX_CHROOT_UPDATE_CHECK=$(diff /usr/local/bin/demyx /tmp/chroot.sh)
+    docker cp demyx:/demyx/etc/chroot.sh "$HOME"
+    DEMYX_CHROOT_UPDATE_CHECK=$(diff /usr/local/bin/demyx /"$HOME"/chroot.sh)
 
     if [[ -n "$DEMYX_CHROOT_UPDATE_CHECK" ]]; then
         docker cp demyx:/demyx/etc/chroot.sh /usr/local/bin/demyx
         chmod +x /usr/local/bin/demyx
+        rm /"$HOME"/chroot.sh
         echo -e "\e[32m[SUCCESS]\e[39m Demyx chroot has been updated"
     fi
 fi
