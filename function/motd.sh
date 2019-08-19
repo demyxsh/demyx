@@ -48,6 +48,6 @@ EOF
         demyx_execute -v echo -e "\nLatest Updates\n--------------"
         demyx_execute -v git --no-pager log -5 --format=format:'- %s %C(white dim)(%ar)%C(reset)'
         demyx_execute -v echo -e "\n"
-        demyx_execute -v echo -e "\e[33m[NOTICE]\e[39m Please update chroot.sh from the host: demyx update \n"
+        demyx_execute -v echo -e "\e[33m[NOTICE]\e[39m Please update chroot.sh by running demyx as root until you see a prompt \n"
     fi
 }
