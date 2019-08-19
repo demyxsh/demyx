@@ -2,23 +2,43 @@
 # Demyx
 # https://demyx.sh
 # 
- 
+
+DEMYX_CHROOT_SUDO_CHECK=$(id -u)
 DEMYX_CHROOT_CONTAINER_CHECK=$(docker ps -a | awk '{print $NF}' | grep -w demyx)
 DEMYX_CHROOT_HOST=$(hostname)
 DEMYX_CHROOT_SSH=2222
 
-# Update checker
-if [[ -n "$DEMYX_CHROOT_CONTAINER_CHECK" ]]; then
-    docker cp demyx:/demyx/etc/chroot.sh "$HOME"
-    DEMYX_CHROOT_UPDATE_CHECK=$(diff /usr/local/bin/demyx /"$HOME"/chroot.sh)
-
-    if [[ -n "$DEMYX_CHROOT_UPDATE_CHECK" ]]; then
-        docker cp demyx:/demyx/etc/chroot.sh /usr/local/bin/demyx
-        chmod +x /usr/local/bin/demyx
-        echo -e "\e[32m[SUCCESS]\e[39m Demyx chroot has been updated"
+# Check for demyx directory
+if [[ ! -f /demyx ]]; then
+    if [[ "$DEMYX_CHROOT_SUDO_CHECK" != 0 ]]; then
+        echo -e "\e[31m[CRITICAL]\e[39m demyx chroot.sh needs to be ran as sudo or root to update, this is a one time thing."
+        exit 1
+    else
+        read -rep "Enter your non-root username (for security purposes): " DEMYX_CHROOT_USER
+        if [[ -z "$DEMYX_CHROOT_USER" ]] || [[ "$DEMYX_CHROOT_USER" = root ]]; then
+            echo "Username cannot be root or empty"
+            exit 1
+        else
+            mkdir -p /demyx
+            echo "DEMYX_CHROOT_USER=$DEMYX_CHROOT_USER" > /demyx/config
+            docker cp demyx:/demyx/etc/chroot.sh /demyx
+            rm /usr/local/bin/demyx
+            ln -s /demyx/chroot.sh /usr/local/bin/demyx
+            chown -R "$DEMYX_CHROOT_USER":"$DEMYX_CHROOT_USER" /demyx
+            chmod +x /demyx/chroot.sh
+        fi
     fi
+fi
+
+# Auto updater
+if [[ -n "$DEMYX_CHROOT_CONTAINER_CHECK" ]]; then
+    docker cp demyx:/demyx/etc/chroot.sh /demyx
+    chmod +x /demyx/chroot.sh
     
-    rm /"$HOME"/chroot.sh
+    if [[ "$DEMYX_CHROOT_SUDO_CHECK" = 0 ]]; then
+        source /demyx/config
+        chown -R "$DEMYX_CHROOT_USER":"$DEMYX_CHROOT_USER" /demyx
+    fi
 fi
 
 while :; do
