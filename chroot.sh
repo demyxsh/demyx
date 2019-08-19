@@ -15,9 +15,10 @@ if [[ -n "$DEMYX_CHROOT_CONTAINER_CHECK" ]]; then
     if [[ -n "$DEMYX_CHROOT_UPDATE_CHECK" ]]; then
         docker cp demyx:/demyx/etc/chroot.sh /usr/local/bin/demyx
         chmod +x /usr/local/bin/demyx
-        rm /"$HOME"/chroot.sh
         echo -e "\e[32m[SUCCESS]\e[39m Demyx chroot has been updated"
     fi
+    
+    rm /"$HOME"/chroot.sh
 fi
 
 while :; do
