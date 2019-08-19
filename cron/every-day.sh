@@ -3,9 +3,17 @@
 # https://demyx.sh
 # 0 0 * * *
 
+# Active install tracker
+DEMYX_STACK_TRACKER_CHECK=$(grep DEMYX_STACK_TRACKER /demyx/app/stack/.env | awk -F '[=]' '{print $2}' || true)
+if [[ "$DEMYX_STACK_TRACKER_CHECK" = on ]]; then
+    curl -s 'https://demyx.sh/?action=active&token=V1VpdGNPcWNDVlZSUDFQdFBaR0Zhdz09OjrnA1h6ZbDFJ2T6MHOwg3p4' > /dev/null
+fi
+
 # Auto update Demyx core files
 DEMYX_STACK_AUTO_UPDATE_CHECK=$(grep DEMYX_STACK_AUTO_UPDATE /demyx/app/stack/.env | awk -F '[=]' '{print $2}' || true)
-[[ "$DEMYX_STACK_AUTO_UPDATE_CHECK" = on ]] && /usr/local/bin/demyx update
+if [[ "$DEMYX_STACK_AUTO_UPDATE_CHECK" = on ]]; then
+    /usr/local/bin/demyx update
+fi
 
 # Update Oh My Zsh and its plugin
 cd /home/demyx/.oh-my-zsh && git pull
@@ -37,7 +45,3 @@ done
 
 # Backup WordPress sites at midnight
 /usr/local/bin/demyx backup all
-
-# Active install tracker
-DEMYX_STACK_TRACKER_CHECK=$(grep DEMYX_STACK_TRACKER /demyx/app/stack/.env | awk -F '[=]' '{print $2}' || true)
-[[ "$DEMYX_STACK_TRACKER_CHECK" = on ]] && curl -s 'https://demyx.sh/?action=active&token=V1VpdGNPcWNDVlZSUDFQdFBaR0Zhdz09OjrnA1h6ZbDFJ2T6MHOwg3p4' > /dev/null
