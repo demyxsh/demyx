@@ -1,4 +1,3 @@
-
 # Demyx
 A simple bash CLI wrapper for Docker to automate WordPress installations. Traefik for reverse proxy with Lets Encrypt SSL. WordPress sites are powered by NGINX, PHP, and MariaDB.
 
