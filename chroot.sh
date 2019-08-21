@@ -33,12 +33,13 @@ fi
 # Auto updater
 if [[ -n "$DEMYX_CHROOT_CONTAINER_CHECK" ]]; then
     docker cp demyx:/demyx/etc/chroot.sh /demyx
-    chmod +x /demyx/chroot.sh
     
     if [[ "$DEMYX_CHROOT_SUDO_CHECK" = 0 ]]; then
         source /demyx/config
         chown -R "$DEMYX_CHROOT_USER":"$DEMYX_CHROOT_USER" /demyx
     fi
+
+    chmod +x /demyx/chroot.sh
 fi
 
 while :; do
