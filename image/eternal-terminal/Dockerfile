@@ -6,16 +6,14 @@ LABEL sh.demyx.url https://demyx.sh
 LABEL sh.demyx.github https://github.com/demyxco/demyx
 LABEL sh.demyx.registry https://hub.docker.com/u/demyx
 
-COPY CMakeLists.txt /
-
 RUN set -ex; \
     echo 'http://dl-cdn.alpinelinux.org/alpine/edge/testing/' >> /etc/apk/repositories; \
     echo 'http://dl-cdn.alpinelinux.org/alpine/edge/community/' >> /etc/apk/repositories; \
     apk add --no-cache --update dumb-init protobuf-dev libsodium-dev gflags-dev g++ gcc libc-dev libutempter-dev libexecinfo-dev ncurses-dev boost-dev; \
     apk add --no-cache --virtual .build-deps git make cmake m4 perl git; \
     mkdir -p /usr/src; \
-    git clone https://github.com/MisterTea/EternalTerminal.git /usr/src/EternalTerminal; \
-    mv /CMakeLists.txt /usr/src/EternalTerminal; \
+    git clone --recurse-submodules https://github.com/MisterTea/EternalTerminal.git /usr/src/EternalTerminal; \
+    sed -i 's/-DELPP_FEATURE_CRASH_LOG//g' /usr/src/EternalTerminal/CMakeLists.txt; \
     cd /usr/src/EternalTerminal; \
     mkdir build; \
     cd build; \
