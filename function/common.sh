@@ -115,8 +115,7 @@ demyx_execute() {
     echo -e "[$(date +%F-%T)] ========================================" >> /var/log/demyx/demyx.log
 }
 demyx_table() {
-    docker run -t --rm \
-    demyx/utilities "demyx-table '$@'"
+    docker run -t --rm demyx/utilities "demyx-table '$@'"
 }
 demyx_permission() {
     chown -R demyx:demyx "$DEMYX"

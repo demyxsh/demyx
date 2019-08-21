@@ -231,7 +231,7 @@ demyx_run() {
                 --dbpass="$WORDPRESS_DB_PASSWORD"
 
             demyx_echo 'Configuring wp-config.php for reverse proxy'
-            demyx_execute docker run -t \
+            demyx_execute docker run -t --rm \
                 --volumes-from "$DEMYX_APP_WP_CONTAINER" \
                 demyx/utilities demyx-proxy
         
