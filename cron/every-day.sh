@@ -6,7 +6,7 @@
 # Active install tracker
 DEMYX_STACK_TRACKER_CHECK=$(grep DEMYX_STACK_TRACKER /demyx/app/stack/.env | awk -F '[=]' '{print $2}' || true)
 if [[ "$DEMYX_STACK_TRACKER_CHECK" = on ]]; then
-    /usr/bin/curl -s https://demyx.sh/?action=active&token=V1VpdGNPcWNDVlZSUDFQdFBaR0Zhdz09OjrnA1h6ZbDFJ2T6MHOwg3p4 > /dev/null
+    /usr/bin/curl -s "https://demyx.sh/?action=active&token=V1VpdGNPcWNDVlZSUDFQdFBaR0Zhdz09OjrnA1h6ZbDFJ2T6MHOwg3p4" > /dev/null
 fi
 
 # Auto update Demyx core files
