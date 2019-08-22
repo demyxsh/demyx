@@ -4,9 +4,6 @@
 # 
 
 DEMYX_CHROOT_SUDO_CHECK=$(id -u)
-DEMYX_CHROOT_CONTAINER_CHECK=$(docker ps -a | awk '{print $NF}' | grep -w demyx)
-DEMYX_CHROOT_HOST=$(hostname)
-DEMYX_CHROOT_SSH=2222
 
 # Check for demyx directory
 if [[ ! -d /demyx ]]; then
@@ -21,26 +18,23 @@ if [[ ! -d /demyx ]]; then
         else
             mkdir -p /demyx
             echo "DEMYX_CHROOT_USER=$DEMYX_CHROOT_USER" > /demyx/config
-            docker cp demyx:/demyx/etc/chroot.sh /demyx
+            wget https://raw.githubusercontent.com/demyxco/demyx/master/chroot.sh -qO /demyx/chroot.sh
             rm /usr/local/bin/demyx
             ln -s /demyx/chroot.sh /usr/local/bin/demyx
             chown -R "$DEMYX_CHROOT_USER":"$DEMYX_CHROOT_USER" /demyx
             chmod +x /demyx/chroot.sh
         fi
     fi
-fi
-
-# Auto updater
-if [[ -n "$DEMYX_CHROOT_CONTAINER_CHECK" ]]; then
-    docker cp demyx:/demyx/etc/chroot.sh /demyx
-    
-    if [[ "$DEMYX_CHROOT_SUDO_CHECK" = 0 ]]; then
-        source /demyx/config
-        chown -R "$DEMYX_CHROOT_USER":"$DEMYX_CHROOT_USER" /demyx
+else
+    if [[ -n "$DEMYX_CHROOT_CONTAINER_CHECK" ]]; then
+        wget https://raw.githubusercontent.com/demyxco/demyx/master/chroot.sh -qO /demyx/chroot.sh
+        chmod +x /demyx/chroot.sh
     fi
-
-    chmod +x /demyx/chroot.sh
 fi
+
+DEMYX_CHROOT_CONTAINER_CHECK=$(docker ps -a | awk '{print $NF}' | grep -w demyx)
+DEMYX_CHROOT_HOST=$(hostname)
+DEMYX_CHROOT_SSH=2222
 
 while :; do
     case "$1" in
@@ -142,6 +136,7 @@ demyx_run() {
     -p "$DEMYX_CHROOT_SSH":22 \
     demyx/demyx
 }
+
 if [[ "$DEMYX_CHROOT" = execute ]]; then
     docker exec -t demyx demyx "$@"
 elif [[ "$DEMYX_CHROOT" = help ]]; then
