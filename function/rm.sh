@@ -57,7 +57,7 @@ demyx_rm() {
         demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" kill
         demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" rm -f
 
-        DEMYX_RM_STRAGGLERS=$(docker ps | grep "$DEMYX_APP_COMPOSE_PROJECT" | awk '{print $(NF)}' | awk 'BEGIN { ORS = " " } { print }')
+        DEMYX_RM_STRAGGLERS=$(docker ps | grep "$DEMYX_APP_COMPOSE_PROJECT" | awk '{print $(NF)}' | awk '$1 ~ /^'${DEMYX_APP_COMPOSE_PROJECT}'/')
 
         if [[ -n "$DEMYX_RM_STRAGGLERS" ]]; then
             for i in $DEMYX_RM_STRAGGLERS
