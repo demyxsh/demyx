@@ -28,8 +28,6 @@ demyx_yml() {
                         - \"traefik.frontend.headers.STSPreload=\${DEMYX_APP_STS_PRELOAD}\""
             else
                 echo -e "\e[33m[WARNING]\e[39m $DEMYX_TARGET does not point to server's IP! Proceeding without SSL..."
-                echo "SERVER IP: $DEMYX_SERVER_IP"
-                echo "DOMAIN IP: $DEMYX_DOMAIN_IP"
             fi
         fi
 
@@ -43,7 +41,7 @@ demyx_yml() {
         
         DEMYX_YML_AUTH_CHECK=$(demyx info "$DEMYX_APP_DOMAIN" --filter=DEMYX_APP_AUTH)
 
-        if [[ "$DEMYX_YML_AUTH_CHECK" = on ]]; then
+        if [[ "$DEMYX_YML_AUTH_CHECK" = on ]] && [[ -f "$DEMYX_STACK"/.env ]]; then
             source "$DEMYX_STACK"/.env
             DEMYX_PARSE_BASIC_AUTH=$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}' | sed 's/\$/$$/g' || true)
             DEMYX_BASIC_AUTH="- \"traefik.bs.frontend.auth.basic.users=${DEMYX_PARSE_BASIC_AUTH}\""
