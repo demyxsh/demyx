@@ -1,4 +1,4 @@
-FROM alpine:3.10.1
+FROM alpine
 
 LABEL sh.demyx.image demyx/demyx
 LABEL sh.demyx.maintainer Demyx <info@demyx.sh>
@@ -6,12 +6,14 @@ LABEL sh.demyx.url https://demyx.sh
 LABEL sh.demyx.github https://github.com/demyxco/demyx
 LABEL sh.demyx.registry https://hub.docker.com/u/demyx
 
-ENV DEMYX_DOCKER_BINARY=18.09.8
+ENV TZ America/Los_Angeles
 
 RUN set -ex; \
     apk add --no-cache --update bash tzdata curl zsh openssh sudo gnupg jq dumb-init htop rsync git
 
 RUN set -ex; \
+    export DEMYX_DOCKER_BINARY=$(curl -sL https://api.github.com/repos/docker/docker-ce/releases/latest | grep '"name":' | awk -F '[:]' '{print $2}' | sed -e 's/"//g' | sed -e 's/,//g' | sed -e 's/ //g' | sed -e 's/\r//g'); \
+    if [ -z "$DEMYX_DOCKER_BINARY" ] ; then export DEMYX_DOCKER_BINARY=19.03.0; fi; \
     mkdir /usr/src; \
     wget -P /usr/src/ https://download.docker.com/linux/static/stable/x86_64/docker-"$DEMYX_DOCKER_BINARY".tgz; \
     tar -xzf /usr/src/docker-"$DEMYX_DOCKER_BINARY".tgz -C /usr/src; \
