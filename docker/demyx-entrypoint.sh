@@ -44,4 +44,5 @@ chmod +x /demyx/etc/cron/every-week.sh
 demyx motd init
 
 crond -L /var/log/demyx/cron.log
-/usr/sbin/sshd -D
+/usr/sbin/sshd
+tail -f /var/log/demyx/demyx.log
