@@ -84,35 +84,36 @@ demyx_execute() {
     [[ "$DEMYX_EXECUTE" == *"WARNING"* ]] && echo -e "\e[33m[WARNING]\e[39m \"demyx log\" for more info"
 
     # Remove passwords from log
-    echo -e "[$(date +%F-%T)] ========================================" >> /var/log/demyx/demyx.log
+    DEMYX_COMMON_LOG="$(echo -e "[$(date +%F-%T)] ========================================")\n"
     if [[ "$@" == *"pass"* ]]; then
-        echo -e "[$(date +%F-%T)] DEMYX: $DEMYX_COMMAND $DEMYX_TARGET" >> /var/log/demyx/demyx.log
-        echo -e "[$(date +%F-%T)] ECHO: $DEMYX_ECHO" >> /var/log/demyx/demyx.log
-        echo -e "[$(date +%F-%T)] COMMAND: ${@%%*pass*=*}" >> /var/log/demyx/demyx.log
-        echo -e "[$(date +%F-%T)] STDOUT: $(echo ${DEMYX_EXECUTE%%*pass*=*} | tr -d "\n\r")" >> /var/log/demyx/demyx.log
+        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] DEMYX: $DEMYX_COMMAND $DEMYX_TARGET")\n"
+        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] ECHO: $DEMYX_ECHO")\n"
+        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] COMMAND: ${@%%*pass*=*}")\n"
+        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] STDOUT: $(echo ${DEMYX_EXECUTE%%*pass*=*} | tr -d "\n\r")")\n"
     elif [[ "$@" == *"PASS"* ]]; then
-        echo -e "[$(date +%F-%T)] DEMYX: $DEMYX_COMMAND $DEMYX_TARGET" >> /var/log/demyx/demyx.log
-        echo -e "[$(date +%F-%T)] ECHO: $DEMYX_ECHO" >> /var/log/demyx/demyx.log
-        echo -e "[$(date +%F-%T)] COMMAND: $1" >> /var/log/demyx/demyx.log
-        echo -e "[$(date +%F-%T)] STDOUT: $(echo ${2%%*PASS*} | tr -d "\n\r")" >> /var/log/demyx/demyx.log
+        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] DEMYX: $DEMYX_COMMAND $DEMYX_TARGET")\n"
+        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] ECHO: $DEMYX_ECHO")\n"
+        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] COMMAND: $1")\n"
+        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] STDOUT: $(echo ${2%%*PASS*} | tr -d "\n\r")")\n"
     elif [[ -n "$DEMYX_EXECUTE_QUIET" ]]; then
-        echo -e "[$(date +%F-%T)] DEMYX: $DEMYX_COMMAND $DEMYX_TARGET" >> /var/log/demyx/demyx.log
-        echo -e "[$(date +%F-%T)] ECHO: $DEMYX_ECHO" >> /var/log/demyx/demyx.log
-        echo -e "[$(date +%F-%T)] EXECUTE: ***" >> /var/log/demyx/demyx.log
-        echo -e "[$(date +%F-%T)] STDOUT: ***" >> /var/log/demyx/demyx.log
+        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] DEMYX: $DEMYX_COMMAND $DEMYX_TARGET")\n"
+        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] ECHO: $DEMYX_ECHO")\n"
+        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] EXECUTE: ***")\n"
+        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] STDOUT: ***")\n"
         DEMYX_EXECUTE_QUIET=
     elif [[ "$DEMYX_COMMAND" = monitor ]]; then
-        echo -e "[$(date +%F-%T)] DEMYX: $DEMYX_COMMAND $DEMYX_APP_DOMAIN" >> /var/log/demyx/demyx.log
-        echo -e "[$(date +%F-%T)] ECHO: $DEMYX_ECHO" >> /var/log/demyx/demyx.log
-        echo -e "[$(date +%F-%T)] EXECUTE: $(echo "$@" | tr -d "\n\r")" >> /var/log/demyx/demyx.log
-        echo -e "[$(date +%F-%T)] STDOUT: $(echo "$DEMYX_EXECUTE" | tr -d "\n\r")" >> /var/log/demyx/demyx.log
+        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] DEMYX: $DEMYX_COMMAND $DEMYX_APP_DOMAIN")\n"
+        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] ECHO: $DEMYX_ECHO")\n"
+        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] EXECUTE: $(echo "$@" | tr -d "\n\r")")\n"
+        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] STDOUT: $(echo "$DEMYX_EXECUTE" | tr -d "\n\r")")\n"
     else
-        echo -e "[$(date +%F-%T)] DEMYX: $DEMYX_COMMAND $DEMYX_TARGET" >> /var/log/demyx/demyx.log
-        echo -e "[$(date +%F-%T)] ECHO: $DEMYX_ECHO" >> /var/log/demyx/demyx.log
-        echo -e "[$(date +%F-%T)] EXECUTE: $(echo "$@" | tr -d "\n\r")" >> /var/log/demyx/demyx.log
-        echo -e "[$(date +%F-%T)] STDOUT: $(echo "$DEMYX_EXECUTE" | tr -d "\n\r")" >> /var/log/demyx/demyx.log
+        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] DEMYX: $DEMYX_COMMAND $DEMYX_TARGET")\n"
+        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] ECHO: $DEMYX_ECHO")\n"
+        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] EXECUTE: $(echo "$@" | tr -d "\n\r")")\n"
+        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] STDOUT: $(echo "$DEMYX_EXECUTE" | tr -d "\n\r")")\n"
     fi
-    echo -e "[$(date +%F-%T)] ========================================" >> /var/log/demyx/demyx.log
+    DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] ========================================")"
+    echo -e "$DEMYX_COMMON_LOG" >> /var/log/demyx/demyx.log
 }
 demyx_table() {
     docker run -t --rm demyx/utilities "demyx-table '$@'"
