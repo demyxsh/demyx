@@ -15,6 +15,7 @@ demyx_compose() {
             demyx compose "$i" "$@"
         done
     elif [[ "$DEMYX_APP_TYPE" = wp ]]; then
+        shift 1
         if [[ "$DEMYX_COMPOSE" = db ]]; then
             shift
             demyx_execute -v docker run -t --rm \
@@ -67,6 +68,7 @@ demyx_compose() {
             demyx/docker-compose "$@"
         fi
     elif [[ -n "$DEMYX_GET_APP" ]]; then
+        shift 1
         if [[ "$DEMYX_COMPOSE" = down ]]; then
             demyx_execute -v docker run -t --rm \
             -v /var/run/docker.sock:/var/run/docker.sock:ro \
@@ -102,6 +104,44 @@ demyx_compose() {
             -v /var/run/docker.sock:/var/run/docker.sock:ro \
             --volumes-from demyx \
             --workdir "$DEMYX_APP"/"$DEMYX_TARGET" \
+            demyx/docker-compose "$@"
+        fi
+    elif [[ -z "$DEMYX_GET_APP" ]]; then
+        if [[ "$DEMYX_COMPOSE" = down ]]; then
+            demyx_execute -v docker run -t --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock:ro \
+            --volumes-from demyx \
+            --workdir "$PWD" \
+            demyx/docker-compose stop
+
+            demyx_execute -v docker run -t --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock:ro \
+            --volumes-from demyx \
+            --workdir "$PWD" \
+            demyx/docker-compose rm -f
+        elif [[ "$DEMYX_COMPOSE" = du ]]; then
+            demyx_execute -v docker run -t --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock:ro \
+            --volumes-from demyx \
+            --workdir "$PWD" \
+            demyx/docker-compose stop
+
+            demyx_execute -v docker run -t --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock:ro \
+            --volumes-from demyx \
+            --workdir "$PWD" \
+            demyx/docker-compose rm -f
+
+            demyx_execute -v docker run -t --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock:ro \
+            --volumes-from demyx \
+            --workdir "$PWD" \
+            demyx/docker-compose up -d --remove-orphans
+        else
+            demyx_execute -v docker run -t --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock:ro \
+            --volumes-from demyx \
+            --workdir "$PWD" \
             demyx/docker-compose "$@"
         fi
     else

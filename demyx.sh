@@ -18,7 +18,7 @@ if [[ "$DEMYX_COMMAND" = backup ]]; then
     demyx_backup "$@"
 elif [[ "$DEMYX_COMMAND" = compose ]]; then
     source "$DEMYX_FUNCTION"/compose.sh
-    shift 2
+    shift
     demyx_compose "$@"
 elif [[ "$DEMYX_COMMAND" = config ]]; then
     source "$DEMYX_FUNCTION"/config.sh
