@@ -15,7 +15,8 @@ demyx_compose() {
             demyx compose "$i" "$@"
         done
     elif [[ "$DEMYX_APP_TYPE" = wp ]]; then
-        shift 1
+        shift
+        DEMYX_COMPOSE="$@"
         if [[ "$DEMYX_COMPOSE" = db ]]; then
             shift
             demyx_execute -v docker run -t --rm \
