@@ -73,8 +73,14 @@ demyx_execute() {
     if [[ -n "$DEMYX_EXECUTE_VERBOSE" ]]; then
         DEMYX_ECHO=""
         DEMYX_EXECUTE_VERBOSE=""
-        DEMYX_EXECUTE=""
-        "$@"
+
+        # Log wp commands for cron
+        if [[ "$DEMYX_COMMAND" = wp ]]; then
+            DEMYX_EXECUTE=$("$@")
+            echo "$DEMYX_EXECUTE"
+        else
+            "$@"
+        fi
     else
         echo -n "$DEMYX_ECHO ... "
         DEMYX_EXECUTE=$("$@")
