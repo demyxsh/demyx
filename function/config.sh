@@ -685,7 +685,7 @@ demyx_config() {
                 demyx_echo 'Replacing URLs to HTTPS' 
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" search-replace http://"$DEMYX_APP_DOMAIN" https://"$DEMYX_APP_DOMAIN"
 
-                demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" wp up -d --remove-orphans
+                demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
             elif [[ "$DEMYX_CONFIG_SSL" = off ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ "$DEMYX_APP_SSL" = off ]] && demyx_die 'SSL is already turned off'
@@ -700,7 +700,7 @@ demyx_config() {
                 demyx_echo 'Replacing URLs to HTTP' 
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" search-replace https://"$DEMYX_APP_DOMAIN" http://"$DEMYX_APP_DOMAIN"
 
-                demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" wp up -d --remove-orphans
+                demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
             fi
             if [[ -n "$DEMYX_CONFIG_UPDATE" ]]; then
                 demyx_echo 'Updating configs'
