@@ -7,6 +7,8 @@ demyx_yml() {
         DEMYX_REGEX_PROTOCOL="https://"
         DEMYX_REGEX_PROTOCOL_REPLACEMENT="http://"
 
+        demyx_app_config
+
         if [[ "$DEMYX_APP_SSL" = "on" ]]; then
             DEMYX_REGEX_PROTOCOL="http://"
             DEMYX_REGEX_PROTOCOL_REPLACEMENT="https://"
