@@ -680,7 +680,7 @@ demyx_config() {
                 demyx_execute sed -i "s/DEMYX_APP_SSL=off/DEMYX_APP_SSL=on/g" "$DEMYX_APP_PATH"/.env
 
                 demyx_echo 'Turning on SSL'
-                demyx_execute demy_app_config; demyx_yml
+                demyx_execute demyx_app_config; demyx_yml
 
                 demyx_echo 'Replacing URLs to HTTPS' 
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" search-replace http://"$DEMYX_APP_DOMAIN" https://"$DEMYX_APP_DOMAIN"
