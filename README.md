@@ -1,4 +1,10 @@
-# Demyx
+# Demyx 
+[![Build Status](https://img.shields.io/travis/demyxco/demyx?style=flat)](https://travis-ci.org/demyxco/demyx)
+[![Docker Pulls](https://img.shields.io/docker/pulls/demyx/demyx?style=flat&color=blue)](https://hub.docker.com/r/demyx/demyx)
+[![Architecture](https://img.shields.io/badge/linux-amd64-important?style=flat&color=blue)](https://hub.docker.com/r/demyx/demyx)
+[![Alpine](https://img.shields.io/badge/alpine-3.10.2-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/demyx)
+[![Docker Client](https://img.shields.io/badge/docker_client-19.03.1-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/demyx)
+
 A simple bash CLI wrapper for Docker to automate WordPress installations. Traefik for reverse proxy with Lets Encrypt SSL. WordPress sites are powered by NGINX, PHP, and MariaDB.
 
 Demyx is now a Docker image and the code base has been completely rewritten, think of this as a "Version 2." The plan was to not "pollute" the host OS and go full Docker mode. This makes it easier to have a controlled and predictable environment. One can say Demyx is "Linux OS agnostic," as long as you have Docker installed.
@@ -7,10 +13,15 @@ Demyx is now a Docker image and the code base has been completely rewritten, thi
 <img  src="https://i.imgur.com/sYNrgFh.gif">
 </p>
 
-### Stack
-ALPINE | NGINX | MARIADB | PHP | WORDPRESS
-------------- | ------------- | ------------- | ------------- | -------------
-3.10.1 | 1.17.3 | 10.3.15 | 7.3.8 | 5.2.2
+### Updates
+[![Code Size](https://img.shields.io/github/languages/code-size/demyxco/demyx?style=flat&color=blue)](https://github.com/demyxco/demyx)
+[![Repository Size](https://img.shields.io/github/repo-size/demyxco/demyx?style=flat&color=blue)](https://github.com/demyxco/demyx)
+[![Watches](https://img.shields.io/github/watchers/demyxco/demyx?style=flat&color=blue)](https://github.com/demyxco/demyx)
+[![Stars](https://img.shields.io/github/stars/demyxco/demyx?style=flat&color=blue)](https://github.com/demyxco/demyx)
+[![Forks](https://img.shields.io/github/forks/demyxco/demyx?style=flat&color=blue)](https://github.com/demyxco/demyx)
+
+* Auto built weekly on Sundays (America/Los_Angeles)
+* Rolling release updates
 
 ### WordPress Features
 * SSL turned on by default
