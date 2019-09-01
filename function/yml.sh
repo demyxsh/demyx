@@ -2,12 +2,12 @@
 # https://demyx.sh
 
 demyx_yml() {
+    demyx_app_config
+
     if [[ "$DEMYX_APP_TYPE" = wp ]]; then
         DEMYX_PROTOCOL="- \"traefik.frontend.redirect.entryPoint=http\""
         DEMYX_REGEX_PROTOCOL="https://"
         DEMYX_REGEX_PROTOCOL_REPLACEMENT="http://"
-
-        demyx_app_config
 
         if [[ "$DEMYX_APP_SSL" = "on" ]]; then
             DEMYX_REGEX_PROTOCOL="http://"
