@@ -39,16 +39,16 @@ EOF
             - Bugs: github.com/demyxco/demyx/issues
             - Contact: info@demyx.sh
 
-            DEMYX       $DEMYX_MOTD_MODE
-            HOST        $DEMYX_MOTD_HOST
-            SSH         $DEMYX_MOTD_SSH
-            STATUS      $DEMYX_MOTD_STATUS
-        " | sed 's/            //g'
+            +-------+-------------------+
+            DEMYX   |   $DEMYX_MOTD_MODE
+            HOST    |   $DEMYX_MOTD_HOST
+            SSH     |   $DEMYX_MOTD_SSH
+            STATUS  |   $DEMYX_MOTD_STATUS
+            +-------+-------------------+" | sed 's/            //g'
 
         cd "$DEMYX_ETC" || exit
 
-        demyx_execute -v echo -e "Latest Updates\n--------------"
-        demyx_execute -v git --no-pager log -5 --format=format:'- %s %C(white dim)(%ar)%C(reset)'
-        demyx_execute -v echo -e "\n"
+        DEMYX_MOTD_GIT_LOG="$(git --no-pager log -5 --format=format:'- %s %C(white dim)(%ar)%C(reset)')"
+        demyx_execute -v echo -e "\nLatest Updates\n--------------\n$DEMYX_MOTD_GIT_LOG\n"
     fi
 }
