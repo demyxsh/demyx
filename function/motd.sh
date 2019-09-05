@@ -38,16 +38,17 @@ EOF
             - Help: demyx help
             - Bugs: github.com/demyxco/demyx/issues
             - Contact: info@demyx.sh
+
+            DEMYX       $DEMYX_MOTD_MODE
+            HOST        $DEMYX_MOTD_HOST
+            SSH         $DEMYX_MOTD_SSH
+            STATUS      $DEMYX_MOTD_STATUS
         " | sed 's/            //g'
 
         cd "$DEMYX_ETC" || exit
 
-        PRINT_TABLE="DEMYX^ HOST^ USER^ SSH^ STATUS\n"
-        PRINT_TABLE+="$DEMYX_MOTD_MODE^ $DEMYX_MOTD_HOST^ DEMYX^ $DEMYX_MOTD_SSH^ $DEMYX_MOTD_STATUS"
-        demyx_execute -v demyx_table "$PRINT_TABLE"
-        demyx_execute -v echo -e "\nLatest Updates\n--------------"
+        demyx_execute -v echo -e "Latest Updates\n--------------"
         demyx_execute -v git --no-pager log -5 --format=format:'- %s %C(white dim)(%ar)%C(reset)'
         demyx_execute -v echo -e "\n"
-        demyx_execute -v echo -e "\e[33m[NOTICE]\e[39m Please update chroot.sh by running demyx as root until you see a prompt \n"
     fi
 }
