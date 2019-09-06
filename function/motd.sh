@@ -39,12 +39,12 @@ EOF
             - Bugs: github.com/demyxco/demyx/issues
             - Contact: info@demyx.sh
 
-            +-------+-------------------+
-            DEMYX   |   $DEMYX_MOTD_MODE
-            HOST    |   $DEMYX_MOTD_HOST
-            SSH     |   $DEMYX_MOTD_SSH
-            STATUS  |   $DEMYX_MOTD_STATUS
-            +-------+-------------------+" | sed 's/            //g'
+            =========================
+             DEMYX  | $DEMYX_MOTD_MODE
+             HOST   | $DEMYX_MOTD_HOST
+             SSH    | $DEMYX_MOTD_SSH
+             STATUS | $DEMYX_MOTD_STATUS
+            =========================" | sed 's/            //g'
 
         cd "$DEMYX_ETC" || exit
 
