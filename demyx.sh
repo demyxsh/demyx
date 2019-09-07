@@ -9,7 +9,6 @@ source /demyx/etc/.config
 source "$DEMYX_FUNCTION"/common.sh
 source "$DEMYX_FUNCTION"/help.sh
 source "$DEMYX_FUNCTION"/check.sh
-source "$DEMYX_FUNCTION"/clean.sh
 DEMYX_COMMAND="$1"
 DEMYX_TARGET="$2"
 
