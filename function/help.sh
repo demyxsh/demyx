@@ -34,6 +34,7 @@ demyx_help() {
         echo "                   --force          Force config"
         echo "                   --healthcheck    Turns on/off healthcheck for WordPress container"
         echo "                   --no-backup      Disable auto back up"
+        echo "                   --opcache        Turns on/off PHP opcache"
         echo "                   --pma            Turns on/off phpMyAdmin"
         echo "                   --rate-limit     Turns on/off NGINX rate limting"
         echo "                   --refresh        Regenerate config files and uploaded to container"
