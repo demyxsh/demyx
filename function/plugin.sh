@@ -3,7 +3,7 @@
 
 demyx_plugin() {
     demyx_app_config
-    cat > "$DEMYX_APP_CONFIG"/demyx_browsersync.php <<-EOF
+    cat > "$DEMYX_APP_PATH"/demyx_browsersync.php <<-EOF
     <?php
     /**
     * AUTO GENERATED
@@ -30,5 +30,5 @@ demyx_plugin() {
 
     add_filter('redirect_canonical', 'demyx_browsersync_init');
 EOF
-    sed -i 's/    //' "$DEMYX_APP_CONFIG"/demyx_browsersync.php
+    sed -i 's/    //' "$DEMYX_APP_PATH"/demyx_browsersync.php
 }
