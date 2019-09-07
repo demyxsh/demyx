@@ -40,7 +40,7 @@ demyx_die() {
         printf '\e[31m[CRITICAL]\e[39m %s\n' "$1" >&2
     fi
 
-    [[ -z "$DEMYX_DIE_NO_HELP" ]] && demyx help "$DEMYX_COMMAND"
+    [[ -z "$DEMYX_DIE_NO_HELP" ]] && echo -e "\e[34m[INFO]\e[39m demyx help $DEMYX_COMMAND"
 
     exit 1
 }
