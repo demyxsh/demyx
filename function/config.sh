@@ -180,7 +180,8 @@ demyx_config() {
                 fi
                 demyx_echo "Turning off wp-login.php basic auth"
                 demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" bash -c "sed -i 's/auth_basic/#auth_basic/g' /etc/nginx/nginx.conf; rm /.htpasswd" && \
-                    sed -i "s/DEMYX_APP_AUTH_WP=.*/DEMYX_APP_AUTH_WP=/g" "$DEMYX_APP_PATH"/.env
+                    sed -i "s/DEMYX_APP_AUTH_WP=.*/DEMYX_APP_AUTH_WP=/g" "$DEMYX_APP_PATH"/.env && \
+                    rm "$DEMYX_APP_PATH"/.htpasswd
 
                 demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
             fi
@@ -477,12 +478,6 @@ demyx_config() {
                 demyx_echo 'Deactivating demyx_browsersync' 
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin deactivate demyx_browsersync; \
 
-                demyx_echo 'Cleaning up'
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" rm /etc/nginx/common/bs.conf; \
-                    docker exec -t "$DEMYX_APP_WP_CONTAINER" rm /var/www/html/bs.js; \
-                    rm "$DEMYX_APP_PATH"/bs.conf; \
-                    rm "$DEMYX_APP_PATH"/bs.js
-
                 demyx config "$DEMYX_APP_DOMAIN" --opcache
                 
                 demyx_execute -v sed -i "s/DEMYX_APP_DEV=on/DEMYX_APP_DEV=off/g" "$DEMYX_APP_PATH"/.env
@@ -491,6 +486,12 @@ demyx_config() {
                     rm "$DEMYX_APP_PATH"/.cache
                     demyx config "$DEMYX_APP_DOMAIN" --cache
                 fi
+
+                demyx_echo 'Cleaning up'
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" rm /etc/nginx/common/bs.conf; \
+                    docker exec -t "$DEMYX_APP_WP_CONTAINER" rm /var/www/html/bs.js; \
+                    rm "$DEMYX_APP_PATH"/bs.conf; \
+                    rm "$DEMYX_APP_PATH"/bs.js
             fi
             if [[ "$DEMYX_CONFIG_HEALTHCHECK" = on ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
