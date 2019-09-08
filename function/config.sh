@@ -60,6 +60,12 @@ demyx_config() {
             --no-backup)
                 DEMYX_CONFIG_NO_BACKUP=1
                 ;;
+            --opcache|--opcache=on)
+                DEMYX_CONFIG_OPCACHE=on
+                ;;
+            --opcache=off)
+                DEMYX_CONFIG_OPCACHE=off
+                ;;
             --pma|--pma=on)
                 DEMYX_CONFIG_PMA=on
                 ;;
@@ -92,9 +98,6 @@ demyx_config() {
                 ;;
             --ssl=off)
                 DEMYX_CONFIG_SSL=off
-                ;;
-            --update)
-                DEMYX_CONFIG_UPDATE=1
                 ;;
             --wp-update|--wp-update=on)
                 DEMYX_CONFIG_WP_UPDATE=on
@@ -137,7 +140,6 @@ demyx_config() {
         if [[ "$DEMYX_APP_TYPE" = wp ]]; then
             source "$DEMYX_FUNCTION"/env.sh
             source "$DEMYX_FUNCTION"/yml.sh
-            source "$DEMYX_FUNCTION"/plugin.sh
             
             cd "$DEMYX_APP_PATH" || exit
 
@@ -156,34 +158,29 @@ demyx_config() {
             fi
             if [[ "$DEMYX_CONFIG_AUTH_WP" = on ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_AUTH_WP" = on ]] && demyx_die 'Basic WP Auth is already turned on'
+                    [[ -n "$DEMYX_APP_AUTH_WP" ]] && demyx_die 'Basic WP Auth is already turned on'
                 fi
 
                 DEMYX_PARSE_BASIC_AUTH=$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}' || true)
 
-                if [[ ! -f "$DEMYX_APP_CONFIG"/htpasswd ]]; then
+                if [[ ! -f "$DEMYX_APP_PATH"/.htpasswd ]]; then
                     demyx_echo 'Generating htpasswd'
-                    demyx_execute -v -q echo "$DEMYX_PARSE_BASIC_AUTH" > "$DEMYX_APP_CONFIG"/htpasswd
+                    demyx_execute -v -q echo "$DEMYX_PARSE_BASIC_AUTH" > "$DEMYX_APP_PATH"/.htpasswd
                 fi
 
                 demyx_echo "Turning on wp-login.php basic auth"
-                demyx_execute sed -i 's/#auth_basic/auth_basic/g' "$DEMYX_APP_CONFIG"/nginx.conf; \
-                    sed -i "s/DEMYX_APP_AUTH_WP=off/DEMYX_APP_AUTH_WP=on/g" "$DEMYX_APP_PATH"/.env
-
-                demyx_echo 'Updating configs'
-                demyx_execute docker cp "$DEMYX_APP_CONFIG"/. "$DEMYX_APP_WP_CONTAINER":/demyx
+                demyx_execute docker cp "$DEMYX_APP_PATH"/.htpasswd "$DEMYX_APP_WP_CONTAINER":/; \
+                    docker exec -t "$DEMYX_APP_WP_CONTAINER" bash -c "sed -i 's/#auth_basic/auth_basic/g' /etc/nginx/nginx.conf" && \
+                    sed -i "s/DEMYX_APP_AUTH_WP=.*/DEMYX_APP_AUTH_WP=$DEMYX_PARSE_BASIC_AUTH/g" "$DEMYX_APP_PATH"/.env
 
                 demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
             elif [[ "$DEMYX_CONFIG_AUTH_WP" = off ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_AUTH_WP" = off ]] && demyx_die 'Basic WP Auth is already turned off'
+                    [[ -z "$DEMYX_APP_AUTH_WP" ]] && demyx_die 'Basic WP Auth is already turned off'
                 fi
                 demyx_echo "Turning off wp-login.php basic auth"
-                demyx_execute sed -i 's/auth_basic/#auth_basic/g' "$DEMYX_APP_CONFIG"/nginx.conf; \
-                    sed -i "s/DEMYX_APP_AUTH_WP=on/DEMYX_APP_AUTH_WP=off/g" "$DEMYX_APP_PATH"/.env
-
-                demyx_echo 'Updating configs'
-                demyx_execute docker cp "$DEMYX_APP_CONFIG"/. "$DEMYX_APP_WP_CONTAINER":/demyx
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" bash -c "sed -i 's/auth_basic/#auth_basic/g' /etc/nginx/nginx.conf; rm /.htpasswd" && \
+                    sed -i "s/DEMYX_APP_AUTH_WP=.*/DEMYX_APP_AUTH_WP=/g" "$DEMYX_APP_PATH"/.env
 
                 demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
             fi
@@ -205,11 +202,8 @@ demyx_config() {
                 demyx_echo 'Configuring nginx-helper' 
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" option update rt_wp_nginx_helper_options '{"enable_purge":"1","cache_method":"enable_fastcgi","purge_method":"get_request","enable_map":null,"enable_log":null,"log_level":"INFO","log_filesize":"5","enable_stamp":null,"purge_homepage_on_edit":"1","purge_homepage_on_del":"1","purge_archive_on_edit":"1","purge_archive_on_del":"1","purge_archive_on_new_comment":"1","purge_archive_on_deleted_comment":"1","purge_page_on_mod":"1","purge_page_on_new_comment":"1","purge_page_on_deleted_comment":"1","redis_hostname":"127.0.0.1","redis_port":"6379","redis_prefix":"nginx-cache:","purge_url":"","redis_enabled_by_constant":0}' --format=json
 
-                demyx_echo 'Configuring NGINX' 
-                demyx_execute sed -i "s|#include /etc/nginx/cache|include /etc/nginx/cache|g" "$DEMYX_APP_CONFIG"/nginx.conf
-
                 demyx_echo 'Updating configs'
-                demyx_execute docker cp "$DEMYX_APP_CONFIG"/. "$DEMYX_APP_WP_CONTAINER":/demyx; \
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" bash -c "sed -i 's|#include /etc/nginx/cache|include /etc/nginx/cache|g' /etc/nginx/nginx.conf" && \
                     sed -i "s/DEMYX_APP_CACHE=off/DEMYX_APP_CACHE=on/g" "$DEMYX_APP_PATH"/.env
 
                 demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
@@ -221,11 +215,8 @@ demyx_config() {
                 demyx_echo 'Deactivating nginx-helper' 
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin deactivate nginx-helper
                 
-                demyx_echo 'Configuring NGINX' 
-                demyx_execute sed -i "s|include /etc/nginx/cache|#include /etc/nginx/cache|g" "$DEMYX_APP_CONFIG"/nginx.conf
-
                 demyx_echo 'Updating configs'
-                demyx_execute docker cp "$DEMYX_APP_CONFIG"/. "$DEMYX_APP_WP_CONTAINER":/demyx; \
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" bash -c "sed -i 's|include /etc/nginx/cache|#include /etc/nginx/cache|g' /etc/nginx/nginx.conf" && \
                     sed -i "s/DEMYX_APP_CACHE=on/DEMYX_APP_CACHE=off/g" "$DEMYX_APP_PATH"/.env
 
                 demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
@@ -277,8 +268,8 @@ demyx_config() {
                     demyx_execute -v -q sed -i "s|$MARIADB_ROOT_PASSWORD|$DEMYX_CONFIG_CLEAN_MARIADB_ROOT_PASSWORD|g" "$DEMYX_APP_PATH"/.env
                 demyx_app_config
 
-                demyx compose "$DEMYX_APP_DOMAIN" db stop
-                demyx compose "$DEMYX_APP_DOMAIN" db rm -f
+                demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" db stop
+                demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" db rm -f
 
                 demyx_echo 'Deleting old MariaDB volume'
                 demyx_execute docker volume rm wp_"$DEMYX_APP_ID"_db
@@ -289,7 +280,7 @@ demyx_config() {
                 demyx_echo 'Replacing WordPress core files'
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" core download --force
 
-                demyx compose "$DEMYX_APP_DOMAIN" db up -d
+                demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" db up -d
 
                 demyx_echo 'Initializing MariaDB'
                 demyx_execute demyx_mariadb_ready
@@ -306,12 +297,14 @@ demyx_config() {
                 demyx_echo 'Cleaning salts'
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" config shuffle-salts
 
-                demyx compose "$DEMYX_APP_DOMAIN" du
+                demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" du
             fi
             if [[ "$DEMYX_CONFIG_DEV" = on ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ "$DEMYX_APP_DEV" = on ]] && demyx_die 'Dev mode is already turned on'
                 fi
+
+                source "$DEMYX_FUNCTION"/plugin.sh
  
                 if [[ "$DEMYX_APP_SSL" = on ]]; then
                     DEMYX_CONFIG_DEV_PROTO="https://$DEMYX_APP_DOMAIN"
@@ -384,7 +377,7 @@ demyx_config() {
                         socket: {
                             domain: "'$DEMYX_APP_DOMAIN'"
                         }
-                    };' | sed 's|                    ||g' > "$DEMYX_APP_CONFIG"/bs.js; \
+                    };' | sed 's|                    ||g' > "$DEMYX_APP_PATH"/bs.js; \
                     echo 'location /browser-sync/socket.io/ {
                             proxy_pass http://'${DEMYX_APP_COMPOSE_PROJECT}_bs':3000/browser-sync/socket.io/;
                             proxy_http_version 1.1;
@@ -392,11 +385,11 @@ demyx_config() {
                             proxy_set_header Connection "upgrade";
                             proxy_set_header Host $host;
                             proxy_cache_bypass $http_upgrade;
-                        }' | sed 's|                        ||g' > "$DEMYX_APP_CONFIG"/bs.conf; \
-                    demyx_execute docker cp "$DEMYX_APP_CONFIG"/bs.js "$DEMYX_APP_WP_CONTAINER":/demyx; \
-                    docker cp "$DEMYX_APP_CONFIG"/bs.conf "$DEMYX_APP_WP_CONTAINER":/etc/nginx/common
+                        }' | sed 's|                        ||g' > "$DEMYX_APP_PATH"/bs.conf; \
+                    demyx_execute docker cp "$DEMYX_APP_PATH"/bs.js "$DEMYX_APP_WP_CONTAINER":/var/www/html; \
+                        docker cp "$DEMYX_APP_PATH"/bs.conf "$DEMYX_APP_WP_CONTAINER":/etc/nginx/common
 
-                demyx_echo 'Creating BrowserSync container' 
+                demyx_echo 'Creating BrowserSync container'
                 demyx_execute docker run -d --rm \
                     --name "$DEMYX_APP_COMPOSE_PROJECT"_bs \
                     --net demyx \
@@ -405,7 +398,7 @@ demyx_config() {
                     -l "traefik.bs.frontend.rule=Host:${DEMYX_APP_DOMAIN}; PathPrefixStrip: /demyx-bs" \
                     -l "traefik.bs.port=3000" \
                     demyx/browsersync start \
-                    --config "/demyx/bs.js"
+                    --config "/var/www/html/bs.js"
 
                 demyx_echo 'Creating phpMyAdmin container'
                 demyx_execute docker run -d --rm \
@@ -438,23 +431,21 @@ demyx_config() {
                 else
                     demyx_echo 'Creating demyx_browsersync plugin'
                     demyx_execute demyx_plugin; \
-                    docker cp "$DEMYX_APP_CONFIG"/demyx_browsersync.php "$DEMYX_APP_WP_CONTAINER":/var/www/html/wp-content/plugins
+                        docker cp "$DEMYX_APP_PATH"/demyx_browsersync.php "$DEMYX_APP_WP_CONTAINER":/var/www/html/wp-content/plugins; \
+                        rm "$DEMYX_APP_PATH"/demyx_browsersync.php
                 
                     demyx_echo 'Activating demyx_browsersync plugin'
                     demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin activate demyx_browsersync
                 fi
 
                 if [[ "$DEMYX_CONFIG_CACHE_CHECK" = on ]]; then
-                    touch "$DEMYX_APP_CONFIG"/.cache
+                    touch "$DEMYX_APP_PATH"/.cache
                     demyx config "$DEMYX_APP_DOMAIN" --cache=off
                 fi
 
-                demyx_echo 'Disabling opcache'
-                demyx_execute sed -i "s|opcache.enable=1|opcache.enable=0|g" "$DEMYX_APP_CONFIG"/php.ini; \
-                    sed -i "s|opcache.enable_cli=1|opcache.enable_cli=0|g" "$DEMYX_APP_CONFIG"/php.ini
+                demyx config "$DEMYX_APP_DOMAIN" --opcache=off
 
-                demyx config "$DEMYX_APP_DOMAIN" --update; \
-                    demyx_execute -v sed -i "s/DEMYX_APP_DEV=off/DEMYX_APP_DEV=on/g" "$DEMYX_APP_PATH"/.env
+                demyx_execute -v sed -i "s/DEMYX_APP_DEV=off/DEMYX_APP_DEV=on/g" "$DEMYX_APP_PATH"/.env
 
                 PRINT_TABLE="DEMYX^ DEVELOPMENT MODE\n"
                 PRINT_TABLE+="SFTP^ $DEMYX_APP_DOMAIN\n"
@@ -486,18 +477,18 @@ demyx_config() {
                 demyx_echo 'Deactivating demyx_browsersync' 
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin deactivate demyx_browsersync; \
 
-                demyx_echo 'Removing bs.conf'
-                demyx_execute demyx exec "$DEMYX_APP_DOMAIN" rm /etc/nginx/common/bs.conf; \
+                demyx_echo 'Cleaning up'
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" rm /etc/nginx/common/bs.conf; \
+                    docker exec -t "$DEMYX_APP_WP_CONTAINER" rm /var/www/html/bs.js; \
+                    rm "$DEMYX_APP_PATH"/bs.conf; \
+                    rm "$DEMYX_APP_PATH"/bs.js
 
-                demyx_echo 'Enabling opcache'
-                demyx_execute sed -i "s|opcache.enable=0|opcache.enable=1|g" "$DEMYX_APP_CONFIG"/php.ini; \
-                    sed -i "s|opcache.enable_cli=0|opcache.enable_cli=1|g" "$DEMYX_APP_CONFIG"/php.ini
+                demyx config "$DEMYX_APP_DOMAIN" --opcache
+                
+                demyx_execute -v sed -i "s/DEMYX_APP_DEV=on/DEMYX_APP_DEV=off/g" "$DEMYX_APP_PATH"/.env
 
-                demyx config "$DEMYX_APP_DOMAIN" --update; \
-                    demyx_execute -v sed -i "s/DEMYX_APP_DEV=on/DEMYX_APP_DEV=off/g" "$DEMYX_APP_PATH"/.env
-
-                if [[ -f "$DEMYX_APP_CONFIG"/.cache ]]; then
-                    rm "$DEMYX_APP_CONFIG"/.cache
+                if [[ -f "$DEMYX_APP_PATH"/.cache ]]; then
+                    rm "$DEMYX_APP_PATH"/.cache
                     demyx config "$DEMYX_APP_DOMAIN" --cache
                 fi
             fi
@@ -513,6 +504,23 @@ demyx_config() {
                 fi
                 demyx_echo 'Turning off healthcheck'
                 demyx_execute sed -i "s/DEMYX_APP_HEALTHCHECK=on/DEMYX_APP_HEALTHCHECK=off/g" "$DEMYX_APP_PATH"/.env
+            fi
+            if [[ "$DEMYX_CONFIG_OPCACHE" = on ]]; then
+                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
+                    [[ "$DEMYX_APP_PHP_OPCACHE" = on ]] && demyx_die 'PHP opcache is already turned on'
+                fi
+
+                demyx_echo 'Turning on PHP opcache'
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" bash -c "sed -i 's|opcache.enable=0|opcache.enable=1|g' /etc/php7/php.ini; sed -i 's|opcache.enable_cli=0|opcache.enable_cli=1|g' /etc/php7/php.ini" && \
+                    sed -i "s/DEMYX_APP_PHP_OPCACHE=off/DEMYX_APP_PHP_OPCACHE=on/g" "$DEMYX_APP_PATH"/.env
+            elif [[ "$DEMYX_CONFIG_OPCACHE" = off ]]; then
+                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
+                    [[ "$DEMYX_APP_PHP_OPCACHE" = off ]] && demyx_die 'PHP opcache is already turned off'
+                fi
+                
+                demyx_echo 'Turning off PHP opcache'
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" bash -c "sed -i 's|opcache.enable=1|opcache.enable=0|g' /etc/php7/php.ini; sed -i 's|opcache.enable_cli=1|opcache.enable_cli=0|g' /etc/php7/php.ini" && \
+                    sed -i "s/DEMYX_APP_PHP_OPCACHE=on/DEMYX_APP_PHP_OPCACHE=off/g" "$DEMYX_APP_PATH"/.env
             fi
             if [[ "$DEMYX_CONFIG_PMA" = on ]]; then
                 DEMYX_CONFIG_PMA_CONTAINER_CHECK=$(docker ps | grep "$DEMYX_APP_COMPOSE_PROJECT"_pma || true)
@@ -554,55 +562,31 @@ demyx_config() {
                 fi
 
                 demyx_echo 'Turning on rate limiting'
-                demyx_execute sed -i 's/#limit_req/limit_req/g' "$DEMYX_APP_CONFIG"/nginx.conf; \
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" bash -c "sed -i 's|#limit_req|limit_req|g' /etc/nginx/nginx.conf"; \
                     sed -i "s/DEMYX_APP_RATE_LIMIT=off/DEMYX_APP_RATE_LIMIT=on/g" "$DEMYX_APP_PATH"/.env
 
-                demyx_echo 'Updating configs'
-                demyx_execute docker cp "$DEMYX_APP_CONFIG"/. "$DEMYX_APP_WP_CONTAINER":/demyx
-
-                demyx_echo 'Reloading NGINX'
-                demyx_execute demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
+                demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
             elif [[ "$DEMYX_CONFIG_RATE_LIMIT" = off ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ "$DEMYX_APP_RATE_LIMIT" = off ]] && demyx_die 'Rate limit is already turned off'
                 fi
 
                 demyx_echo 'Turning off rate limiting'
-                demyx_execute sed -i 's/limit_req/#limit_req/g' "$DEMYX_APP_CONFIG"/nginx.conf; \
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" bash -c "sed -i 's|limit_req|#limit_req|g' /etc/nginx/nginx.conf"; \
                     sed -i "s/DEMYX_APP_RATE_LIMIT=on/DEMYX_APP_RATE_LIMIT=off/g" "$DEMYX_APP_PATH"/.env
 
-                demyx_echo 'Updating configs'
-                demyx_execute docker cp "$DEMYX_APP_CONFIG"/. "$DEMYX_APP_WP_CONTAINER":/demyx
-
-                demyx_echo 'Reloading NGINX'
-                demyx_execute demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
+                demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
             fi
             if [[ -n "$DEMYX_CONFIG_REFRESH" ]]; then
                 if [[ -z "$DEMYX_CONFIG_NO_BACKUP" ]]; then
                     demyx backup "$DEMYX_APP_DOMAIN"
                 fi
 
-                source "$DEMYX_FUNCTION"/nginx.sh
-                source "$DEMYX_FUNCTION"/php.sh
-                source "$DEMYX_FUNCTION"/php-fpm.sh
-
                 demyx_echo 'Refreshing .env'
                 demyx_execute demyx_env
 
                 demyx_echo 'Refreshing .yml'
                 demyx_execute demyx_yml
-
-                demyx_echo 'Refreshing nginx.conf'
-                demyx_execute demyx_nginx_wp
-
-                demyx_echo 'Refreshing php.ini'
-                demyx_execute demyx_php
-
-                demyx_echo 'Refreshing php-fpm.conf'
-                demyx_execute demyx_php_fpm
-
-                demyx_echo 'Refreshing configs'
-                demyx_execute demyx config "$DEMYX_APP_DOMAIN" --update
 
                 demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" up -d
 
@@ -615,16 +599,16 @@ demyx_config() {
             fi
             if [ "$DEMYX_CONFIG_RESTART" = nginx-php ]; then
                 demyx_echo "Restarting NGINX"
-                demyx_execute demyx exec "$DEMYX_APP_DOMAIN" bash -c "rm -rf /var/run/nginx-fastcgi-cache; nginx -s reload"
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" bash -c "rm -rf /var/run/nginx-fastcgi-cache; nginx -s reload"
                 
                 demyx_echo "Restarting PHP"
-                demyx_execute demyx exec "$DEMYX_APP_DOMAIN" bash -c "pkill php-fpm; php-fpm -D"
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" bash -c "pkill php-fpm; php-fpm -D"
             elif [ "$DEMYX_CONFIG_RESTART" = nginx ]; then
                 demyx_echo "Restarting NGINX"
-                demyx_execute demyx exec "$DEMYX_APP_DOMAIN" bash -c "rm -rf /var/run/nginx-fastcgi-cache; nginx -s reload"
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" bash -c "rm -rf /var/run/nginx-fastcgi-cache; nginx -s reload"
             elif [ "$DEMYX_CONFIG_RESTART" = php ]; then
                 demyx_echo "Restarting PHP"
-                demyx_execute demyx exec "$DEMYX_APP_DOMAIN" bash -c "pkill php-fpm; php-fpm -D"
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" bash -c "pkill php-fpm; php-fpm -D"
             fi
             if [[ "$DEMYX_CONFIG_SFTP" = on ]]; then
                 DEMYX_SFTP_VOLUME_CHECK=$(docker volume ls | grep demyx_sftp || true)
@@ -702,13 +686,6 @@ demyx_config() {
 
                 demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
             fi
-            if [[ -n "$DEMYX_CONFIG_UPDATE" ]]; then
-                demyx_echo 'Updating configs'
-                demyx_execute docker cp "$DEMYX_APP_CONFIG"/. "$DEMYX_APP_WP_CONTAINER":/demyx
-
-                demyx_echo 'Reloading NGINX and PHP'
-                demyx_execute demyx config "$DEMYX_APP_DOMAIN" --restart=nginx-php
-            fi
             if [[ "$DEMYX_CONFIG_WP_UPDATE" = on ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ "$DEMYX_APP_WP_UPDATE" = on ]] && demyx_die 'WordPress auto update is already turned on'
@@ -729,7 +706,7 @@ demyx_config() {
                 DEMYX_APP_ENTRYPOINT_CHECK=$(docker exec -t "$DEMYX_APP_CONTAINER" ls /demyx | grep entrypoint || true)
                 
                 demyx_echo 'Updating configs'
-                demyx_execute docker cp "$DEMYX_APP_CONFIG"/. "$DEMYX_APP_CONTAINER":/demyx
+                demyx_execute docker cp "$DEMYX_APP_PATH"/. "$DEMYX_APP_CONTAINER":/demyx
 
                 if [[ -n "$DEMYX_APP_ENTRYPOINT_CHECK" ]]; then
                     demyx_echo 'Making custom entrypoint executable'
