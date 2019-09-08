@@ -101,18 +101,18 @@ demyx_yml() {
                     networks:
                         - demyx
                     environment:
-                        WORDPRESS_DOMAIN: \${DEMYX_APP_DOMAIN}
                         WORDPRESS_DB_HOST: \${WORDPRESS_DB_HOST}
                         WORDPRESS_DB_NAME: \${WORDPRESS_DB_NAME}
                         WORDPRESS_DB_USER: \${WORDPRESS_DB_USER}
                         WORDPRESS_DB_PASSWORD: \${WORDPRESS_DB_PASSWORD}
-                        DEMYX_UPLOAD_LIMIT: \${DEMYX_APP_UPLOAD_LIMIT}
-                        DEMYX_PHP_MEMORY: \${DEMYX_APP_PHP_MEMORY}
-                        DEMYX_PHP_MAX_EXECUTION_TIME: \${DEMYX_APP_PHP_MAX_EXECUTION_TIME}
-                        DEMYX_PHP_OPCACHE: "\${DEMYX_APP_PHP_OPCACHE}"
-                        DEMYX_NGINX_CACHE: "\${DEMYX_APP_CACHE}"
-                        DEMYX_RATE_LIMIT: "\${DEMYX_APP_RATE_LIMIT}"
-                        DEMYX_BASIC_AUTH: \${DEMYX_APP_AUTH_WP}
+                        WORDPRESS_DOMAIN: \${DEMYX_APP_DOMAIN}
+                        WORDPRESS_UPLOAD_LIMIT: \${DEMYX_APP_UPLOAD_LIMIT}
+                        WORDPRESS_PHP_MEMORY: \${DEMYX_APP_PHP_MEMORY}
+                        WORDPRESS_PHP_MAX_EXECUTION_TIME: \${DEMYX_APP_PHP_MAX_EXECUTION_TIME}
+                        WORDPRESS_PHP_OPCACHE: "\${DEMYX_APP_PHP_OPCACHE}"
+                        WORDPRESS_NGINX_CACHE: "\${DEMYX_APP_CACHE}"
+                        WORDPRESS_NGINX_RATE_LIMIT: "\${DEMYX_APP_RATE_LIMIT}"
+                        WORDPRESS_NGINX_BASIC_AUTH: \${DEMYX_APP_AUTH_WP}
                         TZ: America/Los_Angeles
                     volumes:
                         - wp_${DEMYX_APP_ID}:/var/www/html
