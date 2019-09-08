@@ -66,9 +66,6 @@ demyx_restore() {
 
         demyx_echo 'Creating MariaDB volume'
         demyx_execute docker volume create wp_"$DEMYX_APP_ID"_db
-        
-        demyx_echo 'Creating config volume'
-        demyx_execute docker volume create wp_"$DEMYX_APP_ID"_config
 
         demyx_echo 'Creating log volume'
         demyx_execute docker volume create wp_"$DEMYX_APP_ID"_log
@@ -85,13 +82,11 @@ demyx_restore() {
             --name "$DEMYX_APP_ID" \
             --network demyx \
             -v wp_"$DEMYX_APP_ID":/var/www/html \
-            -v wp_"$DEMYX_APP_ID"_config:/demyx \
             -v wp_"$DEMYX_APP_ID"_log:/var/log/demyx \
             demyx/nginx-php-wordpress
 
         demyx_echo 'Restoring files'
-        demyx_execute docker cp config/. "$DEMYX_APP_ID":/demyx; \
-            docker cp html "$DEMYX_APP_ID":/var/www; \
+        demyx_execute docker cp html "$DEMYX_APP_ID":/var/www; \
             docker cp demyx "$DEMYX_APP_ID":/var/log
 
         demyx_echo 'Restoring database'
