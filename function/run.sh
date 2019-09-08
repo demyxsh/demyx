@@ -118,12 +118,8 @@ demyx_run() {
     source "$DEMYX_FUNCTION"/yml.sh
 
     if [[ "$DEMYX_RUN_TYPE" = wp ]]; then
-        source "$DEMYX_FUNCTION"/nginx.sh
-        source "$DEMYX_FUNCTION"/php.sh
-        source "$DEMYX_FUNCTION"/php-fpm.sh
-
         demyx_echo 'Creating directory'
-        demyx_execute mkdir -p "$DEMYX_WP"/"$DEMYX_TARGET"/config
+        demyx_execute mkdir -p "$DEMYX_WP"/"$DEMYX_TARGET"
 
         demyx_echo 'Creating .env'
         demyx_execute demyx_env
@@ -135,19 +131,7 @@ demyx_run() {
         demyx_echo 'Creating .yml'
         demyx_execute demyx_yml
 
-        if [[ -z "$DEMYX_RUN_CLONE" ]]; then
-            demyx_echo 'Creating nginx.conf'
-            demyx_execute demyx_nginx_wp
-
-            demyx_echo 'Creating php.ini'
-            demyx_execute demyx_php
-
-            demyx_echo 'Creating php-fpm.conf'
-            demyx_execute demyx_php_fpm
-        else
-            demyx_echo 'Cloning config'
-            demyx_execute docker cp "$DEMYX_RUN_CLONE_APP":/demyx/. "$DEMYX_APP_PATH"/config
-
+        if [[ -n "$DEMYX_RUN_CLONE" ]]; then
             demyx_echo 'Cloning database'
             demyx_execute demyx wp "$DEMYX_RUN_CLONE" db export clone.sql --exclude_tables=wp_users,wp_usermeta
             
@@ -163,9 +147,6 @@ demyx_run() {
 
         demyx_echo 'Creating MariaDB volume'
         demyx_execute docker volume create wp_"$DEMYX_APP_ID"_db
-        
-        demyx_echo 'Creating config volume'
-        demyx_execute docker volume create wp_"$DEMYX_APP_ID"_config
 
         demyx_echo 'Creating log volume'
         demyx_execute docker volume create wp_"$DEMYX_APP_ID"_log
@@ -175,38 +156,26 @@ demyx_run() {
         demyx_echo 'Initializing MariaDB'
         demyx_execute demyx_mariadb_ready
 
-        if [[ -z "$DEMYX_RUN_CLONE" ]]; then
-            demyx_echo 'Creating temporary container'
-            demyx_execute docker run -dt --rm \
-                --name "$DEMYX_APP_ID" \
-                -v wp_"$DEMYX_APP_ID"_config:/demyx \
-                -v wp_"$DEMYX_APP_ID"_log:/var/log/demyx \
-                demyx/utilities bash
-        else
+        if [[ -n "$DEMYX_RUN_CLONE" ]]; then
             demyx_echo 'Creating temporary container'
             demyx_execute docker run -dt --rm \
                 --name "$DEMYX_APP_ID" \
                 --network demyx \
                 -v wp_"$DEMYX_APP_ID":/var/www/html \
-                -v wp_"$DEMYX_APP_ID"_config:/demyx \
                 -v wp_"$DEMYX_APP_ID"_log:/var/log/demyx \
                 demyx/utilities bash
         fi
 
-        if [[ -z "$DEMYX_RUN_CLONE" ]]; then
-            demyx_echo 'Copying configs'
-            demyx_execute docker cp "$DEMYX_APP_CONFIG"/. "$DEMYX_APP_ID":/demyx
-        else
+        if [[ -n "$DEMYX_RUN_CLONE" ]]; then
             demyx_echo 'Copying files' 
-            demyx_execute docker cp "$DEMYX_APP_PATH"/html "$DEMYX_APP_ID":/var/www; \
-                docker cp "$DEMYX_APP_CONFIG"/. "$DEMYX_APP_ID":/demyx
+            demyx_execute docker cp "$DEMYX_APP_PATH"/html "$DEMYX_APP_ID":/var/www
 
             demyx_echo 'Removing old wp-config.php'
             demyx_execute docker exec -t "$DEMYX_APP_ID" rm /var/www/html/wp-config.php
-        fi
 
-        demyx_echo 'Stopping temporary container' 
-        demyx_execute docker stop "$DEMYX_APP_ID"
+            demyx_echo 'Stopping temporary container' 
+            demyx_execute docker stop "$DEMYX_APP_ID"
+        fi
 
         demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" up -d wp_"$DEMYX_APP_ID"
 
@@ -249,6 +218,9 @@ demyx_run() {
 
             demyx_echo 'Replacing old URLs' 
             demyx_execute demyx wp "$DEMYX_APP_DOMAIN" search-replace "$DEMYX_RUN_CLONE" "$DEMYX_APP_DOMAIN"
+
+            demyx_echo 'Configuring permalinks'
+            demyx_execute demyx wp "$DEMYX_APP_DOMAIN" rewrite structure '/%category%/%postname%/'
 
             demyx_echo 'Removing clone database'
             demyx_execute demyx exec "$DEMYX_APP_DOMAIN" rm clone.sql
