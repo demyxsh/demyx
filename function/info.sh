@@ -104,6 +104,7 @@ demyx_info() {
                     "healthcheck": "'$DEMYX_APP_HEALTHCHECK'"' | sed 's/                    /    /g'
                 echo '}'
             else
+                [[ -z "$DEMYX_APP_AUTH_WP" ]] && DEMYX_APP_AUTH_WP=off
                 PRINT_TABLE="DEMYX^ INFO\n"
                 PRINT_TABLE+="PATH^ $DEMYX_APP_PATH\n"
                 PRINT_TABLE+="WP USER^ $WORDPRESS_USER\n"
@@ -112,6 +113,10 @@ demyx_info() {
                 PRINT_TABLE+="DB CONTAINER^ $DEMYX_APP_DB_CONTAINER\n"
                 PRINT_TABLE+="WP VOLUME^ $DEMYX_INFO_DATA_VOLUME\n"
                 PRINT_TABLE+="DB VOLUME^ $DEMYX_INFO_DB_VOLUME\n"
+                PRINT_TABLE+="UPLOAD LIMIT^ $DEMYX_APP_UPLOAD_LIMIT\n"
+                PRINT_TABLE+="PHP MEMORY^ $DEMYX_APP_PHP_MEMORY\n"
+                PRINT_TABLE+="PHP MAX EXECUTION TIME^ $DEMYX_APP_PHP_MAX_EXECUTION_TIME\n"
+                PRINT_TABLE+="PHP OPCACHE^ $DEMYX_APP_PHP_OPCACHE\n"
                 PRINT_TABLE+="SSL^ $DEMYX_APP_SSL\n"
                 PRINT_TABLE+="CACHE^ $DEMYX_APP_CACHE\n"
                 PRINT_TABLE+="CDN^ $DEMYX_APP_CDN\n"
@@ -119,7 +124,7 @@ demyx_info() {
                 PRINT_TABLE+="WP AUTH^ $DEMYX_APP_AUTH_WP\n"
                 PRINT_TABLE+="DEV^ $DEMYX_APP_DEV\n"
                 PRINT_TABLE+="HEALTHCHECK^ $DEMYX_APP_HEALTHCHECK\n"
-                PRINT_TABLE+="WP AUTO UPDATE^ $DEMYX_APP_WP_UPDATE"
+                PRINT_TABLE+="WP AUTO UPDATE^ $DEMYX_APP_WP_UPDATE\n"
                 demyx_execute -v demyx_table "$PRINT_TABLE"
             fi
         fi
