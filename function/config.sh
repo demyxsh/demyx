@@ -178,10 +178,15 @@ demyx_config() {
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ -z "$DEMYX_APP_AUTH_WP" ]] && demyx_die 'Basic WP Auth is already turned off'
                 fi
+                
                 demyx_echo "Turning off wp-login.php basic auth"
                 demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" bash -c "sed -i 's/auth_basic/#auth_basic/g' /etc/nginx/nginx.conf; rm /.htpasswd" && \
-                    sed -i "s/DEMYX_APP_AUTH_WP=.*/DEMYX_APP_AUTH_WP=/g" "$DEMYX_APP_PATH"/.env && \
-                    rm "$DEMYX_APP_PATH"/.htpasswd
+                    sed -i "s/DEMYX_APP_AUTH_WP=.*/DEMYX_APP_AUTH_WP=/g" "$DEMYX_APP_PATH"/.env
+
+                if [[ -f "$DEMYX_APP_PATH"/.htpasswd ]]; then
+                    demyx_echo 'Cleaning up'
+                    demyx_execute rm "$DEMYX_APP_PATH"/.htpasswd
+                fi
 
                 demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
             fi
