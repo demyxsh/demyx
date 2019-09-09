@@ -74,7 +74,8 @@ demyx_rm() {
             
         done
 
-        demyx_execute -v rm -rf "$DEMYX_APP_PATH"
+        demyx_echo "Deleting $DEMYX_APP_DOMAIN"
+        demyx_execute rm -rf "$DEMYX_APP_PATH"
     else
         demyx_die --not-found
     fi
