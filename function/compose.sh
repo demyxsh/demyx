@@ -9,6 +9,7 @@ demyx_compose() {
     DEMYX_COMPOSE="$1"
 
     if [[ "$DEMYX_TARGET" = all ]]; then
+        shift
         cd "$DEMYX_WP" || exit
         for i in *
         do 
