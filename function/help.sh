@@ -11,6 +11,7 @@ demyx_help() {
         echo "demyx backup <app> <args>     Backup an app by domain"
         echo "             all              Backup all apps"
         echo "                   --path     Save backups to a specific path"
+        echo "                   --config   Backup only the configs"
         echo
     elif [[ "$DEMYX_HELP" = compose ]]; then
         echo
@@ -109,6 +110,7 @@ demyx_help() {
     elif [[ "$DEMYX_HELP" = restore ]]; then
         echo
         echo "demyx restore <app> <args>        Restore an app from a backup"
+        echo "                    --config      Restore only the configs"
         echo "                    --date        Restore from a specific date in format: YY/mm/dd"
         echo "                    -f|--force    Force restore"
         echo

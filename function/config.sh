@@ -580,7 +580,7 @@ demyx_config() {
             fi
             if [[ -n "$DEMYX_CONFIG_REFRESH" ]]; then
                 if [[ -z "$DEMYX_CONFIG_NO_BACKUP" ]]; then
-                    demyx backup "$DEMYX_APP_DOMAIN"
+                    demyx backup "$DEMYX_APP_DOMAIN" --config
                 fi
 
                 demyx_echo 'Refreshing .env'
