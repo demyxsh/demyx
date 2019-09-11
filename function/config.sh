@@ -449,7 +449,7 @@ demyx_config() {
                     demyx config "$DEMYX_APP_DOMAIN" --cache=off
                 fi
 
-                demyx config "$DEMYX_APP_DOMAIN" --opcache=off
+                demyx config "$DEMYX_APP_DOMAIN" --opcache=off --restart=nginx
 
                 demyx_execute -v sed -i "s/DEMYX_APP_DEV=off/DEMYX_APP_DEV=on/g" "$DEMYX_APP_PATH"/.env
 
@@ -483,7 +483,7 @@ demyx_config() {
                 demyx_echo 'Deactivating demyx_browsersync' 
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin deactivate demyx_browsersync; \
 
-                demyx config "$DEMYX_APP_DOMAIN" --opcache
+                demyx config "$DEMYX_APP_DOMAIN" --opcache --restart=nginx
                 
                 demyx_execute -v sed -i "s/DEMYX_APP_DEV=on/DEMYX_APP_DEV=off/g" "$DEMYX_APP_PATH"/.env
 
