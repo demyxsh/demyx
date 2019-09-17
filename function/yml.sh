@@ -156,7 +156,7 @@ demyx_stack_yml() {
         version: "$DEMYX_DOCKER_COMPOSE"
         services:
             traefik:
-                image: traefik
+                image: traefik:v1.7.16
                 container_name: demyx_traefik
                 restart: unless-stopped
                 command: 
