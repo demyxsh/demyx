@@ -112,7 +112,7 @@ EOF
         demyx/utilities bash
 
     demyx_echo 'Creating stack acme.json'
-    demyx_execute docker exec -t demyx_install_container bash -c "touch /demyx/acme.json && chmod 600 /demyx/acme.json"
+    demyx_execute docker exec -t demyx_install_container sh -c "touch /demyx/acme.json && chmod 600 /demyx/acme.json"
 
     demyx_echo 'Stopping stack container'
     demyx_execute docker stop demyx_install_container

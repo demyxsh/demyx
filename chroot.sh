@@ -84,7 +84,7 @@ while :; do
 done
 
 demyx_permission() {
-    docker exec -t demyx bash -c "chown -R demyx:demyx /home/demyx; \
+    docker exec -t demyx sh -c "chown -R demyx:demyx /home/demyx; \
         chown -R demyx:demyx /demyx; \
         chmod +x /demyx/etc/demyx.sh; \
         chmod +x /demyx/etc/cron/every-minute.sh; \
@@ -95,11 +95,11 @@ demyx_permission() {
 demyx_mode() {
     if [[ "$DEMYX_CHROOT_MODE" = development ]]; then
         DEMYX_CHROOT_MODE=development
-        docker exec -t demyx bash -c "find /demyx -type d -print0 | xargs -0 chmod 0755; \
+        docker exec -t demyx sh -c "find /demyx -type d -print0 | xargs -0 chmod 0755; \
             find /demyx -type f -print0 | xargs -0 chmod 0644"
     elif [[ "$DEMYX_CHROOT_MODE" = production ]]; then
         DEMYX_CHROOT_MODE=production
-        docker exec -t demyx bash -c "chmod -R a=X /demyx"
+        docker exec -t demyx sh -c "chmod -R a=X /demyx"
     fi
     demyx_permission
     docker exec -it -e DEMYX_MODE="$DEMYX_CHROOT_MODE" demyx demyx motd init
@@ -168,7 +168,7 @@ elif [[ "$DEMYX_CHROOT" = tty ]]; then
     docker exec -t demyx "$@"
 else
     if [[ -n "$DEMYX_CHROOT_CONTAINER_CHECK" ]]; then
-        DEMYX_MODE_CHECK=$(docker exec -t demyx bash -c "grep DEMYX_MOTD_MODE /demyx/.env | awk -F '[=]' '{print \$2}'")
+        DEMYX_MODE_CHECK=$(docker exec -t demyx sh -c "grep DEMYX_MOTD_MODE /demyx/.env | awk -F '[=]' '{print \$2}'")
         if [[ -z "$DEMYX_CHROOT_MODE" ]]; then
             DEMYX_CHROOT_MODE="$DEMYX_MODE_CHECK"
         fi

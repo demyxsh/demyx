@@ -83,7 +83,7 @@ demyx_info() {
                 demyx_die 'Filter not found'
             fi
         else
-            DEMYX_INFO_DATA_VOLUME=$(demyx exec "$DEMYX_APP_DOMAIN" bash -c "du -sh /var/www/html" | cut -f1)
+            DEMYX_INFO_DATA_VOLUME=$(demyx exec "$DEMYX_APP_DOMAIN" sh -c "du -sh /var/www/html" | cut -f1)
             DEMYX_INFO_DB_VOLUME=$(demyx exec "$DEMYX_APP_DOMAIN" db sh -c "du -sh /var/lib/mysql/$WORDPRESS_DB_NAME" | cut -f1)
 
             if [[ -n "$DEMYX_INFO_JSON" ]]; then

@@ -180,7 +180,7 @@ demyx_config() {
                 fi
                 
                 demyx_echo "Turning off wp-login.php basic auth"
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" bash -c "sed -i 's/auth_basic/#auth_basic/g' /etc/nginx/nginx.conf; rm /.htpasswd" && \
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "sed -i 's/auth_basic/#auth_basic/g' /etc/nginx/nginx.conf; rm /.htpasswd" && \
                     sed -i "s/DEMYX_APP_AUTH_WP=.*/DEMYX_APP_AUTH_WP=off/g" "$DEMYX_APP_PATH"/.env
 
                 if [[ -f "$DEMYX_APP_PATH"/.htpasswd ]]; then
@@ -209,7 +209,7 @@ demyx_config() {
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" option update rt_wp_nginx_helper_options '{"enable_purge":"1","cache_method":"enable_fastcgi","purge_method":"get_request","enable_map":null,"enable_log":null,"log_level":"INFO","log_filesize":"5","enable_stamp":null,"purge_homepage_on_edit":"1","purge_homepage_on_del":"1","purge_archive_on_edit":"1","purge_archive_on_del":"1","purge_archive_on_new_comment":"1","purge_archive_on_deleted_comment":"1","purge_page_on_mod":"1","purge_page_on_new_comment":"1","purge_page_on_deleted_comment":"1","redis_hostname":"127.0.0.1","redis_port":"6379","redis_prefix":"nginx-cache:","purge_url":"","redis_enabled_by_constant":0}' --format=json
 
                 demyx_echo 'Updating configs'
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" bash -c "sed -i 's|#include /etc/nginx/cache|include /etc/nginx/cache|g' /etc/nginx/nginx.conf" && \
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "sed -i 's|#include /etc/nginx/cache|include /etc/nginx/cache|g' /etc/nginx/nginx.conf" && \
                     sed -i "s/DEMYX_APP_CACHE=off/DEMYX_APP_CACHE=on/g" "$DEMYX_APP_PATH"/.env
 
                 demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
@@ -222,7 +222,7 @@ demyx_config() {
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin deactivate nginx-helper
                 
                 demyx_echo 'Updating configs'
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" bash -c "sed -i 's|include /etc/nginx/cache|#include /etc/nginx/cache|g' /etc/nginx/nginx.conf" && \
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "sed -i 's|include /etc/nginx/cache|#include /etc/nginx/cache|g' /etc/nginx/nginx.conf" && \
                     sed -i "s/DEMYX_APP_CACHE=on/DEMYX_APP_CACHE=off/g" "$DEMYX_APP_PATH"/.env
 
                 demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
@@ -269,7 +269,7 @@ demyx_config() {
                 DEMYX_CONFIG_CLEAN_MARIADB_ROOT_PASSWORD=$(demyx util --pass --raw)
 
                 demyx_echo 'Genearting new MariaDB credentials'
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" bash -c "sed -i \"s|$WORDPRESS_DB_PASSWORD|$DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD|g\" /var/www/html/wp-config.php"
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "sed -i \"s|$WORDPRESS_DB_PASSWORD|$DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD|g\" /var/www/html/wp-config.php"
                 demyx_execute -v -q sed -i "s|$WORDPRESS_DB_PASSWORD|$DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD|g" "$DEMYX_APP_PATH"/.env; \
                     demyx_execute -v -q sed -i "s|$MARIADB_ROOT_PASSWORD|$DEMYX_CONFIG_CLEAN_MARIADB_ROOT_PASSWORD|g" "$DEMYX_APP_PATH"/.env
                 demyx_app_config
@@ -517,7 +517,7 @@ demyx_config() {
                 fi
 
                 demyx_echo 'Turning on PHP opcache'
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" bash -c "sed -i 's|opcache.enable=0|opcache.enable=1|g' /etc/php7/php.ini; sed -i 's|opcache.enable_cli=0|opcache.enable_cli=1|g' /etc/php7/php.ini" && \
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "sed -i 's|opcache.enable=0|opcache.enable=1|g' /etc/php7/php.ini; sed -i 's|opcache.enable_cli=0|opcache.enable_cli=1|g' /etc/php7/php.ini" && \
                     sed -i "s/DEMYX_APP_PHP_OPCACHE=off/DEMYX_APP_PHP_OPCACHE=on/g" "$DEMYX_APP_PATH"/.env
             elif [[ "$DEMYX_CONFIG_OPCACHE" = off ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
@@ -525,7 +525,7 @@ demyx_config() {
                 fi
                 
                 demyx_echo 'Turning off PHP opcache'
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" bash -c "sed -i 's|opcache.enable=1|opcache.enable=0|g' /etc/php7/php.ini; sed -i 's|opcache.enable_cli=1|opcache.enable_cli=0|g' /etc/php7/php.ini" && \
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "sed -i 's|opcache.enable=1|opcache.enable=0|g' /etc/php7/php.ini; sed -i 's|opcache.enable_cli=1|opcache.enable_cli=0|g' /etc/php7/php.ini" && \
                     sed -i "s/DEMYX_APP_PHP_OPCACHE=on/DEMYX_APP_PHP_OPCACHE=off/g" "$DEMYX_APP_PATH"/.env
             fi
             if [[ "$DEMYX_CONFIG_PMA" = on ]]; then
@@ -568,7 +568,7 @@ demyx_config() {
                 fi
 
                 demyx_echo 'Turning on rate limiting'
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" bash -c "sed -i 's|#limit_req|limit_req|g' /etc/nginx/nginx.conf"; \
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "sed -i 's|#limit_req|limit_req|g' /etc/nginx/nginx.conf"; \
                     sed -i "s/DEMYX_APP_RATE_LIMIT=off/DEMYX_APP_RATE_LIMIT=on/g" "$DEMYX_APP_PATH"/.env
 
                 demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
@@ -578,7 +578,7 @@ demyx_config() {
                 fi
 
                 demyx_echo 'Turning off rate limiting'
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" bash -c "sed -i 's|limit_req|#limit_req|g' /etc/nginx/nginx.conf"; \
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "sed -i 's|limit_req|#limit_req|g' /etc/nginx/nginx.conf"; \
                     sed -i "s/DEMYX_APP_RATE_LIMIT=on/DEMYX_APP_RATE_LIMIT=off/g" "$DEMYX_APP_PATH"/.env
 
                 demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
@@ -605,16 +605,16 @@ demyx_config() {
             fi
             if [ "$DEMYX_CONFIG_RESTART" = nginx-php ]; then
                 demyx_echo "Restarting NGINX"
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" bash -c "rm -rf /var/run/nginx-fastcgi-cache; nginx -s reload"
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "rm -rf /var/run/nginx-fastcgi-cache; nginx -s reload"
                 
                 demyx_echo "Restarting PHP"
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" bash -c "pkill php-fpm; php-fpm -D"
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "pkill php-fpm; php-fpm -D"
             elif [ "$DEMYX_CONFIG_RESTART" = nginx ]; then
                 demyx_echo "Restarting NGINX"
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" bash -c "rm -rf /var/run/nginx-fastcgi-cache; nginx -s reload"
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "rm -rf /var/run/nginx-fastcgi-cache; nginx -s reload"
             elif [ "$DEMYX_CONFIG_RESTART" = php ]; then
                 demyx_echo "Restarting PHP"
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" bash -c "pkill php-fpm; php-fpm -D"
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "pkill php-fpm; php-fpm -D"
             fi
             if [[ "$DEMYX_CONFIG_SFTP" = on ]]; then
                 DEMYX_SFTP_VOLUME_CHECK=$(docker volume ls | grep demyx_sftp || true)
