@@ -158,7 +158,7 @@ demyx_config() {
             fi
             if [[ "$DEMYX_CONFIG_AUTH_WP" = on ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ -n "$DEMYX_APP_AUTH_WP" ]] && demyx_die 'Basic WP Auth is already turned on'
+                    [[ "$DEMYX_APP_AUTH_WP" != off ]] && demyx_die 'Basic WP Auth is already turned on'
                 fi
 
                 DEMYX_PARSE_BASIC_AUTH=$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}' || true)
@@ -170,18 +170,18 @@ demyx_config() {
 
                 demyx_echo "Turning on wp-login.php basic auth"
                 demyx_execute docker cp "$DEMYX_APP_PATH"/.htpasswd "$DEMYX_APP_WP_CONTAINER":/; \
-                    docker exec -t "$DEMYX_APP_WP_CONTAINER" bash -c "sed -i 's/#auth_basic/auth_basic/g' /etc/nginx/nginx.conf" && \
+                    docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "sed -i 's|#auth_basic|auth_basic|g' /etc/nginx/nginx.conf" && \
                     sed -i "s/DEMYX_APP_AUTH_WP=.*/DEMYX_APP_AUTH_WP=$DEMYX_PARSE_BASIC_AUTH/g" "$DEMYX_APP_PATH"/.env
 
                 demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
             elif [[ "$DEMYX_CONFIG_AUTH_WP" = off ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ -z "$DEMYX_APP_AUTH_WP" ]] && demyx_die 'Basic WP Auth is already turned off'
+                    [[ "$DEMYX_APP_AUTH_WP" = off ]] && demyx_die 'Basic WP Auth is already turned off'
                 fi
                 
                 demyx_echo "Turning off wp-login.php basic auth"
                 demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" bash -c "sed -i 's/auth_basic/#auth_basic/g' /etc/nginx/nginx.conf; rm /.htpasswd" && \
-                    sed -i "s/DEMYX_APP_AUTH_WP=.*/DEMYX_APP_AUTH_WP=/g" "$DEMYX_APP_PATH"/.env
+                    sed -i "s/DEMYX_APP_AUTH_WP=.*/DEMYX_APP_AUTH_WP=off/g" "$DEMYX_APP_PATH"/.env
 
                 if [[ -f "$DEMYX_APP_PATH"/.htpasswd ]]; then
                     demyx_echo 'Cleaning up'
