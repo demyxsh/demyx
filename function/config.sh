@@ -435,6 +435,8 @@ demyx_config() {
                 demyx_echo 'Turning on PHP opcache'
                 demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "sed -i 's|opcache.enable=0|opcache.enable=1|g' /etc/php7/php.ini; sed -i 's|opcache.enable_cli=0|opcache.enable_cli=1|g' /etc/php7/php.ini" && \
                     sed -i "s/DEMYX_APP_PHP_OPCACHE=off/DEMYX_APP_PHP_OPCACHE=on/g" "$DEMYX_APP_PATH"/.env
+
+                demyx config "$DEMYX_APP_DOMAIN" --restart=php
             elif [[ "$DEMYX_CONFIG_OPCACHE" = off ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ "$DEMYX_APP_PHP_OPCACHE" = off ]] && demyx_die 'PHP opcache is already turned off'
@@ -443,6 +445,8 @@ demyx_config() {
                 demyx_echo 'Turning off PHP opcache'
                 demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "sed -i 's|opcache.enable=1|opcache.enable=0|g' /etc/php7/php.ini; sed -i 's|opcache.enable_cli=1|opcache.enable_cli=0|g' /etc/php7/php.ini" && \
                     sed -i "s/DEMYX_APP_PHP_OPCACHE=on/DEMYX_APP_PHP_OPCACHE=off/g" "$DEMYX_APP_PATH"/.env
+
+                demyx config "$DEMYX_APP_DOMAIN" --restart=php
             fi
             if [[ "$DEMYX_CONFIG_PMA" = on ]]; then
                 DEMYX_CONFIG_PMA_CONTAINER_CHECK=$(docker ps | grep "$DEMYX_APP_COMPOSE_PROJECT"_pma || true)
