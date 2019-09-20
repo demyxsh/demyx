@@ -527,13 +527,13 @@ demyx_config() {
                 demyx_echo "Restarting NGINX"
                 demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "rm -rf /var/run/nginx-fastcgi-cache; nginx -s reload"
                 
-                demyx_echo "Restarting PHP"
+                demyx_echo "Restarting php-fpm"
                 demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "pkill php-fpm; php-fpm -D"
             elif [ "$DEMYX_CONFIG_RESTART" = nginx ]; then
                 demyx_echo "Restarting NGINX"
                 demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "rm -rf /var/run/nginx-fastcgi-cache; nginx -s reload"
             elif [ "$DEMYX_CONFIG_RESTART" = php ]; then
-                demyx_echo "Restarting PHP"
+                demyx_echo "Restarting php-fpm"
                 demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "pkill php-fpm; php-fpm -D"
             fi
             if [[ "$DEMYX_CONFIG_SFTP" = on ]]; then
