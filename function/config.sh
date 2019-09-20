@@ -319,35 +319,6 @@ demyx_config() {
                 source "$DEMYX_STACK"/.env
                 source "$DEMYX_FUNCTION"/plugin.sh
 
-                if [ "$DEMYX_CONFIG_FILES" = themes ]; then
-                    DEMYX_BS_FILES="\"/var/www/html/wp-content/themes/**/*\""
-                elif [ "$DEMYX_CONFIG_FILES" = plugins ]; then
-                    DEMYX_BS_FILES="\"/var/www/html/wp-content/plugins/**/*\""
-                elif [ -z "$DEMYX_CONFIG_FILES" ]; then
-                    DEMYX_BS_FILES='["/var/www/html/wp-content/themes/**/*", "/var/www/html/wp-content/plugins/**/*"]'
-                else
-                    DEMYX_BS_FILES="\"$DEMYX_CONFIG_FILES/**/*\""
-                fi
-
-                demyx_echo 'Creating code-server'
-                demyx_execute docker run -dit --rm \
-                    --name "$DEMYX_APP_COMPOSE_PROJECT"_cs \
-                    --net demyx \
-                    --volumes-from "$DEMYX_APP_WP_CONTAINER" \
-                    -e PASSWORD="$MARIADB_ROOT_PASSWORD" \
-                    -e DEMYX=true \
-                    -e DEMYX_APP_DOMAIN="$DEMYX_APP_DOMAIN" \
-                    -e DEMYX_APP_WP_CONTAINER="$DEMYX_APP_WP_CONTAINER" \
-                    -e DEMYX_BS_FILES="$DEMYX_BS_FILES" \
-                    -l "traefik.enable=true" \
-                    -l "traefik.coder.frontend.rule=Host:${DEMYX_APP_DOMAIN}; PathPrefixStrip: /demyx-cs/" \
-                    -l "traefik.coder.port=8080" \
-                    -l "traefik.bs.frontend.rule=Host:${DEMYX_APP_DOMAIN}; PathPrefixStrip: /demyx-bs/" \
-                    -l "traefik.bs.port=3000" \
-                    -l "traefik.socket.frontend.rule=Host:${DEMYX_APP_DOMAIN}; PathPrefix: /browser-sync/socket.io/" \
-                    -l "traefik.socket.port=3000" \
-                    demyx/code-server:wp
-
                 DEMYX_CONFIG_PLUGINS_CHECK=$(demyx wp "$DEMYX_APP_DOMAIN" plugin list --format=csv)
                 DEMYX_CONFIG_AUTOVER_CHECK=$(echo "$DEMYX_CONFIG_PLUGINS_CHECK" | grep -s autover || true)
                 DEMYX_CONFIG_CACHE_CHECK=$(demyx info "$DEMYX_APP_DOMAIN" --filter=DEMYX_APP_CACHE)
@@ -381,9 +352,37 @@ demyx_config() {
 
                 demyx config "$DEMYX_APP_DOMAIN" --opcache=off
 
-                demyx_execute -v sed -i "s/DEMYX_APP_DEV=off/DEMYX_APP_DEV=on/g" "$DEMYX_APP_PATH"/.env
+                if [ "$DEMYX_CONFIG_FILES" = themes ]; then
+                    DEMYX_BS_FILES="\"/var/www/html/wp-content/themes/**/*\""
+                elif [ "$DEMYX_CONFIG_FILES" = plugins ]; then
+                    DEMYX_BS_FILES="\"/var/www/html/wp-content/plugins/**/*\""
+                elif [ -z "$DEMYX_CONFIG_FILES" ]; then
+                    DEMYX_BS_FILES='["/var/www/html/wp-content/themes/**/*", "/var/www/html/wp-content/plugins/**/*"]'
+                else
+                    DEMYX_BS_FILES="\"$DEMYX_CONFIG_FILES/**/*\""
+                fi
 
-                PRINT_TABLE="DEMYX^ DEVELOPMENT MODE\n"
+                demyx_echo 'Creating code-server'
+                demyx_execute docker run -dit --rm \
+                    --name "$DEMYX_APP_COMPOSE_PROJECT"_cs \
+                    --net demyx \
+                    --volumes-from "$DEMYX_APP_WP_CONTAINER" \
+                    -v demyx_cs:/home/www-data \
+                    -e PASSWORD="$MARIADB_ROOT_PASSWORD" \
+                    -e DEMYX=true \
+                    -e DEMYX_APP_DOMAIN="$DEMYX_APP_DOMAIN" \
+                    -e DEMYX_APP_WP_CONTAINER="$DEMYX_APP_WP_CONTAINER" \
+                    -e DEMYX_BS_FILES="$DEMYX_BS_FILES" \
+                    -l "traefik.enable=true" \
+                    -l "traefik.coder.frontend.rule=Host:${DEMYX_APP_DOMAIN}; PathPrefixStrip: /demyx-cs/" \
+                    -l "traefik.coder.port=8080" \
+                    -l "traefik.bs.frontend.rule=Host:${DEMYX_APP_DOMAIN}; PathPrefixStrip: /demyx-bs/" \
+                    -l "traefik.bs.port=3000" \
+                    -l "traefik.socket.frontend.rule=Host:${DEMYX_APP_DOMAIN}; PathPrefix: /browser-sync/socket.io/" \
+                    -l "traefik.socket.port=3000" \
+                    demyx/code-server:wp
+
+                demyx_execute -v sed -i "s/DEMYX_APP_DEV=off/DEMYX_APP_DEV=on/g" "$DEMYX_APP_PATH"/.env
 
                 PRINT_TABLE="DEMYX^ DEVELOPMENT\n"
                 PRINT_TABLE+="CODE-SERVER^ $DEMYX_CONFIG_DEV_PROTO/demyx-cs/\n"
