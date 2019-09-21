@@ -6,7 +6,7 @@
 [![Docker Client](https://img.shields.io/badge/docker_client-latest-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/demyx)
 [![Buy Me A Coffee](https://img.shields.io/badge/buy_me_coffee-$5-informational?style=flat&color=blue)](https://www.buymeacoffee.com/VXqkQK5tb)
 
-Demyx is a Docker image that automates WordPress installations. Traefik for reverse proxy with Lets Encrypt SSL. WordPress sites are powered by NGINX, PHP, and MariaDB.
+Demyx is a Docker image that automates WordPress installations. Traefik for reverse proxy with Lets Encrypt SSL/TLS. WordPress sites are powered by NGINX, PHP, and MariaDB.
 
 <p align="center">
 <img  src="https://i.imgur.com/sYNrgFh.gif">
