@@ -162,3 +162,13 @@ demyx_nginx_cloudflare_check() {
         DEMYX_NGINX_REAL_IP='real_ip_header X-Forwarded-For;'
     fi
 }
+demyx_motd_dev_warning() {
+    cd "$DEMYX_WP"
+    for i in *
+    do
+        DEMYX_COMMON_DEV_CHECK=$(grep DEMYX_APP_DEV "$DEMYX_WP"/"$i"/.env | awk -F '[=]' '{print $2}')
+        if [[ "$DEMYX_COMMON_DEV_CHECK" = on ]]; then
+            echo -e "\e[33m[WARNING]\e[39m $i is in development mode"
+        fi
+    done
+}

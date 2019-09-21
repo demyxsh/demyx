@@ -50,5 +50,6 @@ EOF
 
         DEMYX_MOTD_GIT_LOG="$(git --no-pager log -5 --format=format:'- %s %C(white dim)(%ar)%C(reset)')"
         demyx_execute -v echo -e "\nLatest Updates\n--------------\n$DEMYX_MOTD_GIT_LOG\n"
+        demyx_motd_dev_warning
     fi
 }
