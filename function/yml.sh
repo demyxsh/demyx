@@ -63,57 +63,54 @@ demyx_yml() {
                     volumes:
                         - wp_${DEMYX_APP_ID}_db:/var/lib/mysql
                     environment:
-                        MARIADB_DATABASE: \${WORDPRESS_DB_NAME}
-                        MARIADB_USERNAME: \${WORDPRESS_DB_USER}
-                        MARIADB_PASSWORD: \${WORDPRESS_DB_PASSWORD}
-                        MARIADB_ROOT_PASSWORD: \${MARIADB_ROOT_PASSWORD}
-                        MARIADB_DEFAULT_CHARACTER_SET: \${MARIADB_DEFAULT_CHARACTER_SET}
-                        MARIADB_CHARACTER_SET_SERVER: \${MARIADB_CHARACTER_SET_SERVER}
-                        MARIADB_COLLATION_SERVER: \${MARIADB_COLLATION_SERVER}
-                        MARIADB_KEY_BUFFER_SIZE: \${MARIADB_KEY_BUFFER_SIZE}
-                        MARIADB_MAX_ALLOWED_PACKET: \${MARIADB_MAX_ALLOWED_PACKET}
-                        MARIADB_TABLE_OPEN_CACHE: \${MARIADB_TABLE_OPEN_CACHE}
-                        MARIADB_SORT_BUFFER_SIZE: \${MARIADB_SORT_BUFFER_SIZE}
-                        MARIADB_NET_BUFFER_SIZE: \${MARIADB_NET_BUFFER_SIZE}
-                        MARIADB_READ_BUFFER_SIZE: \${MARIADB_READ_BUFFER_SIZE}
-                        MARIADB_READ_RND_BUFFER_SIZE: \${MARIADB_READ_RND_BUFFER_SIZE}
-                        MARIADB_MYISAM_SORT_BUFFER_SIZE: \${MARIADB_MYISAM_SORT_BUFFER_SIZE}
-                        MARIADB_LOG_BIN: \${MARIADB_LOG_BIN}
-                        MARIADB_BINLOG_FORMAT: \${MARIADB_BINLOG_FORMAT}
-                        MARIADB_SERVER_ID: \${MARIADB_SERVER_ID}
-                        MARIADB_INNODB_DATA_FILE_PATH: \${MARIADB_INNODB_DATA_FILE_PATH}
-                        MARIADB_INNODB_BUFFER_POOL_SIZE: \${MARIADB_INNODB_BUFFER_POOL_SIZE}
-                        MARIADB_INNODB_LOG_FILE_SIZE: \${MARIADB_INNODB_LOG_FILE_SIZE}
-                        MARIADB_INNODB_LOG_BUFFER_SIZE: \${MARIADB_INNODB_LOG_BUFFER_SIZE}
-                        MARIADB_INNODB_FLUSH_LOG_AT_TRX_COMMIT: \${MARIADB_INNODB_FLUSH_LOG_AT_TRX_COMMIT}
-                        MARIADB_INNODB_LOCK_WAIT_TIMEOUT: \${MARIADB_INNODB_LOCK_WAIT_TIMEOUT}
-                        MARIADB_INNODB_USE_NATIVE_AIO: \${MARIADB_INNODB_USE_NATIVE_AIO}
-                        MARIADB_MAX_ALLOWED_PACKET: \${MARIADB_MAX_ALLOWED_PACKET}
-                        MARIADB_KEY_BUFFER_SIZE: \${MARIADB_KEY_BUFFER_SIZE}
-                        MARIADB_SORT_BUFFER_SIZE: \${MARIADB_SORT_BUFFER_SIZE}
-                        MARIADB_READ_BUFFER: \${MARIADB_READ_BUFFER}
-                        MARIADB_WRITE_BUFFER: \${MARIADB_WRITE_BUFFER}
-                        MARIADB_MAX_CONNECTIONS: \${MARIADB_MAX_CONNECTIONS}
-                        TZ: America/Los_Angeles
+                        - MARIADB_DATABASE=\${WORDPRESS_DB_NAME}
+                        - MARIADB_USERNAME=\${WORDPRESS_DB_USER}
+                        - MARIADB_PASSWORD=\${WORDPRESS_DB_PASSWORD}
+                        - MARIADB_ROOT_PASSWORD=\${MARIADB_ROOT_PASSWORD}
+                        - MARIADB_DEFAULT_CHARACTER_SET=\${MARIADB_DEFAULT_CHARACTER_SET}
+                        - MARIADB_CHARACTER_SET_SERVER=\${MARIADB_CHARACTER_SET_SERVER}
+                        - MARIADB_COLLATION_SERVER=\${MARIADB_COLLATION_SERVER}
+                        - MARIADB_KEY_BUFFER_SIZE=\${MARIADB_KEY_BUFFER_SIZE}
+                        - MARIADB_MAX_ALLOWED_PACKET=\${MARIADB_MAX_ALLOWED_PACKET}
+                        - MARIADB_TABLE_OPEN_CACHE=\${MARIADB_TABLE_OPEN_CACHE}
+                        - MARIADB_SORT_BUFFER_SIZE=\${MARIADB_SORT_BUFFER_SIZE}
+                        - MARIADB_NET_BUFFER_SIZE=\${MARIADB_NET_BUFFER_SIZE}
+                        - MARIADB_READ_BUFFER_SIZE=\${MARIADB_READ_BUFFER_SIZE}
+                        - MARIADB_READ_RND_BUFFER_SIZE=\${MARIADB_READ_RND_BUFFER_SIZE}
+                        - MARIADB_MYISAM_SORT_BUFFER_SIZE=\${MARIADB_MYISAM_SORT_BUFFER_SIZE}
+                        - MARIADB_LOG_BIN=\${MARIADB_LOG_BIN}
+                        - MARIADB_BINLOG_FORMAT=\${MARIADB_BINLOG_FORMAT}
+                        - MARIADB_SERVER_ID=\${MARIADB_SERVER_ID}
+                        - MARIADB_INNODB_DATA_FILE_PATH=\${MARIADB_INNODB_DATA_FILE_PATH}
+                        - MARIADB_INNODB_BUFFER_POOL_SIZE=\${MARIADB_INNODB_BUFFER_POOL_SIZE}
+                        - MARIADB_INNODB_LOG_FILE_SIZE=\${MARIADB_INNODB_LOG_FILE_SIZE}
+                        - MARIADB_INNODB_LOG_BUFFER_SIZE=\${MARIADB_INNODB_LOG_BUFFER_SIZE}
+                        - MARIADB_INNODB_FLUSH_LOG_AT_TRX_COMMIT=\${MARIADB_INNODB_FLUSH_LOG_AT_TRX_COMMIT}
+                        - MARIADB_INNODB_LOCK_WAIT_TIMEOUT=\${MARIADB_INNODB_LOCK_WAIT_TIMEOUT}
+                        - MARIADB_INNODB_USE_NATIVE_AIO=\${MARIADB_INNODB_USE_NATIVE_AIO}
+                        - MARIADB_READ_BUFFER=\${MARIADB_READ_BUFFER}
+                        - MARIADB_WRITE_BUFFER=\${MARIADB_WRITE_BUFFER}
+                        - MARIADB_MAX_CONNECTIONS=\${MARIADB_MAX_CONNECTIONS}
+                        - TZ=America/Los_Angeles
                 wp_${DEMYX_APP_ID}:
                     image: demyx/nginx-php-wordpress
                     restart: unless-stopped
                     networks:
                         - demyx
                     environment:
-                        WORDPRESS_DB_HOST: \${WORDPRESS_DB_HOST}
-                        WORDPRESS_DB_NAME: \${WORDPRESS_DB_NAME}
-                        WORDPRESS_DB_USER: \${WORDPRESS_DB_USER}
-                        WORDPRESS_DB_PASSWORD: \${WORDPRESS_DB_PASSWORD}
-                        WORDPRESS_DOMAIN: \${DEMYX_APP_DOMAIN}
-                        WORDPRESS_UPLOAD_LIMIT: \${DEMYX_APP_UPLOAD_LIMIT}
-                        WORDPRESS_PHP_MEMORY: \${DEMYX_APP_PHP_MEMORY}
-                        WORDPRESS_PHP_MAX_EXECUTION_TIME: \${DEMYX_APP_PHP_MAX_EXECUTION_TIME}
-                        WORDPRESS_PHP_OPCACHE: "\${DEMYX_APP_PHP_OPCACHE}"
-                        WORDPRESS_NGINX_CACHE: "\${DEMYX_APP_CACHE}"
-                        WORDPRESS_NGINX_RATE_LIMIT: "\${DEMYX_APP_RATE_LIMIT}"
-                        WORDPRESS_NGINX_BASIC_AUTH: \${DEMYX_APP_AUTH_WP}
-                        TZ: America/Los_Angeles
+                        - WORDPRESS_DB_HOST=\${WORDPRESS_DB_HOST}
+                        - WORDPRESS_DB_NAME=\${WORDPRESS_DB_NAME}
+                        - WORDPRESS_DB_USER=\${WORDPRESS_DB_USER}
+                        - WORDPRESS_DB_PASSWORD=\${WORDPRESS_DB_PASSWORD}
+                        - WORDPRESS_DOMAIN=\${DEMYX_APP_DOMAIN}
+                        - WORDPRESS_UPLOAD_LIMIT=\${DEMYX_APP_UPLOAD_LIMIT}
+                        - WORDPRESS_PHP_MEMORY=\${DEMYX_APP_PHP_MEMORY}
+                        - WORDPRESS_PHP_MAX_EXECUTION_TIME=\${DEMYX_APP_PHP_MAX_EXECUTION_TIME}
+                        - WORDPRESS_PHP_OPCACHE="\${DEMYX_APP_PHP_OPCACHE}"
+                        - WORDPRESS_NGINX_CACHE="\${DEMYX_APP_CACHE}"
+                        - WORDPRESS_NGINX_RATE_LIMIT="\${DEMYX_APP_RATE_LIMIT}"
+                        - WORDPRESS_NGINX_BASIC_AUTH=\${DEMYX_APP_AUTH_WP}
+                        - TZ=America/Los_Angeles
                     volumes:
                         - wp_${DEMYX_APP_ID}:/var/www/html
                         - wp_${DEMYX_APP_ID}_log:/var/log/demyx
@@ -186,6 +183,8 @@ demyx_stack_yml() {
                     - /var/run/docker.sock:/var/run/docker.sock:ro
                     - demyx_traefik:/demyx
                     - demyx_traefik_log:/var/log/demyx
+                environment:
+                    - TZ=America/Los_Angeles
                 labels:
                     - "traefik.enable=true"
                     - "traefik.port=8080"
@@ -206,7 +205,7 @@ demyx_stack_yml() {
                     SELF_UPDATE: "true"
                     CLEANUP: "true"
                     LATEST: "true"
-                    TZ: America/Los_Angeles
+                    - TZ=America/Los_Angeles
                 volumes:
                     - /var/run/docker.sock:/var/run/docker.sock:ro
         volumes:
