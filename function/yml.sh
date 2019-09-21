@@ -202,9 +202,9 @@ demyx_stack_yml() {
                 networks:
                     - demyx
                 environment:
-                    SELF_UPDATE: "true"
-                    CLEANUP: "true"
-                    LATEST: "true"
+                    - SELF_UPDATE=true
+                    - CLEANUP=true
+                    - LATEST=true
                     - TZ=America/Los_Angeles
                 volumes:
                     - /var/run/docker.sock:/var/run/docker.sock:ro
