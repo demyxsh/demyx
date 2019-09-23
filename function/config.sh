@@ -386,9 +386,8 @@ demyx_config() {
 
                 PRINT_TABLE="DEMYX^ DEVELOPMENT\n"
                 PRINT_TABLE+="CODE-SERVER^ $DEMYX_CONFIG_DEV_PROTO/demyx-cs/\n"
-                PRINT_TABLE+="CODE-SERVER PASSWORD^ $MARIADB_ROOT_PASSWORD\n"
                 PRINT_TABLE+="BROWSERSYNC^ $DEMYX_CONFIG_DEV_PROTO/demyx-bs/\n"
-                PRINT_TABLE+="BROWSERSYNC INSTRUCTION^ Type demyx-bs in the terminal of coder-server to start BrowserSync."
+                PRINT_TABLE+="PASSWORD^ $MARIADB_ROOT_PASSWORD"
                 demyx_execute -v demyx_table "$PRINT_TABLE"
             elif [[ "$DEMYX_CONFIG_DEV" = off ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
