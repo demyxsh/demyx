@@ -9,7 +9,7 @@
 Demyx is a Docker image that automates WordPress installations. Traefik for reverse proxy with Lets Encrypt SSL/TLS. WordPress sites are powered by NGINX, PHP, and MariaDB.
 
 <p align="center">
-<img  src="https://i.imgur.com/sYNrgFh.gif">
+<img  src="https://i.imgur.com/kwKTZHE.gif">
 </p>
 
 ### Updates
@@ -78,10 +78,10 @@ wget demyx.sh/install && sudo bash install
 ### Getting Started
 ```
 # Create a WordPress site on the host OS
-demyx exec run domain.tld --auth --cdn --cache
+demyx exec run domain.tld --cdn --cache
 
 # Create a WordPress site in the demyx container
-demyx run domain.tld --auth --cdn --cache
+demyx run domain.tld --cdn --cache
 ```
 
 ### chroot.sh
