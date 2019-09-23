@@ -6,9 +6,7 @@
 [![Docker Client](https://img.shields.io/badge/docker_client-18.09.9-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/demyx)
 [![Buy Me A Coffee](https://img.shields.io/badge/buy_me_coffee-$5-informational?style=flat&color=blue)](https://www.buymeacoffee.com/VXqkQK5tb)
 
-A simple bash CLI wrapper for Docker to automate WordPress installations. Traefik for reverse proxy with Lets Encrypt SSL. WordPress sites are powered by NGINX, PHP, and MariaDB.
-
-Demyx is now a Docker image and the code base has been completely rewritten, think of this as a "Version 2." The plan was to not "pollute" the host OS and go full Docker mode. This makes it easier to have a controlled and predictable environment. One can say Demyx is "Linux OS agnostic," as long as you have Docker installed.
+Demyx is a Docker image that automates WordPress installations. Traefik for reverse proxy with Lets Encrypt SSL. WordPress sites are powered by NGINX, PHP, and MariaDB.
 
 <p align="center">
 <img  src="https://i.imgur.com/sYNrgFh.gif">
@@ -76,26 +74,6 @@ demyx stack --tracker=off
 ```
 wget demyx.sh/install && sudo bash install
 ```
-
-### Upgrade
-The script script takes 1 parameter (stack/test/wp) to upgrade each component individually, starting with the stack first. This will move the stack's configs to the demyx container, create a new Docker network, and update all docker-compose.yml to use the new network.
-```
-wget demyx.sh/upgrade && sudo bash upgrade stack
-```
-It is RECOMMENDED to test out a single site first to see if the site migrated successfully
-```
-sudo bash upgrade test domain.tld
-```
-Then you can migrate all sites in a loop. You can individually migrate them by just using the test parameter.
-```
-sudo bash upgrade wp
-```
-
-What's changed from "Version 1?"
-* Demyx code base has been rewritten
-* No more bind mounts, all data are stored in volumes
-* Traefik's configs are now in docker-compose via cli
-* Logrotate was taken off from the stack and now runs as cron by demyx container
 
 ### Getting Started
 ```
