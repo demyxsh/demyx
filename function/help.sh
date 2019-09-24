@@ -100,7 +100,7 @@ demyx_help() {
         echo
         echo "demyx pull <args>     Enter specific image or blank to pull all"
         echo "           demyx"
-        echo "           browsersync"
+        echo "           code-server:wp"
         echo "           docker-compose"
         echo "           logrotate"
         echo "           mariadb"
