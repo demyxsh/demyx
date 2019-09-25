@@ -526,13 +526,13 @@ demyx_config() {
                 demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "rm -rf /var/run/nginx-fastcgi-cache; nginx -s reload"
                 
                 demyx_echo "Restarting php-fpm"
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "pkill php-fpm; php-fpm -D"
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "pkill php-fpm"
             elif [ "$DEMYX_CONFIG_RESTART" = nginx ]; then
                 demyx_echo "Restarting NGINX"
                 demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "rm -rf /var/run/nginx-fastcgi-cache; nginx -s reload"
             elif [ "$DEMYX_CONFIG_RESTART" = php ]; then
                 demyx_echo "Restarting php-fpm"
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "pkill php-fpm; php-fpm -D"
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "pkill php-fpm"
             fi
             if [[ "$DEMYX_CONFIG_SFTP" = on ]]; then
                 DEMYX_SFTP_VOLUME_CHECK=$(docker volume ls | grep demyx_sftp || true)
