@@ -10,7 +10,7 @@ Demyx is a Docker image that automates WordPress installations. Traefik for reve
 
 <p align="center"><img  src="https://i.imgur.com/kwKTZHE.gif"></p>
 
-### Updates
+### Updates & Support
 [![Code Size](https://img.shields.io/github/languages/code-size/demyxco/demyx?style=flat&color=blue)](https://github.com/demyxco/demyx)
 [![Repository Size](https://img.shields.io/github/repo-size/demyxco/demyx?style=flat&color=blue)](https://github.com/demyxco/demyx)
 [![Watches](https://img.shields.io/github/watchers/demyxco/demyx?style=flat&color=blue)](https://github.com/demyxco/demyx)
@@ -19,6 +19,8 @@ Demyx is a Docker image that automates WordPress installations. Traefik for reve
 
 * Auto built weekly on Sundays (America/Los_Angeles)
 * Rolling release updates
+* For support: [#demyx](https://webchat.freenode.net/?channel=#demyx)
+
 
 ### WordPress Features
 * SSL turned on by default
@@ -141,11 +143,6 @@ demyx <arg>           Main demyx command
       util            Generates credentials or access util container
       wp              Execute wp-cli commands
 ```
-
-### Questions?
-You can reach me by these avenues
-* [info@demyx.sh](mailto:info@demyx.sh)
-* #demyx at freenode
 
 ### Resources
 *  [Demyx](https://github.com/demyxco/demyx) - Demyx GitHub

@@ -6,13 +6,11 @@
 [![Docker Client](https://img.shields.io/badge/docker_client-18.09.9-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/demyx)
 [![Buy Me A Coffee](https://img.shields.io/badge/buy_me_coffee-$5-informational?style=flat&color=blue)](https://www.buymeacoffee.com/VXqkQK5tb)
 
-Demyx is a Docker image that automates WordPress installations. Traefik for reverse proxy with Lets Encrypt SSL. WordPress sites are powered by NGINX, PHP, and MariaDB.
+Demyx is a Docker image that automates WordPress installations. Traefik for reverse proxy with Lets Encrypt SSL/TLS. WordPress sites are powered by NGINX, PHP, and MariaDB.
 
-<p align="center">
-<img  src="https://i.imgur.com/sYNrgFh.gif">
-</p>
+<p align="center"><img  src="https://i.imgur.com/kwKTZHE.gif"></p>
 
-### Updates
+### Updates & Support
 [![Code Size](https://img.shields.io/github/languages/code-size/demyxco/demyx?style=flat&color=blue)](https://github.com/demyxco/demyx)
 [![Repository Size](https://img.shields.io/github/repo-size/demyxco/demyx?style=flat&color=blue)](https://github.com/demyxco/demyx)
 [![Watches](https://img.shields.io/github/watchers/demyxco/demyx?style=flat&color=blue)](https://github.com/demyxco/demyx)
@@ -21,6 +19,8 @@ Demyx is a Docker image that automates WordPress installations. Traefik for reve
 
 * Auto built weekly on Sundays (America/Los_Angeles)
 * Rolling release updates
+* For support: [#demyx](https://webchat.freenode.net/?channel=#demyx)
+
 
 ### WordPress Features
 * SSL turned on by default
@@ -78,10 +78,10 @@ wget demyx.sh/install && sudo bash install
 ### Getting Started
 ```
 # Create a WordPress site on the host OS
-demyx exec run domain.tld --auth --cdn --cache
+demyx exec run domain.tld --cdn --cache
 
 # Create a WordPress site in the demyx container
-demyx run domain.tld --auth --cdn --cache
+demyx run domain.tld --cdn --cache
 ```
 
 ### chroot.sh
@@ -143,11 +143,6 @@ demyx <arg>           Main demyx command
       util            Generates credentials or access util container
       wp              Execute wp-cli commands
 ```
-
-### Questions?
-You can reach me by these avenues
-* [info@demyx.sh](mailto:info@demyx.sh)
-* #demyx at freenode
 
 ### Resources
 *  [Demyx](https://github.com/demyxco/demyx) - Demyx GitHub
