@@ -194,6 +194,19 @@ demyx_stack_yml() {
                     - "traefik.frontend.headers.STSSeconds=\${DEMYX_STS_SECONDS}"
                     - "traefik.frontend.headers.STSIncludeSubdomains=\${DEMYX_STS_INCLUDE_SUBDOMAINS}"
                     - "traefik.frontend.headers.STSPreload=\${DEMYX_STS_PRELOAD}"
+            ouroboros:
+                container_name: demyx_ouroboros
+                image: pyouroboros/ouroboros
+                restart: unless-stopped
+                networks:
+                    - demyx
+                environment:
+                    SELF_UPDATE: "true"
+                    CLEANUP: "true"
+                    LATEST: "true"
+                    - TZ=America/Los_Angeles
+                volumes:
+                    - /var/run/docker.sock:/var/run/docker.sock:ro
         volumes:
             demyx_traefik:
                 name: demyx_traefik
@@ -396,6 +409,19 @@ demyx_stack_v2_yml() {
                     - "traefik.http.routers.traefik-https.middlewares=traefik-auth"
                     - "traefik.http.middlewares.traefik-auth.basicauth.users=\${DEMYX_STACK_AUTH}"
                     - "traefik.http.middlewares.traefik-redirect.redirectscheme.scheme=https"
+            ouroboros:
+                container_name: demyx_ouroboros
+                image: pyouroboros/ouroboros
+                restart: unless-stopped
+                networks:
+                    - demyx
+                environment:
+                    SELF_UPDATE: "true"
+                    CLEANUP: "true"
+                    LATEST: "true"
+                    - TZ=America/Los_Angeles
+                volumes:
+                    - /var/run/docker.sock:/var/run/docker.sock:ro
         volumes:
             demyx_traefik:
                 name: demyx_traefik
