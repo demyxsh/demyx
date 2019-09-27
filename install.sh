@@ -16,7 +16,7 @@ if [[ -z "$DEMYX_DOCKER_CHECK" ]]; then
 fi
 
 docker pull demyx/demyx
-docker pull demyx/browsersync
+docker pull demyx/code-server:wp
 docker pull demyx/docker-compose
 docker pull demyx/logrotate
 docker pull demyx/mariadb
@@ -27,6 +27,7 @@ docker pull wordpress:cli
 docker pull phpmyadmin/phpmyadmin
 docker pull pyouroboros/ouroboros
 docker pull quay.io/vektorlab/ctop
+docker pull traefik
 docker network create demyx
 
 echo -e "\e[34m[INFO]\e[39m Enter top level domain for Traefik dashboard"
@@ -63,12 +64,19 @@ if [[ -z "$DEMYX_INSTALL_PASS" ]]; then
     exit 1
 fi
 
+echo -e "\e[34m[INFO]\e[39m Enter non-root host OS username (or root if you don't have a non-priv user)"
+read -rep "Host username: " DEMYX_INSTALL_HOST_USER
+if [[ -z "$DEMYX_INSTALL_HOST_USER" ]]; then
+    echo -e "\e[31m[CRITICAL]\e[39m Host username cannot be empty"
+    exit 1
+fi
+
 echo -e "\e[34m[INFO\e[39m] Copying authorized_keys to installer container. If you can't SSH or if this fails, then please run on the host OS: 
 
 docker cp \"\$HOME\"/.ssh/authorized_keys demyx:/home/demyx/.ssh
 demyx rs
 "
-docker run -dt --rm \
+docker run -dit --rm \
 --name demyx_install_container \
 -v demyx_user:/home/demyx/.ssh \
 demyx/utilities bash
@@ -82,11 +90,15 @@ if [[ -f /usr/local/bin/demyx ]]; then
 fi
 
 echo -e "\e[34m[INFO\e[39m] Installing demyx chroot"
-wget demyx.sh/chroot -qO /usr/local/bin/demyx
-chmod +x /usr/local/bin/demyx
+mkdir -p /demyx
+echo "DEMYX_CHROOT_USER=$DEMYX_INSTALL_HOST_USER" > /demyx/config
+wget https://raw.githubusercontent.com/demyxco/demyx/master/chroot.sh -qO /demyx/chroot.sh
+ln -s /demyx/chroot.sh /usr/local/bin/demyx
+chown -R "$DEMYX_INSTALL_HOST_USER":"$DEMYX_INSTALL_HOST_USER" /demyx
+chmod +x /demyx/chroot.sh
 
 demyx --nc
-echo -e "\e[34m[INFO\e[39m] Waiting for demyx container to fully initialize"
+echo -e "\e[34m[INFO\e[39m] Waiting for demyx container to initialize"
 sleep 5
 demyx exec install --domain="$DEMYX_INSTALL_DOMAIN" --email="$DEMYX_INSTALL_EMAIL" --user="$DEMYX_INSTALL_USER" --pass="$DEMYX_INSTALL_PASS"
 demyx
