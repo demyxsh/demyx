@@ -82,7 +82,10 @@ docker run -dit --rm \
 demyx/utilities bash
 
 DEMYX_AUTHORIZED_KEY=$(find /home -name "authorized_keys" | head -n 1)
-docker cp "$DEMYX_AUTHORIZED_KEY" demyx:/home/demyx/.ssh
+if [[ -n "$DEMYX_AUTHORIZED_KEY" ]]; then
+    docker cp "$DEMYX_AUTHORIZED_KEY" demyx:/home/demyx/.ssh
+fi
+
 docker stop demyx_install_container
 
 if [[ -f /usr/local/bin/demyx ]]; then
