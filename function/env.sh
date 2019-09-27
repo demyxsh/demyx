@@ -105,7 +105,6 @@ EOF
         sed -i 's/            //' "$DEMYX_WP"/"$DEMYX_TARGET"/.env
     fi
 }
-
 demyx_stack_env() {
     if [[ -z "$DEMYX_INSTALL_FORCE" ]]; then
         if [[ -f "$DEMYX_STACK"/.env ]]; then
@@ -157,6 +156,42 @@ demyx_stack_env() {
         DEMYX_STS_SECONDS=$DEMYX_STS_SECONDS
         DEMYX_STS_INCLUDE_SUBDOMAINS=$DEMYX_STS_INCLUDE_SUBDOMAINS
         DEMYX_STS_PRELOAD=$DEMYX_STS_PRELOAD
+EOF
+    sed -i 's/        //' "$DEMYX_STACK"/.env
+}
+demyx_stack_v2_env() {
+    if [[ -z "$DEMYX_INSTALL_FORCE" ]]; then
+        if [[ -f "$DEMYX_STACK"/.env ]]; then
+            DEMYX_PARSE_BASIC_AUTH=$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}' || true)
+            source "$DEMYX_STACK"/.env
+            DEMYX_STACK_AUTH="$DEMYX_PARSE_BASIC_AUTH"
+        fi
+    fi
+
+    [[ -z "$DEMYX_STACK_SERVER_IP" ]] && DEMYX_STACK_SERVER_IP=$(demyx util curl -s https://ipecho.net/plain | sed -e 's/\r//g')
+    [[ -z "$DEMYX_STACK_TRACKER" ]] && DEMYX_STACK_TRACKER=on
+    [[ -z "$DEMYX_STACK_AUTO_UPDATE" ]] && DEMYX_STACK_AUTO_UPDATE=on
+    [[ -z "$DEMYX_STACK_MONITOR" ]] && DEMYX_STACK_MONITOR=on
+    [[ -z "$DEMYX_STACK_HEALTHCHECK" ]] && DEMYX_STACK_HEALTHCHECK=on
+    [[ -z "$DEMYX_STACK_ACME_STORAGE" ]] && DEMYX_STACK_ACME_STORAGE=/demyx/acme.json
+    [[ -z "$DEMYX_STACK_LOG_LEVEL" ]] && DEMYX_STACK_LOG_LEVEL=INFO
+    [[ -z "$DEMYX_STACK_LOG_ACCESS" ]] && DEMYX_STACK_LOG_ACCESS=/var/log/demyx/access.log
+    [[ -z "$DEMYX_STACK_LOG_ERROR" ]] && DEMYX_STACK_LOG_ERROR=/var/log/demyx/error.log
+
+    cat > "$DEMYX_STACK"/.env <<-EOF
+        # AUTO GENERATED
+        DEMYX_STACK_SERVER_IP=$DEMYX_STACK_SERVER_IP
+        DEMYX_STACK_TRACKER=$DEMYX_STACK_TRACKER
+        DEMYX_STACK_DOMAIN=$DEMYX_STACK_DOMAIN
+        DEMYX_STACK_AUTH=$DEMYX_PARSE_BASIC_AUTH
+        DEMYX_STACK_AUTO_UPDATE=$DEMYX_STACK_AUTO_UPDATE
+        DEMYX_STACK_MONITOR=$DEMYX_STACK_MONITOR
+        DEMYX_STACK_HEALTHCHECK=$DEMYX_STACK_HEALTHCHECK
+        DEMYX_STACK_ACME_EMAIL=$DEMYX_STACK_ACME_EMAIL
+        DEMYX_STACK_ACME_STORAGE=$DEMYX_STACK_ACME_STORAGE
+        DEMYX_STACK_LOG_LEVEL=$DEMYX_STACK_LOG_LEVEL
+        DEMYX_STACK_LOG_ACCESS=$DEMYX_STACK_LOG_ACCESS
+        DEMYX_STACK_LOG_ERROR=$DEMYX_STACK_LOG_ERROR
 EOF
     sed -i 's/        //' "$DEMYX_STACK"/.env
 }

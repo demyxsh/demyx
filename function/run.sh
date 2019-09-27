@@ -129,7 +129,13 @@ demyx_run() {
         demyx config "$DEMYX_APP_DOMAIN" --healthcheck=off
 
         demyx_echo 'Creating .yml'
-        demyx_execute demyx_yml
+
+        # Traefik backwards compatibility
+        if [[ "$DEMYX_CHECK_TRAEFIK" = 1 ]]; then
+            demyx_execute demyx_yml
+        else
+            demyx_execute demyx_v2_yml
+        fi
 
         if [[ -n "$DEMYX_RUN_CLONE" ]]; then
             demyx_echo 'Cloning database'

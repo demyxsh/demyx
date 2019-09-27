@@ -144,15 +144,33 @@ demyx_config() {
             cd "$DEMYX_APP_PATH" || exit
 
             if [[ "$DEMYX_CONFIG_AUTH" = on ]]; then
+                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
+                    [[ "$DEMYX_APP_AUTH" = on ]] && demyx_die 'Basic Auth is already turned on'
+                fi
+
                 demyx_echo 'Turning on basic auth'
-                demyx_execute sed -i "s/DEMYX_APP_AUTH=off/DEMYX_APP_AUTH=on/g" "$DEMYX_APP_PATH"/.env && \
-                    demyx_yml
-                
+
+                # Traefik backwards compatibility
+                if [[ "$DEMYX_CHECK_TRAEFIK" = 1 ]]; then
+                    demyx_execute sed -i "s/DEMYX_APP_AUTH=off/DEMYX_APP_AUTH=on/g" "$DEMYX_APP_PATH"/.env && demyx_yml
+                else
+                    demyx_execute sed -i "s/DEMYX_APP_AUTH=off/DEMYX_APP_AUTH=on/g" "$DEMYX_APP_PATH"/.env && demyx_v2_yml
+                fi
+
                 demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" wp up -d --remove-orphans
             elif [[ "$DEMYX_CONFIG_AUTH" = off ]]; then
+                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
+                    [[ "$DEMYX_APP_AUTH" = off ]] && demyx_die 'Basic Auth is already turned on'
+                fi
+
                 demyx_echo 'Turning off basic auth'
-                demyx_execute sed -i "s/DEMYX_APP_AUTH=on/DEMYX_APP_AUTH=off/g" "$DEMYX_APP_PATH"/.env && \
-                    demyx_yml
+
+                # Traefik backwards compatibility
+                if [[ "$DEMYX_CHECK_TRAEFIK" = 1 ]]; then
+                    demyx_execute sed -i "s/DEMYX_APP_AUTH=on/DEMYX_APP_AUTH=off/g" "$DEMYX_APP_PATH"/.env && demyx_yml
+                else
+                    demyx_execute sed -i "s/DEMYX_APP_AUTH=on/DEMYX_APP_AUTH=off/g" "$DEMYX_APP_PATH"/.env && demyx_v2_yml
+                fi
 
                 demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" wp up -d --remove-orphans
             fi
@@ -363,24 +381,62 @@ demyx_config() {
                 fi
 
                 demyx_echo 'Creating code-server'
-                demyx_execute docker run -dit --rm \
-                    --name "$DEMYX_APP_COMPOSE_PROJECT"_cs \
-                    --net demyx \
-                    --volumes-from "$DEMYX_APP_WP_CONTAINER" \
-                    -v demyx_cs:/home/www-data \
-                    -e PASSWORD="$MARIADB_ROOT_PASSWORD" \
-                    -e DEMYX=true \
-                    -e DEMYX_APP_DOMAIN="$DEMYX_APP_DOMAIN" \
-                    -e DEMYX_APP_WP_CONTAINER="$DEMYX_APP_WP_CONTAINER" \
-                    -e DEMYX_BS_FILES="$DEMYX_BS_FILES" \
-                    -l "traefik.enable=true" \
-                    -l "traefik.coder.frontend.rule=Host:${DEMYX_APP_DOMAIN}; PathPrefixStrip: /demyx-cs/" \
-                    -l "traefik.coder.port=8080" \
-                    -l "traefik.bs.frontend.rule=Host:${DEMYX_APP_DOMAIN}; PathPrefixStrip: /demyx-bs/" \
-                    -l "traefik.bs.port=3000" \
-                    -l "traefik.socket.frontend.rule=Host:${DEMYX_APP_DOMAIN}; PathPrefix: /browser-sync/socket.io/" \
-                    -l "traefik.socket.port=3000" \
-                    demyx/code-server:wp
+
+                # Traefik backwards compatibility
+                if [[ "$DEMYX_CHECK_TRAEFIK" = 1 ]]; then
+                    demyx_execute docker run -dit --rm \
+                        --name "$DEMYX_APP_COMPOSE_PROJECT"_cs \
+                        --net demyx \
+                        --volumes-from "$DEMYX_APP_WP_CONTAINER" \
+                        -v demyx_cs:/home/www-data \
+                        -e PASSWORD="$MARIADB_ROOT_PASSWORD" \
+                        -e DEMYX=true \
+                        -e DEMYX_APP_DOMAIN="$DEMYX_APP_DOMAIN" \
+                        -e DEMYX_APP_WP_CONTAINER="$DEMYX_APP_WP_CONTAINER" \
+                        -e DEMYX_BS_FILES="$DEMYX_BS_FILES" \
+                        -l "traefik.enable=true" \
+                        -l "traefik.coder.frontend.rule=Host:${DEMYX_APP_DOMAIN}; PathPrefixStrip: /demyx-cs/" \
+                        -l "traefik.coder.port=8080" \
+                        -l "traefik.bs.frontend.rule=Host:${DEMYX_APP_DOMAIN}; PathPrefixStrip: /demyx-bs/" \
+                        -l "traefik.bs.port=3000" \
+                        -l "traefik.socket.frontend.rule=Host:${DEMYX_APP_DOMAIN}; PathPrefix: /browser-sync/socket.io/" \
+                        -l "traefik.socket.port=3000" \
+                        demyx/code-server:wp
+                else
+                    demyx_execute docker run -dit --rm \
+                        --name "$DEMYX_APP_COMPOSE_PROJECT"_cs \
+                        --net demyx \
+                        --volumes-from "$DEMYX_APP_WP_CONTAINER" \
+                        -v demyx_cs:/home/www-data \
+                        -e PASSWORD="$MARIADB_ROOT_PASSWORD" \
+                        -e DEMYX=true \
+                        -e DEMYX_APP_DOMAIN="$DEMYX_APP_DOMAIN" \
+                        -e DEMYX_APP_WP_CONTAINER="$DEMYX_APP_WP_CONTAINER" \
+                        -e DEMYX_BS_FILES="$DEMYX_BS_FILES" \
+                        -l "traefik.enable=true" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-cs-https.rule=(Host(\`${DEMYX_APP_DOMAIN}\`) && PathPrefix(\`/demyx-cs/\`))" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-cs-https.middlewares=${DEMYX_APP_COMPOSE_PROJECT}-cs-prefix" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-cs-https.entrypoints=https" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-cs-https.tls.certresolver=demyx" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-cs-https.service=${DEMYX_APP_COMPOSE_PROJECT}-cs" \
+                        -l "traefik.http.middlewares.${DEMYX_APP_COMPOSE_PROJECT}-cs-prefix.stripprefix.prefixes=/demyx-cs/" \
+                        -l "traefik.http.services.${DEMYX_APP_COMPOSE_PROJECT}-cs.loadbalancer.server.port=8080" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-bs-https.rule=(Host(\`${DEMYX_APP_DOMAIN}\`) && PathPrefix(\`/demyx-bs/\`))" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-bs-https.middlewares=${DEMYX_APP_COMPOSE_PROJECT}-bs-prefix" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-bs-https.entrypoints=https" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-bs-https.tls.certresolver=demyx" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-bs-https.service=${DEMYX_APP_COMPOSE_PROJECT}-bs" \
+                        -l "traefik.http.middlewares.${DEMYX_APP_COMPOSE_PROJECT}-bs-prefix.stripprefix.prefixes=/demyx-bs/" \
+                        -l "traefik.http.services.${DEMYX_APP_COMPOSE_PROJECT}-bs.loadbalancer.server.port=3000" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-socket-https.rule=(Host(\`${DEMYX_APP_DOMAIN}\`) && PathPrefix(\`/browser-sync/socket.io/\`))" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-socket-https.middlewares=${DEMYX_APP_COMPOSE_PROJECT}-socket-prefix" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-socket-https.entrypoints=https" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-socket-https.tls.certresolver=demyx" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-socket-https.service=${DEMYX_APP_COMPOSE_PROJECT}-socket" \
+                        -l "traefik.http.middlewares.${DEMYX_APP_COMPOSE_PROJECT}-socket-prefix.stripprefix.prefixes=/demyx-bs/browser-sync/socket.io/" \
+                        -l "traefik.http.services.${DEMYX_APP_COMPOSE_PROJECT}-socket.loadbalancer.server.port=3000" \
+                        demyx/code-server:wp
+                fi
 
                 demyx_execute -v sed -i "s/DEMYX_APP_DEV=off/DEMYX_APP_DEV=on/g" "$DEMYX_APP_PATH"/.env
 
@@ -464,8 +520,11 @@ demyx_config() {
                     -e MYSQL_ROOT_PASSWORD="$MARIADB_ROOT_PASSWORD" \
                     -e PMA_ABSOLUTE_URI=${DEMYX_CONFIG_PMA_PROTO}/demyx-pma/ \
                     -l "traefik.enable=true" \
-                    -l "traefik.frontend.rule=Host:${DEMYX_APP_DOMAIN}; PathPrefixStrip: /demyx-pma/" \
-                    -l "traefik.port=80" \
+                    -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-pma-https.rule=(Host(\`${DEMYX_APP_DOMAIN}\`) && PathPrefix(\`/demyx-pma/\`))" \
+                    -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-pma-https.middlewares=${DEMYX_APP_COMPOSE_PROJECT}-pma-prefix" \
+                    -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-pma-https.entrypoints=https" \
+                    -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-pma-https.tls.certresolver=demyx" \
+                    -l "traefik.http.middlewares.${DEMYX_APP_COMPOSE_PROJECT}-pma-prefix.stripprefix.prefixes=/demyx-pma/" \
                     phpmyadmin/phpmyadmin
 
                 PRINT_TABLE="DEMYX^ PHPMYADMIN\n"
@@ -510,7 +569,13 @@ demyx_config() {
                 demyx_execute demyx_env
 
                 demyx_echo 'Refreshing .yml'
-                demyx_execute demyx_yml
+
+                # Traefik backwards compatibility
+                if [[ "$DEMYX_CHECK_TRAEFIK" = 1 ]]; then
+                    demyx_execute demyx_yml
+                else
+                    demyx_execute demyx_v2_yml
+                fi
 
                 demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" up -d
 
@@ -588,7 +653,13 @@ demyx_config() {
                 demyx_execute sed -i "s/DEMYX_APP_SSL=off/DEMYX_APP_SSL=on/g" "$DEMYX_APP_PATH"/.env
 
                 demyx_echo 'Turning on SSL'
-                demyx_execute demyx_app_config; demyx_yml
+
+                # Traefik backwards compatibility
+                if [[ "$DEMYX_CHECK_TRAEFIK" = 1 ]]; then
+                    demyx_execute demyx_app_config; demyx_yml
+                else
+                    demyx_execute demyx_app_config; demyx_v2_yml
+                fi
 
                 demyx_echo 'Replacing URLs to HTTPS' 
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" search-replace http://"$DEMYX_APP_DOMAIN" https://"$DEMYX_APP_DOMAIN"
@@ -603,7 +674,13 @@ demyx_config() {
                 demyx_execute sed -i "s/DEMYX_APP_SSL=on/DEMYX_APP_SSL=off/g" "$DEMYX_APP_PATH"/.env
 
                 demyx_echo 'Turning off SSL'
-                demyx_execute demyx_app_config; demyx_yml
+                
+                # Traefik backwards compatibility
+                if [[ "$DEMYX_CHECK_TRAEFIK" = 1 ]]; then
+                    demyx_execute demyx_app_config; demyx_yml
+                else
+                    demyx_execute demyx_app_config; demyx_v2_yml
+                fi
 
                 demyx_echo 'Replacing URLs to HTTP' 
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" search-replace https://"$DEMYX_APP_DOMAIN" http://"$DEMYX_APP_DOMAIN"
