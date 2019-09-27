@@ -17,7 +17,7 @@ if [[ ! -d "$DEMYX"/custom/cron ]]; then
 fi
 
 if [[ "$DEMYX_CHECK_TRAEFIK" = 1 ]]; then
-    demyx_execute -v export DEMYX_CHECK_TRAEFIK=1
+    export DEMYX_CHECK_TRAEFIK=1
 else
-    demyx_execute -v export DEMYX_CHECK_TRAEFIK=0
+    export DEMYX_CHECK_TRAEFIK=0
 fi
