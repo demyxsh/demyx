@@ -39,6 +39,9 @@ demyx_stack() {
             --tracker=off)
                 DEMYX_STACK_TRACKER=off
                 ;;
+            --upgrade)
+                DEMYX_STACK_UPGRADE=1
+                ;;
             --)
                 shift
                 break
@@ -86,7 +89,13 @@ demyx_stack() {
         source "$DEMYX_FUNCTION"/yml.sh
 
         demyx_echo 'Refreshing stack env and yml'
-        demyx_execute demyx_stack_env; demyx_stack_yml
+
+        # Traefik backwards compatibility
+        if [[ "$DEMYX_CHECK_TRAEFIK" = 1 ]]; then
+            demyx_execute demyx_stack_env; demyx_stack_yml
+        else
+            demyx_execute demyx_stack_v2_env; demyx_stack_v2_yml
+        fi
 
         demyx stack up -d --remove-orphans
     elif [[ "$DEMYX_STACK_TRACKER" = on ]]; then
@@ -95,6 +104,43 @@ demyx_stack() {
     elif [[ "$DEMYX_STACK_TRACKER" = off ]]; then
         demyx_echo 'Turn off stack tracker'
         demyx_execute sed -i 's/DEMYX_STACK_TRACKER=on/DEMYX_STACK_TRACKER=off/g' "$DEMYX_STACK"/.env
+    elif [[ -n "$DEMYX_STACK_UPGRADE" ]]; then
+        if [[ "$DEMYX_CHECK_TRAEFIK" = 1 ]]; then
+            echo -en "\e[33m"
+            read -rep "[WARNING] Upgrading the stack will stop all network activity. Update all configs? [yY]: " DEMYX_STACK_UPGRADE_CONFIRM
+            echo -en "\e[39m"
+            
+            [[ "$DEMYX_STACK_UPGRADE_CONFIRM" != [yY] ]] && demyx_die 'Cancel upgrading'
+            
+            demyx_echo 'Starting stack upgrade container'
+            demyx_execute docker run -dit --rm --name demyx_upgrade demyx/utilities sh
+
+            demyx_echo 'Downloading and extracting Traefik Migration Tool'
+            demyx_execute wget https://github.com/containous/traefik-migration-tool/releases/download/v0.8.0/traefik-migration-tool_v0.8.0_linux_amd64.tar.gz -qO /tmp/traefik-migration-tool_v0.8.0_linux_amd64.tar.gz; \
+                tar -xzf /tmp/traefik-migration-tool_v0.8.0_linux_amd64.tar.gz -C /tmp
+
+            demyx_echo 'Upgrading acme.json'
+            demyx_execute docker cp demyx_traefik:/demyx/acme.json /tmp; \
+                docker cp /tmp/traefik-migration-tool demyx_upgrade:/; \
+                docker cp /tmp/acme.json demyx_upgrade:/; \
+                docker exec -t demyx_upgrade sh -c "/traefik-migration-tool acme --input=/acme.json --output=/acme.json --resolver=demyx"; \
+                docker cp demyx_upgrade:/acme.json /tmp; \
+                docker cp /tmp/acme.json demyx_traefik:/demyx
+
+            demyx_echo 'Stopping stack upgrade container'
+            demyx_execute docker stop demyx_upgrade
+
+            demyx_echo 'Updating Traefik'
+            demyx_execute sed -i "s|traefik:v1.7.16|traefik|g" "$DEMYX_STACK"/docker-compose.yml; \
+                docker pull traefik:latest
+
+            demyx stack --refresh
+            demyx config all --refresh
+
+            demyx_execute -v echo -e "\e[32m[SUCCESS]\e[39m Upgrade has finished, you will need to update the docker-compose labels for non Demyx apps."
+        else
+            demyx_die 'The stack is already updated.'
+        fi
     else
         shift
         docker run -t --rm \
