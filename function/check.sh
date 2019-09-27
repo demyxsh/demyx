@@ -1,13 +1,18 @@
 # Demyx
 # https://demyx.sh
 
-DEMYX_SUDO_CHECK=$(id -u)
+DEMYX_CHECK_SUDO=$(id -u)
+DEMYX_CHECK_TRAEFIK=$(grep -c "traefik:v1.7.16" "$DEMYX_STACK"/docker-compose.yml || true)
 
-if [ "$DEMYX_SUDO_CHECK" != 0 ]; then
+if [ "$DEMYX_CHECK_SUDO" != 0 ]; then
     echo -e "\e[31m[CRITICAL]\e[39m Demyx must be ran as sudo"
     exit 1
 fi
 
 if [[ ! -d "$DEMYX"/custom/cron ]]; then
-    cp -r "$DEMYX_ETC"/example/example-cron "$DEMYX"/custom
+    demyx_execute -v cp -r "$DEMYX_ETC"/example/example-cron "$DEMYX"/custom
+fi
+
+if [[ "$DEMYX_CHECK_TRAEFIK" = 1 ]]; then
+    demyx_execute -v export DEMYX_CHECK_TRAEFIK=1
 fi
