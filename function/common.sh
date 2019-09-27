@@ -163,14 +163,17 @@ demyx_nginx_cloudflare_check() {
     fi
 }
 demyx_motd_dev_warning() {
-    cd "$DEMYX_WP"
-    for i in *
-    do
-        DEMYX_COMMON_DEV_CHECK=$(grep DEMYX_APP_DEV "$DEMYX_WP"/"$i"/.env | awk -F '[=]' '{print $2}')
-        if [[ "$DEMYX_COMMON_DEV_CHECK" = on ]]; then
-            demyx_execute -v echo -e "\e[33m[WARNING]\e[39m $i is in development mode"
-        fi
-    done
+    DEMYX_COMMON_WP_NOT_EMPTY=$(ls "$DEMYX_WP")
+    if [[ -n "$DEMYX_COMMON_WP_NOT_EMPTY" ]]; then
+        cd "$DEMYX_WP"
+        for i in *
+        do
+            DEMYX_COMMON_DEV_CHECK=$(grep DEMYX_APP_DEV "$DEMYX_WP"/"$i"/.env | awk -F '[=]' '{print $2}')
+            if [[ "$DEMYX_COMMON_DEV_CHECK" = on ]]; then
+                demyx_execute -v echo -e "\e[33m[WARNING]\e[39m $i is in development mode"
+            fi
+        done
+    fi
 }
 demyx_motd_stack_upgrade_notice() {
     if [[ "$DEMYX_CHECK_TRAEFIK" = 1 ]]; then
