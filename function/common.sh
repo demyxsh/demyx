@@ -168,7 +168,12 @@ demyx_motd_dev_warning() {
     do
         DEMYX_COMMON_DEV_CHECK=$(grep DEMYX_APP_DEV "$DEMYX_WP"/"$i"/.env | awk -F '[=]' '{print $2}')
         if [[ "$DEMYX_COMMON_DEV_CHECK" = on ]]; then
-            echo -e "\e[33m[WARNING]\e[39m $i is in development mode"
+            demyx_execute -v echo -e "\e[33m[WARNING]\e[39m $i is in development mode"
         fi
     done
+}
+demyx_motd_stack_upgrade_notice() {
+    if [[ "$DEMYX_CHECK_TRAEFIK" = 1 ]]; then
+        demyx_execute -v echo -e "\e[34m[INFO]\e[39m An upgrade is available for the stack, please run: demyx stack --upgrade"
+    fi
 }
