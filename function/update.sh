@@ -9,7 +9,6 @@ demyx_update() {
     git pull
 
     demyx_echo 'Updating MOTD'
-    demyx_execute sed -i '/DEMYX_MOTD_STATUS/d' "$DEMYX"/.env; echo 'DEMYX_MOTD_STATUS=0' >> "$DEMYX"/.env
-
+    demyx_execute sed -i "s|DEMYX_MOTD_STATUS=.*|DEMYX_MOTD_STATUS=0|g" "$DEMYX"/.env
     demyx stack --refresh
 }
