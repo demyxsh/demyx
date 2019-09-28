@@ -2,7 +2,6 @@
 # Demyx
 # https://demyx.sh
 # 
-
 DEMYX_CHROOT_SUDO_CHECK=$(id -u)
 
 # Check for demyx directory
@@ -82,27 +81,8 @@ while :; do
     esac
     shift
 done
-
-demyx_permission() {
-    docker exec -t demyx sh -c "chown -R demyx:demyx /home/demyx; \
-        chown -R demyx:demyx /demyx; \
-        chmod +x /demyx/etc/demyx.sh; \
-        chmod +x /demyx/etc/cron/every-minute.sh; \
-        chmod +x /demyx/etc/cron/every-6-hour.sh; \
-        chmod +x /demyx/etc/cron/every-day.sh; \
-        chmod +x /demyx/etc/cron/every-week.sh"
-}
 demyx_mode() {
-    if [[ "$DEMYX_CHROOT_MODE" = development ]]; then
-        DEMYX_CHROOT_MODE=development
-        docker exec -t demyx sh -c "find /demyx -type d -print0 | xargs -0 chmod 0755; \
-            find /demyx -type f -print0 | xargs -0 chmod 0644"
-    elif [[ "$DEMYX_CHROOT_MODE" = production ]]; then
-        DEMYX_CHROOT_MODE=production
-        docker exec -t demyx sh -c "chmod -R a=X /demyx"
-    fi
-    demyx_permission
-    docker exec -it -e DEMYX_MODE="$DEMYX_CHROOT_MODE" demyx demyx motd init
+    docker exec -t demyx demyx-helper "$DEMYX_CHROOT_MODE"
 }
 demyx_rm() {
     if [[ -n "$DEMYX_CHROOT_CONTAINER_CHECK" ]]; then
