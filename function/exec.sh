@@ -10,6 +10,9 @@ demyx_exec() {
             db)
                 DEMYX_EXEC_DB=1
                 ;;
+            -t)
+                DEMYX_EXEC_TTY=1
+                ;;
             --)
                 shift
                 break
@@ -26,6 +29,13 @@ demyx_exec() {
 
     demyx_app_config
 
+    # If -t flag is passed then TTY only
+    if [[ -n "$DEMYX_EXEC_TTY" ]]; then
+        DEMYX_EXEC_FLAG="-t"
+    else
+        DEMYX_EXEC_FLAG="-it"
+    fi
+
     if [[ "$DEMYX_TARGET" = all ]]; then
         cd "$DEMYX_WP" || exit
         for i in *
@@ -35,9 +45,9 @@ demyx_exec() {
     elif [[ "$DEMYX_APP_TYPE" = wp ]]; then
         DEMYX_EXEC_CONTAINER="$DEMYX_APP_WP_CONTAINER"
         [[ -n "$DEMYX_EXEC_DB" ]] && DEMYX_EXEC_CONTAINER="$DEMYX_APP_DB_CONTAINER"
-        docker exec -it "$DEMYX_EXEC_CONTAINER" "$@"
+        docker exec "$DEMYX_EXEC_FLAG" "$DEMYX_EXEC_CONTAINER" "$@"
     elif [[ -n "$DEMYX_GET_APP" ]]; then
-        docker exec -it "$DEMYX_GET_APP" "$@"
+        docker exec "$DEMYX_EXEC_FLAG" "$DEMYX_GET_APP" "$@"
     else
         demyx_die --not-found
     fi

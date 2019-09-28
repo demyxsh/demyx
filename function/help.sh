@@ -51,8 +51,9 @@ demyx_help() {
         echo
     elif [[ "$DEMYX_HELP" = exec ]]; then
         echo
-        echo "demyx exec <app> <args>       Accepts all docker exec arguments"
+        echo "demyx exec <app> <args>       Accepts all docker exec arguments (default flags: -it)"
         echo "                 db           Targets MariaDB container"
+        echo "                 -t           Allocate a non-interactive TTY"
         echo
     elif [[ "$DEMYX_HELP" = healthcheck ]]; then
         echo
