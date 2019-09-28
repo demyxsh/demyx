@@ -66,6 +66,22 @@ demyx_info() {
             "container_running": "'$DEMYX_INFO_CONTAINER_RUNNING'",
             "container_dead": "'$DEMYX_INFO_CONTAINER_DEAD'"' | sed 's/            /    /g'
         echo '}'
+    elif [[ "$DEMYX_TARGET" = stack ]]; then
+        source "$DEMYX_STACK"/.env
+        DEMYX_INFO_STACK_GET_NPW=$(wget -qO- https://raw.githubusercontent.com/demyxco/nginx-php-wordpress/master/README.md)
+        PRINT_TABLE="DEMYX^ STACK\n"
+        PRINT_TABLE+="IP^ $DEMYX_STACK_SERVER_IP\n"
+        PRINT_TABLE+="DOMAIN^ $DEMYX_STACK_DOMAIN\n"
+        PRINT_TABLE+="TRAEFIK^ $(docker run -t --rm --entrypoint traefik traefik version | head -1 | awk -F '[:]' '{print $2}' | sed 's| ||g' | sed 's/\r//g')\n"
+        PRINT_TABLE+="ALPINE^ $(grep "badge/alpine" <<< "$DEMYX_INFO_STACK_GET_NPW" | awk -F '[-]' '{print $2}')\n"
+        PRINT_TABLE+="NGINX^ $(grep "badge/nginx" <<< "$DEMYX_INFO_STACK_GET_NPW" | awk -F '[-]' '{print $2}')\n"
+        PRINT_TABLE+="PHP^ $(grep "badge/php" <<< "$DEMYX_INFO_STACK_GET_NPW" | awk -F '[-]' '{print $2}')\n"
+        PRINT_TABLE+="WORDPRESS^ $(grep "badge/wordpress" <<< "$DEMYX_INFO_STACK_GET_NPW" | awk -F '[-]' '{print $2}')\n"
+        PRINT_TABLE+="AUTO UPDATE^ $DEMYX_STACK_AUTO_UPDATE\n"
+        PRINT_TABLE+="MONITOR^ $DEMYX_STACK_MONITOR\n"
+        PRINT_TABLE+="HEALTHCHECK^ $DEMYX_STACK_HEALTHCHECK\n"
+        PRINT_TABLE+="LOG^ /var/log/demyx"
+        demyx_execute -v demyx_table "$PRINT_TABLE"
     elif [[ "$DEMYX_APP_TYPE" = wp ]]; then
         if [[ -n "$DEMYX_INFO_ALL" ]]; then
             DEMYX_INFO_ALL=$(cat $DEMYX_APP_PATH/.env | sed '1d')
