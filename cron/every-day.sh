@@ -26,13 +26,13 @@ DEMYX_CRON_UPDATES=$(git rev-list HEAD...origin/master --count)
 /bin/sed -i '/DEMYX_MOTD_STATUS/d' /demyx/.env
 echo "DEMYX_MOTD_STATUS=$DEMYX_CRON_UPDATES" >> /demyx/.env
 
-# Backup WordPress sites at midnight
-/usr/local/bin/demyx backup all
-
 # Execute custom cron
 if [[ -f /demyx/custom/cron/every-day.sh ]]; then
     bash /demyx/custom/cron/every-day.sh
 fi
+
+# Backup WordPress sites at midnight
+/usr/local/bin/demyx backup all
 
 # WP auto update
 cd /demyx/app/wp
