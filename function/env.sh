@@ -108,7 +108,7 @@ EOF
 demyx_stack_env() {
     if [[ -z "$DEMYX_INSTALL_FORCE" ]]; then
         if [[ -f "$DEMYX_STACK"/.env ]]; then
-            DEMYX_PARSE_BASIC_AUTH=$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}' || true)
+            DEMYX_PARSE_BASIC_AUTH=$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}')
             source "$DEMYX_STACK"/.env
             DEMYX_STACK_AUTH="$DEMYX_PARSE_BASIC_AUTH"
         fi
@@ -162,7 +162,7 @@ EOF
 demyx_stack_v2_env() {
     if [[ -z "$DEMYX_INSTALL_FORCE" ]]; then
         if [[ -f "$DEMYX_STACK"/.env ]]; then
-            DEMYX_PARSE_BASIC_AUTH=$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}' || true)
+            DEMYX_PARSE_BASIC_AUTH=$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}')
             source "$DEMYX_STACK"/.env
             DEMYX_STACK_AUTH="$DEMYX_PARSE_BASIC_AUTH"
         fi

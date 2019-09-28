@@ -45,7 +45,7 @@ demyx_yml() {
 
         if [[ "$DEMYX_YML_AUTH_CHECK" = on ]] && [[ -f "$DEMYX_STACK"/.env ]]; then
             source "$DEMYX_STACK"/.env
-            DEMYX_PARSE_BASIC_AUTH=$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}' | sed 's/\$/$$/g' || true)
+            DEMYX_PARSE_BASIC_AUTH=$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}' | sed 's/\$/$$/g')
             DEMYX_BASIC_AUTH="- \"traefik.bs.frontend.auth.basic.users=${DEMYX_PARSE_BASIC_AUTH}\""
         else
             DEMYX_BASIC_AUTH=
@@ -143,7 +143,7 @@ EOF
 }
 demyx_stack_yml() {
     if [[ -f "$DEMYX_STACK"/.env ]]; then
-        DEMYX_PARSE_BASIC_AUTH=$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}' || true)
+        DEMYX_PARSE_BASIC_AUTH=$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}')
         source "$DEMYX_STACK"/.env
         DEMYX_STACK_AUTH="$DEMYX_PARSE_BASIC_AUTH"
     fi
@@ -263,7 +263,7 @@ demyx_v2_yml() {
 
         if [[ "$DEMYX_YML_AUTH_CHECK" = on ]] && [[ -f "$DEMYX_STACK"/.env ]]; then
             source "$DEMYX_STACK"/.env
-            DEMYX_PARSE_BASIC_AUTH=$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}' | sed 's/\$/$$/g' || true)
+            DEMYX_PARSE_BASIC_AUTH=$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}' | sed 's/\$/$$/g')
             DEMYX_BASIC_AUTH="- \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-https.middlewares=\${DEMYX_APP_COMPOSE_PROJECT}-auth\"
                         - \"traefik.http.middlewares.\${DEMYX_APP_COMPOSE_PROJECT}-auth.basicauth.users=${DEMYX_PARSE_BASIC_AUTH}\""
         else
@@ -359,7 +359,7 @@ EOF
 }
 demyx_stack_v2_yml() {
     if [[ -f "$DEMYX_STACK"/.env ]]; then
-        DEMYX_PARSE_BASIC_AUTH=$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}' || true)
+        DEMYX_PARSE_BASIC_AUTH=$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}')
         source "$DEMYX_STACK"/.env
         DEMYX_STACK_AUTH="$DEMYX_PARSE_BASIC_AUTH"
     fi
