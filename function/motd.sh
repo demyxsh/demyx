@@ -25,18 +25,17 @@ demyx_motd_git_latest() {
     demyx_execute -v echo -e "Latest Updates\n----------------\n$DEMYX_MOTD_GIT_LOG\n"
 }
 demyx_motd() {
-    if [[ "$1" = init ]]; then
+    if [[ ! -f /demyx/.env ]]; then
+
         [[ -z "$DEMYX_MODE" ]] && DEMYX_MODE=production
-        DEMYX_MOTD_MODE=$(echo "$DEMYX_MODE" | tr [a-z] [A-Z] | sed -e 's/\r//g')
-        DEMYX_MOTD_HOSTNAME=$(hostname)
         [[ -z "$DEMYX_SSH" ]] && DEMYX_SSH=2222
         [[ -z "$DEMYX_STATUS" ]] && DEMYX_STATUS=0
 
         cat > /demyx/.env <<-EOF
             # AUTO GENERATED
-            DEMYX_MOTD_MODE=$DEMYX_MOTD_MODE
-            DEMYX_MOTD_HOST=$DEMYX_MOTD_HOSTNAME
-            DEMYX_MOTD_USER=DEMYX
+            DEMYX_MOTD_MODE=$DEMYX_MODE
+            DEMYX_MOTD_HOST=$DEMYX_HOST
+            DEMYX_MOTD_USER=demyx
             DEMYX_MOTD_SSH=$DEMYX_SSH
             DEMYX_MOTD_STATUS=$DEMYX_STATUS
 EOF
@@ -52,6 +51,7 @@ EOF
             DEMYX_MOTD_STATUS="Updated"
         fi
 
+        DEMYX_MOTD_MODE=$(echo "$DEMYX_MOTD_MODE" | tr [a-z] [A-Z] | sed -e 's/\r//g')
         DEMYX_MOTD_SYSTEM_INFO=$(demyx info dash)
         DEMYX_MOTD_SYSTEM_DISK=$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .disk_used | sed 's|"||g')
         DEMYX_MOTD_SYSTEM_DISK_TOTAL=$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .disk_total | sed 's|"||g')
