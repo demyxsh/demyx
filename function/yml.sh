@@ -12,9 +12,9 @@ demyx_yml() {
         if [[ "$DEMYX_APP_SSL" = "on" ]]; then
             DEMYX_REGEX_PROTOCOL="http://"
             DEMYX_REGEX_PROTOCOL_REPLACEMENT="https://"
-            DEMYX_SERVER_IP=$(demyx util curl -s https://ipecho.net/plain | sed -e 's/\r//g')
+            DEMYX_SERVER_IP=$(demyx util curl -m 5 https://ipecho.net/plain | sed -e 's/\r//g')
             DEMYX_SUBDOMAIN_CHECK=$(demyx util dig +short "$DEMYX_APP_DOMAIN" | sed -e '1d' | sed -e 's/\r//g')
-            DEMYX_CLOUDFLARE_CHECK=$(curl -svo /dev/null "$DEMYX_APP_DOMAIN" 2>&1 | grep "Server: cloudflare" || true)
+            DEMYX_CLOUDFLARE_CHECK=$(curl -m 1 -svo /dev/null "$DEMYX_APP_DOMAIN" 2>&1 | grep "Server: cloudflare" || true)
         
             if [[ -n "$DEMYX_SUBDOMAIN_CHECK" ]]; then
                 DEMYX_DOMAIN_IP=$DEMYX_SUBDOMAIN_CHECK
