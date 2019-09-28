@@ -59,6 +59,7 @@ demyx_info() {
             "wp_count": "'$DEMYX_INFO_WP_COUNT'",
             "disk_used": "'$(df -h /demyx | sed '1d' | awk '{print $3}')'",
             "disk_total": "'$(df -h /demyx | sed '1d' | awk '{print $2}')'",
+            "disk_total_percentage": "'$(df -h /demyx | sed '1d' | awk '{print $5}')'",
             "memory_used": "'$(free -m | sed '1d' | sed '2d' | awk '{print $3}')'",
             "memory_total": "'$(free -m | sed '1d' | sed '2d' | awk '{print $2}')'",
             "uptime": "'$(uptime | awk -F '[,]' '{print $1}' | awk -F '[up]' '{print $3}')'",
