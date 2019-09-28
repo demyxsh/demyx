@@ -19,18 +19,23 @@ demyx_motd_stack_upgrade_notice() {
         demyx_execute -v echo -e "\e[34m[INFO]\e[39m An upgrade is available for the stack, please run: demyx stack --upgrade"
     fi
 }
+demyx_motd_git_latest() {
+    cd "$DEMYX_ETC" || exit
+    DEMYX_MOTD_GIT_LOG="$(git --no-pager log -5 --format=format:'- %s %C(white dim)(%ar)%C(reset)')"
+    demyx_execute -v echo -e "Latest Updates\n----------------\n$DEMYX_MOTD_GIT_LOG\n"
+}
 demyx_motd() {
     if [[ "$1" = init ]]; then
         [[ -z "$DEMYX_MODE" ]] && DEMYX_MODE=production
         DEMYX_MOTD_MODE=$(echo "$DEMYX_MODE" | tr [a-z] [A-Z] | sed -e 's/\r//g')
-        DEMYX_HOST_UPPERCASE=$(hostname | tr [a-z] [A-Z])
+        DEMYX_MOTD_HOSTNAME=$(hostname)
         [[ -z "$DEMYX_SSH" ]] && DEMYX_SSH=2222
         [[ -z "$DEMYX_STATUS" ]] && DEMYX_STATUS=0
 
         cat > /demyx/.env <<-EOF
             # AUTO GENERATED
             DEMYX_MOTD_MODE=$DEMYX_MOTD_MODE
-            DEMYX_MOTD_HOST=$DEMYX_HOST_UPPERCASE
+            DEMYX_MOTD_HOST=$DEMYX_MOTD_HOSTNAME
             DEMYX_MOTD_USER=DEMYX
             DEMYX_MOTD_SSH=$DEMYX_SSH
             DEMYX_MOTD_STATUS=$DEMYX_STATUS
@@ -40,11 +45,36 @@ EOF
         source /demyx/.env
         
         if (( "$DEMYX_MOTD_STATUS" > 1 )); then
-            DEMYX_MOTD_STATUS="$(echo -e "\e[32m$DEMYX_MOTD_STATUS UPDATES\e[39m")"
+            DEMYX_MOTD_STATUS="$(echo -e "\e[32m$DEMYX_MOTD_STATUS updates\e[39m")"
         elif [[ "$DEMYX_MOTD_STATUS" = 1 ]]; then
-            DEMYX_MOTD_STATUS="$(echo -e "\e[32m1 UPDATE\e[39m")"
+            DEMYX_MOTD_STATUS="$(echo -e "\e[32m1 update\e[39m")"
         else
-            DEMYX_MOTD_STATUS=UPDATED
+            DEMYX_MOTD_STATUS="Updated"
+        fi
+
+        DEMYX_MOTD_SYSTEM_INFO=$(demyx info dash)
+        DEMYX_MOTD_SYSTEM_DISK=$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .disk_used | sed 's|"||g')
+        DEMYX_MOTD_SYSTEM_DISK_TOTAL=$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .disk_total | sed 's|"||g')
+        DEMYX_MOTD_SYSTEM_DISK_TOTAL_PERCENTAGE=$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .disk_total_percentage | sed 's|"||g')
+        DEMYX_MOTD_SYSTEM_DISK_TOTAL_PERCENTAGE_NUMERIC=$(echo "$DEMYX_MOTD_SYSTEM_DISK_TOTAL_PERCENTAGE" | sed "s|%||g")
+        DEMYX_MOTD_SYSTEM_MEMORY=$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .memory_used | sed 's|"||g')
+        DEMYX_MOTD_SYSTEM_MEMORY_TOTAL=$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .memory_total | sed 's|"||g')
+        DEMYX_MOTD_SYSTEM_UPTIME=$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .uptime | sed 's|"||g')
+        DEMYX_MOTD_SYSTEM_LOAD=$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .load_average | sed 's|"||g')
+        DEMYX_MOTD_SYSTEM_CONTAINER=$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .container_running | sed 's|"||g')
+        DEMYX_MOTD_SYSTEM_CONTAINER_DEAD=$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .container_dead | sed 's|"||g')
+
+        if [[ "$DEMYX_MOTD_SYSTEM_CONTAINER_DEAD" = 0 ]]; then
+            DEMYX_MOTD_SYSTEM_CONTAINER_DEAD_COUNT=
+        else
+            DEMYX_MOTD_SYSTEM_CONTAINER_DEAD_COUNT="($DEMYX_MOTD_SYSTEM_CONTAINER_DEAD dead)"
+        fi
+
+        if (( "$DEMYX_MOTD_SYSTEM_DISK_TOTAL_PERCENTAGE_NUMERIC" > 75 )); then
+            DEMYX_MOTD_SYSTEM_DISK=$(echo -e "\e[33m$DEMYX_MOTD_SYSTEM_DISK")
+            DEMYX_MOTD_SYSTEM_DISK_TOTAL_PERCENTAGE=$(echo -e "($DEMYX_MOTD_SYSTEM_DISK_TOTAL_PERCENTAGE)\e[39m")
+        else
+            DEMYX_MOTD_SYSTEM_DISK_TOTAL_PERCENTAGE="($DEMYX_MOTD_SYSTEM_DISK_TOTAL_PERCENTAGE)"
         fi
 
         echo "
@@ -57,17 +87,19 @@ EOF
             - Bugs: github.com/demyxco/demyx/issues
             - Contact: info@demyx.sh
 
-            =========================
-             DEMYX  | $DEMYX_MOTD_MODE
-             HOST   | $DEMYX_MOTD_HOST
-             SSH    | $DEMYX_MOTD_SSH
-             STATUS | $DEMYX_MOTD_STATUS
-            =========================" | sed 's/            //g'
+            $(demyx_motd_git_latest)
 
-        cd "$DEMYX_ETC" || exit
+            =====================================
+             MODE       | $DEMYX_MOTD_MODE ($DEMYX_MOTD_STATUS)
+             HOST       | $DEMYX_MOTD_HOST
+             SSH        | $DEMYX_MOTD_SSH
+             DISK       | $DEMYX_MOTD_SYSTEM_DISK/$DEMYX_MOTD_SYSTEM_DISK_TOTAL $DEMYX_MOTD_SYSTEM_DISK_TOTAL_PERCENTAGE
+             MEMORY     | $DEMYX_MOTD_SYSTEM_MEMORY/$DEMYX_MOTD_SYSTEM_MEMORY_TOTAL
+             UPTIME     | ${DEMYX_MOTD_SYSTEM_UPTIME:1}
+             LOAD       | $DEMYX_MOTD_SYSTEM_LOAD
+             CONTAINERS | $DEMYX_MOTD_SYSTEM_CONTAINER $DEMYX_MOTD_SYSTEM_CONTAINER_DEAD_COUNT
+            =====================================" | sed 's/            //g'
 
-        DEMYX_MOTD_GIT_LOG="$(git --no-pager log -5 --format=format:'- %s %C(white dim)(%ar)%C(reset)')"
-        demyx_execute -v echo -e "\nLatest Updates\n--------------\n$DEMYX_MOTD_GIT_LOG\n"
         demyx_motd_stack_upgrade_notice
         demyx_motd_dev_warning
     fi
