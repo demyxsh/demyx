@@ -7,9 +7,6 @@ DEMYX_CHROOT_CONTAINER_CHECK=$(docker ps -a | awk '{print $NF}' | grep -w demyx)
 DEMYX_CHROOT_HOST=$(hostname)
 DEMYX_CHROOT_SSH=2222
 
-# Delete /demyx on host if it exists
-[[ -f /demyx/config ]] && rm -rf /demyx
-
 while :; do
     case "$1" in
         exec)
