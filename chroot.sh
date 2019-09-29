@@ -3,6 +3,9 @@
 # https://demyx.sh
 # 
 DEMYX_CHROOT_SUDO_CHECK=$(id -u)
+DEMYX_CHROOT_CONTAINER_CHECK=$(docker ps -a | awk '{print $NF}' | grep -w demyx)
+DEMYX_CHROOT_HOST=$(hostname)
+DEMYX_CHROOT_SSH=2222
 
 # Check for demyx directory
 if [[ ! -d /demyx ]]; then
@@ -30,10 +33,6 @@ else
         chmod +x /demyx/chroot.sh
     fi
 fi
-
-DEMYX_CHROOT_CONTAINER_CHECK=$(docker ps -a | awk '{print $NF}' | grep -w demyx)
-DEMYX_CHROOT_HOST=$(hostname)
-DEMYX_CHROOT_SSH=2222
 
 while :; do
     case "$1" in
