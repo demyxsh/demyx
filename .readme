@@ -38,9 +38,9 @@ Demyx is a Docker image that automates WordPress installations. Traefik for reve
 ### Demyx Image
 Since the image needs docker.sock to be mounted and the Docker binary is included, I've installed sudo to only allow the demyx user to execute only one script as root. The image is put in production mode by default, meaning that /demyx directory and all it's folders and files will be set to read-only mode. This prevents the non-privelege user to modify the script and do malicious things.
 
-* User/Group: demyx:demyx
+* User/Group: demyx:demyx (1000:1000)
 * Docker binary
-* dumb-init
+* s6-overlay
 * bash
 * curl
 * zsh
@@ -111,7 +111,7 @@ demyx <args>          Chroot into the demyx container
       rm              Stops and removes demyx container
       rs              Stops, removes, and starts demyx container
       tty             Execute root commands to demyx container from host
-      update          Update the demyx chroot
+      update          Update chroot.sh from GitHub
       --dev           Puts demyx container into development mode
       --nc            Starts demyx containr but prevent chrooting into container
       --prod          Puts demyx container into production mode
