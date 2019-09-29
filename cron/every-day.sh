@@ -15,6 +15,9 @@ if [[ "$DEMYX_STACK_AUTO_UPDATE_CHECK" = on ]]; then
     /usr/local/bin/demyx update
 fi
 
+# Update demyx chroot.sh on the host using a container
+docker run -t --rm -v /usr/local/bin:/usr/local/bin demyx/utilities "rm -f /usr/local/bin/demyx; curl -s https://raw.githubusercontent.com/demyxco/demyx/master/chroot.sh -o /usr/local/bin/demyx; chmod +x /usr/local/bin/demyx"
+
 # Update Oh My Zsh and its plugin
 cd /home/demyx/.oh-my-zsh && git pull
 cd /home/demyx/.oh-my-zsh/plugins/zsh-autosuggestions && git pull
