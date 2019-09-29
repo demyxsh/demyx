@@ -3,7 +3,6 @@
 # https://demyx.sh
 # 
 
-DEMYX_CHROOT_SUDO_CHECK=$(id -u)
 DEMYX_CHROOT_CONTAINER_CHECK=$(docker ps -a | awk '{print $NF}' | grep -w demyx)
 DEMYX_CHROOT_HOST=$(hostname)
 DEMYX_CHROOT_SSH=2222
@@ -127,13 +126,7 @@ elif [[ "$DEMYX_CHROOT" = restart ]]; then
 elif [[ "$DEMYX_CHROOT" = tty ]]; then
     docker exec -t demyx "$@"
 elif [[ "$DEMYX_CHROOT" = update ]]; then
-    # sudo check
-    if [ "$DEMYX_CHROOT_SUDO_CHECK" != 0 ]; then
-        echo -e "\e[31m[CRITICAL]\e[39m Update must be ran as root or sudo"
-        exit 1
-    fi
-    wget https://raw.githubusercontent.com/demyxco/demyx/master/chroot.sh -qO /demyx/chroot.sh
-    chmod +x /demyx/chroot.sh
+    docker run -t --rm -v /usr/local/bin:/usr/local/bin demyx/utilities "rm -f /usr/local/bin/demyx; curl -s https://raw.githubusercontent.com/demyxco/demyx/master/chroot.sh -o /usr/local/bin/demyx; chmod +x /usr/local/bin/demyx"
     echo -e "\e[32m[SUCCESS]\e[39m Demyx chroot has successfully updated"
 else
     if [[ -n "$DEMYX_CHROOT_CONTAINER_CHECK" ]]; then
