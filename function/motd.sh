@@ -1,6 +1,10 @@
 # Demyx
 # https://demyx.sh
 
+demyx_motd_chroot_warning() {
+    DEMYX_MOTD_CHROOT_CHECK=$(docker run --rm -v /usr/local/bin:/usr/local/bin demyx/utilities "[[ -L /usr/local/bin/test ]] && echo true")
+    [[ "$DEMYX_MOTD_CHROOT_CHECK" = true ]] && demyx_execute -v echo -e "\e[33m[WARNING]\e[39m The demyx chroot.sh script needs to be updated on the host, please run this command:\n\ndocker run -t --rm -v /usr/local/bin:/usr/local/bin demyx/utilities \"rm -f /usr/local/bin/demyx; curl -s https://raw.githubusercontent.com/demyxco/demyx/master/chroot.sh -o /usr/local/bin/demyx; chmod +x /usr/local/bin/demyx\"\n"
+}
 demyx_motd_dev_warning() {
     DEMYX_COMMON_WP_NOT_EMPTY=$(ls "$DEMYX_WP")
     if [[ -n "$DEMYX_COMMON_WP_NOT_EMPTY" ]]; then
@@ -98,8 +102,10 @@ EOF
              UPTIME     | ${DEMYX_MOTD_SYSTEM_UPTIME:1}
              LOAD       | $DEMYX_MOTD_SYSTEM_LOAD
              CONTAINERS | $DEMYX_MOTD_SYSTEM_CONTAINER $DEMYX_MOTD_SYSTEM_CONTAINER_DEAD_COUNT
-            =====================================" | sed 's/            //g'
+            =====================================
+            " | sed 's/            //g'
 
+        demyx_motd_chroot_warning
         demyx_motd_stack_upgrade_notice
         demyx_motd_dev_warning
     fi
