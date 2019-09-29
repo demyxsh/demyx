@@ -2,37 +2,14 @@
 # Demyx
 # https://demyx.sh
 # 
+
 DEMYX_CHROOT_SUDO_CHECK=$(id -u)
 DEMYX_CHROOT_CONTAINER_CHECK=$(docker ps -a | awk '{print $NF}' | grep -w demyx)
 DEMYX_CHROOT_HOST=$(hostname)
 DEMYX_CHROOT_SSH=2222
 
-# Check for demyx directory
-if [[ ! -d /demyx ]]; then
-    if [[ "$DEMYX_CHROOT_SUDO_CHECK" != 0 ]]; then
-        echo -e "\e[31m[CRITICAL]\e[39m demyx chroot.sh needs to be ran as sudo or root to update, this is a one time thing."
-        exit 1
-    else
-        read -rep "Enter your non-root username (for security purposes): " DEMYX_CHROOT_USER
-        if [[ -z "$DEMYX_CHROOT_USER" ]] || [[ "$DEMYX_CHROOT_USER" = root ]]; then
-            echo "Username cannot be root or empty"
-            exit 1
-        else
-            mkdir -p /demyx
-            echo "DEMYX_CHROOT_USER=$DEMYX_CHROOT_USER" > /demyx/config
-            wget https://raw.githubusercontent.com/demyxco/demyx/master/chroot.sh -qO /demyx/chroot.sh
-            rm /usr/local/bin/demyx
-            ln -s /demyx/chroot.sh /usr/local/bin/demyx
-            chown -R "$DEMYX_CHROOT_USER":"$DEMYX_CHROOT_USER" /demyx
-            chmod +x /demyx/chroot.sh
-        fi
-    fi
-else
-    if [[ -n "$DEMYX_CHROOT_CONTAINER_CHECK" ]]; then
-        wget https://raw.githubusercontent.com/demyxco/demyx/master/chroot.sh -qO /demyx/chroot.sh
-        chmod +x /demyx/chroot.sh
-    fi
-fi
+# Delete /demyx on host if it exists
+[[ -f /demyx/config ]] && rm -rf /demyx
 
 while :; do
     case "$1" in
@@ -54,6 +31,9 @@ while :; do
             DEMYX_CHROOT=tty
             shift
             break
+            ;;
+        update)
+            DEMYX_CHROOT=update
             ;;
         --dev)
             DEMYX_CHROOT_MODE=development
@@ -126,6 +106,7 @@ elif [[ "$DEMYX_CHROOT" = help ]]; then
     echo "      rm              Stops and removes demyx container"
     echo "      rs              Stops, removes, and starts demyx container"
     echo "      tty             Execute root commands to demyx container from host"
+    echo "      update          Update chroot.sh from GitHub"
     echo "      --dev           Puts demyx container into development mode"
     echo "      --nc            Starts demyx containr but prevent chrooting into container"
     echo "      --prod          Puts demyx container into production mode"
@@ -145,6 +126,15 @@ elif [[ "$DEMYX_CHROOT" = restart ]]; then
     fi
 elif [[ "$DEMYX_CHROOT" = tty ]]; then
     docker exec -t demyx "$@"
+elif [[ "$DEMYX_CHROOT" = update ]]; then
+    # sudo check
+    if [ "$DEMYX_CHROOT_SUDO_CHECK" != 0 ]; then
+        echo -e "\e[31m[CRITICAL]\e[39m Update must be ran as root or sudo"
+        exit 1
+    fi
+    wget https://raw.githubusercontent.com/demyxco/demyx/master/chroot.sh -qO /demyx/chroot.sh
+    chmod +x /demyx/chroot.sh
+    echo -e "\e[32m[SUCCESS]\e[39m Demyx chroot has successfully updated"
 else
     if [[ -n "$DEMYX_CHROOT_CONTAINER_CHECK" ]]; then
         DEMYX_MODE_CHECK=$(docker exec -t demyx sh -c "grep DEMYX_MOTD_MODE /demyx/.env | awk -F '[=]' '{print \$2}'")
