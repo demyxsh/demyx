@@ -145,7 +145,7 @@ demyx_run() {
             demyx_execute docker cp "$DEMYX_RUN_CLONE_APP":/var/www/html "$DEMYX_APP_PATH"
 
             demyx_echo 'Removing exported clone database'
-            demyx_execute demyx exec "$DEMYX_RUN_CLONE_APP" rm clone.sql
+            demyx_execute docker exec -t "$DEMYX_RUN_CLONE_APP" rm clone.sql
         fi
 
         demyx_echo 'Creating WordPress volume'
@@ -229,7 +229,7 @@ demyx_run() {
             demyx_execute demyx wp "$DEMYX_APP_DOMAIN" rewrite structure '/%category%/%postname%/'
 
             demyx_echo 'Removing clone database'
-            demyx_execute demyx exec "$DEMYX_APP_DOMAIN" rm clone.sql
+            demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" rm clone.sql
 
             demyx_echo 'Cleaning up'
             demyx_execute rm -rf "$DEMYX_APP_PATH"/html
