@@ -10,5 +10,5 @@ demyx_update() {
 
     demyx_echo 'Updating MOTD'
     demyx_execute sed -i "s|DEMYX_MOTD_STATUS=.*|DEMYX_MOTD_STATUS=0|g" "$DEMYX"/.env
-    demyx stack --refresh
+    demyx stack refresh
 }

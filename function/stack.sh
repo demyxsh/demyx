@@ -9,6 +9,9 @@ demyx_stack() {
             ouroboros)
                 DEMYX_STACK_SELECT=ouroboros
                 ;;
+            refresh)
+                DEMYX_STACK_SELECT=refresh
+                ;;
             --auto-update|--auto-update=on)
                 DEMYX_STACK_AUTO_UPDATE=on
                 ;;
@@ -32,9 +35,6 @@ demyx_stack() {
                 ;;
             --monitor=off)
                 DEMYX_STACK_MONITOR=off
-                ;;
-            --refresh)
-                DEMYX_STACK_REFRESH=1
                 ;;
             --tracker|--tracker=on)
                 DEMYX_STACK_TRACKER=on
@@ -64,7 +64,7 @@ demyx_stack() {
         
         # Regenerate stack's configs if the check returns null
         if [[ -z "$DEMYX_STACK_OUROBOROS_IGNORE_CHECK" ]]; then
-            demyx stack --refresh
+            demyx stack refresh
         fi
 
         if [[ "$DEMYX_STACK_IGNORE" = off ]]; then
@@ -76,6 +76,23 @@ demyx_stack() {
         fi
 
         demyx compose stack up -d
+    elif [[ "$DEMYX_STACK_SELECT" = refresh ]]; then
+        demyx_echo 'Backing up stack directory as /demyx/backup/stack.tgz'
+        demyx_execute tar -czf /demyx/backup/stack.tgz -C /demyx/app stack
+
+        source "$DEMYX_FUNCTION"/env.sh
+        source "$DEMYX_FUNCTION"/yml.sh
+
+        demyx_echo 'Refreshing stack env and yml'
+
+        # Traefik backwards compatibility
+        if [[ "$DEMYX_CHECK_TRAEFIK" = 1 ]]; then
+            demyx_execute demyx_stack_env; demyx_stack_yml
+        else
+            demyx_execute demyx_stack_v2_env; demyx_stack_v2_yml
+        fi
+
+        demyx compose stack up -d --remove-orphans
     elif [[ "$DEMYX_STACK_AUTO_UPDATE" = on ]]; then
         demyx_echo 'Turn on stack auto update'
         demyx_execute sed -i 's/DEMYX_STACK_AUTO_UPDATE=off/DEMYX_STACK_AUTO_UPDATE=on/g' "$DEMYX_STACK"/.env
@@ -94,23 +111,6 @@ demyx_stack() {
     elif [[ "$DEMYX_STACK_MONITOR" = off ]]; then
         demyx_echo 'Turn off stack monitor'
         demyx_execute sed -i 's/DEMYX_STACK_MONITOR=on/DEMYX_STACK_MONITOR=off/g' "$DEMYX_STACK"/.env
-    elif [[ -n "$DEMYX_STACK_REFRESH" ]]; then
-        demyx_echo 'Backing up stack directory as /demyx/backup/stack.tgz'
-        demyx_execute tar -czf /demyx/backup/stack.tgz -C /demyx/app stack
-
-        source "$DEMYX_FUNCTION"/env.sh
-        source "$DEMYX_FUNCTION"/yml.sh
-
-        demyx_echo 'Refreshing stack env and yml'
-
-        # Traefik backwards compatibility
-        if [[ "$DEMYX_CHECK_TRAEFIK" = 1 ]]; then
-            demyx_execute demyx_stack_env; demyx_stack_yml
-        else
-            demyx_execute demyx_stack_v2_env; demyx_stack_v2_yml
-        fi
-
-        demyx compose stack up -d --remove-orphans
     elif [[ "$DEMYX_STACK_TRACKER" = on ]]; then
         demyx_echo 'Turn on stack tracker'
         demyx_execute sed -i 's/DEMYX_STACK_TRACKER=off/DEMYX_STACK_TRACKER=on/g' "$DEMYX_STACK"/.env
@@ -147,7 +147,7 @@ demyx_stack() {
             demyx_execute sed -i "s|traefik:v1.7.16|traefik|g" "$DEMYX_STACK"/docker-compose.yml; \
                 docker pull traefik:latest
 
-            demyx stack --refresh
+            demyx stack refresh
             demyx config all --refresh
 
             demyx_execute -v echo -e "\e[32m[SUCCESS]\e[39m Upgrade has finished, you will need to update the docker-compose labels for non Demyx apps."
