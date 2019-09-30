@@ -387,6 +387,7 @@ demyx_config() {
                     demyx_execute docker run -dit --rm \
                         --name "$DEMYX_APP_COMPOSE_PROJECT"_cs \
                         --net demyx \
+                        --hostname "$DEMYX_APP_COMPOSE_PROJECT" \
                         --volumes-from "$DEMYX_APP_WP_CONTAINER" \
                         -v demyx_cs:/home/www-data \
                         -e PASSWORD="$MARIADB_ROOT_PASSWORD" \
@@ -406,6 +407,7 @@ demyx_config() {
                     demyx_execute docker run -dit --rm \
                         --name "$DEMYX_APP_COMPOSE_PROJECT"_cs \
                         --net demyx \
+                        --hostname "$DEMYX_APP_COMPOSE_PROJECT" \
                         --volumes-from "$DEMYX_APP_WP_CONTAINER" \
                         -v demyx_cs:/home/www-data \
                         -e PASSWORD="$MARIADB_ROOT_PASSWORD" \
