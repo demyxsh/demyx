@@ -60,6 +60,8 @@ demyx_stack() {
     done
 
     if [[ "$DEMYX_STACK_SELECT" = ouroboros ]]; then
+        [[ -z "$DEMYX_STACK_IGNORE" ]] && demyx_die 'You need to specificy the ignore flag: --ignore'
+
         DEMYX_STACK_OUROBOROS_IGNORE_CHECK=$(grep DEMYX_STACK_OUROBOROS_IGNORE "$DEMYX_STACK"/.env)
         
         # Regenerate stack's configs if the check returns null
