@@ -137,6 +137,10 @@ demyx_run() {
             demyx_execute demyx_v2_yml
         fi
 
+        # Recheck SSL
+        DEMYX_RUN_SSL_RECHECK=$(grep DEMYX_APP_SSL "$DEMYX_APP_PATH"/.env | awk -F '[=]' '{print $2}')
+        [[ "$DEMYX_RUN_SSL_RECHECK" = off ]] && DEMYX_RUN_PROTO="http://$DEMYX_TARGET"
+
         if [[ -n "$DEMYX_RUN_CLONE" ]]; then
             demyx_echo 'Cloning database'
             demyx_execute demyx wp "$DEMYX_RUN_CLONE" db export clone.sql --exclude_tables=wp_users,wp_usermeta
