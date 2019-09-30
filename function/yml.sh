@@ -14,7 +14,7 @@ demyx_yml() {
             DEMYX_REGEX_PROTOCOL_REPLACEMENT="https://"
             DEMYX_SERVER_IP=$(demyx util curl -m 5 https://ipecho.net/plain | sed -e 's/\r//g')
             DEMYX_SUBDOMAIN_CHECK=$(demyx util dig +short "$DEMYX_APP_DOMAIN" | sed -e '1d' | sed -e 's/\r//g')
-            DEMYX_CLOUDFLARE_CHECK=$(curl -m 1 -svo /dev/null "$DEMYX_APP_DOMAIN" 2>&1 | grep "Server: cloudflare" || true)
+            DEMYX_CLOUDFLARE_CHECK=$(curl -m 5 -svo /dev/null "$DEMYX_APP_DOMAIN" 2>&1 | grep "Server: cloudflare" || true)
         
             if [[ -n "$DEMYX_SUBDOMAIN_CHECK" ]]; then
                 DEMYX_DOMAIN_IP=$DEMYX_SUBDOMAIN_CHECK
@@ -29,6 +29,7 @@ demyx_yml() {
                         - \"traefik.frontend.headers.STSIncludeSubdomains=\${DEMYX_APP_STS_INCLUDE_SUBDOMAINS}\"
                         - \"traefik.frontend.headers.STSPreload=\${DEMYX_APP_STS_PRELOAD}\""
             else
+                sed -i "s|DEMYX_APP_SSL=.*|DEMYX_APP_SSL=off|g" "$DEMYX_APP_PATH"/.env
                 echo -e "\e[33m[WARNING]\e[39m $DEMYX_TARGET does not point to server's IP! Proceeding without SSL..."
             fi
         fi
@@ -240,7 +241,7 @@ demyx_v2_yml() {
         if [[ "$DEMYX_APP_SSL" = "on" ]]; then
             DEMYX_SERVER_IP=$(demyx util curl -m 5 -s https://ipecho.net/plain | sed -e 's/\r//g')
             DEMYX_SUBDOMAIN_CHECK=$(demyx util dig +short "$DEMYX_APP_DOMAIN" | sed -e '1d' | sed -e 's/\r//g')
-            DEMYX_CLOUDFLARE_CHECK=$(curl -m 1 -svo /dev/null "$DEMYX_APP_DOMAIN" 2>&1 | grep "Server: cloudflare" || true)
+            DEMYX_CLOUDFLARE_CHECK=$(curl -m 5 -svo /dev/null "$DEMYX_APP_DOMAIN" 2>&1 | grep "Server: cloudflare" || true)
         
             if [[ -n "$DEMYX_SUBDOMAIN_CHECK" ]]; then
                 DEMYX_DOMAIN_IP=$DEMYX_SUBDOMAIN_CHECK
@@ -257,6 +258,7 @@ demyx_v2_yml() {
                       - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-https.tls.certresolver=demyx\"
                       - \"traefik.http.middlewares.\${DEMYX_APP_COMPOSE_PROJECT}-redirect.redirectscheme.scheme=https\""
             else
+                sed -i "s|DEMYX_APP_SSL=.*|DEMYX_APP_SSL=off|g" "$DEMYX_APP_PATH"/.env
                 echo -e "\e[33m[WARNING]\e[39m $DEMYX_TARGET does not point to server's IP! Proceeding without SSL..."
             fi
         fi
