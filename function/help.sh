@@ -142,11 +142,12 @@ demyx_help() {
         echo
         echo "demyx stack <arg>             Target stack containers"
         echo "            ouroboros         Configure Ouroboros"
+        echo "            refresh           Refresh env and yml stack files"
+        echo "            upgrade           Upgrade acme.json and configs for Traefik v2"
         echo "            --auto-update     Auto update Demyx core files"
         echo "            --healthcheck     Turns on/off healthcheck globally"
         echo "            --ignore          Used by Ouroboros to ignore updating images, enter container name or off to disable"
         echo "            --monitor         Turns on/off auto scaling globally"
-        echo "            --refresh         Refresh env and yml stack files"
         echo "            --tracker         Pings to demyx.sh server to count active Demyx install"
         echo
     elif [[ "$DEMYX_HELP" = update ]]; then
