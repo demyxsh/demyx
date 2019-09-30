@@ -204,6 +204,8 @@ demyx_stack_yml() {
                     - SELF_UPDATE=true
                     - CLEANUP=true
                     - LATEST=true
+                    - IGNORE="\$DEMYX_STACK_OUROBOROS_IGNORE"
+                    - TZ=America/Los_Angeles
                 volumes:
                     - /var/run/docker.sock:/var/run/docker.sock:ro
         volumes:
@@ -418,6 +420,7 @@ demyx_stack_v2_yml() {
                     - SELF_UPDATE=true
                     - CLEANUP=true
                     - LATEST=true
+                    - IGNORE="\$DEMYX_STACK_OUROBOROS_IGNORE"
                     - TZ=America/Los_Angeles
                 volumes:
                     - /var/run/docker.sock:/var/run/docker.sock:ro

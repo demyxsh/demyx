@@ -9,6 +9,9 @@ demyx_stack() {
             down)
                 DEMYX_STACK_DOWN=1
                 ;;
+            ouroboros)
+                DEMYX_STACK_SELECT=ouroboros
+                ;;
             --auto-update|--auto-update=on)
                 DEMYX_STACK_AUTO_UPDATE=on
                 ;;
@@ -23,6 +26,12 @@ demyx_stack() {
                 ;;
             --healthcheck=off)
                 DEMYX_STACK_HEALTHCHECK=off
+                ;;
+            --ignore=?*)
+                DEMYX_STACK_IGNORE=${2#*=}
+                ;;
+            --ignore=)
+                demyx_die '"--ignore" cannot be empty'
                 ;;
             --monitor|--monitor=on)
                 DEMYX_STACK_MONITOR=on
@@ -56,7 +65,24 @@ demyx_stack() {
         shift
     done
 
-    if [[ -n "$DEMYX_STACK_DOWN" ]]; then
+    if [[ "$DEMYX_STACK_SELECT" = ouroboros ]]; then
+        DEMYX_STACK_OUROBOROS_IGNORE_CHECK=$(grep DEMYX_STACK_OUROBOROS_IGNORE "$DEMYX_STACK"/.env)
+        
+        # Regenerate stack's configs if the check returns null
+        if [[ -z "$DEMYX_STACK_OUROBOROS_IGNORE_CHECK" ]]; then
+            demyx stack --refresh
+        fi
+
+        if [[ "$DEMYX_STACK_IGNORE" = off ]]; then
+            demyx_echo 'Updating Ouroboros'
+            demyx_execute sed -i "s|DEMYX_STACK_OUROBOROS_IGNORE=.*|DEMYX_STACK_OUROBOROS_IGNORE=|g" "$DEMYX_STACK"/.env
+        else
+            demyx_echo 'Updating Ouroboros'
+            demyx_execute sed -i "s|DEMYX_STACK_OUROBOROS_IGNORE=.*|DEMYX_STACK_OUROBOROS_IGNORE=\"$DEMYX_STACK_IGNORE\"|g" "$DEMYX_STACK"/.env
+        fi
+
+        demyx compose stack up -d
+    elif [[ -n "$DEMYX_STACK_DOWN" ]]; then
         demyx_execute -v demyx stack stop
         demyx_execute -v demyx stack rm -f
     elif [[ -n "$DEMYX_STACK_DU" ]]; then
