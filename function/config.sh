@@ -374,6 +374,8 @@ demyx_config() {
                     DEMYX_BS_FILES="\"/var/www/html/wp-content/themes/**/*\""
                 elif [ "$DEMYX_CONFIG_FILES" = plugins ]; then
                     DEMYX_BS_FILES="\"/var/www/html/wp-content/plugins/**/*\""
+                elif [ "$DEMYX_CONFIG_FILES" = off ]; then
+                    DEMYX_BS_FILES=off
                 elif [ -z "$DEMYX_CONFIG_FILES" ]; then
                     DEMYX_BS_FILES='["/var/www/html/wp-content/themes/**/*", "/var/www/html/wp-content/plugins/**/*"]'
                 else
