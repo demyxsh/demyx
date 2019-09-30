@@ -6,9 +6,6 @@
 demyx_stack() {
     while :; do
         case "$2" in
-            down)
-                DEMYX_STACK_DOWN=1
-                ;;
             ouroboros)
                 DEMYX_STACK_SELECT=ouroboros
                 ;;
@@ -17,9 +14,6 @@ demyx_stack() {
                 ;;
             --auto-update=off)
                 DEMYX_STACK_AUTO_UPDATE=off
-                ;;
-            --du)
-                DEMYX_STACK_DU=1
                 ;;
             --healthcheck|--healthcheck=on)
                 DEMYX_STACK_HEALTHCHECK=on
@@ -82,13 +76,6 @@ demyx_stack() {
         fi
 
         demyx compose stack up -d
-    elif [[ -n "$DEMYX_STACK_DOWN" ]]; then
-        demyx_execute -v demyx stack stop
-        demyx_execute -v demyx stack rm -f
-    elif [[ -n "$DEMYX_STACK_DU" ]]; then
-        demyx_execute -v demyx stack stop
-        demyx_execute -v demyx stack rm -f
-        demyx_execute -v demyx stack up -d --remove-orphans
     elif [[ "$DEMYX_STACK_AUTO_UPDATE" = on ]]; then
         demyx_echo 'Turn on stack auto update'
         demyx_execute sed -i 's/DEMYX_STACK_AUTO_UPDATE=off/DEMYX_STACK_AUTO_UPDATE=on/g' "$DEMYX_STACK"/.env
@@ -123,7 +110,7 @@ demyx_stack() {
             demyx_execute demyx_stack_v2_env; demyx_stack_v2_yml
         fi
 
-        demyx stack up -d --remove-orphans
+        demyx compose stack up -d --remove-orphans
     elif [[ "$DEMYX_STACK_TRACKER" = on ]]; then
         demyx_echo 'Turn on stack tracker'
         demyx_execute sed -i 's/DEMYX_STACK_TRACKER=off/DEMYX_STACK_TRACKER=on/g' "$DEMYX_STACK"/.env
@@ -168,12 +155,6 @@ demyx_stack() {
             demyx_die 'The stack is already updated.'
         fi
     else
-        shift
-        docker run -t --rm \
-        --name demyx_compose \
-        -v /var/run/docker.sock:/var/run/docker.sock:ro \
-        --volumes-from demyx \
-        --workdir "$DEMYX_STACK" \
-        demyx/docker-compose "$@"
+        demyx_die --command-not-found
     fi
 }
