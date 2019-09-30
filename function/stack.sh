@@ -12,6 +12,9 @@ demyx_stack() {
             refresh)
                 DEMYX_STACK_SELECT=refresh
                 ;;
+            upgrade)
+                DEMYX_STACK_SELECT=upgrade
+                ;;
             --auto-update|--auto-update=on)
                 DEMYX_STACK_AUTO_UPDATE=on
                 ;;
@@ -41,9 +44,6 @@ demyx_stack() {
                 ;;
             --tracker=off)
                 DEMYX_STACK_TRACKER=off
-                ;;
-            --upgrade)
-                DEMYX_STACK_UPGRADE=1
                 ;;
             --)
                 shift
@@ -93,31 +93,7 @@ demyx_stack() {
         fi
 
         demyx compose stack up -d --remove-orphans
-    elif [[ "$DEMYX_STACK_AUTO_UPDATE" = on ]]; then
-        demyx_echo 'Turn on stack auto update'
-        demyx_execute sed -i 's/DEMYX_STACK_AUTO_UPDATE=off/DEMYX_STACK_AUTO_UPDATE=on/g' "$DEMYX_STACK"/.env
-    elif [[ "$DEMYX_STACK_AUTO_UPDATE" = off ]]; then
-        demyx_echo 'Turn off stack auto update'
-        demyx_execute sed -i 's/DEMYX_STACK_AUTO_UPDATE=on/DEMYX_STACK_AUTO_UPDATE=off/g' "$DEMYX_STACK"/.env
-    elif [[ "$DEMYX_STACK_HEALTHCHECK" = on ]]; then
-        demyx_echo 'Turn on stack healthcheck'
-        demyx_execute sed -i 's/DEMYX_STACK_HEALTHCHECK=off/DEMYX_STACK_HEALTHCHECK=on/g' "$DEMYX_STACK"/.env
-    elif [[ "$DEMYX_STACK_HEALTHCHECK" = off ]]; then
-        demyx_echo 'Turn off stack healthcheck'
-        demyx_execute sed -i 's/DEMYX_STACK_HEALTHCHECK=on/DEMYX_STACK_HEALTHCHECK=off/g' "$DEMYX_STACK"/.env
-    elif [[ "$DEMYX_STACK_MONITOR" = on ]]; then
-        demyx_echo 'Turn on stack monitor'
-        demyx_execute sed -i 's/DEMYX_STACK_MONITOR=off/DEMYX_STACK_MONITOR=on/g' "$DEMYX_STACK"/.env
-    elif [[ "$DEMYX_STACK_MONITOR" = off ]]; then
-        demyx_echo 'Turn off stack monitor'
-        demyx_execute sed -i 's/DEMYX_STACK_MONITOR=on/DEMYX_STACK_MONITOR=off/g' "$DEMYX_STACK"/.env
-    elif [[ "$DEMYX_STACK_TRACKER" = on ]]; then
-        demyx_echo 'Turn on stack tracker'
-        demyx_execute sed -i 's/DEMYX_STACK_TRACKER=off/DEMYX_STACK_TRACKER=on/g' "$DEMYX_STACK"/.env
-    elif [[ "$DEMYX_STACK_TRACKER" = off ]]; then
-        demyx_echo 'Turn off stack tracker'
-        demyx_execute sed -i 's/DEMYX_STACK_TRACKER=on/DEMYX_STACK_TRACKER=off/g' "$DEMYX_STACK"/.env
-    elif [[ -n "$DEMYX_STACK_UPGRADE" ]]; then
+    elif [[ "$DEMYX_STACK_SELECT" = upgrade ]]; then
         if [[ "$DEMYX_CHECK_TRAEFIK" = 1 ]]; then
             echo -en "\e[33m"
             read -rep "[WARNING] Upgrading the stack will stop all network activity. Update all configs? [yY]: " DEMYX_STACK_UPGRADE_CONFIRM
@@ -154,6 +130,30 @@ demyx_stack() {
         else
             demyx_die 'The stack is already updated.'
         fi
+    elif [[ "$DEMYX_STACK_AUTO_UPDATE" = on ]]; then
+        demyx_echo 'Turn on stack auto update'
+        demyx_execute sed -i 's/DEMYX_STACK_AUTO_UPDATE=off/DEMYX_STACK_AUTO_UPDATE=on/g' "$DEMYX_STACK"/.env
+    elif [[ "$DEMYX_STACK_AUTO_UPDATE" = off ]]; then
+        demyx_echo 'Turn off stack auto update'
+        demyx_execute sed -i 's/DEMYX_STACK_AUTO_UPDATE=on/DEMYX_STACK_AUTO_UPDATE=off/g' "$DEMYX_STACK"/.env
+    elif [[ "$DEMYX_STACK_HEALTHCHECK" = on ]]; then
+        demyx_echo 'Turn on stack healthcheck'
+        demyx_execute sed -i 's/DEMYX_STACK_HEALTHCHECK=off/DEMYX_STACK_HEALTHCHECK=on/g' "$DEMYX_STACK"/.env
+    elif [[ "$DEMYX_STACK_HEALTHCHECK" = off ]]; then
+        demyx_echo 'Turn off stack healthcheck'
+        demyx_execute sed -i 's/DEMYX_STACK_HEALTHCHECK=on/DEMYX_STACK_HEALTHCHECK=off/g' "$DEMYX_STACK"/.env
+    elif [[ "$DEMYX_STACK_MONITOR" = on ]]; then
+        demyx_echo 'Turn on stack monitor'
+        demyx_execute sed -i 's/DEMYX_STACK_MONITOR=off/DEMYX_STACK_MONITOR=on/g' "$DEMYX_STACK"/.env
+    elif [[ "$DEMYX_STACK_MONITOR" = off ]]; then
+        demyx_echo 'Turn off stack monitor'
+        demyx_execute sed -i 's/DEMYX_STACK_MONITOR=on/DEMYX_STACK_MONITOR=off/g' "$DEMYX_STACK"/.env
+    elif [[ "$DEMYX_STACK_TRACKER" = on ]]; then
+        demyx_echo 'Turn on stack tracker'
+        demyx_execute sed -i 's/DEMYX_STACK_TRACKER=off/DEMYX_STACK_TRACKER=on/g' "$DEMYX_STACK"/.env
+    elif [[ "$DEMYX_STACK_TRACKER" = off ]]; then
+        demyx_echo 'Turn off stack tracker'
+        demyx_execute sed -i 's/DEMYX_STACK_TRACKER=on/DEMYX_STACK_TRACKER=off/g' "$DEMYX_STACK"/.env
     else
         demyx_die --command-not-found
     fi

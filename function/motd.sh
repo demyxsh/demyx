@@ -20,7 +20,7 @@ demyx_motd_dev_warning() {
 }
 demyx_motd_stack_upgrade_notice() {
     if [[ "$DEMYX_CHECK_TRAEFIK" = 1 ]]; then
-        demyx_execute -v echo -e "\e[34m[INFO]\e[39m An upgrade is available for the stack, please run: demyx stack --upgrade"
+        demyx_execute -v echo -e "\e[34m[INFO]\e[39m An upgrade is available for the stack, please run: demyx stack upgrade"
     fi
 }
 demyx_motd_git_latest() {
