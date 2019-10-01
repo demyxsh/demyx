@@ -15,6 +15,9 @@ demyx_utility() {
             --htpasswd=)
                 demyx_die '"--htpasswd" cannot be empty.'
                 ;;
+            --id)
+                DEMYX_UTILITY_ID=1
+                ;;
             --kill)
                 DEMYX_UTILITY_KILL=1
                 ;;
@@ -71,6 +74,16 @@ demyx_utility() {
         
         if [[ -n "$DEMYX_UTILITY_RAW" ]]; then
             demyx_execute -v -q echo $DEMYX_UTILITY_HTPASSWD_OUTPUT
+        else
+            demyx_execute -v demyx_table "$PRINT_TABLE"
+        fi
+    elif [[ -n "$DEMYX_UTILITY_ID" ]]; then
+        DEMYX_UTILITY_ID=$(cat /dev/urandom | tr -dc 'a-z0-9' | fold -w 12 | head -n 1 | sed -e 's/\r//g')
+        PRINT_TABLE="DEMYX^ UTILITY\n"
+        PRINT_TABLE+="ID^ $DEMYX_UTILITY_ID"
+        
+        if [[ -n "$DEMYX_UTILITY_RAW" ]]; then
+            demyx_execute -v -q echo $DEMYX_UTILITY_ID
         else
             demyx_execute -v demyx_table "$PRINT_TABLE"
         fi
