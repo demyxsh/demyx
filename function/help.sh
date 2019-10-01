@@ -126,6 +126,7 @@ demyx_help() {
     elif [[ "$DEMYX_HELP" = run ]]; then
         echo
         echo "demyx run <app> <arg>           Creates a new app"
+        echo "                --archive       Run a WordPress app from an archive"
         echo "                --auth          Run with basic auth on/off"
         echo "                --cache         Run with cache on/off"
         echo "                --cdn           Run with cdn on/off"
