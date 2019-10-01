@@ -82,10 +82,10 @@ demyx_restore() {
 
             demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" db up -d --remove-orphans
 
-            demyx_echo 'Initializing MariaDB' 
+            demyx_echo 'Initializing MariaDB'
             demyx_execute demyx_mariadb_ready
 
-            demyx_echo 'Creating temporary container' 
+            demyx_echo 'Creating temporary container'
             demyx_execute docker run -dt --rm \
                 --name "$DEMYX_APP_ID" \
                 --network demyx \
@@ -95,7 +95,8 @@ demyx_restore() {
 
             demyx_echo 'Restoring files'
             demyx_execute docker cp html "$DEMYX_APP_ID":/var/www; \
-                docker cp demyx "$DEMYX_APP_ID":/var/log
+                docker cp demyx "$DEMYX_APP_ID":/var/log; \
+                docker exec -t "$DEMYX_APP_ID" chown -R www-data:www-data /var/www/html
 
             demyx_echo 'Restoring database'
             demyx_execute docker run -it --rm \
@@ -104,8 +105,8 @@ demyx_restore() {
                 wordpress:cli db import "$DEMYX_APP_CONTAINER".sql
 
             demyx_echo 'Removing backup database'
-            demyx_execute docker exec -t "$DEMYX_APP_ID" rm /var/www/html/"$DEMYX_APP_CONTAINER".sql; \
-            
+            demyx_execute docker exec -t "$DEMYX_APP_ID" rm /var/www/html/"$DEMYX_APP_CONTAINER".sql
+
             demyx_echo 'Stopping temporary container'
             demyx_execute docker stop "$DEMYX_APP_ID"
 
@@ -116,6 +117,7 @@ demyx_restore() {
                 rm -rf "$DEMYX_APP_PATH"/demyx
 
             demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" wp up -d --remove-orphans
+            demyx_execute -v demyx info "$DEMYX_APP_DOMAIN"    
         fi
     else
         demyx_die --restore-not-found
