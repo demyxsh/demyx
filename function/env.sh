@@ -8,7 +8,7 @@ demyx_env() {
 
     if [[ "$DEMYX_RUN_TYPE" = wp ]] || [[ "$DEMYX_APP_TYPE" = wp ]]; then
         [[ -z "$DEMYX_APP_COMPOSE_PROJECT" ]] && DEMYX_APP_COMPOSE_PROJECT=${DEMYX_TARGET//./}
-        [[ -z "$DEMYX_APP_ID" ]] && DEMYX_APP_ID=$(demyx util uuidgen | awk -F '[-]' '{print $1}')
+        [[ -z "$DEMYX_APP_ID" ]] && DEMYX_APP_ID=$(demyx util --id --raw)
         [[ -z "$DEMYX_APP_WP_CONTAINER" ]] && DEMYX_APP_WP_CONTAINER=${DEMYX_APP_COMPOSE_PROJECT}_wp_${DEMYX_APP_ID}_1
         [[ -z "$DEMYX_APP_DB_CONTAINER" ]] && DEMYX_APP_DB_CONTAINER=${DEMYX_APP_COMPOSE_PROJECT}_db_${DEMYX_APP_ID}_1
         [[ -n "$DEMYX_RUN_USER" ]] && WORDPRESS_USER="$DEMYX_RUN_USER"
@@ -16,7 +16,7 @@ demyx_env() {
         [[ -n "$DEMYX_RUN_EMAIL" ]] && WORDPRESS_USER_EMAIL="$DEMYX_RUN_EMAIL"
         [[ -z "$DEMYX_APP_TYPE" ]] && DEMYX_APP_TYPE=wp
         [[ -z "$DEMYX_APP_PATH" ]] && DEMYX_APP_PATH="$DEMYX_WP"/"$DEMYX_TARGET"
-        [[ -z "$WORDPRESS_USER" ]] && WORDPRESS_USER=$(demyx util gpw 1 10 | sed -e 's/\r//g')
+        [[ -z "$WORDPRESS_USER" ]] && WORDPRESS_USER="$DEMYX_APP_COMPOSE_PROJECT"_"$DEMYX_APP_ID"
         [[ -z "$WORDPRESS_USER_PASSWORD" ]] && WORDPRESS_USER_PASSWORD=$(demyx util --pass --raw)
         [[ -z "$WORDPRESS_USER_EMAIL" ]] && WORDPRESS_USER_EMAIL="info@$DEMYX_TARGET"
         [[ -z "$WORDPRESS_DB_HOST" ]] && WORDPRESS_DB_HOST=$DEMYX_APP_DB_CONTAINER
