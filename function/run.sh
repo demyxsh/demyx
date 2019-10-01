@@ -6,6 +6,12 @@
 demyx_run() {
     while :; do
         case "$3" in
+            --archive=?*)
+                DEMYX_RUN_ARCHIVE=${3#*=}
+                ;;
+            --archive=)
+                demyx_die '"--archive" cannot be empty'
+                ;;
             --auth)
                 DEMYX_RUN_AUTH=on
                 ;;
@@ -75,6 +81,11 @@ demyx_run() {
     done
 
     DEMYX_RUN_CHECK=$(find "$DEMYX_APP" -name "$DEMYX_TARGET" || true)
+    DEMYX_RUN_TODAYS_DATE=$(date +%Y/%m/%d)
+    
+    if [[ ! -f "$DEMYX_BACKUP"/"$DEMYX_RUN_TODAYS_DATE"/wp/"$DEMYX_RUN_ARCHIVE".tgz ]] && [[ -n "$DEMYX_RUN_ARCHIVE" ]]; then
+        demyx_die "${DEMYX_BACKUP}/${DEMYX_RUN_TODAYS_DATE}/${DEMYX_RUN_ARCHIVE}.tgz doesn't exist"
+    fi
 
     if [[ -n "$DEMYX_RUN_CLONE" ]]; then
         DEMYX_CLONE_CHECK=$(find "$DEMYX_APP" -name "$DEMYX_RUN_CLONE" || true)
@@ -143,7 +154,7 @@ demyx_run() {
 
         if [[ -n "$DEMYX_RUN_CLONE" ]]; then
             demyx_echo 'Cloning database'
-            demyx_execute demyx wp "$DEMYX_RUN_CLONE" db export clone.sql --exclude_tables=wp_users,wp_usermeta
+            demyx_execute demyx wp "$DEMYX_RUN_CLONE" db export clone.sql
             
             demyx_echo 'Cloning files'
             demyx_execute docker cp "$DEMYX_RUN_CLONE_APP":/var/www/html "$DEMYX_APP_PATH"
@@ -172,36 +183,42 @@ demyx_run() {
                 --name "$DEMYX_APP_ID" \
                 --network demyx \
                 -v wp_"$DEMYX_APP_ID":/var/www/html \
-                -v wp_"$DEMYX_APP_ID"_log:/var/log/demyx \
                 demyx/utilities bash
-        fi
-
-        if [[ -n "$DEMYX_RUN_CLONE" ]]; then
+                
             demyx_echo 'Copying files' 
             demyx_execute docker cp "$DEMYX_APP_PATH"/html "$DEMYX_APP_ID":/var/www
 
             demyx_echo 'Removing old wp-config.php'
             demyx_execute docker exec -t "$DEMYX_APP_ID" rm /var/www/html/wp-config.php
 
-            demyx_echo 'Stopping temporary container' 
+            demyx_echo 'Stopping temporary container'
+            demyx_execute docker stop "$DEMYX_APP_ID"
+        fi
+
+        if [[ -n "$DEMYX_RUN_ARCHIVE" ]]; then
+            demyx_echo 'Extracting archive'
+            demyx_execute tar -xzf "$DEMYX_BACKUP"/"$DEMYX_RUN_TODAYS_DATE"/wp/"$DEMYX_RUN_ARCHIVE".tgz -C "$DEMYX_BACKUP"/"$DEMYX_RUN_TODAYS_DATE"/wp
+            
+            demyx_echo 'Creating temporary container'
+            demyx_execute docker run -dt --rm \
+                --name "$DEMYX_APP_ID" \
+                --network demyx \
+                -v wp_"$DEMYX_APP_ID":/var/www/html \
+                demyx/utilities bash
+
+            demyx_echo 'Copying files' 
+            demyx_execute docker cp "$DEMYX_BACKUP"/"$DEMYX_RUN_TODAYS_DATE"/wp/"$DEMYX_RUN_ARCHIVE"/html "$DEMYX_APP_ID":/var/www
+
+            demyx_echo 'Removing old wp-config.php'
+            demyx_execute docker exec -t "$DEMYX_APP_ID" rm /var/www/html/wp-config.php
+
+            demyx_echo 'Stopping temporary container'
             demyx_execute docker stop "$DEMYX_APP_ID"
         fi
 
         demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" up -d wp_"$DEMYX_APP_ID"
 
-        if [[ -z "$DEMYX_RUN_CLONE" ]]; then
-            demyx_echo 'Configuring wp-config.php'
-            demyx_execute demyx wp "$DEMYX_APP_DOMAIN" core install \
-                --url="$DEMYX_RUN_PROTO" \
-                --title="$DEMYX_APP_DOMAIN" \
-                --admin_user="$WORDPRESS_USER" \
-                --admin_password="$WORDPRESS_USER_PASSWORD" \
-                --admin_email="$WORDPRESS_USER_EMAIL" \
-                --skip-email
-
-            demyx_echo 'Configuring permalinks'
-            demyx_execute demyx wp "$DEMYX_APP_DOMAIN" rewrite structure '/%category%/%postname%/'
-        else
+        if [[ -n "$DEMYX_RUN_CLONE" ]]; then
             demyx_echo 'Creating new wp-config.php' 
             demyx_execute demyx wp "$DEMYX_APP_DOMAIN" config create \
                 --dbhost="$WORDPRESS_DB_HOST" \
@@ -226,6 +243,11 @@ demyx_run() {
             demyx_echo 'Importing clone database' 
             demyx_execute demyx wp "$DEMYX_APP_DOMAIN" db import clone.sql
 
+            demyx_echo 'Creating admin account'
+            demyx_execute demyx wp "$DEMYX_APP_DOMAIN" user create "$WORDPRESS_USER" info@"$DEMYX_APP_DOMAIN" \
+                --role=administrator \
+                --user_pass="$WORDPRESS_USER_PASSWORD"
+
             demyx_echo 'Replacing old URLs' 
             demyx_execute demyx wp "$DEMYX_APP_DOMAIN" search-replace "$DEMYX_RUN_CLONE" "$DEMYX_APP_DOMAIN"
 
@@ -239,13 +261,67 @@ demyx_run() {
             demyx_execute rm -rf "$DEMYX_APP_PATH"/html
 
             demyx config "$DEMYX_APP_DOMAIN" --refresh --no-backup
+        elif [[ -n "$DEMYX_RUN_ARCHIVE" ]]; then
+            demyx_echo 'Creating new wp-config.php' 
+            demyx_execute demyx wp "$DEMYX_APP_DOMAIN" config create \
+                --dbhost="$WORDPRESS_DB_HOST" \
+                --dbname="$WORDPRESS_DB_NAME" \
+                --dbuser="$WORDPRESS_DB_USER" \
+                --dbpass="$WORDPRESS_DB_PASSWORD"
+
+            demyx_echo 'Configuring wp-config.php for reverse proxy'
+            demyx_execute docker run -t --rm \
+                --volumes-from "$DEMYX_APP_WP_CONTAINER" \
+                demyx/utilities demyx-proxy
+
+            demyx_echo 'Installing WordPress' 
+            demyx_execute demyx wp "$DEMYX_APP_DOMAIN" core install \
+                --url="$DEMYX_RUN_PROTO" \
+                --title="$DEMYX_APP_DOMAIN" \
+                --admin_user="$WORDPRESS_USER" \
+                --admin_password="$WORDPRESS_USER_PASSWORD" \
+                --admin_email="$WORDPRESS_USER_EMAIL" \
+                --skip-email
+
+            demyx_echo 'Importing archive database' 
+            demyx_execute demyx wp "$DEMYX_APP_DOMAIN" db import "${DEMYX_RUN_ARCHIVE//./_}".sql
+
+            demyx_echo 'Creating admin account'
+            demyx_execute demyx wp "$DEMYX_APP_DOMAIN" user create "$WORDPRESS_USER" info@"$DEMYX_APP_DOMAIN" \
+                --role=administrator \
+                --user_pass="$WORDPRESS_USER_PASSWORD"
+
+            demyx_echo 'Replacing old URLs' 
+            demyx_execute demyx wp "$DEMYX_APP_DOMAIN" search-replace "$DEMYX_RUN_ARCHIVE" "$DEMYX_APP_DOMAIN"
+
+            demyx_echo 'Configuring permalinks'
+            demyx_execute demyx wp "$DEMYX_APP_DOMAIN" rewrite structure '/%category%/%postname%/'
+
+            demyx_echo 'Configuring salts'
+            demyx_execute demyx wp "$DEMYX_APP_DOMAIN" config shuffle-salts
+
+            demyx_echo 'Removing archive database'
+            demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" rm "${DEMYX_RUN_ARCHIVE//./_}".sql
+
+            demyx_echo 'Cleaning up'
+            demyx_execute rm -rf "$DEMYX_BACKUP"/"$DEMYX_RUN_TODAYS_DATE"/wp/"$DEMYX_RUN_ARCHIVE"
+
+            demyx config "$DEMYX_APP_DOMAIN" --refresh --no-backup
+        else
+            demyx_echo 'Configuring wp-config.php'
+            demyx_execute demyx wp "$DEMYX_APP_DOMAIN" core install \
+                --url="$DEMYX_RUN_PROTO" \
+                --title="$DEMYX_APP_DOMAIN" \
+                --admin_user="$WORDPRESS_USER" \
+                --admin_password="$WORDPRESS_USER_PASSWORD" \
+                --admin_email="$WORDPRESS_USER_EMAIL" \
+                --skip-email
+
+            demyx_echo 'Configuring permalinks'
+            demyx_execute demyx wp "$DEMYX_APP_DOMAIN" rewrite structure '/%category%/%postname%/'
         fi
 
-        if [[ -z "$DEMYX_RUN_CLONE" ]]; then
-            [[ "$DEMYX_RUN_CACHE" = on ]] && demyx config "$DEMYX_APP_DOMAIN" --cache
-            [[ "$DEMYX_RUN_CDN" = on ]] && demyx config "$DEMYX_APP_DOMAIN" --cdn
-            [[ "$DEMYX_RUN_AUTH" = on ]] && demyx config "$DEMYX_APP_DOMAIN" --auth
-        else
+        if [[ -n "$DEMYX_RUN_CLONE" ]]; then
             DEMYX_RUN_CLONE_ENV_AUTH_CHECK="$(demyx info "$DEMYX_RUN_CLONE" --filter=DEMYX_APP_AUTH)"
             DEMYX_RUN_CLONE_ENV_CDN_CHECK="$(demyx info "$DEMYX_RUN_CLONE" --filter=DEMYX_APP_CDN)"
             DEMYX_RUN_CLONE_ENV_CACHE_CHECK="$(demyx info "$DEMYX_RUN_CLONE" --filter=DEMYX_APP_CACHE)"
@@ -253,6 +329,10 @@ demyx_run() {
             [[ "$DEMYX_RUN_CLONE_ENV_CACHE_CHECK" = on ]] && demyx config "$DEMYX_APP_DOMAIN" --cache && DEMYX_RUN_CACHE=on
             [[ "$DEMYX_RUN_CLONE_ENV_CDN_CHECK" = on ]] && demyx config "$DEMYX_APP_DOMAIN" --cdn && DEMYX_RUN_CDN=on
             [[ "$DEMYX_RUN_CLONE_ENV_AUTH_CHECK" = on ]] && demyx config "$DEMYX_APP_DOMAIN" --auth && DEMYX_RUN_AUTH=on
+        else
+            [[ "$DEMYX_RUN_CACHE" = on ]] && demyx config "$DEMYX_APP_DOMAIN" --cache
+            [[ "$DEMYX_RUN_CDN" = on ]] && demyx config "$DEMYX_APP_DOMAIN" --cdn
+            [[ "$DEMYX_RUN_AUTH" = on ]] && demyx config "$DEMYX_APP_DOMAIN" --auth
         fi
 
         demyx config "$DEMYX_APP_DOMAIN" --healthcheck
