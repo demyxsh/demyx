@@ -12,9 +12,9 @@ demyx_yml() {
         if [[ "$DEMYX_APP_SSL" = "on" ]]; then
             DEMYX_REGEX_PROTOCOL="http://"
             DEMYX_REGEX_PROTOCOL_REPLACEMENT="https://"
-            DEMYX_SERVER_IP=$(demyx util curl -m 5 https://ipecho.net/plain | sed -e 's/\r//g')
+            DEMYX_SERVER_IP=$(demyx util curl -m 10 https://ipecho.net/plain | sed -e 's/\r//g')
             DEMYX_SUBDOMAIN_CHECK=$(demyx util dig +short "$DEMYX_APP_DOMAIN" | sed -e '1d' | sed -e 's/\r//g')
-            DEMYX_CLOUDFLARE_CHECK=$(curl -m 5 -svo /dev/null "$DEMYX_APP_DOMAIN" 2>&1 | grep "Server: cloudflare" || true)
+            DEMYX_CLOUDFLARE_CHECK=$(curl -m 10 -svo /dev/null "$DEMYX_APP_DOMAIN" 2>&1 | grep "Server: cloudflare" || true)
         
             if [[ -n "$DEMYX_SUBDOMAIN_CHECK" ]]; then
                 DEMYX_DOMAIN_IP=$DEMYX_SUBDOMAIN_CHECK
@@ -239,9 +239,9 @@ demyx_v2_yml() {
                         - \"traefik.http.middlewares.\${DEMYX_APP_COMPOSE_PROJECT}-redirect.redirectscheme.scheme=http\""
 
         if [[ "$DEMYX_APP_SSL" = "on" ]]; then
-            DEMYX_SERVER_IP=$(demyx util curl -m 5 -s https://ipecho.net/plain | sed -e 's/\r//g')
+            DEMYX_SERVER_IP=$(demyx util curl -m 10 -s https://ipecho.net/plain | sed -e 's/\r//g')
             DEMYX_SUBDOMAIN_CHECK=$(demyx util dig +short "$DEMYX_APP_DOMAIN" | sed -e '1d' | sed -e 's/\r//g')
-            DEMYX_CLOUDFLARE_CHECK=$(curl -m 5 -svo /dev/null "$DEMYX_APP_DOMAIN" 2>&1 | grep "Server: cloudflare" || true)
+            DEMYX_CLOUDFLARE_CHECK=$(curl -m 10 -svo /dev/null "$DEMYX_APP_DOMAIN" 2>&1 | grep "Server: cloudflare" || true)
         
             if [[ -n "$DEMYX_SUBDOMAIN_CHECK" ]]; then
                 DEMYX_DOMAIN_IP=$DEMYX_SUBDOMAIN_CHECK
