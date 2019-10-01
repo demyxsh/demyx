@@ -123,6 +123,7 @@ demyx_info() {
             else
                 [[ -z "$DEMYX_APP_AUTH_WP" ]] && DEMYX_APP_AUTH_WP=off
                 PRINT_TABLE="DEMYX^ INFO\n"
+                PRINT_TABLE+="DOMAIN^ $DEMYX_APP_DOMAIN\n"
                 PRINT_TABLE+="PATH^ $DEMYX_APP_PATH\n"
                 PRINT_TABLE+="WP USER^ $WORDPRESS_USER\n"
                 PRINT_TABLE+="WP PASSWORD^ $WORDPRESS_USER_PASSWORD\n"
