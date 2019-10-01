@@ -182,7 +182,7 @@ demyx_stack_yml() {
                 volumes:
                     - /var/run/docker.sock:/var/run/docker.sock:ro
                     - demyx_traefik:/demyx
-                    - demyx_traefik_log:/var/log/demyx
+                    - demyx_log:/var/log/demyx
                 environment:
                     - TZ=America/Los_Angeles
                 labels:
@@ -212,8 +212,8 @@ demyx_stack_yml() {
         volumes:
             demyx_traefik:
                 name: demyx_traefik
-            demyx_traefik_log:
-                name: demyx_traefik_log
+            demyx_log:
+                name: demyx_log
         networks:
             demyx:
                 name: demyx
@@ -383,7 +383,7 @@ demyx_stack_v2_yml() {
                 volumes:
                     - /var/run/docker.sock:/var/run/docker.sock:ro
                     - demyx_traefik:/demyx
-                    - demyx_traefik_log:/var/log/demyx
+                    - demyx_log:/var/log/demyx
                 environment:
                     - TRAEFIK_API=true
                     - TRAEFIK_PROVIDERS_DOCKER=true
@@ -429,8 +429,8 @@ demyx_stack_v2_yml() {
         volumes:
             demyx_traefik:
                 name: demyx_traefik
-            demyx_traefik_log:
-                name: demyx_traefik_log
+            demyx_log:
+                name: demyx_log
         networks:
             demyx:
                 name: demyx
