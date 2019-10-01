@@ -277,8 +277,8 @@ demyx_config() {
                 fi
                 demyx config "$DEMYX_APP_DOMAIN" --healthcheck=off
 
-                demyx_echo 'Stopping php-fpm'
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" pkill php-fpm
+                demyx_echo 'Putting WordPress into maintenance mode'
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "echo '<?php \$upgrading = time(); ?>' > .maintenance"
 
                 demyx_echo 'Exporting database'
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" db export "$DEMYX_APP_CONTAINER".sql
@@ -287,9 +287,10 @@ demyx_config() {
                 DEMYX_CONFIG_CLEAN_MARIADB_ROOT_PASSWORD=$(demyx util --pass --raw)
 
                 demyx_echo 'Genearting new MariaDB credentials'
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "sed -i \"s|$WORDPRESS_DB_PASSWORD|$DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD|g\" /var/www/html/wp-config.php"
-                demyx_execute -v -q sed -i "s|$WORDPRESS_DB_PASSWORD|$DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD|g" "$DEMYX_APP_PATH"/.env; \
-                    demyx_execute -v -q sed -i "s|$MARIADB_ROOT_PASSWORD|$DEMYX_CONFIG_CLEAN_MARIADB_ROOT_PASSWORD|g" "$DEMYX_APP_PATH"/.env
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "sed -i \"s|$WORDPRESS_DB_PASSWORD|$DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD|g\" /var/www/html/wp-config.php"; \
+                    sed -i "s|$WORDPRESS_DB_PASSWORD|$DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD|g" "$DEMYX_APP_PATH"/.env; \
+                    sed -i "s|$MARIADB_ROOT_PASSWORD|$DEMYX_CONFIG_CLEAN_MARIADB_ROOT_PASSWORD|g" "$DEMYX_APP_PATH"/.env
+                
                 demyx_app_config
 
                 demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" db stop
@@ -321,7 +322,12 @@ demyx_config() {
                 demyx_echo 'Cleaning salts'
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" config shuffle-salts
 
+                demyx_echo 'Removing maintenance mode'
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" rm .maintenance
+
                 demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" du
+
+                demyx maldet "$DEMYX_APP_DOMAIN"
             fi
             if [[ "$DEMYX_CONFIG_DEV" = on ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
