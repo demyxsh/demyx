@@ -38,9 +38,6 @@ demyx_log() {
             if [[ "$DEMYX_LOG_ROTATE" = demyx ]]; then
                 demyx_echo 'Rotating demyx log'
                 demyx_execute docker run -t --rm --volumes-from demyx demyx/logrotate
-            elif [[ "$DEMYX_LOG_ROTATE" = stack ]]; then
-                demyx_echo 'Rotating stack log'
-                demyx_execute docker run -t --rm --volumes-from demyx_traefik demyx/logrotate
             elif [[ "$DEMYX_LOG_ROTATE" = wp ]]; then
                 cd "$DEMYX_WP" || exit
                 for i in *
