@@ -128,8 +128,8 @@ demyx_stack_env() {
     [[ -z "$DEMYX_STACK_ACME_ENTRYPOINT" ]] && DEMYX_STACK_ACME_ENTRYPOINT=https
     [[ -z "$DEMYX_STACK_ACME_HTTPCHALLENGE_ENTRYPOINT" ]] && DEMYX_STACK_ACME_HTTPCHALLENGE_ENTRYPOINT=http
     [[ -z "$DEMYX_STACK_LOG_LEVEL" ]] && DEMYX_STACK_LOG_LEVEL=INFO
-    [[ -z "$DEMYX_STACK_LOG_ACCESS" ]] && DEMYX_STACK_LOG_ACCESS=/var/log/demyx/access.log
-    [[ -z "$DEMYX_STACK_LOG_ERROR" ]] && DEMYX_STACK_LOG_ERROR=/var/log/demyx/error.log
+    [[ -z "$DEMYX_STACK_LOG_ACCESS" ]] && DEMYX_STACK_LOG_ACCESS=/var/log/demyx/traefik.access.log
+    [[ -z "$DEMYX_STACK_LOG_ERROR" ]] && DEMYX_STACK_LOG_ERROR=/var/log/demyx/traefik.error.log
 
     cat > "$DEMYX_STACK"/.env <<-EOF
         # AUTO GENERATED
@@ -176,8 +176,8 @@ demyx_stack_v2_env() {
     [[ -z "$DEMYX_STACK_HEALTHCHECK" ]] && DEMYX_STACK_HEALTHCHECK=on
     [[ -z "$DEMYX_STACK_ACME_STORAGE" ]] && DEMYX_STACK_ACME_STORAGE=/demyx/acme.json
     [[ -z "$DEMYX_STACK_LOG_LEVEL" ]] && DEMYX_STACK_LOG_LEVEL=INFO
-    [[ -z "$DEMYX_STACK_LOG_ACCESS" ]] && DEMYX_STACK_LOG_ACCESS=/var/log/demyx/access.log
-    [[ -z "$DEMYX_STACK_LOG_ERROR" ]] && DEMYX_STACK_LOG_ERROR=/var/log/demyx/error.log
+    [[ -z "$DEMYX_STACK_LOG_ACCESS" ]] && DEMYX_STACK_LOG_ACCESS=/var/log/demyx/traefik.access.log
+    [[ -z "$DEMYX_STACK_LOG_ERROR" ]] && DEMYX_STACK_LOG_ERROR=/var/log/demyx/traefik.error.log
 
     cat > "$DEMYX_STACK"/.env <<-EOF
         # AUTO GENERATED

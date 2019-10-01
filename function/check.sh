@@ -21,3 +21,10 @@ if [[ "$DEMYX_CHECK_TRAEFIK" = 1 ]]; then
 else
     export DEMYX_CHECK_TRAEFIK=0
 fi
+
+# Update Traefik log
+DEMYX_CHECK_TRAEFIK_LOG=$(grep "/var/log/demyx/access.log" /demyx/app/stack/.env || true)
+if [[ -n "$DEMYX_CHECK_TRAEFIK_LOG" ]]; then
+    sed -i "s|/var/log/demyx/access.log|/var/log/demyx/traefik.access.log|g" "$DEMYX_STACK"/.env
+    sed -i "s|/var/log/demyx/error.log|/var/log/demyx/traefik.error.log|g" "$DEMYX_STACK"/.env
+fi
