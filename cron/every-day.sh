@@ -10,6 +10,11 @@ if [[ "$DEMYX_STACK_TRACKER_CHECK" = on ]]; then
     /usr/bin/curl -s "https://demyx.sh/?action=active&token=V1VpdGNPcWNDVlZSUDFQdFBaR0Zhdz09OjrnA1h6ZbDFJ2T6MHOwg3p4" > /dev/null
 fi
 
+# Ouroboros is known to crash, so stop/rm it and have the updater bring it back up 
+echo -e "[$(date +%F-%T)] CROND: RESTARTING OUROBOROS"
+docker stop demyx_ouroboros
+docker rm -f demyx_ouroboros
+
 # Auto update Demyx core files
 echo -e "[$(date +%F-%T)] CROND: UPDATE DEMYX CORE"
 DEMYX_STACK_AUTO_UPDATE_CHECK=$(grep DEMYX_STACK_AUTO_UPDATE /demyx/app/stack/.env | awk -F '[=]' '{print $2}')
