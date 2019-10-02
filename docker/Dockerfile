@@ -56,9 +56,6 @@ RUN set -ex; \
     echo 'cd /demyx && demyx motd' >> /root/.zshrc; \
     echo 'cd /demyx && sudo demyx motd' >> /home/demyx/.zshrc
 
-# Fix the annoying "prompt_git:40: vcs_info: function definition file not found"
-COPY vcs_info /
-
 # Allow demyx user to execute only one script and allow usage of environment variables
 RUN set -ex; \
     echo "demyx ALL=(ALL) NOPASSWD:/demyx/etc/demyx.sh" >> /etc/sudoers; \
@@ -72,10 +69,6 @@ RUN set -ex; \
     \
     echo 'export GPG_TTY=$(tty)' >> /root/.zshrc; \
     echo 'export GPG_TTY=$(tty)' >> /home/demyx/.zshrc; \
-    \
-    cat /vcs_info >> /root/.zshrc; \
-    cat /vcs_info >> /home/demyx/.zshrc; \
-    rm /vcs_info; \
     \
     chown -R demyx:demyx /demyx
 
