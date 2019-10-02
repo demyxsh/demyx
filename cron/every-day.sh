@@ -12,8 +12,8 @@ fi
 
 # Ouroboros is known to crash, so stop/rm it and have the updater bring it back up 
 echo -e "[$(date +%F-%T)] CROND: RESTARTING OUROBOROS"
-docker stop demyx_ouroboros
-docker rm -f demyx_ouroboros
+/usr/local/bin/docker stop demyx_ouroboros
+/usr/local/bin/docker rm -f demyx_ouroboros
 
 # Auto update demyx images incase Ouroboros crashes
 echo -e "[$(date +%F-%T)] CROND: PULL DEMYX IMAGES"
@@ -28,7 +28,7 @@ fi
 
 # Update demyx chroot.sh on the host using a container
 echo -e "[$(date +%F-%T)] CROND: UPDATE DEMYX CHROOT"
-docker run -t --rm -v /usr/local/bin:/usr/local/bin demyx/utilities "rm -f /usr/local/bin/demyx; curl -s https://raw.githubusercontent.com/demyxco/demyx/master/chroot.sh -o /usr/local/bin/demyx; chmod +x /usr/local/bin/demyx"
+/usr/local/bin/docker run -t --rm -v /usr/local/bin:/usr/local/bin demyx/utilities "rm -f /usr/local/bin/demyx; curl -s https://raw.githubusercontent.com/demyxco/demyx/master/chroot.sh -o /usr/local/bin/demyx; chmod +x /usr/local/bin/demyx"
 
 # Update Oh My Zsh and its plugin
 echo -e "[$(date +%F-%T)] CROND: UPDATE OH-MY-ZSH"
@@ -38,7 +38,7 @@ cd /home/demyx/.oh-my-zsh/plugins/zsh-autosuggestions && git pull
 # Execute custom cron
 echo -e "[$(date +%F-%T)] CROND: CUSTOM EVERY DAY"
 if [[ -f /demyx/custom/cron/every-day.sh ]]; then
-    bash /demyx/custom/cron/every-day.sh
+    /bin/bash /demyx/custom/cron/every-day.sh
 fi
 
 # Backup WordPress sites at midnight
@@ -52,8 +52,8 @@ for i in *
 do
     source /demyx/app/wp/"$i"/.env
     if [[ "$DEMYX_APP_WP_UPDATE" = on ]]; then
-        demyx wp "$i" core update
-        demyx wp "$i" theme update --all
-        demyx wp "$i" plugin update --all
+        /usr/local/bin/demyx wp "$i" core update
+        /usr/local/bin/demyx wp "$i" theme update --all
+        /usr/local/bin/demyx wp "$i" plugin update --all
     fi
 done

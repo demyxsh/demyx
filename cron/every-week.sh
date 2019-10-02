@@ -14,5 +14,5 @@ echo -e "[$(date +%F-%T)] CROND: LOGROTATE WORDPRESS"
 # Execute custom cron
 echo -e "[$(date +%F-%T)] CROND: CUSTOM EVERY WEEK"
 if [[ -f /demyx/custom/cron/every-week.sh ]]; then
-    bash /demyx/custom/cron/every-week.sh
+    /bin/bash /demyx/custom/cron/every-week.sh
 fi

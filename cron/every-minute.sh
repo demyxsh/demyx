@@ -14,5 +14,5 @@ echo -e "[$(date +%F-%T)] CROND: HEALTHCHECK"
 # Execute custom cron
 echo -e "[$(date +%F-%T)] CROND: CUSTOM EVERY MINUTE"
 if [[ -f /demyx/custom/cron/every-minute.sh ]]; then
-    bash /demyx/custom/cron/every-minute.sh
+    /bin/bash /demyx/custom/cron/every-minute.sh
 fi
