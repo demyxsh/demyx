@@ -20,7 +20,7 @@ while :; do
         rm)
             DEMYX_CHROOT=remove
             ;;
-        rs)
+        restart)
             DEMYX_CHROOT=restart
             ;;
         tty)
@@ -100,7 +100,7 @@ elif [[ "$DEMYX_CHROOT" = help ]]; then
     echo "      exec            Send demyx commands from host"
     echo "      help            Demyx help"
     echo "      rm              Stops and removes demyx container"
-    echo "      rs              Stops, removes, and starts demyx container"
+    echo "      restart         Stops, removes, and starts demyx container"
     echo "      tty             Execute root commands to demyx container from host"
     echo "      update          Update chroot.sh from GitHub"
     echo "      --dev           Puts demyx container into development mode"
