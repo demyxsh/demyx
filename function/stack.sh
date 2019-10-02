@@ -161,12 +161,14 @@ demyx_stack() {
         [[ -z "$DEMYX_STACK_CLOUDFLARE_API_KEY" ]] && demyx_die '--cf-api-key is missing'
 
         source "$DEMYX_FUNCTION"/env.sh
+        source "$DEMYX_FUNCTION"/yml.sh
 
         demyx_echo 'Enabling Cloudflare as the certificate resolver'
         demyx_execute demyx_stack_v2_env; \
             sed -i "s|DEMYX_STACK_CLOUDFLARE=.*|DEMYX_STACK_CLOUDFLARE=on|g" "$DEMYX_STACK"/.env; \
             sed -i "s|DEMYX_STACK_CLOUDFLARE_EMAIL=.*|DEMYX_STACK_CLOUDFLARE_EMAIL=$DEMYX_STACK_CLOUDFLARE_API_EMAIL|g" "$DEMYX_STACK"/.env; \
-            sed -i "s|DEMYX_STACK_CLOUDFLARE_KEY=.*|DEMYX_STACK_CLOUDFLARE_KEY=$DEMYX_STACK_CLOUDFLARE_API_KEY|g" "$DEMYX_STACK"/.env
+            sed -i "s|DEMYX_STACK_CLOUDFLARE_KEY=.*|DEMYX_STACK_CLOUDFLARE_KEY=$DEMYX_STACK_CLOUDFLARE_API_KEY|g" "$DEMYX_STACK"/.env; \
+            demyx_stack_v2_yml
 
         demyx compose stack up -d
     elif [[ "$DEMYX_STACK_CLOUDFLARE" = off ]]; then
