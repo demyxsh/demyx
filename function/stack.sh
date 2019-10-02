@@ -112,7 +112,7 @@ demyx_stack() {
             demyx_execute demyx_stack_v2_env; demyx_stack_v2_yml
         fi
 
-        #demyx compose stack up -d --remove-orphans
+        demyx compose stack up -d --remove-orphans
     elif [[ "$DEMYX_STACK_SELECT" = upgrade ]]; then
         if [[ "$DEMYX_CHECK_TRAEFIK" = 1 ]]; then
             echo -en "\e[33m"
