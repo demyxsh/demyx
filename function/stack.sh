@@ -21,6 +21,24 @@ demyx_stack() {
             --auto-update=off)
                 DEMYX_STACK_AUTO_UPDATE=off
                 ;;
+            --cloudflare|--cloudflare=on)
+                DEMYX_STACK_CLOUDFLARE=on
+                ;;
+            --cloudflare=off)
+                DEMYX_STACK_CLOUDFLARE=off
+                ;;
+            --cf-api-email=?*)
+                DEMYX_STACK_CLOUDFLARE_API_EMAIL=${2#*=}
+                ;;
+            --cf-api-email=)
+                demyx_die '"--cf-api-email" cannot be empty'
+                ;;
+            --cf-api-key=?*)
+                DEMYX_STACK_CLOUDFLARE_API_KEY=${2#*=}
+                ;;
+            --cf-api-key=)
+                demyx_die '"--cf-api-key" cannot be empty'
+                ;;
             --healthcheck|--healthcheck=on)
                 DEMYX_STACK_HEALTHCHECK=on
                 ;;
@@ -94,7 +112,7 @@ demyx_stack() {
             demyx_execute demyx_stack_v2_env; demyx_stack_v2_yml
         fi
 
-        demyx compose stack up -d --remove-orphans
+        #demyx compose stack up -d --remove-orphans
     elif [[ "$DEMYX_STACK_SELECT" = upgrade ]]; then
         if [[ "$DEMYX_CHECK_TRAEFIK" = 1 ]]; then
             echo -en "\e[33m"
@@ -138,6 +156,24 @@ demyx_stack() {
     elif [[ "$DEMYX_STACK_AUTO_UPDATE" = off ]]; then
         demyx_echo 'Turn off stack auto update'
         demyx_execute sed -i 's/DEMYX_STACK_AUTO_UPDATE=on/DEMYX_STACK_AUTO_UPDATE=off/g' "$DEMYX_STACK"/.env
+    elif [[ "$DEMYX_STACK_CLOUDFLARE" = on ]]; then
+        [[ -z "$DEMYX_STACK_CLOUDFLARE_API_EMAIL" ]] && demyx_die '--cf-api-email is missing'
+        [[ -z "$DEMYX_STACK_CLOUDFLARE_API_KEY" ]] && demyx_die '--cf-api-key is missing'
+
+        source "$DEMYX_FUNCTION"/env.sh
+
+        demyx_echo 'Enabling Cloudflare as the certificate resolver'
+        demyx_execute demyx_stack_v2_env; \
+            sed -i "s|DEMYX_STACK_CLOUDFLARE=.*|DEMYX_STACK_CLOUDFLARE=on|g" "$DEMYX_STACK"/.env; \
+            sed -i "s|DEMYX_STACK_CLOUDFLARE_EMAIL=.*|DEMYX_STACK_CLOUDFLARE_EMAIL=$DEMYX_STACK_CLOUDFLARE_API_EMAIL|g" "$DEMYX_STACK"/.env; \
+            sed -i "s|DEMYX_STACK_CLOUDFLARE_KEY=.*|DEMYX_STACK_CLOUDFLARE_KEY=$DEMYX_STACK_CLOUDFLARE_API_KEY|g" "$DEMYX_STACK"/.env
+
+        demyx compose stack up -d
+    elif [[ "$DEMYX_STACK_CLOUDFLARE" = off ]]; then
+        demyx_echo 'Disabling Cloudflare as the certificate resolver, switching back to HTTP'
+        demyx_execute sed -i "s|DEMYX_STACK_CLOUDFLARE=.*|DEMYX_STACK_CLOUDFLARE=off|g" "$DEMYX_STACK"/.env
+
+        demyx compose stack up -d
     elif [[ "$DEMYX_STACK_HEALTHCHECK" = on ]]; then
         demyx_echo 'Turn on stack healthcheck'
         demyx_execute sed -i 's/DEMYX_STACK_HEALTHCHECK=off/DEMYX_STACK_HEALTHCHECK=on/g' "$DEMYX_STACK"/.env
