@@ -122,7 +122,8 @@ demyx_execute() {
     echo -e "$DEMYX_COMMON_LOG" >> /var/log/demyx/demyx.log
 }
 demyx_table() {
-    docker run -t --rm demyx/utilities "demyx-table '$@'"
+    source "$DEMYX_FUNCTION"/table.sh
+    printTable '^' "$@"
 }
 demyx_permission() {
     chown -R demyx:demyx "$DEMYX"
