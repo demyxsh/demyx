@@ -43,6 +43,7 @@ demyx_help() {
         echo "                   --sftp           Turns on/off SFTP container"
         echo "                   --ssl            Turns on/off SSL"
         echo "                   --wp-update      Auto update WordPress core, themes, and plugins"
+        echo "                   --xmlrpc         Turns on/off xmlrpc.php"
         echo
     elif [[ "$DEMYX_HELP" = cp ]]; then
         echo

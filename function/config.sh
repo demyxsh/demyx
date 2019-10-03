@@ -105,6 +105,12 @@ demyx_config() {
             --wp-update=off)
                 DEMYX_CONFIG_WP_UPDATE=off
                 ;;
+            --xmlrpc|--xmlrpc=on)
+                DEMYX_CONFIG_XMLRPC=on
+                ;;
+            --xmlrpc=off)
+                DEMYX_CONFIG_XMLRPC=off
+                ;;
             --)
                 shift
                 break
@@ -711,6 +717,25 @@ demyx_config() {
 
                 demyx_echo 'Turning off WordPress auto update'
                 demyx_execute sed -i "s/DEMYX_APP_WP_UPDATE=on/DEMYX_APP_WP_UPDATE=off/g" "$DEMYX_APP_PATH"/.env
+            fi
+            if [[ "$DEMYX_CONFIG_XMLRPC" = on ]]; then
+                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
+                    [[ "$DEMYX_APP_XMLRPC" = on ]] && demyx_die 'WordPress xmlrpc is already turned on'
+                fi
+
+                demyx_echo 'Turning on WordPress xmlrpc'
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "mv /etc/nginx/common/xmlrpc.conf /etc/nginx/common/xmlrpc.on; nginx -s reload"; \
+                    sed -i "s/DEMYX_APP_XMLRPC=.*/DEMYX_APP_XMLRPC=on/g" "$DEMYX_APP_PATH"/.env
+
+                #demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
+            elif [[ "$DEMYX_CONFIG_XMLRPC" = off ]]; then
+                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
+                    [[ "$DEMYX_APP_XMLRPC" = off ]] && demyx_die 'WordPress xmlrpc is already turned off'
+                fi
+
+                demyx_echo 'Turning off WordPress xmlrpc'
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "mv /etc/nginx/common/xmlrpc.on /etc/nginx/common/xmlrpc.conf; nginx -s reload"; \
+                    sed -i "s/DEMYX_APP_XMLRPC=.*/DEMYX_APP_XMLRPC=off/g" "$DEMYX_APP_PATH"/.env
             fi
         elif [[ -n "$DEMYX_GET_APP" ]]; then
             if [[ -n "$DEMYX_CONFIG_UPDATE" ]]; then
