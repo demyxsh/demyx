@@ -48,11 +48,11 @@ EOF
         source /demyx/.env
         
         if (( "$DEMYX_MOTD_STATUS" > 1 )); then
-            DEMYX_MOTD_STATUS="$(echo -e "\e[32m$DEMYX_MOTD_STATUS updates\e[39m")"
+            DEMYX_MOTD_STATUS="$DEMYX_MOTD_STATUS UPDATES"
         elif [[ "$DEMYX_MOTD_STATUS" = 1 ]]; then
-            DEMYX_MOTD_STATUS="$(echo -e "\e[32m1 update\e[39m")"
+            DEMYX_MOTD_STATUS="1 UPDATE"
         else
-            DEMYX_MOTD_STATUS="Updated"
+            DEMYX_MOTD_STATUS="UPDATED"
         fi
 
         DEMYX_MOTD_MODE=$(echo "$DEMYX_MOTD_MODE" | tr [a-z] [A-Z] | sed -e 's/\r//g')
@@ -74,12 +74,15 @@ EOF
             DEMYX_MOTD_SYSTEM_CONTAINER_DEAD_COUNT="($DEMYX_MOTD_SYSTEM_CONTAINER_DEAD dead)"
         fi
 
-        if (( "$DEMYX_MOTD_SYSTEM_DISK_TOTAL_PERCENTAGE_NUMERIC" > 75 )); then
-            DEMYX_MOTD_SYSTEM_DISK=$(echo -e "\e[33m$DEMYX_MOTD_SYSTEM_DISK")
-            DEMYX_MOTD_SYSTEM_DISK_TOTAL_PERCENTAGE=$(echo -e "($DEMYX_MOTD_SYSTEM_DISK_TOTAL_PERCENTAGE)\e[39m")
-        else
-            DEMYX_MOTD_SYSTEM_DISK_TOTAL_PERCENTAGE="($DEMYX_MOTD_SYSTEM_DISK_TOTAL_PERCENTAGE)"
-        fi
+        PRINT_MOTD_TABLE="DEMYX^ SYSTEM INFO - $DEMYX_MOTD_STATUS\n"
+        PRINT_MOTD_TABLE+="MODE^ $DEMYX_MOTD_MODE\n"
+        PRINT_MOTD_TABLE+="HOST^ $DEMYX_MOTD_HOST\n"
+        PRINT_MOTD_TABLE+="SSH^ $DEMYX_MOTD_SSH\n"
+        PRINT_MOTD_TABLE+="DISK^ $DEMYX_MOTD_SYSTEM_DISK/$DEMYX_MOTD_SYSTEM_DISK_TOTAL ($DEMYX_MOTD_SYSTEM_DISK_TOTAL_PERCENTAGE)\n"
+        PRINT_MOTD_TABLE+="MEMORY^ $DEMYX_MOTD_SYSTEM_MEMORY/$DEMYX_MOTD_SYSTEM_MEMORY_TOTAL\n"
+        PRINT_MOTD_TABLE+="UPTIME^ ${DEMYX_MOTD_SYSTEM_UPTIME:1}\n"
+        PRINT_MOTD_TABLE+="LOAD^ $DEMYX_MOTD_SYSTEM_LOAD\n"
+        PRINT_MOTD_TABLE+="CONTAINERS^ $DEMYX_MOTD_SYSTEM_CONTAINER $DEMYX_MOTD_SYSTEM_CONTAINER_DEAD_COUNT"
 
         echo "
             Demyx
@@ -90,21 +93,10 @@ EOF
             - Help: demyx help
             - Bugs: github.com/demyxco/demyx/issues
             - Contact: info@demyx.sh
-
-            $(demyx_motd_git_latest)
-
-            =====================================
-             MODE       | $DEMYX_MOTD_MODE ($DEMYX_MOTD_STATUS)
-             HOST       | $DEMYX_MOTD_HOST
-             SSH        | $DEMYX_MOTD_SSH
-             DISK       | $DEMYX_MOTD_SYSTEM_DISK/$DEMYX_MOTD_SYSTEM_DISK_TOTAL $DEMYX_MOTD_SYSTEM_DISK_TOTAL_PERCENTAGE
-             MEMORY     | $DEMYX_MOTD_SYSTEM_MEMORY/$DEMYX_MOTD_SYSTEM_MEMORY_TOTAL
-             UPTIME     | ${DEMYX_MOTD_SYSTEM_UPTIME:1}
-             LOAD       | $DEMYX_MOTD_SYSTEM_LOAD
-             CONTAINERS | $DEMYX_MOTD_SYSTEM_CONTAINER $DEMYX_MOTD_SYSTEM_CONTAINER_DEAD_COUNT
-            =====================================
             " | sed 's/            //g'
 
+        demyx_motd_git_latest
+        demyx_execute -v demyx_table "$PRINT_MOTD_TABLE"
         demyx_motd_chroot_warning
         demyx_motd_stack_upgrade_notice
         demyx_motd_dev_warning
