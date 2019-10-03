@@ -78,7 +78,7 @@ demyx_utility() {
             demyx_execute -v demyx_table "$PRINT_TABLE"
         fi
     elif [[ -n "$DEMYX_UTILITY_ID" ]]; then
-        DEMYX_UTILITY_ID=$(cat /dev/urandom | tr -dc 'a-z0-9' | fold -w 12 | head -n 1 | sed -e 's/\r//g')
+        DEMYX_UTILITY_ID=$(uuidgen | head -c 8 | sed -e 's/\r//g')
         PRINT_TABLE="DEMYX^ UTILITY\n"
         PRINT_TABLE+="ID^ $DEMYX_UTILITY_ID"
         
