@@ -11,7 +11,7 @@ ENV TZ America/Los_Angeles
 
 # Install custom packages
 RUN set -ex; \
-    apk add --no-cache --update bash tzdata curl zsh openssh sudo gnupg jq htop rsync git
+    apk add --no-cache --update bash tzdata curl zsh openssh sudo gnupg jq htop rsync git util-linux
 
 # Download latest Docker client binary
 RUN set -ex; \
