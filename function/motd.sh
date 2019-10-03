@@ -29,76 +29,59 @@ demyx_motd_git_latest() {
     demyx_execute -v echo -e "Latest Updates\n----------------\n$DEMYX_MOTD_GIT_LOG\n"
 }
 demyx_motd() {
-    if [[ ! -f /demyx/.env ]]; then
-
-        [[ -z "$DEMYX_MODE" ]] && DEMYX_MODE=production
-        [[ -z "$DEMYX_SSH" ]] && DEMYX_SSH=2222
-        [[ -z "$DEMYX_STATUS" ]] && DEMYX_STATUS=0
-
-        cat > /demyx/.env <<-EOF
-            # AUTO GENERATED
-            DEMYX_MOTD_MODE=$DEMYX_MODE
-            DEMYX_MOTD_HOST=$DEMYX_HOST
-            DEMYX_MOTD_USER=demyx
-            DEMYX_MOTD_SSH=$DEMYX_SSH
-            DEMYX_MOTD_STATUS=$DEMYX_STATUS
-EOF
-        sed -i 's/            //g' /demyx/.env
+    source /demyx/.env
+    
+    if (( "$DEMYX_MOTD_STATUS" > 1 )); then
+        DEMYX_MOTD_STATUS="$DEMYX_MOTD_STATUS UPDATES"
+    elif [[ "$DEMYX_MOTD_STATUS" = 1 ]]; then
+        DEMYX_MOTD_STATUS="1 UPDATE"
     else
-        source /demyx/.env
-        
-        if (( "$DEMYX_MOTD_STATUS" > 1 )); then
-            DEMYX_MOTD_STATUS="$DEMYX_MOTD_STATUS UPDATES"
-        elif [[ "$DEMYX_MOTD_STATUS" = 1 ]]; then
-            DEMYX_MOTD_STATUS="1 UPDATE"
-        else
-            DEMYX_MOTD_STATUS="UPDATED"
-        fi
-
-        DEMYX_MOTD_MODE=$(echo "$DEMYX_MOTD_MODE" | tr [a-z] [A-Z] | sed -e 's/\r//g')
-        DEMYX_MOTD_SYSTEM_INFO=$(demyx info dash)
-        DEMYX_MOTD_SYSTEM_DISK=$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .disk_used | sed 's|"||g')
-        DEMYX_MOTD_SYSTEM_DISK_TOTAL=$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .disk_total | sed 's|"||g')
-        DEMYX_MOTD_SYSTEM_DISK_TOTAL_PERCENTAGE=$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .disk_total_percentage | sed 's|"||g')
-        DEMYX_MOTD_SYSTEM_DISK_TOTAL_PERCENTAGE_NUMERIC=$(echo "$DEMYX_MOTD_SYSTEM_DISK_TOTAL_PERCENTAGE" | sed "s|%||g")
-        DEMYX_MOTD_SYSTEM_MEMORY=$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .memory_used | sed 's|"||g')
-        DEMYX_MOTD_SYSTEM_MEMORY_TOTAL=$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .memory_total | sed 's|"||g')
-        DEMYX_MOTD_SYSTEM_UPTIME=$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .uptime | sed 's|"||g')
-        DEMYX_MOTD_SYSTEM_LOAD=$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .load_average | sed 's|"||g')
-        DEMYX_MOTD_SYSTEM_CONTAINER=$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .container_running | sed 's|"||g')
-        DEMYX_MOTD_SYSTEM_CONTAINER_DEAD=$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .container_dead | sed 's|"||g')
-
-        if [[ "$DEMYX_MOTD_SYSTEM_CONTAINER_DEAD" = 0 ]]; then
-            DEMYX_MOTD_SYSTEM_CONTAINER_DEAD_COUNT=
-        else
-            DEMYX_MOTD_SYSTEM_CONTAINER_DEAD_COUNT="($DEMYX_MOTD_SYSTEM_CONTAINER_DEAD dead)"
-        fi
-
-        PRINT_MOTD_TABLE="DEMYX^ SYSTEM INFO - $DEMYX_MOTD_STATUS\n"
-        PRINT_MOTD_TABLE+="MODE^ $DEMYX_MOTD_MODE\n"
-        PRINT_MOTD_TABLE+="HOST^ $DEMYX_MOTD_HOST\n"
-        PRINT_MOTD_TABLE+="SSH^ $DEMYX_MOTD_SSH\n"
-        PRINT_MOTD_TABLE+="DISK^ $DEMYX_MOTD_SYSTEM_DISK/$DEMYX_MOTD_SYSTEM_DISK_TOTAL ($DEMYX_MOTD_SYSTEM_DISK_TOTAL_PERCENTAGE)\n"
-        PRINT_MOTD_TABLE+="MEMORY^ $DEMYX_MOTD_SYSTEM_MEMORY/$DEMYX_MOTD_SYSTEM_MEMORY_TOTAL\n"
-        PRINT_MOTD_TABLE+="UPTIME^ ${DEMYX_MOTD_SYSTEM_UPTIME:1}\n"
-        PRINT_MOTD_TABLE+="LOAD^ $DEMYX_MOTD_SYSTEM_LOAD\n"
-        PRINT_MOTD_TABLE+="CONTAINERS^ $DEMYX_MOTD_SYSTEM_CONTAINER $DEMYX_MOTD_SYSTEM_CONTAINER_DEAD_COUNT"
-
-        echo "
-            Demyx
-            https://demyx.sh
-
-            Welcome to Demyx! Please report any bugs you see.
-
-            - Help: demyx help
-            - Bugs: github.com/demyxco/demyx/issues
-            - Contact: info@demyx.sh
-            " | sed 's/            //g'
-
-        demyx_motd_git_latest
-        demyx_execute -v demyx_table "$PRINT_MOTD_TABLE"
-        demyx_motd_chroot_warning
-        demyx_motd_stack_upgrade_notice
-        demyx_motd_dev_warning
+        DEMYX_MOTD_STATUS="UPDATED"
     fi
+
+    DEMYX_MOTD_MODE=$(echo "$DEMYX_MOTD_MODE" | tr [a-z] [A-Z] | sed -e 's/\r//g')
+    DEMYX_MOTD_SYSTEM_INFO=$(demyx info dash)
+    DEMYX_MOTD_SYSTEM_DISK=$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .disk_used | sed 's|"||g')
+    DEMYX_MOTD_SYSTEM_DISK_TOTAL=$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .disk_total | sed 's|"||g')
+    DEMYX_MOTD_SYSTEM_DISK_TOTAL_PERCENTAGE=$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .disk_total_percentage | sed 's|"||g')
+    DEMYX_MOTD_SYSTEM_DISK_TOTAL_PERCENTAGE_NUMERIC=$(echo "$DEMYX_MOTD_SYSTEM_DISK_TOTAL_PERCENTAGE" | sed "s|%||g")
+    DEMYX_MOTD_SYSTEM_MEMORY=$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .memory_used | sed 's|"||g')
+    DEMYX_MOTD_SYSTEM_MEMORY_TOTAL=$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .memory_total | sed 's|"||g')
+    DEMYX_MOTD_SYSTEM_UPTIME=$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .uptime | sed 's|"||g')
+    DEMYX_MOTD_SYSTEM_LOAD=$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .load_average | sed 's|"||g')
+    DEMYX_MOTD_SYSTEM_CONTAINER=$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .container_running | sed 's|"||g')
+    DEMYX_MOTD_SYSTEM_CONTAINER_DEAD=$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .container_dead | sed 's|"||g')
+
+    if [[ "$DEMYX_MOTD_SYSTEM_CONTAINER_DEAD" = 0 ]]; then
+        DEMYX_MOTD_SYSTEM_CONTAINER_DEAD_COUNT=
+    else
+        DEMYX_MOTD_SYSTEM_CONTAINER_DEAD_COUNT="($DEMYX_MOTD_SYSTEM_CONTAINER_DEAD dead)"
+    fi
+
+    PRINT_MOTD_TABLE="DEMYX^ SYSTEM INFO - $DEMYX_MOTD_STATUS\n"
+    PRINT_MOTD_TABLE+="MODE^ $DEMYX_MOTD_MODE\n"
+    PRINT_MOTD_TABLE+="HOST^ $DEMYX_MOTD_HOST\n"
+    PRINT_MOTD_TABLE+="SSH^ $DEMYX_MOTD_SSH\n"
+    PRINT_MOTD_TABLE+="DISK^ $DEMYX_MOTD_SYSTEM_DISK/$DEMYX_MOTD_SYSTEM_DISK_TOTAL ($DEMYX_MOTD_SYSTEM_DISK_TOTAL_PERCENTAGE)\n"
+    PRINT_MOTD_TABLE+="MEMORY^ $DEMYX_MOTD_SYSTEM_MEMORY/$DEMYX_MOTD_SYSTEM_MEMORY_TOTAL\n"
+    PRINT_MOTD_TABLE+="UPTIME^ ${DEMYX_MOTD_SYSTEM_UPTIME:1}\n"
+    PRINT_MOTD_TABLE+="LOAD^ $DEMYX_MOTD_SYSTEM_LOAD\n"
+    PRINT_MOTD_TABLE+="CONTAINERS^ $DEMYX_MOTD_SYSTEM_CONTAINER $DEMYX_MOTD_SYSTEM_CONTAINER_DEAD_COUNT"
+
+    echo "
+        Demyx
+        https://demyx.sh
+
+        Welcome to Demyx! Please report any bugs you see.
+
+        - Help: demyx help
+        - Bugs: github.com/demyxco/demyx/issues
+        - Contact: info@demyx.sh
+        " | sed 's/        //g'
+
+    demyx_motd_git_latest
+    demyx_execute -v demyx_table "$PRINT_MOTD_TABLE"
+    demyx_motd_chroot_warning
+    demyx_motd_stack_upgrade_notice
+    demyx_motd_dev_warning
 }
