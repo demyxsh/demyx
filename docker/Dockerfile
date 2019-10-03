@@ -13,17 +13,18 @@ ENV TZ America/Los_Angeles
 RUN set -ex; \
     apk add --no-cache --update \
     bash \
-    tzdata \
     curl \
-    zsh \
-    openssh \
-    sudo \
-    gnupg \
-    jq \
-    htop \
-    rsync \
     git \
-    util-linux
+    gnupg \
+    htop \
+    jq \
+    nano \
+    openssh \
+    rsync \
+    sudo \
+    tzdata \
+    util-linux \
+    zsh
 
 # Download latest Docker client binary
 RUN set -ex; \
