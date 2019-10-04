@@ -21,7 +21,6 @@ Demyx is a Docker image that automates WordPress installations. Traefik for reve
 * Rolling release updates
 * For support: [#demyx](https://webchat.freenode.net/?channel=#demyx)
 
-
 ### WordPress Features
 * SSL turned on by default
 * Site-wide request rate limiting
