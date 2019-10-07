@@ -12,11 +12,11 @@ demyx_plugin() {
     */
     /*
     Plugin Name: Demyx BrowserSync
-    Plugin URI: https://demyx.sh
+    Plugin URI: https://demyx.sh/
     Description: A static homepage will redirect BrowserSync, this plugin disables that.
     Author: Demyx
     Version: 1.0
-    Author URI: https://demyx.sh
+    Author URI: https://demyx.sh/
     */
 
     function demyx_browsersync_init( \$redirect ) {
