@@ -107,9 +107,9 @@ demyx_yml() {
                         - WORDPRESS_UPLOAD_LIMIT=\${DEMYX_APP_UPLOAD_LIMIT}
                         - WORDPRESS_PHP_MEMORY=\${DEMYX_APP_PHP_MEMORY}
                         - WORDPRESS_PHP_MAX_EXECUTION_TIME=\${DEMYX_APP_PHP_MAX_EXECUTION_TIME}
-                        - WORDPRESS_PHP_OPCACHE="\${DEMYX_APP_PHP_OPCACHE}"
-                        - WORDPRESS_NGINX_CACHE="\${DEMYX_APP_CACHE}"
-                        - WORDPRESS_NGINX_RATE_LIMIT="\${DEMYX_APP_RATE_LIMIT}"
+                        - WORDPRESS_PHP_OPCACHE=\${DEMYX_APP_PHP_OPCACHE}
+                        - WORDPRESS_NGINX_CACHE=\${DEMYX_APP_CACHE}
+                        - WORDPRESS_NGINX_RATE_LIMIT=\${DEMYX_APP_RATE_LIMIT}
                         - WORDPRESS_NGINX_XMLRPC=\${DEMYX_APP_XMLRPC}
                         - WORDPRESS_NGINX_BASIC_AUTH=\${DEMYX_APP_AUTH_WP}
                         - TZ=America/Los_Angeles
@@ -330,9 +330,9 @@ demyx_v2_yml() {
                         - WORDPRESS_UPLOAD_LIMIT=\${DEMYX_APP_UPLOAD_LIMIT}
                         - WORDPRESS_PHP_MEMORY=\${DEMYX_APP_PHP_MEMORY}
                         - WORDPRESS_PHP_MAX_EXECUTION_TIME=\${DEMYX_APP_PHP_MAX_EXECUTION_TIME}
-                        - WORDPRESS_PHP_OPCACHE="\${DEMYX_APP_PHP_OPCACHE}"
-                        - WORDPRESS_NGINX_CACHE="\${DEMYX_APP_CACHE}"
-                        - WORDPRESS_NGINX_RATE_LIMIT="\${DEMYX_APP_RATE_LIMIT}"
+                        - WORDPRESS_PHP_OPCACHE=\${DEMYX_APP_PHP_OPCACHE}
+                        - WORDPRESS_NGINX_CACHE=\${DEMYX_APP_CACHE}
+                        - WORDPRESS_NGINX_RATE_LIMIT=\${DEMYX_APP_RATE_LIMIT}
                         - WORDPRESS_NGINX_XMLRPC=\${DEMYX_APP_XMLRPC}
                         - WORDPRESS_NGINX_BASIC_AUTH=\${DEMYX_APP_AUTH_WP}
                         - TZ=America/Los_Angeles
