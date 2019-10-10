@@ -395,7 +395,7 @@ demyx_config() {
                 fi
 
                 demyx_echo 'Creating code-server'
-                DEMYX_CONFIG_DEV_BASE_PATH=/_demyx
+                DEMYX_CONFIG_DEV_BASE_PATH=/wp-demyx
 
                 # Traefik backwards compatibility
                 if [[ "$DEMYX_CHECK_TRAEFIK" = 1 ]]; then
