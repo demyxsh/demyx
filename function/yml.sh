@@ -9,7 +9,7 @@ demyx_yml() {
         DEMYX_REGEX_PROTOCOL="https://"
         DEMYX_REGEX_PROTOCOL_REPLACEMENT="http://"
 
-        if [[ "$DEMYX_APP_SSL" = "on" ]]; then
+        if [[ "$DEMYX_APP_SSL" = true ]]; then
             DEMYX_REGEX_PROTOCOL="http://"
             DEMYX_REGEX_PROTOCOL_REPLACEMENT="https://"
             DEMYX_SERVER_IP=$(demyx util curl -m 10 https://ipecho.net/plain | sed -e 's/\r//g')
@@ -29,7 +29,7 @@ demyx_yml() {
                         - \"traefik.frontend.headers.STSIncludeSubdomains=\${DEMYX_APP_STS_INCLUDE_SUBDOMAINS}\"
                         - \"traefik.frontend.headers.STSPreload=\${DEMYX_APP_STS_PRELOAD}\""
             else
-                sed -i "s|DEMYX_APP_SSL=.*|DEMYX_APP_SSL=off|g" "$DEMYX_APP_PATH"/.env
+                sed -i "s|DEMYX_APP_SSL=.*|DEMYX_APP_SSL=false|g" "$DEMYX_APP_PATH"/.env
                 echo -e "\e[33m[WARNING]\e[39m $DEMYX_TARGET does not point to server's IP! Proceeding without SSL..."
             fi
         fi
@@ -44,7 +44,7 @@ demyx_yml() {
         
         DEMYX_YML_AUTH_CHECK=$(demyx info "$DEMYX_APP_DOMAIN" --filter=DEMYX_APP_AUTH)
 
-        if [[ "$DEMYX_YML_AUTH_CHECK" = on ]] && [[ -f "$DEMYX_STACK"/.env ]]; then
+        if [[ "$DEMYX_YML_AUTH_CHECK" = true ]] && [[ -f "$DEMYX_STACK"/.env ]]; then
             source "$DEMYX_STACK"/.env
             DEMYX_PARSE_BASIC_AUTH=$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}' | sed 's/\$/$$/g')
             DEMYX_BASIC_AUTH="- \"traefik.bs.frontend.auth.basic.users=${DEMYX_PARSE_BASIC_AUTH}\""
@@ -239,7 +239,7 @@ demyx_v2_yml() {
                         - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-https.tls.certresolver=demyx\"
                         - \"traefik.http.middlewares.\${DEMYX_APP_COMPOSE_PROJECT}-redirect.redirectscheme.scheme=http\""
 
-        if [[ "$DEMYX_APP_SSL" = "on" ]]; then
+        if [[ "$DEMYX_APP_SSL" = true ]]; then
             DEMYX_SERVER_IP=$(demyx util curl -m 10 -s https://ipecho.net/plain | sed -e 's/\r//g')
             DEMYX_SUBDOMAIN_CHECK=$(demyx util dig +short "$DEMYX_APP_DOMAIN" | sed -e '1d' | sed -e 's/\r//g')
             DEMYX_CLOUDFLARE_CHECK=$(curl -m 10 -svo /dev/null "$DEMYX_APP_DOMAIN" 2>&1 | grep "Server: cloudflare" || true)
@@ -259,14 +259,14 @@ demyx_v2_yml() {
                       - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-https.tls.certresolver=demyx\"
                       - \"traefik.http.middlewares.\${DEMYX_APP_COMPOSE_PROJECT}-redirect.redirectscheme.scheme=https\""
             else
-                sed -i "s|DEMYX_APP_SSL=.*|DEMYX_APP_SSL=off|g" "$DEMYX_APP_PATH"/.env
+                sed -i "s|DEMYX_APP_SSL=.*|DEMYX_APP_SSL=false|g" "$DEMYX_APP_PATH"/.env
                 echo -e "\e[33m[WARNING]\e[39m $DEMYX_TARGET does not point to server's IP! Proceeding without SSL..."
             fi
         fi
         
         DEMYX_YML_AUTH_CHECK=$(demyx info "$DEMYX_APP_DOMAIN" --filter=DEMYX_APP_AUTH)
 
-        if [[ "$DEMYX_YML_AUTH_CHECK" = on ]] && [[ -f "$DEMYX_STACK"/.env ]]; then
+        if [[ "$DEMYX_YML_AUTH_CHECK" = true ]] && [[ -f "$DEMYX_STACK"/.env ]]; then
             source "$DEMYX_STACK"/.env
             DEMYX_PARSE_BASIC_AUTH=$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}' | sed 's/\$/$$/g')
             DEMYX_BASIC_AUTH="- \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-https.middlewares=\${DEMYX_APP_COMPOSE_PROJECT}-auth\"
@@ -370,16 +370,49 @@ demyx_stack_v2_yml() {
         DEMYX_STACK_AUTH="$DEMYX_PARSE_BASIC_AUTH"
     fi
 
-    if [[ "$DEMYX_STACK_CLOUDFLARE" = on ]]; then
+    if [[ "$DEMYX_STACK_CLOUDFLARE" = true ]]; then
         DEMYX_STACK_CHALLENGES="- TRAEFIK_CERTIFICATESRESOLVERS_DEMYX_ACME_DNSCHALLENGE=true
                     - TRAEFIK_CERTIFICATESRESOLVERS_DEMYX_ACME_DNSCHALLENGE_PROVIDER=cloudflare
-                    - TRAEFIK_CERTIFICATESRESOLVERS_DEMYX_ACME_DNSCHALLENGE_DELAYBEFORECHECK=0
+                    - TRAEFIK_CERTIFICATESRESOLVERS_DEMYX_ACME_DNSCHALLENGE_DELAYBEFORECHECK=5
                     - TRAEFIK_CERTIFICATESRESOLVERS_DEMYX_ACME_DNSCHALLENGE_RESOLVERS=1.1.1.1
                     - CF_API_EMAIL=\${DEMYX_STACK_CLOUDFLARE_EMAIL}
                     - CF_API_KEY=\${DEMYX_STACK_CLOUDFLARE_KEY}"
     else
         DEMYX_STACK_CHALLENGES="- TRAEFIK_CERTIFICATESRESOLVERS_DEMYX_ACME_HTTPCHALLENGE=true
                     - TRAEFIK_CERTIFICATESRESOLVERS_DEMYX_ACME_HTTPCHALLENGE_ENTRYPOINT=http"
+    fi
+
+    if [[ "$DEMYX_STACK_OUROBOROS" = true ]]; then
+        DEMYX_YML_OUROBOROS='ouroboros:
+                container_name: demyx_ouroboros
+                image: pyouroboros/ouroboros
+                restart: unless-stopped
+                networks:
+                    - demyx
+                environment:
+                    - SELF_UPDATE=true
+                    - CLEANUP=true
+                    - LATEST=true
+                    - IGNORE="${DEMYX_STACK_OUROBOROS_IGNORE}"
+                    - TZ=America/Los_Angeles
+                volumes:
+                    - /var/run/docker.sock:/var/run/docker.sock:ro
+        '
+    fi
+
+    if [[ "$DEMYX_STACK_API" = true ]]; then
+        DEMYX_STACK_TRAEFIK_LABEL='labels:
+                    - "traefik.enable=true"
+                    - "traefik.http.routers.traefik-http.rule=Host(`traefik.${DEMYX_STACK_DOMAIN}`)"
+                    - "traefik.http.routers.traefik-http.entrypoints=http"
+                    - "traefik.http.routers.traefik-http.middlewares=traefik-redirect"
+                    - "traefik.http.routers.traefik-https.rule=Host(`traefik.${DEMYX_STACK_DOMAIN}`)"
+                    - "traefik.http.routers.traefik-https.entrypoints=https"
+                    - "traefik.http.routers.traefik-https.service=api@internal"
+                    - "traefik.http.routers.traefik-https.tls.certresolver=demyx"
+                    - "traefik.http.routers.traefik-https.middlewares=traefik-auth"
+                    - "traefik.http.middlewares.traefik-auth.basicauth.users=${DEMYX_STACK_AUTH}"
+                    - "traefik.http.middlewares.traefik-redirect.redirectscheme.scheme=https"'
     fi
 
     cat > "$DEMYX_STACK"/docker-compose.yml <<-EOF
@@ -400,7 +433,7 @@ demyx_stack_v2_yml() {
                     - demyx_traefik:/demyx
                     - demyx_log:/var/log/demyx
                 environment:
-                    - TRAEFIK_API=true
+                    - TRAEFIK_API=$DEMYX_STACK_API
                     - TRAEFIK_PROVIDERS_DOCKER=true
                     - TRAEFIK_PROVIDERS_DOCKER_EXPOSEDBYDEFAULT=false
                     - TRAEFIK_ENTRYPOINTS_HTTP_ADDRESS=:80
@@ -414,32 +447,8 @@ demyx_stack_v2_yml() {
                     - TRAEFIK_ACCESSLOG=true
                     - TRAEFIK_ACCESSLOG_FILEPATH=\${DEMYX_STACK_LOG_ACCESS}
                     - TZ=America/Los_Angeles
-                labels:
-                    - "traefik.enable=true"
-                    - "traefik.http.routers.traefik-http.rule=Host(\`traefik.\${DEMYX_STACK_DOMAIN}\`)"
-                    - "traefik.http.routers.traefik-http.entrypoints=http"
-                    - "traefik.http.routers.traefik-http.middlewares=traefik-redirect"
-                    - "traefik.http.routers.traefik-https.rule=Host(\`traefik.\${DEMYX_STACK_DOMAIN}\`)"
-                    - "traefik.http.routers.traefik-https.entrypoints=https"
-                    - "traefik.http.routers.traefik-https.service=api@internal"
-                    - "traefik.http.routers.traefik-https.tls.certresolver=demyx"
-                    - "traefik.http.routers.traefik-https.middlewares=traefik-auth"
-                    - "traefik.http.middlewares.traefik-auth.basicauth.users=\${DEMYX_STACK_AUTH}"
-                    - "traefik.http.middlewares.traefik-redirect.redirectscheme.scheme=https"
-            ouroboros:
-                container_name: demyx_ouroboros
-                image: pyouroboros/ouroboros
-                restart: unless-stopped
-                networks:
-                    - demyx
-                environment:
-                    - SELF_UPDATE=true
-                    - CLEANUP=true
-                    - LATEST=true
-                    - IGNORE="\$DEMYX_STACK_OUROBOROS_IGNORE"
-                    - TZ=America/Los_Angeles
-                volumes:
-                    - /var/run/docker.sock:/var/run/docker.sock:ro
+                $DEMYX_STACK_TRAEFIK_LABEL
+            $DEMYX_YML_OUROBOROS
         volumes:
             demyx_traefik:
                 name: demyx_traefik
