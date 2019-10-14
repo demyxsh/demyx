@@ -12,7 +12,7 @@ demyx_motd_dev_warning() {
         for i in *
         do
             DEMYX_COMMON_DEV_CHECK=$(grep DEMYX_APP_DEV "$DEMYX_WP"/"$i"/.env | awk -F '[=]' '{print $2}')
-            if [[ "$DEMYX_COMMON_DEV_CHECK" = on ]]; then
+            if [[ "$DEMYX_COMMON_DEV_CHECK" = true ]]; then
                 demyx_execute -v echo -e "\e[33m[WARNING]\e[39m $i is in development mode"
             fi
         done
@@ -40,7 +40,7 @@ demyx_motd() {
     fi
 
     DEMYX_MOTD_MODE=$(echo "$DEMYX_MOTD_MODE" | tr [a-z] [A-Z] | sed -e 's/\r//g')
-    DEMYX_MOTD_SYSTEM_INFO=$(demyx info dash)
+    DEMYX_MOTD_SYSTEM_INFO=$(demyx info system --json)
     DEMYX_MOTD_SYSTEM_DISK=$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .disk_used | sed 's|"||g')
     DEMYX_MOTD_SYSTEM_DISK_TOTAL=$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .disk_total | sed 's|"||g')
     DEMYX_MOTD_SYSTEM_DISK_TOTAL_PERCENTAGE=$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .disk_total_percentage | sed 's|"||g')
@@ -64,7 +64,7 @@ demyx_motd() {
     PRINT_MOTD_TABLE+="SSH^ $DEMYX_MOTD_SSH\n"
     PRINT_MOTD_TABLE+="DISK^ $DEMYX_MOTD_SYSTEM_DISK/$DEMYX_MOTD_SYSTEM_DISK_TOTAL ($DEMYX_MOTD_SYSTEM_DISK_TOTAL_PERCENTAGE)\n"
     PRINT_MOTD_TABLE+="MEMORY^ $DEMYX_MOTD_SYSTEM_MEMORY/$DEMYX_MOTD_SYSTEM_MEMORY_TOTAL\n"
-    PRINT_MOTD_TABLE+="UPTIME^ ${DEMYX_MOTD_SYSTEM_UPTIME:1}\n"
+    PRINT_MOTD_TABLE+="UPTIME^ ${DEMYX_MOTD_SYSTEM_UPTIME}\n"
     PRINT_MOTD_TABLE+="LOAD^ $DEMYX_MOTD_SYSTEM_LOAD\n"
     PRINT_MOTD_TABLE+="CONTAINERS^ $DEMYX_MOTD_SYSTEM_CONTAINER $DEMYX_MOTD_SYSTEM_CONTAINER_DEAD_COUNT"
 
