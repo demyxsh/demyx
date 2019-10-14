@@ -6,6 +6,9 @@
 demyx_stack() {
     while :; do
         case "$2" in
+            api)
+                DEMYX_STACK_SELECT=api
+                ;;
             ouroboros)
                 DEMYX_STACK_SELECT=ouroboros
                 ;;
@@ -15,17 +18,17 @@ demyx_stack() {
             upgrade)
                 DEMYX_STACK_SELECT=upgrade
                 ;;
-            --auto-update|--auto-update=on)
-                DEMYX_STACK_AUTO_UPDATE=on
+            --auto-update|--auto-update=true)
+                DEMYX_STACK_AUTO_UPDATE=true
                 ;;
-            --auto-update=off)
-                DEMYX_STACK_AUTO_UPDATE=off
+            --auto-update=false)
+                DEMYX_STACK_AUTO_UPDATE=false
                 ;;
-            --cloudflare|--cloudflare=on)
-                DEMYX_STACK_CLOUDFLARE=on
+            --cloudflare|--cloudflare=true)
+                DEMYX_STACK_CLOUDFLARE=true
                 ;;
-            --cloudflare=off)
-                DEMYX_STACK_CLOUDFLARE=off
+            --cloudflare=false)
+                DEMYX_STACK_CLOUDFLARE=false
                 ;;
             --cf-api-email=?*)
                 DEMYX_STACK_CLOUDFLARE_API_EMAIL=${2#*=}
@@ -39,11 +42,14 @@ demyx_stack() {
             --cf-api-key=)
                 demyx_die '"--cf-api-key" cannot be empty'
                 ;;
-            --healthcheck|--healthcheck=on)
-                DEMYX_STACK_HEALTHCHECK=on
+            --false)
+                DEMYX_STACK_FALSE=1
                 ;;
-            --healthcheck=off)
-                DEMYX_STACK_HEALTHCHECK=off
+            --healthcheck|--healthcheck=true)
+                DEMYX_STACK_HEALTHCHECK=true
+                ;;
+            --healthcheck=false)
+                DEMYX_STACK_HEALTHCHECK=false
                 ;;
             --ignore=?*)
                 DEMYX_STACK_IGNORE=${2#*=}
@@ -51,17 +57,20 @@ demyx_stack() {
             --ignore=)
                 demyx_die '"--ignore" cannot be empty'
                 ;;
-            --monitor|--monitor=on)
-                DEMYX_STACK_MONITOR=on
+            --monitor|--monitor=true)
+                DEMYX_STACK_MONITOR=true
                 ;;
-            --monitor=off)
-                DEMYX_STACK_MONITOR=off
+            --monitor=false)
+                DEMYX_STACK_MONITOR=false
                 ;;
-            --tracker|--tracker=on)
-                DEMYX_STACK_TRACKER=on
+            --tracker|--tracker=true)
+                DEMYX_STACK_TRACKER=true
                 ;;
-            --tracker=off)
-                DEMYX_STACK_TRACKER=off
+            --tracker=false)
+                DEMYX_STACK_TRACKER=false
+                ;;
+            --true)
+                DEMYX_STACK_TRUE=1
                 ;;
             --)
                 shift
@@ -77,25 +86,43 @@ demyx_stack() {
         shift
     done
 
-    if [[ "$DEMYX_STACK_SELECT" = ouroboros ]]; then
-        [[ -z "$DEMYX_STACK_IGNORE" ]] && demyx_die 'You need to specificy the ignore flag: --ignore'
-
-        DEMYX_STACK_OUROBOROS_IGNORE_CHECK=$(grep DEMYX_STACK_OUROBOROS_IGNORE "$DEMYX_STACK"/.env)
-        
-        # Regenerate stack's configs if the check returns null
-        if [[ -z "$DEMYX_STACK_OUROBOROS_IGNORE_CHECK" ]]; then
+    if [[ "$DEMYX_STACK_SELECT" = api ]]; then
+        if [[ -n "$DEMYX_STACK_FALSE" ]]; then
+            demyx_echo 'Disabling api'
+            demyx_execute sed -i "s|DEMYX_STACK_API=.*|DEMYX_STACK_API=false|g" "$DEMYX_STACK"/.env
+            demyx stack refresh
+        elif [[ -n "$DEMYX_STACK_TRUE" ]]; then
+            demyx_echo 'Enabling api'
+            demyx_execute sed -i "s|DEMYX_STACK_API=.*|DEMYX_STACK_API=true|g" "$DEMYX_STACK"/.env
             demyx stack refresh
         fi
+    elif [[ "$DEMYX_STACK_SELECT" = ouroboros ]]; then
+        if [[ -n "$DEMYX_STACK_IGNORE" ]]; then
+            DEMYX_STACK_OUROBOROS_IGNORE_CHECK=$(grep DEMYX_STACK_OUROBOROS_IGNORE "$DEMYX_STACK"/.env)
+            
+            # Regenerate stack's configs if the check returns null
+            if [[ -z "$DEMYX_STACK_OUROBOROS_IGNORE_CHECK" ]]; then
+                demyx stack refresh
+            fi
 
-        if [[ "$DEMYX_STACK_IGNORE" = off ]]; then
-            demyx_echo 'Updating Ouroboros'
-            demyx_execute sed -i "s|DEMYX_STACK_OUROBOROS_IGNORE=.*|DEMYX_STACK_OUROBOROS_IGNORE=|g" "$DEMYX_STACK"/.env
-        else
-            demyx_echo 'Updating Ouroboros'
-            demyx_execute sed -i "s|DEMYX_STACK_OUROBOROS_IGNORE=.*|DEMYX_STACK_OUROBOROS_IGNORE=\"$DEMYX_STACK_IGNORE\"|g" "$DEMYX_STACK"/.env
+            if [[ "$DEMYX_STACK_IGNORE" = false ]]; then
+                demyx_echo 'Updating Ouroboros'
+                demyx_execute sed -i "s|DEMYX_STACK_OUROBOROS_IGNORE=.*|DEMYX_STACK_OUROBOROS_IGNORE=|g" "$DEMYX_STACK"/.env
+            else
+                demyx_echo 'Updating Ouroboros'
+                demyx_execute sed -i "s|DEMYX_STACK_OUROBOROS_IGNORE=.*|DEMYX_STACK_OUROBOROS_IGNORE=\"$DEMYX_STACK_IGNORE\"|g" "$DEMYX_STACK"/.env
+            fi
+
+            demyx compose stack up -d
+        elif [[ -n "$DEMYX_STACK_FALSE" ]]; then
+            demyx_echo 'Disabling Ouroboros'
+            demyx_execute sed -i "s|DEMYX_STACK_OUROBOROS=.*|DEMYX_STACK_OUROBOROS=false|g" "$DEMYX_STACK"/.env
+            demyx stack refresh
+        elif [[ -n "$DEMYX_STACK_TRUE" ]]; then
+            demyx_echo 'Enabling Ouroboros'
+            demyx_execute sed -i "s|DEMYX_STACK_OUROBOROS=.*|DEMYX_STACK_OUROBOROS=true|g" "$DEMYX_STACK"/.env
+            demyx stack refresh
         fi
-
-        demyx compose stack up -d
     elif [[ "$DEMYX_STACK_SELECT" = refresh ]]; then
         demyx_echo 'Backing up stack directory as /demyx/backup/stack.tgz'
         demyx_execute tar -czf /demyx/backup/stack.tgz -C /demyx/app stack
@@ -150,13 +177,13 @@ demyx_stack() {
         else
             demyx_die 'The stack is already updated.'
         fi
-    elif [[ "$DEMYX_STACK_AUTO_UPDATE" = on ]]; then
+    elif [[ "$DEMYX_STACK_AUTO_UPDATE" = true ]]; then
         demyx_echo 'Turn on stack auto update'
-        demyx_execute sed -i 's/DEMYX_STACK_AUTO_UPDATE=off/DEMYX_STACK_AUTO_UPDATE=on/g' "$DEMYX_STACK"/.env
-    elif [[ "$DEMYX_STACK_AUTO_UPDATE" = off ]]; then
+        demyx_execute sed -i 's/DEMYX_STACK_AUTO_UPDATE=.*/DEMYX_STACK_AUTO_UPDATE=true/g' "$DEMYX_STACK"/.env
+    elif [[ "$DEMYX_STACK_AUTO_UPDATE" = false ]]; then
         demyx_echo 'Turn off stack auto update'
-        demyx_execute sed -i 's/DEMYX_STACK_AUTO_UPDATE=on/DEMYX_STACK_AUTO_UPDATE=off/g' "$DEMYX_STACK"/.env
-    elif [[ "$DEMYX_STACK_CLOUDFLARE" = on ]]; then
+        demyx_execute sed -i 's/DEMYX_STACK_AUTO_UPDATE=.*/DEMYX_STACK_AUTO_UPDATE=false/g' "$DEMYX_STACK"/.env
+    elif [[ "$DEMYX_STACK_CLOUDFLARE" = true ]]; then
         [[ -z "$DEMYX_STACK_CLOUDFLARE_API_EMAIL" ]] && demyx_die '--cf-api-email is missing'
         [[ -z "$DEMYX_STACK_CLOUDFLARE_API_KEY" ]] && demyx_die '--cf-api-key is missing'
 
@@ -165,35 +192,35 @@ demyx_stack() {
 
         demyx_echo 'Enabling Cloudflare as the certificate resolver'
         demyx_execute demyx_stack_v2_env; \
-            sed -i "s|DEMYX_STACK_CLOUDFLARE=.*|DEMYX_STACK_CLOUDFLARE=on|g" "$DEMYX_STACK"/.env; \
+            sed -i "s|DEMYX_STACK_CLOUDFLARE=.*|DEMYX_STACK_CLOUDFLARE=true|g" "$DEMYX_STACK"/.env; \
             sed -i "s|DEMYX_STACK_CLOUDFLARE_EMAIL=.*|DEMYX_STACK_CLOUDFLARE_EMAIL=$DEMYX_STACK_CLOUDFLARE_API_EMAIL|g" "$DEMYX_STACK"/.env; \
             sed -i "s|DEMYX_STACK_CLOUDFLARE_KEY=.*|DEMYX_STACK_CLOUDFLARE_KEY=$DEMYX_STACK_CLOUDFLARE_API_KEY|g" "$DEMYX_STACK"/.env; \
             demyx_stack_v2_yml
 
         demyx compose stack up -d
-    elif [[ "$DEMYX_STACK_CLOUDFLARE" = off ]]; then
+    elif [[ "$DEMYX_STACK_CLOUDFLARE" = false ]]; then
         demyx_echo 'Disabling Cloudflare as the certificate resolver, switching back to HTTP'
-        demyx_execute sed -i "s|DEMYX_STACK_CLOUDFLARE=.*|DEMYX_STACK_CLOUDFLARE=off|g" "$DEMYX_STACK"/.env
+        demyx_execute sed -i "s|DEMYX_STACK_CLOUDFLARE=.*|DEMYX_STACK_CLOUDFLARE=false|g" "$DEMYX_STACK"/.env
 
         demyx compose stack up -d
-    elif [[ "$DEMYX_STACK_HEALTHCHECK" = on ]]; then
-        demyx_echo 'Turn on stack healthcheck'
-        demyx_execute sed -i 's/DEMYX_STACK_HEALTHCHECK=off/DEMYX_STACK_HEALTHCHECK=on/g' "$DEMYX_STACK"/.env
-    elif [[ "$DEMYX_STACK_HEALTHCHECK" = off ]]; then
-        demyx_echo 'Turn off stack healthcheck'
-        demyx_execute sed -i 's/DEMYX_STACK_HEALTHCHECK=on/DEMYX_STACK_HEALTHCHECK=off/g' "$DEMYX_STACK"/.env
-    elif [[ "$DEMYX_STACK_MONITOR" = on ]]; then
-        demyx_echo 'Turn on stack monitor'
-        demyx_execute sed -i 's/DEMYX_STACK_MONITOR=off/DEMYX_STACK_MONITOR=on/g' "$DEMYX_STACK"/.env
-    elif [[ "$DEMYX_STACK_MONITOR" = off ]]; then
-        demyx_echo 'Turn off stack monitor'
-        demyx_execute sed -i 's/DEMYX_STACK_MONITOR=on/DEMYX_STACK_MONITOR=off/g' "$DEMYX_STACK"/.env
-    elif [[ "$DEMYX_STACK_TRACKER" = on ]]; then
-        demyx_echo 'Turn on stack tracker'
-        demyx_execute sed -i 's/DEMYX_STACK_TRACKER=off/DEMYX_STACK_TRACKER=on/g' "$DEMYX_STACK"/.env
-    elif [[ "$DEMYX_STACK_TRACKER" = off ]]; then
-        demyx_echo 'Turn off stack tracker'
-        demyx_execute sed -i 's/DEMYX_STACK_TRACKER=on/DEMYX_STACK_TRACKER=off/g' "$DEMYX_STACK"/.env
+    elif [[ "$DEMYX_STACK_HEALTHCHECK" = true ]]; then
+        demyx_echo 'Turning on stack healthcheck'
+        demyx_execute sed -i 's/DEMYX_STACK_HEALTHCHECK=.*/DEMYX_STACK_HEALTHCHECK=true/g' "$DEMYX_STACK"/.env
+    elif [[ "$DEMYX_STACK_HEALTHCHECK" = false ]]; then
+        demyx_echo 'Turning off stack healthcheck'
+        demyx_execute sed -i 's/DEMYX_STACK_HEALTHCHECK=.*/DEMYX_STACK_HEALTHCHECK=false/g' "$DEMYX_STACK"/.env
+    elif [[ "$DEMYX_STACK_MONITOR" = true ]]; then
+        demyx_echo 'Turning on stack monitor'
+        demyx_execute sed -i 's/DEMYX_STACK_MONITOR=.*/DEMYX_STACK_MONITOR=true/g' "$DEMYX_STACK"/.env
+    elif [[ "$DEMYX_STACK_MONITOR" = false ]]; then
+        demyx_echo 'Turning off stack monitor'
+        demyx_execute sed -i 's/DEMYX_STACK_MONITOR=.*/DEMYX_STACK_MONITOR=false/g' "$DEMYX_STACK"/.env
+    elif [[ "$DEMYX_STACK_TRACKER" = true ]]; then
+        demyx_echo 'Turning on stack tracker'
+        demyx_execute sed -i 's/DEMYX_STACK_TRACKER=.*/DEMYX_STACK_TRACKER=true/g' "$DEMYX_STACK"/.env
+    elif [[ "$DEMYX_STACK_TRACKER" = false ]]; then
+        demyx_echo 'Turning off stack tracker'
+        demyx_execute sed -i 's/DEMYX_STACK_TRACKER=.*/DEMYX_STACK_TRACKER=false/g' "$DEMYX_STACK"/.env
     else
         demyx_die --command-not-found
     fi
