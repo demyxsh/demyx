@@ -96,6 +96,7 @@ docker run -dit \
     -e DEMYX_HOST="$DEMYX_CHROOT_HOST" \
     -e DEMYX_SSH="$DEMYX_CHROOT_SSH" \
     -e DEMYX_MODE="$DEMYX_CHROOT_MODE" \
+    -e DEMYX_API="$DEMYX_CHROOT_API" \
     -v /var/run/docker.sock:/var/run/docker.sock:ro \
     -v demyx:/demyx \
     -v demyx_user:/home/demyx \
@@ -110,9 +111,10 @@ demyx <args>          Chroot into the demyx container
       exec            Send demyx commands from host
       help            Demyx help
       rm              Stops and removes demyx container
-      rs              Stops, removes, and starts demyx container
+      restart         Stops, removes, and starts demyx container
       tty             Execute root commands to demyx container from host
       update          Update chroot.sh from GitHub
+      --api           Expose demyx api
       --dev           Puts demyx container into development mode
       --nc            Starts demyx containr but prevent chrooting into container
       --prod          Puts demyx container into production mode
