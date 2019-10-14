@@ -149,9 +149,9 @@ demyx_config() {
             
             cd "$DEMYX_APP_PATH" || exit
 
-            if [[ "$DEMYX_CONFIG_AUTH" = on ]]; then
+            if [[ "$DEMYX_CONFIG_AUTH" = true ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_AUTH" = on ]] && demyx_die 'Basic Auth is already turned on'
+                    [[ "$DEMYX_APP_AUTH" = true ]] && demyx_die 'Basic Auth is already turned on'
                 fi
 
                 demyx_echo 'Turning on basic auth'
@@ -164,9 +164,9 @@ demyx_config() {
                 fi
 
                 demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" wp up -d --remove-orphans
-            elif [[ "$DEMYX_CONFIG_AUTH" = off ]]; then
+            elif [[ "$DEMYX_CONFIG_AUTH" = false ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_AUTH" = off ]] && demyx_die 'Basic Auth is already turned on'
+                    [[ "$DEMYX_APP_AUTH" = false ]] && demyx_die 'Basic Auth is already turned on'
                 fi
 
                 demyx_echo 'Turning off basic auth'
@@ -180,9 +180,9 @@ demyx_config() {
 
                 demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" wp up -d --remove-orphans
             fi
-            if [[ "$DEMYX_CONFIG_AUTH_WP" = on ]]; then
+            if [[ "$DEMYX_CONFIG_AUTH_WP" = true ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_AUTH_WP" != off ]] && demyx_die 'Basic WP Auth is already turned on'
+                    [[ "$DEMYX_APP_AUTH_WP" != false ]] && demyx_die 'Basic WP Auth is already turned on'
                 fi
 
                 DEMYX_PARSE_BASIC_AUTH=$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}' || true)
@@ -198,9 +198,9 @@ demyx_config() {
                     sed -i "s/DEMYX_APP_AUTH_WP=.*/DEMYX_APP_AUTH_WP=$DEMYX_PARSE_BASIC_AUTH/g" "$DEMYX_APP_PATH"/.env
 
                 demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
-            elif [[ "$DEMYX_CONFIG_AUTH_WP" = off ]]; then
+            elif [[ "$DEMYX_CONFIG_AUTH_WP" = false ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_AUTH_WP" = off ]] && demyx_die 'Basic WP Auth is already turned off'
+                    [[ "$DEMYX_APP_AUTH_WP" = false ]] && demyx_die 'Basic WP Auth is already turned off'
                 fi
                 
                 demyx_echo "Turning off wp-login.php basic auth"
@@ -214,9 +214,9 @@ demyx_config() {
 
                 demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
             fi
-            if [[ "$DEMYX_CONFIG_CACHE" = on ]]; then
+            if [[ "$DEMYX_CONFIG_CACHE" = true ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_CACHE" = on ]] && demyx_die 'Cache is already turned on'
+                    [[ "$DEMYX_APP_CACHE" = true ]] && demyx_die 'Cache is already turned on'
                 fi
 
                 DEMYX_CONFIG_NGINX_HELPER_CHECK=$(demyx exec "$DEMYX_APP_DOMAIN" ls wp-content/plugins | grep nginx-helper || true)
@@ -237,9 +237,9 @@ demyx_config() {
                     sed -i "s/DEMYX_APP_CACHE=.*/DEMYX_APP_CACHE=true/g" "$DEMYX_APP_PATH"/.env
 
                 demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
-            elif [[ "$DEMYX_CONFIG_CACHE" = off ]]; then
+            elif [[ "$DEMYX_CONFIG_CACHE" = false ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_CACHE" = off ]] && demyx_die 'Cache is already turned off'
+                    [[ "$DEMYX_APP_CACHE" = false ]] && demyx_die 'Cache is already turned off'
                 fi
 
                 demyx_echo 'Deactivating nginx-helper' 
@@ -251,9 +251,9 @@ demyx_config() {
 
                 demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
             fi
-            if [[ "$DEMYX_CONFIG_CDN" = on ]]; then
+            if [[ "$DEMYX_CONFIG_CDN" = true ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_CDN" = on ]] && demyx_die 'CDN is already turned on'
+                    [[ "$DEMYX_APP_CDN" = true ]] && demyx_die 'CDN is already turned on'
                 fi
 
                 DEMYX_CONFIG_CDN_ENABLER_CHECK=$(demyx exec "$DEMYX_APP_DOMAIN" ls wp-content/plugins | grep cdn-enabler || true)
@@ -269,9 +269,9 @@ demyx_config() {
                 demyx_echo 'Configuring cdn-enabler' 
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" option update cdn_enabler "{\"url\":\"https:\/\/cdn.staticaly.com\/img\/$DEMYX_APP_DOMAIN\",\"dirs\":\"wp-content,wp-includes\",\"excludes\":\".3g2, .3gp, .aac, .aiff, .alac, .apk, .avi, .css, .doc, .docx, .flac, .flv, .h264, .js, .json, .m4v, .mkv, .mov, .mp3, .mp4, .mpeg, .mpg, .ogg, .pdf, .php, .rar, .rtf, .svg, .tex, .ttf, .txt, .wav, .wks, .wma, .wmv, .woff, .woff2, .wpd, .wps, .xml, .zip, wp-content\/plugins, wp-content\/themes\",\"relative\":1,\"https\":1,\"keycdn_api_key\":\"\",\"keycdn_zone_id\":0}" --format=json && \
                     sed -i "s/DEMYX_APP_CDN=.*/DEMYX_APP_CDN=true/g" "$DEMYX_APP_PATH"/.env
-            elif [[ "$DEMYX_CONFIG_CDN" = off ]]; then
+            elif [[ "$DEMYX_CONFIG_CDN" = false ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_CDN" = off ]] && demyx_die 'CDN is already turned off'
+                    [[ "$DEMYX_APP_CDN" = false ]] && demyx_die 'CDN is already turned off'
                 fi
                 demyx_echo 'Deactivating cdn-enabler' 
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin deactivate cdn-enabler && \
@@ -335,12 +335,12 @@ demyx_config() {
 
                 demyx maldet "$DEMYX_APP_DOMAIN"
             fi
-            if [[ "$DEMYX_CONFIG_DEV" = on ]]; then
+            if [[ "$DEMYX_CONFIG_DEV" = true ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_DEV" = on ]] && demyx_die 'Dev mode is already turned on'
+                    [[ "$DEMYX_APP_DEV" = true ]] && demyx_die 'Dev mode is already turned on'
                 fi
  
-                if [[ "$DEMYX_APP_SSL" = on ]]; then
+                if [[ "$DEMYX_APP_SSL" = true ]]; then
                     DEMYX_CONFIG_DEV_PROTO="https://$DEMYX_APP_DOMAIN"
                 else
                     DEMYX_CONFIG_DEV_PROTO="http://$DEMYX_APP_DOMAIN"
@@ -375,7 +375,7 @@ demyx_config() {
                     demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin activate demyx_browsersync
                 fi
 
-                if [[ "$DEMYX_CONFIG_CACHE_CHECK" = on ]]; then
+                if [[ "$DEMYX_CONFIG_CACHE_CHECK" = true ]]; then
                     touch "$DEMYX_APP_PATH"/.cache
                     demyx config "$DEMYX_APP_DOMAIN" --cache=false
                 fi
@@ -386,7 +386,7 @@ demyx_config() {
                     DEMYX_BS_FILES="\"/var/www/html/wp-content/themes/**/*\""
                 elif [ "$DEMYX_CONFIG_FILES" = plugins ]; then
                     DEMYX_BS_FILES="\"/var/www/html/wp-content/plugins/**/*\""
-                elif [ "$DEMYX_CONFIG_FILES" = off ]; then
+                elif [ "$DEMYX_CONFIG_FILES" = false ]; then
                     DEMYX_BS_FILES=false
                 elif [ -z "$DEMYX_CONFIG_FILES" ]; then
                     DEMYX_BS_FILES='["/var/www/html/wp-content/themes/**/*", "/var/www/html/wp-content/plugins/**/*"]'
@@ -464,9 +464,9 @@ demyx_config() {
                 PRINT_TABLE+="BROWSERSYNC^ ${DEMYX_CONFIG_DEV_PROTO}${DEMYX_CONFIG_DEV_BASE_PATH}/bs/\n"
                 PRINT_TABLE+="PASSWORD^ $MARIADB_ROOT_PASSWORD"
                 demyx_execute -v demyx_table "$PRINT_TABLE"
-            elif [[ "$DEMYX_CONFIG_DEV" = off ]]; then
+            elif [[ "$DEMYX_CONFIG_DEV" = false ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_DEV" = off ]] && demyx_die 'Dev mode is already turned off'
+                    [[ "$DEMYX_APP_DEV" = false ]] && demyx_die 'Dev mode is already turned off'
                 fi
 
                 demyx_echo 'Deactivating autover' 
@@ -487,22 +487,22 @@ demyx_config() {
                     demyx config "$DEMYX_APP_DOMAIN" --cache
                 fi
             fi
-            if [[ "$DEMYX_CONFIG_HEALTHCHECK" = on ]]; then
+            if [[ "$DEMYX_CONFIG_HEALTHCHECK" = true ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_HEALTHCHECK" = on ]] && demyx_die 'Healthcheck is already turned on'
+                    [[ "$DEMYX_APP_HEALTHCHECK" = true ]] && demyx_die 'Healthcheck is already turned on'
                 fi
                 demyx_echo 'Turning on healthcheck'
                 demyx_execute sed -i "s/DEMYX_APP_HEALTHCHECK=.*/DEMYX_APP_HEALTHCHECK=true/g" "$DEMYX_APP_PATH"/.env
-            elif [[ "$DEMYX_CONFIG_HEALTHCHECK" = off ]]; then
+            elif [[ "$DEMYX_CONFIG_HEALTHCHECK" = false ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_HEALTHCHECK" = off ]] && demyx_die 'Healthcheck is already turned off'
+                    [[ "$DEMYX_APP_HEALTHCHECK" = false ]] && demyx_die 'Healthcheck is already turned off'
                 fi
                 demyx_echo 'Turning off healthcheck'
                 demyx_execute sed -i "s/DEMYX_APP_HEALTHCHECK=.*/DEMYX_APP_HEALTHCHECK=false/g" "$DEMYX_APP_PATH"/.env
             fi
-            if [[ "$DEMYX_CONFIG_OPCACHE" = on ]]; then
+            if [[ "$DEMYX_CONFIG_OPCACHE" = true ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_PHP_OPCACHE" = on ]] && demyx_die 'PHP opcache is already turned on'
+                    [[ "$DEMYX_APP_PHP_OPCACHE" = true ]] && demyx_die 'PHP opcache is already turned on'
                 fi
 
                 demyx_echo 'Turning on PHP opcache'
@@ -510,9 +510,9 @@ demyx_config() {
                     sed -i "s/DEMYX_APP_PHP_OPCACHE=.*/DEMYX_APP_PHP_OPCACHE=true/g" "$DEMYX_APP_PATH"/.env
 
                 demyx config "$DEMYX_APP_DOMAIN" --restart=php
-            elif [[ "$DEMYX_CONFIG_OPCACHE" = off ]]; then
+            elif [[ "$DEMYX_CONFIG_OPCACHE" = false ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_PHP_OPCACHE" = off ]] && demyx_die 'PHP opcache is already turned off'
+                    [[ "$DEMYX_APP_PHP_OPCACHE" = false ]] && demyx_die 'PHP opcache is already turned off'
                 fi
                 
                 demyx_echo 'Turning off PHP opcache'
@@ -521,11 +521,11 @@ demyx_config() {
 
                 demyx config "$DEMYX_APP_DOMAIN" --restart=php
             fi
-            if [[ "$DEMYX_CONFIG_PMA" = on ]]; then
+            if [[ "$DEMYX_CONFIG_PMA" = true ]]; then
                 DEMYX_CONFIG_PMA_CONTAINER_CHECK=$(docker ps | grep "$DEMYX_APP_COMPOSE_PROJECT"_pma || true)
                 [[ -n "$DEMYX_CONFIG_PMA_CONTAINER_CHECK" ]] && demyx_die 'phpMyAdmin container is already running'
 
-                if [[ "$DEMYX_APP_SSL" = on ]]; then
+                if [[ "$DEMYX_APP_SSL" = true ]]; then
                     DEMYX_CONFIG_PMA_PROTO="https://$DEMYX_APP_DOMAIN"
                 else
                     DEMYX_CONFIG_PMA_PROTO="http://$DEMYX_APP_DOMAIN"
@@ -551,16 +551,16 @@ demyx_config() {
                 PRINT_TABLE+="USERNAME^ $WORDPRESS_DB_USER\n"
                 PRINT_TABLE+="PASSWORD^ $WORDPRESS_DB_PASSWORD\n"
                 demyx_execute -v demyx_table "$PRINT_TABLE"
-            elif [[ "$DEMYX_CONFIG_PMA" = off ]]; then
+            elif [[ "$DEMYX_CONFIG_PMA" = false ]]; then
                 DEMYX_CONFIG_PMA_CONTAINER_CHECK=$(docker ps | grep "$DEMYX_APP_COMPOSE_PROJECT"_pma || true)
                 [[ -z "$DEMYX_CONFIG_PMA_CONTAINER_CHECK" ]] && demyx_die 'No phpMyAdmin container running'
 
                 demyx_echo 'Stopping phpMyAdmin container'
                 demyx_execute docker stop "$DEMYX_APP_COMPOSE_PROJECT"_pma
             fi
-            if [[ "$DEMYX_CONFIG_RATE_LIMIT" = on ]]; then
+            if [[ "$DEMYX_CONFIG_RATE_LIMIT" = true ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_RATE_LIMIT" = on ]] && demyx_die 'Rate limit is already turned on'
+                    [[ "$DEMYX_APP_RATE_LIMIT" = true ]] && demyx_die 'Rate limit is already turned on'
                 fi
 
                 demyx_echo 'Turning on rate limiting'
@@ -568,9 +568,9 @@ demyx_config() {
                     sed -i "s/DEMYX_APP_RATE_LIMIT=.*/DEMYX_APP_RATE_LIMIT=true/g" "$DEMYX_APP_PATH"/.env
 
                 demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
-            elif [[ "$DEMYX_CONFIG_RATE_LIMIT" = off ]]; then
+            elif [[ "$DEMYX_CONFIG_RATE_LIMIT" = false ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_RATE_LIMIT" = off ]] && demyx_die 'Rate limit is already turned off'
+                    [[ "$DEMYX_APP_RATE_LIMIT" = false ]] && demyx_die 'Rate limit is already turned off'
                 fi
 
                 demyx_echo 'Turning off rate limiting'
@@ -598,12 +598,12 @@ demyx_config() {
 
                 demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" up -d
 
-                [[ "$DEMYX_APP_RATE_LIMIT" = on ]] && demyx config "$DEMYX_APP_DOMAIN" --rate-limit -f
-                [[ "$DEMYX_APP_CACHE" = on ]] && demyx config "$DEMYX_APP_DOMAIN" --cache -f
-                [[ "$DEMYX_APP_AUTH" = on ]] && demyx config "$DEMYX_APP_DOMAIN" --auth -f
-                [[ "$DEMYX_APP_AUTH_WP" = on ]] && demyx config "$DEMYX_APP_DOMAIN" --auth-wp -f
-                [[ "$DEMYX_APP_CDN" = on ]] && demyx config "$DEMYX_APP_DOMAIN" --cdn -f
-                [[ "$DEMYX_APP_HEALTHCHECK" = on ]] && demyx config "$DEMYX_APP_DOMAIN" --healthcheck -f
+                [[ "$DEMYX_APP_RATE_LIMIT" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --rate-limit -f
+                [[ "$DEMYX_APP_CACHE" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --cache -f
+                [[ "$DEMYX_APP_AUTH" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --auth -f
+                [[ "$DEMYX_APP_AUTH_WP" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --auth-wp -f
+                [[ "$DEMYX_APP_CDN" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --cdn -f
+                [[ "$DEMYX_APP_HEALTHCHECK" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --healthcheck -f
             fi
             if [ "$DEMYX_CONFIG_RESTART" = nginx-php ]; then
                 demyx_echo "Restarting NGINX"
@@ -618,7 +618,7 @@ demyx_config() {
                 demyx_echo "Restarting php-fpm"
                 demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "pkill php-fpm"
             fi
-            if [[ "$DEMYX_CONFIG_SFTP" = on ]]; then
+            if [[ "$DEMYX_CONFIG_SFTP" = true ]]; then
                 DEMYX_SFTP_VOLUME_CHECK=$(docker volume ls | grep demyx_sftp || true)
                 DEMYX_SFTP_CONTAINER_CHECK=$(docker ps | grep "$DEMYX_APP_COMPOSE_PROJECT"_sftp || true)
 
@@ -656,16 +656,16 @@ demyx_config() {
                 PRINT_TABLE+="SFTP USER^ www-data\n"
                 PRINT_TABLE+="SFTP PORT^ $DEMYX_SFTP_PORT\n"
                 demyx_execute -v demyx_table "$PRINT_TABLE"
-            elif [[ "$DEMYX_CONFIG_SFTP" = off ]]; then
+            elif [[ "$DEMYX_CONFIG_SFTP" = false ]]; then
                 DEMYX_SFTP_CONTAINER_CHECK=$(docker ps | grep "$DEMYX_APP_COMPOSE_PROJECT"_sftp || true)
                 [[ -z "$DEMYX_SFTP_CONTAINER_CHECK" ]] && demyx_die 'No SFTP container running'
 
                 demyx_echo 'Stopping SFTP container' 
                 demyx_execute docker stop "$DEMYX_APP_COMPOSE_PROJECT"_sftp
             fi
-            if [[ "$DEMYX_CONFIG_SSL" = on ]]; then
+            if [[ "$DEMYX_CONFIG_SSL" = true ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_SSL" = on ]] && demyx_die 'SSL is already turned on'
+                    [[ "$DEMYX_APP_SSL" = true ]] && demyx_die 'SSL is already turned on'
                 fi
 
                 demyx_echo 'Updating .env'
@@ -684,9 +684,9 @@ demyx_config() {
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" search-replace http://"$DEMYX_APP_DOMAIN" https://"$DEMYX_APP_DOMAIN"
 
                 demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
-            elif [[ "$DEMYX_CONFIG_SSL" = off ]]; then
+            elif [[ "$DEMYX_CONFIG_SSL" = false ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_SSL" = off ]] && demyx_die 'SSL is already turned off'
+                    [[ "$DEMYX_APP_SSL" = false ]] && demyx_die 'SSL is already turned off'
                 fi
 
                 demyx_echo 'Updating .env'
@@ -706,24 +706,24 @@ demyx_config() {
 
                 demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
             fi
-            if [[ "$DEMYX_CONFIG_WP_UPDATE" = on ]]; then
+            if [[ "$DEMYX_CONFIG_WP_UPDATE" = true ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_WP_UPDATE" = on ]] && demyx_die 'WordPress auto update is already turned on'
+                    [[ "$DEMYX_APP_WP_UPDATE" = true ]] && demyx_die 'WordPress auto update is already turned on'
                 fi
 
                 demyx_echo 'Turning on WordPress auto update'
                 demyx_execute sed -i "s/DEMYX_APP_WP_UPDATE=.*/DEMYX_APP_WP_UPDATE=true/g" "$DEMYX_APP_PATH"/.env
-            elif [[ "$DEMYX_CONFIG_WP_UPDATE" = off ]]; then
+            elif [[ "$DEMYX_CONFIG_WP_UPDATE" = false ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_WP_UPDATE" = off ]] && demyx_die 'WordPress auto update is already turned off'
+                    [[ "$DEMYX_APP_WP_UPDATE" = false ]] && demyx_die 'WordPress auto update is already turned off'
                 fi
 
                 demyx_echo 'Turning off WordPress auto update'
                 demyx_execute sed -i "s/DEMYX_APP_WP_UPDATE=.*/DEMYX_APP_WP_UPDATE=false/g" "$DEMYX_APP_PATH"/.env
             fi
-            if [[ "$DEMYX_CONFIG_XMLRPC" = on ]]; then
+            if [[ "$DEMYX_CONFIG_XMLRPC" = true ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_XMLRPC" = on ]] && demyx_die 'WordPress xmlrpc is already turned on'
+                    [[ "$DEMYX_APP_XMLRPC" = true ]] && demyx_die 'WordPress xmlrpc is already turned on'
                 fi
 
                 demyx_echo 'Turning on WordPress xmlrpc'
@@ -731,9 +731,9 @@ demyx_config() {
                     sed -i "s/DEMYX_APP_XMLRPC=.*/DEMYX_APP_XMLRPC=true/g" "$DEMYX_APP_PATH"/.env
 
                 #demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
-            elif [[ "$DEMYX_CONFIG_XMLRPC" = off ]]; then
+            elif [[ "$DEMYX_CONFIG_XMLRPC" = false ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_XMLRPC" = off ]] && demyx_die 'WordPress xmlrpc is already turned off'
+                    [[ "$DEMYX_APP_XMLRPC" = false ]] && demyx_die 'WordPress xmlrpc is already turned off'
                 fi
 
                 demyx_echo 'Turning off WordPress xmlrpc'

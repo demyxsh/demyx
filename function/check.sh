@@ -28,3 +28,7 @@ if [[ -n "$DEMYX_CHECK_TRAEFIK_LOG" ]]; then
     sed -i "s|/var/log/demyx/access.log|/var/log/demyx/traefik.access.log|g" "$DEMYX_STACK"/.env
     sed -i "s|/var/log/demyx/error.log|/var/log/demyx/traefik.error.log|g" "$DEMYX_STACK"/.env
 fi
+
+# Convert on/off to true/false
+sed -i "s|=on|=true|g" "$DEMYX_STACK"/.env
+sed -i "s|=off|=false|g" "$DEMYX_STACK"/.env

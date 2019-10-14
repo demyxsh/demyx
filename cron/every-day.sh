@@ -6,7 +6,7 @@
 # Active install tracker
 echo -e "[$(date +%F-%T)] CROND: ACTIVE TRACKER"
 DEMYX_STACK_TRACKER_CHECK=$(grep DEMYX_STACK_TRACKER /demyx/app/stack/.env | awk -F '[=]' '{print $2}')
-if [[ "$DEMYX_STACK_TRACKER_CHECK" = on ]]; then
+if [[ "$DEMYX_STACK_TRACKER_CHECK" = true ]]; then
     /usr/bin/curl -s "https://demyx.sh/?action=active&token=V1VpdGNPcWNDVlZSUDFQdFBaR0Zhdz09OjrnA1h6ZbDFJ2T6MHOwg3p4" > /dev/null
 fi
 
@@ -22,7 +22,7 @@ echo -e "[$(date +%F-%T)] CROND: PULL DEMYX IMAGES"
 # Auto update Demyx core files
 echo -e "[$(date +%F-%T)] CROND: UPDATE DEMYX CORE"
 DEMYX_STACK_AUTO_UPDATE_CHECK=$(grep DEMYX_STACK_AUTO_UPDATE /demyx/app/stack/.env | awk -F '[=]' '{print $2}')
-if [[ "$DEMYX_STACK_AUTO_UPDATE_CHECK" = on ]]; then
+if [[ "$DEMYX_STACK_AUTO_UPDATE_CHECK" = true ]]; then
     /usr/local/bin/demyx update
 fi
 
@@ -51,7 +51,7 @@ cd /demyx/app/wp
 for i in *
 do
     source /demyx/app/wp/"$i"/.env
-    if [[ "$DEMYX_APP_WP_UPDATE" = on ]]; then
+    if [[ "$DEMYX_APP_WP_UPDATE" = true ]]; then
         /usr/local/bin/demyx wp "$i" core update
         /usr/local/bin/demyx wp "$i" theme update --all
         /usr/local/bin/demyx wp "$i" plugin update --all

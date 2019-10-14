@@ -67,7 +67,7 @@ demyx_restore() {
 
             demyx_app_config
 
-            demyx config "$DEMYX_APP_DOMAIN" --healthcheck=off
+            demyx config "$DEMYX_APP_DOMAIN" --healthcheck=false
 
             demyx_echo 'Creating WordPress volume'
             demyx_execute docker volume create wp_"$DEMYX_APP_ID"

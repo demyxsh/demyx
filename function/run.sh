@@ -13,13 +13,13 @@ demyx_run() {
                 demyx_die '"--archive" cannot be empty'
                 ;;
             --auth)
-                DEMYX_RUN_AUTH=on
+                DEMYX_RUN_AUTH=true
                 ;;
             --cache)
-                DEMYX_RUN_CACHE=on
+                DEMYX_RUN_CACHE=true
                 ;;
             --cdn)
-                DEMYX_RUN_CDN=on
+                DEMYX_RUN_CDN=true
                 ;;
             --clone=?*)
                 DEMYX_RUN_CLONE=${3#*=}
@@ -42,17 +42,17 @@ demyx_run() {
             --pass=)
                 demyx_die '"--password" cannot be empty'
                 ;;
-            --rate-limit|--rate-limit=on)
-                DEMYX_RUN_RATE_LIMIT=on
+            --rate-limit|--rate-limit=true)
+                DEMYX_RUN_RATE_LIMIT=true
                 ;;
-            --rate-limit=off)
-                DEMYX_RUN_RATE_LIMIT=off
+            --rate-limit=false)
+                DEMYX_RUN_RATE_LIMIT=false
                 ;;
-            --ssl|--ssl=on)
-                DEMYX_RUN_SSL=on
+            --ssl|--ssl=true)
+                DEMYX_RUN_SSL=true
                 ;;
-            --ssl=off)
-                DEMYX_RUN_SSL=off
+            --ssl=false)
+                DEMYX_RUN_SSL=false
                 ;;
             --type=wp|--type=php|--type=html)
                 DEMYX_RUN_TYPE=${3#*=}
@@ -108,20 +108,20 @@ demyx_run() {
     fi
 
     [[ -z "$DEMYX_RUN_TYPE" ]] && DEMYX_RUN_TYPE=wp
-    [[ -z "$DEMYX_RUN_RATE_LIMIT" ]] && DEMYX_RUN_RATE_LIMIT=off
-    [[ -z "$DEMYX_RUN_CDN" ]] && DEMYX_RUN_CDN=off
-    [[ -z "$DEMYX_RUN_CACHE" ]] && DEMYX_RUN_CACHE=off
-    [[ -z "$DEMYX_RUN_AUTH" ]] && DEMYX_RUN_AUTH=off
+    [[ -z "$DEMYX_RUN_RATE_LIMIT" ]] && DEMYX_RUN_RATE_LIMIT=false
+    [[ -z "$DEMYX_RUN_CDN" ]] && DEMYX_RUN_CDN=false
+    [[ -z "$DEMYX_RUN_CACHE" ]] && DEMYX_RUN_CACHE=false
+    [[ -z "$DEMYX_RUN_AUTH" ]] && DEMYX_RUN_AUTH=false
     [[ -n "$DEMYX_RUN_CLONE" ]] && DEMYX_RUN_CLONE_APP=$(demyx info "$DEMYX_RUN_CLONE" --filter=DEMYX_APP_WP_CONTAINER)
 
-    if [[ "$DEMYX_RUN_SSL" = on ]]; then 
-        DEMYX_RUN_SSL=on
+    if [[ "$DEMYX_RUN_SSL" = true ]]; then 
+        DEMYX_RUN_SSL=true
         DEMYX_RUN_PROTO="https://$DEMYX_TARGET"
-    elif [[ "$DEMYX_RUN_SSL" = off ]]; then 
-        DEMYX_RUN_SSL=off
+    elif [[ "$DEMYX_RUN_SSL" = false ]]; then 
+        DEMYX_RUN_SSL=false
         DEMYX_RUN_PROTO="$DEMYX_TARGET"
     else
-        [[ -z "$DEMYX_RUN_SSL" ]] && DEMYX_RUN_SSL=on
+        [[ -z "$DEMYX_RUN_SSL" ]] && DEMYX_RUN_SSL=true
         DEMYX_RUN_PROTO="https://$DEMYX_TARGET"
     fi
 
@@ -137,7 +137,7 @@ demyx_run() {
 
         demyx_app_config
 
-        demyx config "$DEMYX_APP_DOMAIN" --healthcheck=off
+        demyx config "$DEMYX_APP_DOMAIN" --healthcheck=false
 
         demyx_echo 'Creating .yml'
 
@@ -150,7 +150,7 @@ demyx_run() {
 
         # Recheck SSL
         DEMYX_RUN_SSL_RECHECK=$(grep DEMYX_APP_SSL "$DEMYX_APP_PATH"/.env | awk -F '[=]' '{print $2}')
-        [[ "$DEMYX_RUN_SSL_RECHECK" = off ]] && DEMYX_RUN_PROTO="http://$DEMYX_TARGET"
+        [[ "$DEMYX_RUN_SSL_RECHECK" = false ]] && DEMYX_RUN_PROTO="http://$DEMYX_TARGET"
 
         if [[ -n "$DEMYX_RUN_CLONE" ]]; then
             demyx_echo 'Cloning database'
@@ -326,13 +326,13 @@ demyx_run() {
             DEMYX_RUN_CLONE_ENV_CDN_CHECK="$(demyx info "$DEMYX_RUN_CLONE" --filter=DEMYX_APP_CDN)"
             DEMYX_RUN_CLONE_ENV_CACHE_CHECK="$(demyx info "$DEMYX_RUN_CLONE" --filter=DEMYX_APP_CACHE)"
             
-            [[ "$DEMYX_RUN_CLONE_ENV_CACHE_CHECK" = on ]] && demyx config "$DEMYX_APP_DOMAIN" --cache && DEMYX_RUN_CACHE=on
-            [[ "$DEMYX_RUN_CLONE_ENV_CDN_CHECK" = on ]] && demyx config "$DEMYX_APP_DOMAIN" --cdn && DEMYX_RUN_CDN=on
-            [[ "$DEMYX_RUN_CLONE_ENV_AUTH_CHECK" = on ]] && demyx config "$DEMYX_APP_DOMAIN" --auth && DEMYX_RUN_AUTH=on
+            [[ "$DEMYX_RUN_CLONE_ENV_CACHE_CHECK" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --cache && DEMYX_RUN_CACHE=true
+            [[ "$DEMYX_RUN_CLONE_ENV_CDN_CHECK" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --cdn && DEMYX_RUN_CDN=true
+            [[ "$DEMYX_RUN_CLONE_ENV_AUTH_CHECK" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --auth && DEMYX_RUN_AUTH=true
         else
-            [[ "$DEMYX_RUN_CACHE" = on ]] && demyx config "$DEMYX_APP_DOMAIN" --cache
-            [[ "$DEMYX_RUN_CDN" = on ]] && demyx config "$DEMYX_APP_DOMAIN" --cdn
-            [[ "$DEMYX_RUN_AUTH" = on ]] && demyx config "$DEMYX_APP_DOMAIN" --auth
+            [[ "$DEMYX_RUN_CACHE" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --cache
+            [[ "$DEMYX_RUN_CDN" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --cdn
+            [[ "$DEMYX_RUN_AUTH" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --auth
         fi
 
         demyx config "$DEMYX_APP_DOMAIN" --healthcheck

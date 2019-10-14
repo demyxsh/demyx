@@ -58,10 +58,10 @@ I have a tracker that is enabled by default. It sends a curl request to demyx.sh
 If you are uncomfortable with this, then you can turn off the tracker by running the command below OR keep it turned on to show your support! [COMMIT CHANGES](https://github.com/demyxco/demyx/commit/7deb9bb93bf598c07f0a13107548d397624e7638)
 ```
 # Execute in the host OS
-demyx exec stack --tracker=off
+demyx exec stack --tracker=false
 
 # Execute in the demyx container
-demyx stack --tracker=off
+demyx stack --tracker=false
 ```
 
 ### Requirements

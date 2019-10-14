@@ -62,10 +62,10 @@ demyx_install() {
     DEMYX_STACK_AUTH=$(demyx util --user="$DEMYX_INSTALL_USER" --htpasswd="$DEMYX_INSTALL_PASS" --raw)
 
     [[ -z "$DEMYX_STACK_SERVER_IP" ]] && DEMYX_STACK_SERVER_IP=$(demyx util curl -s https://ipecho.net/plain | sed -e 's/\r//g')
-    [[ -z "$DEMYX_STACK_TRACKER" ]] && DEMYX_STACK_TRACKER=on
-    [[ -z "$DEMYX_STACK_AUTO_UPDATE" ]] && DEMYX_STACK_AUTO_UPDATE=on
-    [[ -z "$DEMYX_STACK_MONITOR" ]] && DEMYX_STACK_MONITOR=on
-    [[ -z "$DEMYX_STACK_HEALTHCHECK" ]] && DEMYX_STACK_HEALTHCHECK=on
+    [[ -z "$DEMYX_STACK_TRACKER" ]] && DEMYX_STACK_TRACKER=true
+    [[ -z "$DEMYX_STACK_AUTO_UPDATE" ]] && DEMYX_STACK_AUTO_UPDATE=true
+    [[ -z "$DEMYX_STACK_MONITOR" ]] && DEMYX_STACK_MONITOR=true
+    [[ -z "$DEMYX_STACK_HEALTHCHECK" ]] && DEMYX_STACK_HEALTHCHECK=true
     [[ -z "$DEMYX_STACK_ACME_STORAGE" ]] && DEMYX_STACK_ACME_STORAGE=/demyx/acme.json
     [[ -z "$DEMYX_STACK_LOG_LEVEL" ]] && DEMYX_STACK_LOG_LEVEL=INFO
     [[ -z "$DEMYX_STACK_LOG_ACCESS" ]] && DEMYX_STACK_LOG_ACCESS=/var/log/demyx/access.log

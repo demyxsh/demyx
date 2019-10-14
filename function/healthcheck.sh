@@ -5,7 +5,7 @@
 #
 demyx_healthcheck() {
     source "$DEMYX_STACK"/.env
-    if [[ "$DEMYX_STACK_HEALTHCHECK" = on ]]; then
+    if [[ "$DEMYX_STACK_HEALTHCHECK" = true ]]; then
         cd "$DEMYX_WP" || exit
 
         for i in *
@@ -13,7 +13,7 @@ demyx_healthcheck() {
             if [[ -d "$i" ]]; then
                 source "$DEMYX_WP"/"$i"/.env
 
-                [[ "$DEMYX_APP_HEALTHCHECK" = off ]] && continue
+                [[ "$DEMYX_APP_HEALTHCHECK" = false ]] && continue
 
                 DEMYX_HEALTHCHECK_STATUS=$(curl -sSf "$DEMYX_APP_WP_CONTAINER" > /dev/null; echo "$?")
 
