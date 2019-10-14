@@ -62,13 +62,14 @@ demyx_help() {
         echo
     elif [[ "$DEMYX_HELP" = info ]]; then
         echo
-        echo "demyx info <app> <args>       Show environment info for an app"
-        echo "           all                Use --filter for all WordPress sites"
-        echo "           dash               Output JSON data for demyx/dash"
-        echo "           stack              Show stack versions and other info"
-        echo "                 --all        Show all environment info"
-        echo "                 --filter     Filter environment variables"
-        echo "                 --quiet      Prevent output of error if filter not found"
+        echo "demyx info <app>  <args>       Show environment info for an app"
+        echo "           all                 Use --filter for all WordPress sites"
+        echo "           stack               Show stack versions and other info"
+        echo "           system              Show miscellaneous server data"
+        echo "                  --all        Show all environment info"
+        echo "                  --filter     Filter environment variables"
+        echo "                  --json       Output data in JSON"
+        echo "                  --quiet      Prevent output of error if filter not found"
         echo
     elif [[ "$DEMYX_HELP" = install ]]; then
         echo
@@ -142,7 +143,8 @@ demyx_help() {
         echo
     elif [[ "$DEMYX_HELP" = stack ]]; then
         echo
-        echo "demyx stack <arg>             Target stack containers"
+        echo "demyx stack <app> <arg>       Target stack containers"
+        echo "            api               Configure api"
         echo "            ouroboros         Configure Ouroboros"
         echo "            refresh           Refresh env and yml stack files"
         echo "            upgrade           Upgrade acme.json and configs for Traefik v2"
@@ -153,6 +155,8 @@ demyx_help() {
         echo "            --healthcheck     Turns on/off healthcheck globally"
         echo "            --ignore          Used by Ouroboros to ignore updating images, enter container name or off to disable"
         echo "            --monitor         Turns on/off auto scaling globally"
+        echo "            --false             Passes off flag"
+        echo "            --true              Passes on flag"
         echo "            --tracker         Pings to demyx.sh server to count active Demyx install"
         echo
     elif [[ "$DEMYX_HELP" = update ]]; then
