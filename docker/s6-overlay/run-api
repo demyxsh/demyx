@@ -1,0 +1,6 @@
+#!/usr/bin/with-contenv bash
+# Demyx
+# https://demyx.sh
+
+shell2http -log=/var/log/demyx/api.log \
+    /system 'demyx info system --json'

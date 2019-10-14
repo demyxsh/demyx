@@ -1,3 +1,4 @@
+FROM msoap/shell2http as demyx_api
 FROM alpine
 
 LABEL sh.demyx.image demyx/demyx
@@ -110,11 +111,16 @@ RUN set -ex; \
 COPY s6-overlay/00-init /etc/cont-init.d/00-init
 COPY s6-overlay/run-crond /etc/services.d/crond/run
 COPY s6-overlay/run-sshd /etc/services.d/sshd/run
+COPY s6-overlay/run-api /etc/services.d/api/run
 
 # demyx-helper
 COPY demyx-helper.sh /usr/local/bin/demyx-helper
 RUN chmod +x /usr/local/bin/demyx-helper
 
+# demyx api
+COPY --from=demyx_api /app/shell2http /usr/local/bin
+
 EXPOSE 22
+EXPOSE 8080
 WORKDIR /demyx
 ENTRYPOINT ["/init"]
