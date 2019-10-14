@@ -48,25 +48,6 @@ demyx_info() {
             PRINT_TABLE+="$i^ $DEMYX_INFO_ALL_FILTER\n"
         done
         demyx_execute -v -q demyx_table "$PRINT_TABLE"
-    elif [[ "$DEMYX_TARGET" = dash ]]; then
-        source "$DEMYX"/.env
-        DEMYX_INFO_CONTAINER_RUNNING=$(/usr/local/bin/docker ps -q | wc -l)
-        DEMYX_INFO_CONTAINER_DEAD=$(/usr/local/bin/docker ps -q --filter "status=exited" | wc -l)
-        DEMYX_INFO_WP_COUNT=$(find "$DEMYX_WP" -mindepth 1 -maxdepth 1 -type d | wc -l)
-        echo '{
-            "hostname": "'$(hostname)'",
-            "mode": "'$DEMYX_MOTD_MODE'",
-            "wp_count": "'$DEMYX_INFO_WP_COUNT'",
-            "disk_used": "'$(df -h /demyx | sed '1d' | awk '{print $3}')'",
-            "disk_total": "'$(df -h /demyx | sed '1d' | awk '{print $2}')'",
-            "disk_total_percentage": "'$(df -h /demyx | sed '1d' | awk '{print $5}')'",
-            "memory_used": "'$(free -m | sed '1d' | sed '2d' | awk '{print $3}')'",
-            "memory_total": "'$(free -m | sed '1d' | sed '2d' | awk '{print $2}')'",
-            "uptime": "'$(uptime | awk -F '[,]' '{print $1}' | awk -F '[up]' '{print $3}')'",
-            "load_average": "'$(cat /proc/loadavg | awk '{print $1 " " $2 " " $3}')'",
-            "container_running": "'$DEMYX_INFO_CONTAINER_RUNNING'",
-            "container_dead": "'$DEMYX_INFO_CONTAINER_DEAD'"' | sed 's/            /    /g'
-        echo '}'
     elif [[ "$DEMYX_TARGET" = stack ]]; then
         source "$DEMYX_STACK"/.env
         DEMYX_INFO_STACK_GET_NPW=$(wget -qO- https://raw.githubusercontent.com/demyxco/nginx-php-wordpress/master/README.md)
@@ -83,6 +64,51 @@ demyx_info() {
         PRINT_TABLE+="HEALTHCHECK^ $DEMYX_STACK_HEALTHCHECK\n"
         PRINT_TABLE+="LOG^ /var/log/demyx"
         demyx_execute -v demyx_table "$PRINT_TABLE"
+    elif [[ "$DEMYX_TARGET" = system ]]; then
+        source "$DEMYX"/.env
+        DEMYX_INFO_WP_COUNT=$(find "$DEMYX_WP" -mindepth 1 -maxdepth 1 -type d | wc -l)
+        DEMYX_INFO_DISK_USED=$(df -h /demyx | sed '1d' | awk '{print $3}')
+        DEMYX_INFO_DISK_TOTAL=$(df -h /demyx | sed '1d' | awk '{print $2}')
+        DEMYX_INFO_DISK_PERCENTAGE=$(df -h /demyx | sed '1d' | awk '{print $5}')
+        DEMYX_INFO_MEMORY_USED=$(free -m | sed '1d' | sed '2d' | awk '{print $3}')
+        DEMYX_INFO_MEMORY_TOTAL=$(free -m | sed '1d' | sed '2d' | awk '{print $2}')
+        DEMYX_INFO_UPTIME=$(uptime | awk -F '[,]' '{print $1}' | awk -F '[up]' '{print $3}' | sed 's|^.||')
+        DEMYX_INFO_LOAD_AVERAGE=$(cat /proc/loadavg | awk '{print $1 " " $2 " " $3}')
+        DEMYX_INFO_CONTAINER_RUNNING=$(/usr/local/bin/docker ps -q | wc -l)
+        DEMYX_INFO_CONTAINER_DEAD=$(/usr/local/bin/docker ps -q --filter "status=exited" | wc -l)
+
+        if [[ -n "$DEMYX_INFO_JSON" ]]; then 
+            echo '{
+                "hostname": "'$DEMYX_MOTD_HOST'",
+                "mode": "'$DEMYX_MOTD_MODE'",
+                "wp_count": "'$DEMYX_INFO_WP_COUNT'",
+                "disk_used": "'$DEMYX_INFO_DISK_USED'",
+                "disk_total": "'$DEMYX_INFO_DISK_TOTAL'",
+                "disk_total_percentage": "'$DEMYX_INFO_DISK_PERCENTAGE'",
+                "memory_used": "'$DEMYX_INFO_MEMORY_USED'",
+                "memory_total": "'$DEMYX_INFO_MEMORY_TOTAL'",
+                "uptime": "'$DEMYX_INFO_UPTIME'",
+                "load_average": "'$DEMYX_INFO_LOAD_AVERAGE'",
+                "container_running": "'$DEMYX_INFO_CONTAINER_RUNNING'",
+                "container_dead": "'$DEMYX_INFO_CONTAINER_DEAD'"' | sed 's/                /    /g'
+            echo '}'
+        else
+            PRINT_TABLE="DEMYX^ SYSTEM INFO\n"
+            PRINT_TABLE+="HOSTNAME^ $DEMYX_MOTD_HOST\n"
+            PRINT_TABLE+="MODE^ $DEMYX_MOTD_MODE\n"
+            PRINT_TABLE+="WORDPRESS APPS^ $DEMYX_INFO_WP_COUNT\n"
+            PRINT_TABLE+="DISK USED^ $DEMYX_INFO_DISK_USED\n"
+            PRINT_TABLE+="DISK TOTAL^ $DEMYX_INFO_DISK_TOTAL\n"
+            PRINT_TABLE+="DISK TOTAL PERCENTAGE^ $DEMYX_INFO_DISK_PERCENTAGE\n"
+            PRINT_TABLE+="MEMORY USED^ $DEMYX_INFO_MEMORY_USED\n"
+            PRINT_TABLE+="MEMORY TOTAL^ $DEMYX_INFO_MEMORY_TOTAL\n"
+            PRINT_TABLE+="UPTIME^ $DEMYX_INFO_UPTIME\n"
+            PRINT_TABLE+="LOAD AVERAGE^ $DEMYX_INFO_LOAD_AVERAGE\n"
+            PRINT_TABLE+="RUNNING CONTAINERS^ $DEMYX_INFO_CONTAINER_RUNNING\n"
+            PRINT_TABLE+="DEAD CONTAINERS^ $DEMYX_INFO_CONTAINER_DEAD"
+            
+            demyx_execute -v demyx_table "$PRINT_TABLE"
+        fi
     elif [[ "$DEMYX_APP_TYPE" = wp ]]; then
         if [[ -n "$DEMYX_INFO_ALL" ]]; then
             DEMYX_INFO_ALL=$(cat $DEMYX_APP_PATH/.env | sed '1d')
@@ -121,7 +147,7 @@ demyx_info() {
                     "healthcheck": "'$DEMYX_APP_HEALTHCHECK'"' | sed 's/                    /    /g'
                 echo '}'
             else
-                [[ -z "$DEMYX_APP_AUTH_WP" ]] && DEMYX_APP_AUTH_WP=off
+                [[ -z "$DEMYX_APP_AUTH_WP" ]] && DEMYX_APP_AUTH_WP=false
                 PRINT_TABLE="DEMYX^ INFO\n"
                 PRINT_TABLE+="DOMAIN^ $DEMYX_APP_DOMAIN\n"
                 PRINT_TABLE+="PATH^ $DEMYX_APP_PATH\n"
