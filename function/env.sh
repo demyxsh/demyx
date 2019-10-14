@@ -26,19 +26,19 @@ demyx_env() {
         [[ -z "$MARIADB_ROOT_PASSWORD" ]] && MARIADB_ROOT_PASSWORD=$(demyx util --pass --raw)
         
         [[ -n "$DEMYX_RUN_SSL" ]] && DEMYX_APP_SSL="$DEMYX_RUN_SSL"
-        [[ -n "$DEMYX_RUN_RATE_LIMIT" ]] && DEMYX_APP_RATE_LIMIT=off
-        [[ -z "$DEMYX_APP_CACHE" ]] && DEMYX_APP_CACHE=off
-        [[ -z "$DEMYX_APP_CDN" ]] && DEMYX_APP_CDN=off
-        [[ -z "$DEMYX_APP_AUTH" ]] && DEMYX_APP_AUTH=off
-        [[ -z "$DEMYX_APP_AUTH_WP" ]] && DEMYX_APP_AUTH_WP=off
-        [[ -z "$DEMYX_APP_DEV" ]] && DEMYX_APP_DEV=off
-        [[ -z "$DEMYX_APP_HEALTHCHECK" ]] && DEMYX_APP_HEALTHCHECK=on
-        [[ -z "$DEMYX_APP_WP_UPDATE" ]] && DEMYX_APP_WP_UPDATE=off
+        [[ -n "$DEMYX_RUN_RATE_LIMIT" ]] && DEMYX_APP_RATE_LIMIT=false
+        [[ -z "$DEMYX_APP_CACHE" ]] && DEMYX_APP_CACHE=false
+        [[ -z "$DEMYX_APP_CDN" ]] && DEMYX_APP_CDN=false
+        [[ -z "$DEMYX_APP_AUTH" ]] && DEMYX_APP_AUTH=false
+        [[ -z "$DEMYX_APP_AUTH_WP" ]] && DEMYX_APP_AUTH_WP=false
+        [[ -z "$DEMYX_APP_DEV" ]] && DEMYX_APP_DEV=false
+        [[ -z "$DEMYX_APP_HEALTHCHECK" ]] && DEMYX_APP_HEALTHCHECK=true
+        [[ -z "$DEMYX_APP_WP_UPDATE" ]] && DEMYX_APP_WP_UPDATE=false
         [[ -z "$DEMYX_APP_UPLOAD_LIMIT" ]] && DEMYX_APP_UPLOAD_LIMIT=128M
         [[ -z "$DEMYX_APP_PHP_MEMORY" ]] && DEMYX_APP_PHP_MEMORY=256M
         [[ -z "$DEMYX_APP_PHP_MAX_EXECUTION_TIME" ]] && DEMYX_APP_PHP_MAX_EXECUTION_TIME=300
-        [[ -z "$DEMYX_APP_PHP_OPCACHE" ]] && DEMYX_APP_PHP_OPCACHE=on
-        [[ -z "$DEMYX_APP_XMLRPC" ]] && DEMYX_APP_XMLRPC=off
+        [[ -z "$DEMYX_APP_PHP_OPCACHE" ]] && DEMYX_APP_PHP_OPCACHE=true
+        [[ -z "$DEMYX_APP_XMLRPC" ]] && DEMYX_APP_XMLRPC=false
 
         cat > "$DEMYX_WP"/"$DEMYX_TARGET"/.env <<-EOF
             # AUTO GENERATED
@@ -117,10 +117,10 @@ demyx_stack_env() {
     fi
 
     [[ -z "$DEMYX_STACK_SERVER_IP" ]] && DEMYX_STACK_SERVER_IP=$(demyx util curl -s https://ipecho.net/plain | sed -e 's/\r//g')
-    [[ -z "$DEMYX_STACK_TRACKER" ]] && DEMYX_STACK_TRACKER=on
-    [[ -z "$DEMYX_STACK_AUTO_UPDATE" ]] && DEMYX_STACK_AUTO_UPDATE=on
-    [[ -z "$DEMYX_STACK_MONITOR" ]] && DEMYX_STACK_MONITOR=on
-    [[ -z "$DEMYX_STACK_HEALTHCHECK" ]] && DEMYX_STACK_HEALTHCHECK=on
+    [[ -z "$DEMYX_STACK_TRACKER" ]] && DEMYX_STACK_TRACKER=true
+    [[ -z "$DEMYX_STACK_AUTO_UPDATE" ]] && DEMYX_STACK_AUTO_UPDATE=true
+    [[ -z "$DEMYX_STACK_MONITOR" ]] && DEMYX_STACK_MONITOR=true
+    [[ -z "$DEMYX_STACK_HEALTHCHECK" ]] && DEMYX_STACK_HEALTHCHECK=true
     [[ -z "$DEMYX_STACK_RECENT_ERRORS" ]] && DEMYX_STACK_RECENT_ERRORS=100
     [[ -z "$DEMYX_STACK_DOCKER_WATCH" ]] && DEMYX_STACK_DOCKER_WATCH=true
     [[ -z "$DEMYX_STACK_DOCKER_EXPOSED_BY_DEFAULT" ]] && DEMYX_STACK_DOCKER_EXPOSED_BY_DEFAULT=false
@@ -171,13 +171,15 @@ demyx_stack_v2_env() {
     fi
 
     [[ -z "$DEMYX_STACK_SERVER_IP" ]] && DEMYX_STACK_SERVER_IP=$(demyx util curl -s https://ipecho.net/plain | sed -e 's/\r//g')
-    [[ -z "$DEMYX_STACK_TRACKER" ]] && DEMYX_STACK_TRACKER=on
-    [[ -z "$DEMYX_STACK_AUTO_UPDATE" ]] && DEMYX_STACK_AUTO_UPDATE=on
-    [[ -z "$DEMYX_STACK_MONITOR" ]] && DEMYX_STACK_MONITOR=on
+    [[ -z "$DEMYX_STACK_API" ]] && DEMYX_STACK_API=false
+    [[ -z "$DEMYX_STACK_TRACKER" ]] && DEMYX_STACK_TRACKER=true
+    [[ -z "$DEMYX_STACK_AUTO_UPDATE" ]] && DEMYX_STACK_AUTO_UPDATE=true
+    [[ -z "$DEMYX_STACK_MONITOR" ]] && DEMYX_STACK_MONITOR=true
+    [[ -z "$DEMYX_STACK_OUROBOROS" ]] && DEMYX_STACK_OUROBOROS=true
     [[ -z "$DEMYX_STACK_OUROBOROS_IGNORE" ]] && DEMYX_STACK_OUROBOROS_IGNORE=
-    [[ -z "$DEMYX_STACK_HEALTHCHECK" ]] && DEMYX_STACK_HEALTHCHECK=on
+    [[ -z "$DEMYX_STACK_HEALTHCHECK" ]] && DEMYX_STACK_HEALTHCHECK=true
     [[ -z "$DEMYX_STACK_ACME_STORAGE" ]] && DEMYX_STACK_ACME_STORAGE=/demyx/acme.json
-    [[ -z "$DEMYX_STACK_CLOUDFLARE" ]] && DEMYX_STACK_CLOUDFLARE=off
+    [[ -z "$DEMYX_STACK_CLOUDFLARE" ]] && DEMYX_STACK_CLOUDFLARE=false
     [[ -z "$DEMYX_STACK_LOG_LEVEL" ]] && DEMYX_STACK_LOG_LEVEL=INFO
     [[ -z "$DEMYX_STACK_LOG_ACCESS" ]] && DEMYX_STACK_LOG_ACCESS=/var/log/demyx/traefik.access.log
     [[ -z "$DEMYX_STACK_LOG_ERROR" ]] && DEMYX_STACK_LOG_ERROR=/var/log/demyx/traefik.error.log
@@ -185,11 +187,13 @@ demyx_stack_v2_env() {
     cat > "$DEMYX_STACK"/.env <<-EOF
         # AUTO GENERATED
         DEMYX_STACK_SERVER_IP=$DEMYX_STACK_SERVER_IP
+        DEMYX_STACK_API=$DEMYX_STACK_API
         DEMYX_STACK_TRACKER=$DEMYX_STACK_TRACKER
         DEMYX_STACK_DOMAIN=$DEMYX_STACK_DOMAIN
         DEMYX_STACK_AUTH=$DEMYX_PARSE_BASIC_AUTH
         DEMYX_STACK_AUTO_UPDATE=$DEMYX_STACK_AUTO_UPDATE
         DEMYX_STACK_MONITOR=$DEMYX_STACK_MONITOR
+        DEMYX_STACK_OUROBOROS=$DEMYX_STACK_OUROBOROS
         DEMYX_STACK_OUROBOROS_IGNORE=$DEMYX_STACK_OUROBOROS_IGNORE
         DEMYX_STACK_HEALTHCHECK=$DEMYX_STACK_HEALTHCHECK
         DEMYX_STACK_ACME_EMAIL=$DEMYX_STACK_ACME_EMAIL
