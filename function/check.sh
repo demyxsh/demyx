@@ -36,13 +36,3 @@ if [[ "$DEMYX_CHECK_TRAEFIK_ENV_ON" > 0 ]] || [[ "$DEMYX_CHECK_TRAEFIK_ENV_OFF" 
     sed -i "s|=on|=true|g" "$DEMYX_STACK"/.env
     sed -i "s|=off|=false|g" "$DEMYX_STACK"/.env
 fi
-
-# Convert on/off to true/false for WordPress apps
-if [[ -n "$DEMYX_APP_COMPOSE_PROJECT" ]]; then
-    DEMYX_CHECK_APP_ON_CHECK=$(grep -c "=on" "$DEMYX_APP_PATH"/.env || true)
-    DEMYX_CHECK_APP_OFF_CHECK=$(grep -c "=off" "$DEMYX_APP_PATH"/.env || true)
-    if [[ "$DEMYX_CHECK_APP_ON_CHECK" > 0 ]] || [[ "$DEMYX_CHECK_APP_OFF_CHECK" > 0 ]]; then 
-        sed -i "s|=on|=true|g" "$DEMYX_APP_PATH"/.env
-        sed -i "s|=off|=false|g" "$DEMYX_APP_PATH"/.env
-    fi
-fi
