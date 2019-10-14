@@ -1,6 +1,17 @@
 # Demyx
 # https://demyx.sh
 
+demyx_motd_app_check() {
+    cd "$DEMYX_WP"
+    for i in *
+    do
+        DEMYX_CHECK_APP_ON_CHECK=$(grep -c "=on" /demyx/app/wp/"$i"/.env || true)
+        if [[ "$DEMYX_CHECK_APP_ON_CHECK" > 0 ]]; then
+            demyx_execute -v echo -e "\e[33m[WARNING]\e[39m $i has outdated configs"
+        fi
+    done
+    demyx_execute -v echo -e "\e[34m[INFO]\e[39m To update all site's configs: demyx config all --refresh"
+}
 demyx_motd_chroot_warning() {
     DEMYX_MOTD_CHROOT_CHECK=$(docker run --rm -v /usr/local/bin:/usr/local/bin demyx/utilities "[[ -L /usr/local/bin/demyx ]] && echo true")
     [[ "$DEMYX_MOTD_CHROOT_CHECK" = true ]] && demyx_execute -v echo -e "\e[33m[WARNING]\e[39m The demyx chroot.sh script needs to be updated on the host, please run this command:\n\ndocker run -t --rm -v /usr/local/bin:/usr/local/bin demyx/utilities \"rm -f /usr/local/bin/demyx; curl -s https://raw.githubusercontent.com/demyxco/demyx/master/chroot.sh -o /usr/local/bin/demyx; chmod +x /usr/local/bin/demyx\"\n"
@@ -84,4 +95,5 @@ demyx_motd() {
     demyx_motd_chroot_warning
     demyx_motd_stack_upgrade_notice
     demyx_motd_dev_warning
+    demyx_motd_app_check
 }
