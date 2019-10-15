@@ -15,6 +15,9 @@ demyx_run() {
             --auth)
                 DEMYX_RUN_AUTH=true
                 ;;
+            --bedrock)
+                DEMYX_RUN_BEDROCK=true
+                ;;
             --cache)
                 DEMYX_RUN_CACHE=true
                 ;;
@@ -113,6 +116,7 @@ demyx_run() {
     [[ -z "$DEMYX_RUN_CACHE" ]] && DEMYX_RUN_CACHE=false
     [[ -z "$DEMYX_RUN_AUTH" ]] && DEMYX_RUN_AUTH=false
     [[ -n "$DEMYX_RUN_CLONE" ]] && DEMYX_RUN_CLONE_APP=$(demyx info "$DEMYX_RUN_CLONE" --filter=DEMYX_APP_WP_CONTAINER)
+    [[ -n "$DEMYX_RUN_BEDROCK" ]] && DEMYX_APP_WP_IMAGE=demyx/nginx-php-wordpress:bedrock
 
     if [[ "$DEMYX_RUN_SSL" = true ]]; then 
         DEMYX_RUN_SSL=true

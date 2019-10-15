@@ -21,6 +21,12 @@ demyx_config() {
             --auth-wp=false)
                 DEMYX_CONFIG_AUTH_WP=false
                 ;;
+            --bedrock|--bedrock=production)
+                DEMYX_CONFIG_BEDROCK=production
+                ;;
+            --bedrock=development)
+                DEMYX_CONFIG_BEDROCK=development
+                ;;
             --cache|--cache=true)
                 DEMYX_CONFIG_CACHE=true
                 ;;
@@ -213,6 +219,23 @@ demyx_config() {
                 fi
 
                 demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
+            fi
+            if [[ "$DEMYX_CONFIG_BEDROCK" = production ]]; then
+                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
+                    [[ "$DEMYX_APP_BEDROCK_MODE" = production ]] && demyx_die "Production mode is already set"
+                fi
+
+                demyx_echo 'Updating configs'
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c 'sed -i "s|WP_ENV=.*|WP_ENV=production|g" /var/www/html/.env' && \
+                    sed -i "s/DEMYX_APP_BEDROCK_MODE=.*/DEMYX_APP_BEDROCK_MODE=production/g" "$DEMYX_APP_PATH"/.env
+            elif [[ "$DEMYX_CONFIG_BEDROCK" = development ]]; then
+                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
+                    [[ "$DEMYX_APP_BEDROCK_MODE" = development ]] && demyx_die "Development mode is already set"
+                fi
+
+                demyx_echo 'Updating configs'
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c 'sed -i "s|WP_ENV=.*|WP_ENV=development|g" /var/www/html/.env' && \
+                    sed -i "s/DEMYX_APP_BEDROCK_MODE=.*/DEMYX_APP_BEDROCK_MODE=development/g" "$DEMYX_APP_PATH"/.env
             fi
             if [[ "$DEMYX_CONFIG_CACHE" = true ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then

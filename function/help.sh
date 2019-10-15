@@ -27,6 +27,7 @@ demyx_help() {
         echo "             all                    Targets all apps (only works with --refresh and --restart)"
         echo "                   --auth           Turns on/off basic auth"
         echo "                   --auth-wp        Turns on/off basic auth for wp-login.php"
+        echo "                   --bedrock        Sets production/development mode for Bedrock"
         echo "                   --cache          Turns on/off fastcgi cache"
         echo "                   --cdn            Turns on/off CDN, powered by Staticaly"
         echo "                   --clean          Creates new MariaDB credentials and reinstalls WordPress core files"

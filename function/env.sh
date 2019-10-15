@@ -9,6 +9,8 @@ demyx_env() {
     if [[ "$DEMYX_RUN_TYPE" = wp ]] || [[ "$DEMYX_APP_TYPE" = wp ]]; then
         [[ -z "$DEMYX_APP_COMPOSE_PROJECT" ]] && DEMYX_APP_COMPOSE_PROJECT=${DEMYX_TARGET//./}
         [[ -z "$DEMYX_APP_ID" ]] && DEMYX_APP_ID=$(demyx util --id --raw)
+        [[ -z "$DEMYX_APP_WP_IMAGE" ]] && DEMYX_APP_WP_IMAGE=demyx/nginx-php-wordpress
+        [[ -z "$DEMYX_APP_BEDROCK_MODE" ]] && DEMYX_APP_BEDROCK_MODE=production
         [[ -z "$DEMYX_APP_WP_CONTAINER" ]] && DEMYX_APP_WP_CONTAINER=${DEMYX_APP_COMPOSE_PROJECT}_wp_${DEMYX_APP_ID}_1
         [[ -z "$DEMYX_APP_DB_CONTAINER" ]] && DEMYX_APP_DB_CONTAINER=${DEMYX_APP_COMPOSE_PROJECT}_db_${DEMYX_APP_ID}_1
         [[ -n "$DEMYX_RUN_USER" ]] && WORDPRESS_USER="$DEMYX_RUN_USER"
@@ -44,6 +46,8 @@ demyx_env() {
             # AUTO GENERATED
             DEMYX_APP_ID=$DEMYX_APP_ID
             DEMYX_APP_TYPE=$DEMYX_APP_TYPE
+            DEMYX_APP_WP_IMAGE=$DEMYX_APP_WP_IMAGE
+            DEMYX_APP_BEDROCK_MODE=$DEMYX_APP_BEDROCK_MODE
             DEMYX_APP_PATH=$DEMYX_APP_PATH
             DEMYX_APP_CONTAINER=$DEMYX_APP_CONTAINER
             DEMYX_APP_COMPOSE_PROJECT=$DEMYX_APP_COMPOSE_PROJECT

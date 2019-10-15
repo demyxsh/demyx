@@ -94,7 +94,7 @@ demyx_yml() {
                         - MARIADB_MAX_CONNECTIONS=\${MARIADB_MAX_CONNECTIONS}
                         - TZ=America/Los_Angeles
                 wp_${DEMYX_APP_ID}:
-                    image: demyx/nginx-php-wordpress
+                    image: \${DEMYX_APP_WP_IMAGE}
                     restart: unless-stopped
                     networks:
                         - demyx
@@ -275,6 +275,11 @@ demyx_v2_yml() {
             DEMYX_BASIC_AUTH=
         fi
 
+        if [[ "$DEMYX_APP_WP_IMAGE" = demyx/nginx-php-wordpress:bedrock ]]; then
+            DEMYX_YML_BEDROCK='- WORDPRESS_SSL=${DEMYX_APP_SSL}
+                        - WORDPRESS_BEDROCK_MODE=${DEMYX_APP_BEDROCK_MODE}'
+        fi
+
         cat > "$DEMYX_WP"/"$DEMYX_APP_DOMAIN"/docker-compose.yml <<-EOF
             # AUTO GENERATED
             version: "$DEMYX_DOCKER_COMPOSE"
@@ -317,11 +322,12 @@ demyx_v2_yml() {
                         - MARIADB_MAX_CONNECTIONS=\${MARIADB_MAX_CONNECTIONS}
                         - TZ=America/Los_Angeles
                 wp_${DEMYX_APP_ID}:
-                    image: demyx/nginx-php-wordpress
+                    image: \${DEMYX_APP_WP_IMAGE}
                     restart: unless-stopped
                     networks:
                         - demyx
                     environment:
+                        - TZ=America/Los_Angeles
                         - WORDPRESS_DB_HOST=\${WORDPRESS_DB_HOST}
                         - WORDPRESS_DB_NAME=\${WORDPRESS_DB_NAME}
                         - WORDPRESS_DB_USER=\${WORDPRESS_DB_USER}
@@ -335,7 +341,7 @@ demyx_v2_yml() {
                         - WORDPRESS_NGINX_RATE_LIMIT=\${DEMYX_APP_RATE_LIMIT}
                         - WORDPRESS_NGINX_XMLRPC=\${DEMYX_APP_XMLRPC}
                         - WORDPRESS_NGINX_BASIC_AUTH=\${DEMYX_APP_AUTH_WP}
-                        - TZ=America/Los_Angeles
+                        $DEMYX_YML_BEDROCK
                     volumes:
                         - wp_${DEMYX_APP_ID}:/var/www/html
                         - wp_${DEMYX_APP_ID}_log:/var/log/demyx
