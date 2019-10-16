@@ -18,9 +18,12 @@ if [[ ! -d /demyx/etc ]]; then
 	echo "Demyx is now installed"
 fi
 
-# Delete api service if DEMYX_API is not true
-if [[ "$DEMYX_API" != true ]]; then
-	rm -rf /etc/services.d/api
+# Don't start API if DEMYX_STACK_SERVER_API is false
+if [[ -f /demyx/app/stack/.env ]]; then
+	DEMYX_STACK_SERVER_API=$(grep DEMYX_STACK_SERVER_API /demyx/app/stack/.env | awk -F '[=]' '{print $2}')
+	if [[ "$DEMYX_STACK_SERVER_API" = false ]]; then
+		rm -rf /etc/services.d/api
+	fi
 fi
 
 # Create /demyx/.env if it doesn't exist
