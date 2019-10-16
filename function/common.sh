@@ -147,6 +147,12 @@ demyx_mariadb_ready() {
         sleep 1
     done
 }
+demyx_bedrock_ready() {
+    until docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "ls | grep web"
+    do
+        sleep 1
+    done
+}
 demyx_generate_password() {
     DEMYX_PASSWORD_1=$(tr -dc "[:xdigit:]" < /dev/urandom | head -c 10 | sed -e 's/\r//g')
     DEMYX_PASSWORD_2=$(tr -dc "[:xdigit:]" < /dev/urandom | head -c 10 | sed -e 's/\r//g')

@@ -222,6 +222,11 @@ demyx_run() {
 
         demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" up -d wp_"$DEMYX_APP_ID"
 
+        if [[ -n "$DEMYX_RUN_BEDROCK" ]]; then
+            demyx_echo 'Initializing Bedrock'
+            demyx_execute demyx_bedrock_ready
+        fi
+
         if [[ -n "$DEMYX_RUN_CLONE" ]]; then
             demyx_echo 'Creating new wp-config.php' 
             demyx_execute demyx wp "$DEMYX_APP_DOMAIN" config create \
