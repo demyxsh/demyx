@@ -91,7 +91,7 @@ demyx_restore() {
                 --network demyx \
                 -v wp_"$DEMYX_APP_ID":/var/www/html \
                 -v wp_"$DEMYX_APP_ID"_log:/var/log/demyx \
-                demyx/nginx-php-wordpress
+                demyx/utilities sh
 
             demyx_echo 'Restoring files'
             demyx_execute docker cp html "$DEMYX_APP_ID":/var/www; \
