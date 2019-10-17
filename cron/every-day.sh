@@ -3,10 +3,10 @@
 # https://demyx.sh
 # 0 0 * * *
 
-# Active install tracker
-echo -e "[$(date +%F-%T)] CROND: ACTIVE TRACKER"
-DEMYX_STACK_TRACKER_CHECK=$(grep DEMYX_STACK_TRACKER /demyx/app/stack/.env | awk -F '[=]' '{print $2}')
-if [[ "$DEMYX_STACK_TRACKER_CHECK" = true ]]; then
+# Telemetry
+echo -e "[$(date +%F-%T)] CROND: TELEMETRY"
+DEMYX_STACK_TELEMETRY_CHECK=$(grep DEMYX_STACK_TELEMETRY /demyx/app/stack/.env | awk -F '[=]' '{print $2}')
+if [[ "$DEMYX_STACK_TELEMETRY_CHECK" = true ]]; then
     /usr/bin/curl -s "https://demyx.sh/?action=active&token=V1VpdGNPcWNDVlZSUDFQdFBaR0Zhdz09OjrnA1h6ZbDFJ2T6MHOwg3p4" > /dev/null
 fi
 

@@ -156,9 +156,9 @@ demyx_help() {
         echo "            --healthcheck     Turns on/off healthcheck globally"
         echo "            --ignore          Used by Ouroboros to ignore updating images, enter container name or off to disable"
         echo "            --monitor         Turns on/off auto scaling globally"
-        echo "            --false             Passes off flag"
-        echo "            --true              Passes on flag"
-        echo "            --tracker         Pings to demyx.sh server to count active Demyx install"
+        echo "            --false           Passes off flag"
+        echo "            --telemetry       Pings to demyx.sh server to count active Demyx install"
+        echo "            --true            Passes on flag"
         echo
     elif [[ "$DEMYX_HELP" = update ]]; then
         echo

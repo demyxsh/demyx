@@ -63,11 +63,11 @@ demyx_stack() {
             --monitor=false)
                 DEMYX_STACK_MONITOR=false
                 ;;
-            --tracker|--tracker=true)
-                DEMYX_STACK_TRACKER=true
+            --telemetry|--telemetry=true)
+                DEMYX_STACK_TELEMETRY=true
                 ;;
-            --tracker=false)
-                DEMYX_STACK_TRACKER=false
+            --telemetry=false)
+                DEMYX_STACK_TELEMETRY=false
                 ;;
             --true)
                 DEMYX_STACK_TRUE=1
@@ -215,12 +215,12 @@ demyx_stack() {
     elif [[ "$DEMYX_STACK_MONITOR" = false ]]; then
         demyx_echo 'Turning off stack monitor'
         demyx_execute sed -i 's/DEMYX_STACK_MONITOR=.*/DEMYX_STACK_MONITOR=false/g' "$DEMYX_STACK"/.env
-    elif [[ "$DEMYX_STACK_TRACKER" = true ]]; then
-        demyx_echo 'Turning on stack tracker'
-        demyx_execute sed -i 's/DEMYX_STACK_TRACKER=.*/DEMYX_STACK_TRACKER=true/g' "$DEMYX_STACK"/.env
-    elif [[ "$DEMYX_STACK_TRACKER" = false ]]; then
-        demyx_echo 'Turning off stack tracker'
-        demyx_execute sed -i 's/DEMYX_STACK_TRACKER=.*/DEMYX_STACK_TRACKER=false/g' "$DEMYX_STACK"/.env
+    elif [[ "$DEMYX_STACK_TELEMETRY" = true ]]; then
+        demyx_echo 'Turning on stack telemetry'
+        demyx_execute sed -i 's/DEMYX_STACK_TELEMETRY=.*/DEMYX_STACK_TELEMETRY=true/g' "$DEMYX_STACK"/.env
+    elif [[ "$DEMYX_STACK_TELEMETRY" = false ]]; then
+        demyx_echo 'Turning off stack telemetry'
+        demyx_execute sed -i 's/DEMYX_STACK_TELEMETRY=.*/DEMYX_STACK_TELEMETRY=false/g' "$DEMYX_STACK"/.env
     else
         demyx_die --command-not-found
     fi
