@@ -50,6 +50,7 @@ Since the image needs docker.sock to be mounted and the Docker binary is include
 * sudo
 * tzdata
 * util-linux
+* rsync
 * zsh
 
 ### Privacy
@@ -90,7 +91,7 @@ demyx run domain.tld --cdn --cache
 ```
 
 ### chroot.sh
-This script helps you change root to the demyx container, it's installed on the host OS and lives in /usr/local/bin. Executing the install script will automatically install the Demyx chroot script. The chroot script will start the demyx container, bind ports 2222 for SSH, and 2022 for Eternal Terminal by default. These ports can be overriden by the script.
+This script helps you change root to the demyx container, it's installed on the host OS and lives in /usr/local/bin. Executing the install script will automatically install the Demyx chroot script. The chroot script will start the demyx container and binds port 2222 for SSH. SSH port can be overriden by the script.
 ```
 docker run -dit \
     --name demyx \
