@@ -40,7 +40,7 @@ demyx_restore() {
         [[ ! -f "$DEMYX_BACKUP"/"$DEMYX_RESTORE_TODAYS_DATE"/wp/"$DEMYX_TARGET".tgz ]] && demyx_die 'No file found'
     fi
 
-    if [[ "$DEMYX_APP_TYPE" = wp ]] || [[ -n "$DEMYX_RESTORE_FORCE" ]]; then
+    if [[ "$DEMYX_APP_TYPE" = wp || -n "$DEMYX_RESTORE_FORCE" ]]; then
         if [[ -n "$DEMYX_RESTORE_CONFIG" ]]; then
             demyx_echo 'Restoring configs'
             demyx_execute rm -rf "$DEMYX_WP"/"$DEMYX_TARGET"; \

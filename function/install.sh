@@ -47,7 +47,7 @@ demyx_install() {
         shift
     done
 
-    if [[ -z "$DEMYX_INSTALL_DOMAIN" ]] || [[ -z "$DEMYX_INSTALL_EMAIL" ]] || [[ -z "$DEMYX_INSTALL_USER" ]] || [[ -z "$DEMYX_INSTALL_PASS" ]]; then
+    if [[ -z "$DEMYX_INSTALL_DOMAIN" || -z "$DEMYX_INSTALL_EMAIL" || -z "$DEMYX_INSTALL_USER" || -z "$DEMYX_INSTALL_PASS" ]]; then
         demyx_die 'Missing required flags: --domain --email --user --pass'
     elif [[ -f "$DEMYX_STACK"/docker-compose.yml  ]]; then
         [[ -z "$DEMYX_INSTALL_FORCE" ]] && demyx_die 'Demyx is already installed'

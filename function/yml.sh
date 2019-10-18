@@ -22,7 +22,7 @@ demyx_yml() {
                 DEMYX_DOMAIN_IP=$(demyx util dig +short "$DEMYX_APP_DOMAIN" | sed -e 's/\r//g')
             fi
 
-            if [[ "$DEMYX_SERVER_IP" = "$DEMYX_DOMAIN_IP" ]] || [[ -n "$DEMYX_CLOUDFLARE_CHECK" ]]; then
+            if [[ "$DEMYX_SERVER_IP" = "$DEMYX_DOMAIN_IP" || -n "$DEMYX_CLOUDFLARE_CHECK" ]]; then
                 DEMYX_PROTOCOL="- \"traefik.frontend.redirect.entryPoint=https\"
                         - \"traefik.frontend.headers.forceSTSHeader=\${DEMYX_APP_FORCE_STS_HEADER}\"
                         - \"traefik.frontend.headers.STSSeconds=\${DEMYX_APP_STS_SECONDS}\"
@@ -250,7 +250,7 @@ demyx_v2_yml() {
                 DEMYX_DOMAIN_IP=$(demyx util dig +short "$DEMYX_APP_DOMAIN" | sed -e 's/\r//g')
             fi
 
-            if [[ "$DEMYX_SERVER_IP" = "$DEMYX_DOMAIN_IP" ]] || [[ -n "$DEMYX_CLOUDFLARE_CHECK" ]]; then
+            if [[ "$DEMYX_SERVER_IP" = "$DEMYX_DOMAIN_IP" || -n "$DEMYX_CLOUDFLARE_CHECK" ]]; then
                 DEMYX_PROTOCOL="- \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-http.rule=Host(\`\${DEMYX_APP_DOMAIN}\`) || Host(\`www.\${DEMYX_APP_DOMAIN}\`)\"
                       - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-http.entrypoints=http\"
                       - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-http.middlewares=\${DEMYX_APP_COMPOSE_PROJECT}-redirect\"

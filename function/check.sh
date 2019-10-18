@@ -32,7 +32,7 @@ fi
 # Convert on/off to true/false
 DEMYX_CHECK_TRAEFIK_ENV_ON=$(grep -c "=on" "$DEMYX_STACK"/.env || true)
 DEMYX_CHECK_TRAEFIK_ENV_OFF=$(grep -c "=off" "$DEMYX_STACK"/.env || true)
-if [[ "$DEMYX_CHECK_TRAEFIK_ENV_ON" > 0 ]] || [[ "$DEMYX_CHECK_TRAEFIK_ENV_OFF" > 0 ]]; then
+if [[ "$DEMYX_CHECK_TRAEFIK_ENV_ON" > 0 || "$DEMYX_CHECK_TRAEFIK_ENV_OFF" > 0 ]]; then
     sed -i "s|=on|=true|g" "$DEMYX_STACK"/.env
     sed -i "s|=off|=false|g" "$DEMYX_STACK"/.env
 fi
