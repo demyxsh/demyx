@@ -375,32 +375,14 @@ demyx_config() {
                     source "$DEMYX_STACK"/.env
                     source "$DEMYX_FUNCTION"/plugin.sh
 
-                    DEMYX_CONFIG_PLUGINS_CHECK=$(demyx wp "$DEMYX_APP_DOMAIN" plugin list --format=csv)
-                    DEMYX_CONFIG_AUTOVER_CHECK=$(echo "$DEMYX_CONFIG_PLUGINS_CHECK" | grep -s autover || true)
                     DEMYX_CONFIG_CACHE_CHECK=$(demyx info "$DEMYX_APP_DOMAIN" --filter=DEMYX_APP_CACHE)
-                    DEMYX_CONFIG_BS_PLUGIN_CHECK=$(echo "$DEMYX_CONFIG_PLUGINS_CHECK" | grep -s demyx_browsersync || true)
 
-                    if [ -n "$DEMYX_CONFIG_AUTOVER_CHECK" ]; then
-                        demyx_echo 'Activating autover plugin'
-                        demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin activate autover
-                    else
-                        demyx_echo 'Installing autover plugin'
-                        demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin install autover --activate
-                    fi
-
-                    if [ -n "$DEMYX_CONFIG_BS_PLUGIN_CHECK" ]; then
-                        demyx_echo 'Activating demyx_browsersync plugin'
-                        demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin activate demyx_browsersync
-                    else
-                        demyx_echo 'Creating demyx_browsersync plugin'
-                        demyx_execute demyx_plugin; \
-                            docker cp "$DEMYX_APP_PATH"/demyx_browsersync.php "$DEMYX_APP_WP_CONTAINER":/var/www/html/wp-content/plugins; \
-                            rm "$DEMYX_APP_PATH"/demyx_browsersync.php
+                    demyx_echo 'Installing demyx helper plugin'
+                    demyx_execute demyx_plugin; \
+                        docker exec -t "$DEMYX_APP_WP_CONTAINER" mkdir -p wp-content/mu-plugins; \
+                        docker cp "$DEMYX_APP_PATH"/demyx.php "$DEMYX_APP_WP_CONTAINER":/var/www/html/wp-content/mu-plugins; \
+                        rm "$DEMYX_APP_PATH"/demyx.php
                     
-                        demyx_echo 'Activating demyx_browsersync plugin'
-                        demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin activate demyx_browsersync
-                    fi
-
                     if [[ "$DEMYX_CONFIG_CACHE_CHECK" = true ]]; then
                         touch "$DEMYX_APP_PATH"/.cache
                         demyx config "$DEMYX_APP_DOMAIN" --cache=false
@@ -551,10 +533,10 @@ demyx_config() {
                         -l "traefik.http.middlewares.${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-json-prefix.stripprefix.prefixes=${DEMYX_CONFIG_DEV_BASE_PATH}/bs/app/themes/[a-z0-9]/dist/[a-z.0-9].hot-update.json" \
                         -l "traefik.http.services.${DEMYX_APP_COMPOSE_PROJECT}-webpack.loadbalancer.server.port=3000" \
                     demyx/code-server:sage
-                fi
 
-                demyx compose "$DEMYX_APP_DOMAIN" wp stop
-                demyx compose "$DEMYX_APP_DOMAIN" wp rm -f
+                    demyx compose "$DEMYX_APP_DOMAIN" wp stop
+                    demyx compose "$DEMYX_APP_DOMAIN" wp rm -f
+                fi
 
                 demyx_execute -v sed -i "s/DEMYX_APP_DEV=.*/DEMYX_APP_DEV=true/g" "$DEMYX_APP_PATH"/.env
 
@@ -569,11 +551,8 @@ demyx_config() {
                 fi
 
                 if [[ "$DEMYX_APP_WP_IMAGE" = demyx/nginx-php-wordpress ]]; then
-                    demyx_echo 'Deactivating autover' 
-                    demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin deactivate autover
-
-                    demyx_echo 'Deactivating demyx_browsersync' 
-                    demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin deactivate demyx_browsersync
+                    demyx_echo 'Deactivating demyx helper' 
+                    demyx_execute demyx exec "$DEMYX_APP_DOMAIN" rm -f wp-content/mu-plugins/demyx.php
 
                     if [[ -f "$DEMYX_APP_PATH"/.cache ]]; then
                         rm "$DEMYX_APP_PATH"/.cache
@@ -582,12 +561,12 @@ demyx_config() {
 
                     demyx config "$DEMYX_APP_DOMAIN" --opcache
                 else
-                    demyx_echo 'Stopping coder-server'
-                    demyx_execute docker stop "$DEMYX_APP_COMPOSE_PROJECT"_cs
-
                     demyx compose "$DEMYX_APP_DOMAIN" up -d
                     demyx config "$DEMYX_APP_DOMAIN" --healthcheck=true --bedrock=production
                 fi
+
+                demyx_echo 'Stopping coder-server'
+                demyx_execute docker stop "$DEMYX_APP_COMPOSE_PROJECT"_cs
                 
                 demyx_execute -v sed -i "s/DEMYX_APP_DEV=.*/DEMYX_APP_DEV=false/g" "$DEMYX_APP_PATH"/.env
             fi
