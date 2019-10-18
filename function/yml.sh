@@ -38,13 +38,13 @@ demyx_yml() {
         DEMYX_REGEX="- \"traefik.frontend.redirect.regex=^${DEMYX_REGEX_PROTOCOL}\${DEMYX_APP_DOMAIN}/(.*)\"
                         - \"traefik.frontend.redirect.replacement=${DEMYX_REGEX_PROTOCOL_REPLACEMENT}\${DEMYX_APP_DOMAIN}/\$\$1\""
 
-        if [[ -n "$DEMYX_SUBDOMAIN_CHECK" ]] && [[ -z "$DEMYX_CLOUDFLARE_CHECK" ]]; then
+        if [[ -n "$DEMYX_SUBDOMAIN_CHECK" && -z "$DEMYX_CLOUDFLARE_CHECK" ]]; then
             DEMYX_FRONTEND_RULE="- \"traefik.frontend.rule=Host:\${DEMYX_APP_DOMAIN}\""
         fi
         
         DEMYX_YML_AUTH_CHECK=$(demyx info "$DEMYX_APP_DOMAIN" --filter=DEMYX_APP_AUTH)
 
-        if [[ "$DEMYX_YML_AUTH_CHECK" = true ]] && [[ -f "$DEMYX_STACK"/.env ]]; then
+        if [[ "$DEMYX_YML_AUTH_CHECK" = true && -f "$DEMYX_STACK"/.env ]]; then
             source "$DEMYX_STACK"/.env
             DEMYX_PARSE_BASIC_AUTH=$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}' | sed 's/\$/$$/g')
             DEMYX_BASIC_AUTH="- \"traefik.bs.frontend.auth.basic.users=${DEMYX_PARSE_BASIC_AUTH}\""
@@ -266,7 +266,7 @@ demyx_v2_yml() {
         
         DEMYX_YML_AUTH_CHECK=$(demyx info "$DEMYX_APP_DOMAIN" --filter=DEMYX_APP_AUTH)
 
-        if [[ "$DEMYX_YML_AUTH_CHECK" = true ]] && [[ -f "$DEMYX_STACK"/.env ]]; then
+        if [[ "$DEMYX_YML_AUTH_CHECK" = true && -f "$DEMYX_STACK"/.env ]]; then
             source "$DEMYX_STACK"/.env
             DEMYX_PARSE_BASIC_AUTH=$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}' | sed 's/\$/$$/g')
             DEMYX_BASIC_AUTH="- \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-https.middlewares=\${DEMYX_APP_COMPOSE_PROJECT}-auth\"

@@ -86,7 +86,7 @@ demyx_run() {
     DEMYX_RUN_CHECK=$(find "$DEMYX_APP" -name "$DEMYX_TARGET" || true)
     DEMYX_RUN_TODAYS_DATE=$(date +%Y/%m/%d)
     
-    if [[ ! -f "$DEMYX_BACKUP"/"$DEMYX_RUN_TODAYS_DATE"/wp/"$DEMYX_RUN_ARCHIVE".tgz ]] && [[ -n "$DEMYX_RUN_ARCHIVE" ]]; then
+    if [[ ! -f "$DEMYX_BACKUP"/"$DEMYX_RUN_TODAYS_DATE"/wp/"$DEMYX_RUN_ARCHIVE".tgz && -n "$DEMYX_RUN_ARCHIVE" ]]; then
         demyx_die "${DEMYX_BACKUP}/${DEMYX_RUN_TODAYS_DATE}/${DEMYX_RUN_ARCHIVE}.tgz doesn't exist"
     fi
 

@@ -46,7 +46,7 @@ demyx_restore() {
             demyx_execute rm -rf "$DEMYX_WP"/"$DEMYX_TARGET"; \
                 tar -xzf "$DEMYX_BACKUP"/config/"$DEMYX_APP_DOMAIN".tgz -C "$DEMYX_WP"
         else
-            if [[ -d "$DEMYX_APP_PATH" ]] && [[ -z "$DEMYX_RESTORE_FORCE" ]]; then
+            if [[ -d "$DEMYX_APP_PATH" && -z "$DEMYX_RESTORE_FORCE" ]]; then
                 echo -en "\e[33m"
                 read -rep "[WARNING] $DEMYX_TARGET exits, delete? [yY]: " DEMYX_RM_CONFIRM
                 echo -en "\e[39m"
