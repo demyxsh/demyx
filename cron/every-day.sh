@@ -52,8 +52,12 @@ for i in *
 do
     source /demyx/app/wp/"$i"/.env
     if [[ "$DEMYX_APP_WP_UPDATE" = true ]]; then
-        /usr/local/bin/demyx wp "$i" core update
-        /usr/local/bin/demyx wp "$i" theme update --all
-        /usr/local/bin/demyx wp "$i" plugin update --all
+        if [[ "$DEMYX_APP_WP_IMAGE" = demyx/nginx-php-wordpress ]]; then
+            /usr/local/bin/demyx wp "$i" core update
+            /usr/local/bin/demyx wp "$i" theme update --all
+            /usr/local/bin/demyx wp "$i" plugin update --all
+        else
+            /usr/local/bin/docker exec -t "$DEMYX_APP_WP_CONTAINER" su -c 'composer update' -s /bin/sh www-data
+        fi
     fi
 done
