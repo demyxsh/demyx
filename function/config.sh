@@ -573,14 +573,14 @@ demyx_config() {
                     demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin deactivate autover
 
                     demyx_echo 'Deactivating demyx_browsersync' 
-                    demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin deactivate demyx_browsersync; \
-
-                    demyx config "$DEMYX_APP_DOMAIN" --opcache
+                    demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin deactivate demyx_browsersync
 
                     if [[ -f "$DEMYX_APP_PATH"/.cache ]]; then
                         rm "$DEMYX_APP_PATH"/.cache
                         demyx config "$DEMYX_APP_DOMAIN" --cache
                     fi
+
+                    demyx config "$DEMYX_APP_DOMAIN" --opcache
                 else
                     demyx_echo 'Stopping coder-server'
                     demyx_execute docker stop "$DEMYX_APP_COMPOSE_PROJECT"_cs
