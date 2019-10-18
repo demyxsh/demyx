@@ -225,7 +225,7 @@ demyx_config() {
                     [[ "$DEMYX_APP_BEDROCK_MODE" = production ]] && demyx_die "Production mode is already set"
                 fi
 
-                demyx_echo 'Updating configs'
+                demyx_echo 'Setting Bedrock config to production'
                 demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c 'sed -i "s|WP_ENV=.*|WP_ENV=production|g" /var/www/html/.env' && \
                     sed -i "s/DEMYX_APP_BEDROCK_MODE=.*/DEMYX_APP_BEDROCK_MODE=production/g" "$DEMYX_APP_PATH"/.env
             elif [[ "$DEMYX_CONFIG_BEDROCK" = development ]]; then
@@ -233,7 +233,7 @@ demyx_config() {
                     [[ "$DEMYX_APP_BEDROCK_MODE" = development ]] && demyx_die "Development mode is already set"
                 fi
 
-                demyx_echo 'Updating configs'
+                demyx_echo 'Setting Bedrock config to development'
                 demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c 'sed -i "s|WP_ENV=.*|WP_ENV=development|g" /var/www/html/.env' && \
                     sed -i "s/DEMYX_APP_BEDROCK_MODE=.*/DEMYX_APP_BEDROCK_MODE=development/g" "$DEMYX_APP_PATH"/.env
             fi
@@ -369,93 +369,146 @@ demyx_config() {
                     DEMYX_CONFIG_DEV_PROTO="http://$DEMYX_APP_DOMAIN"
                 fi
 
-                source "$DEMYX_STACK"/.env
-                source "$DEMYX_FUNCTION"/plugin.sh
-
-                DEMYX_CONFIG_PLUGINS_CHECK=$(demyx wp "$DEMYX_APP_DOMAIN" plugin list --format=csv)
-                DEMYX_CONFIG_AUTOVER_CHECK=$(echo "$DEMYX_CONFIG_PLUGINS_CHECK" | grep -s autover || true)
-                DEMYX_CONFIG_CACHE_CHECK=$(demyx info "$DEMYX_APP_DOMAIN" --filter=DEMYX_APP_CACHE)
-                DEMYX_CONFIG_BS_PLUGIN_CHECK=$(echo "$DEMYX_CONFIG_PLUGINS_CHECK" | grep -s demyx_browsersync || true)
-
-                if [ -n "$DEMYX_CONFIG_AUTOVER_CHECK" ]; then
-                    demyx_echo 'Activating autover plugin'
-                    demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin activate autover
-                else
-                    demyx_echo 'Installing autover plugin'
-                    demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin install autover --activate
-                fi
-
-                if [ -n "$DEMYX_CONFIG_BS_PLUGIN_CHECK" ]; then
-                    demyx_echo 'Activating demyx_browsersync plugin'
-                    demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin activate demyx_browsersync
-                else
-                    demyx_echo 'Creating demyx_browsersync plugin'
-                    demyx_execute demyx_plugin; \
-                        docker cp "$DEMYX_APP_PATH"/demyx_browsersync.php "$DEMYX_APP_WP_CONTAINER":/var/www/html/wp-content/plugins; \
-                        rm "$DEMYX_APP_PATH"/demyx_browsersync.php
-                
-                    demyx_echo 'Activating demyx_browsersync plugin'
-                    demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin activate demyx_browsersync
-                fi
-
-                if [[ "$DEMYX_CONFIG_CACHE_CHECK" = true ]]; then
-                    touch "$DEMYX_APP_PATH"/.cache
-                    demyx config "$DEMYX_APP_DOMAIN" --cache=false
-                fi
-
-                demyx config "$DEMYX_APP_DOMAIN" --opcache=false
-
-                if [ "$DEMYX_CONFIG_FILES" = themes ]; then
-                    DEMYX_BS_FILES="\"/var/www/html/wp-content/themes/**/*\""
-                elif [ "$DEMYX_CONFIG_FILES" = plugins ]; then
-                    DEMYX_BS_FILES="\"/var/www/html/wp-content/plugins/**/*\""
-                elif [ "$DEMYX_CONFIG_FILES" = false ]; then
-                    DEMYX_BS_FILES=false
-                elif [ -z "$DEMYX_CONFIG_FILES" ]; then
-                    DEMYX_BS_FILES='["/var/www/html/wp-content/themes/**/*", "/var/www/html/wp-content/plugins/**/*"]'
-                else
-                    DEMYX_BS_FILES="\"$DEMYX_CONFIG_FILES/**/*\""
-                fi
-
-                demyx_echo 'Creating code-server'
                 DEMYX_CONFIG_DEV_BASE_PATH=/wp-demyx
 
-                # Traefik backwards compatibility
-                if [[ "$DEMYX_CHECK_TRAEFIK" = 1 ]]; then
-                    demyx_execute docker run -dit --rm \
-                        --name "$DEMYX_APP_COMPOSE_PROJECT"_cs \
-                        --net demyx \
-                        --hostname "$DEMYX_APP_COMPOSE_PROJECT" \
-                        --volumes-from "$DEMYX_APP_WP_CONTAINER" \
-                        -v demyx_cs:/home/www-data \
-                        -e PASSWORD="$MARIADB_ROOT_PASSWORD" \
-                        -e DEMYX=true \
-                        -e DEMYX_CODER_BASE_PATH="$DEMYX_CONFIG_DEV_BASE_PATH" \
-                        -e DEMYX_APP_DOMAIN="$DEMYX_APP_DOMAIN" \
-                        -e DEMYX_APP_WP_CONTAINER="$DEMYX_APP_WP_CONTAINER" \
-                        -e DEMYX_BS_FILES="$DEMYX_BS_FILES" \
-                        -l "traefik.enable=true" \
-                        -l "traefik.coder.frontend.rule=Host:${DEMYX_APP_DOMAIN}; PathPrefixStrip: /wp-demyx/cs/" \
-                        -l "traefik.coder.port=8080" \
-                        -l "traefik.bs.frontend.rule=Host:${DEMYX_APP_DOMAIN}; PathPrefixStrip: /wp-demyx/bs/" \
-                        -l "traefik.bs.port=3000" \
-                        -l "traefik.socket.frontend.rule=Host:${DEMYX_APP_DOMAIN}; PathPrefix: /browser-sync/socket.io/" \
-                        -l "traefik.socket.port=3000" \
-                        demyx/code-server:wp
+                if [[ "$DEMYX_APP_WP_IMAGE" = demyx/nginx-php-wordpress ]]; then
+                    source "$DEMYX_STACK"/.env
+                    source "$DEMYX_FUNCTION"/plugin.sh
+
+                    DEMYX_CONFIG_PLUGINS_CHECK=$(demyx wp "$DEMYX_APP_DOMAIN" plugin list --format=csv)
+                    DEMYX_CONFIG_AUTOVER_CHECK=$(echo "$DEMYX_CONFIG_PLUGINS_CHECK" | grep -s autover || true)
+                    DEMYX_CONFIG_CACHE_CHECK=$(demyx info "$DEMYX_APP_DOMAIN" --filter=DEMYX_APP_CACHE)
+                    DEMYX_CONFIG_BS_PLUGIN_CHECK=$(echo "$DEMYX_CONFIG_PLUGINS_CHECK" | grep -s demyx_browsersync || true)
+
+                    if [ -n "$DEMYX_CONFIG_AUTOVER_CHECK" ]; then
+                        demyx_echo 'Activating autover plugin'
+                        demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin activate autover
+                    else
+                        demyx_echo 'Installing autover plugin'
+                        demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin install autover --activate
+                    fi
+
+                    if [ -n "$DEMYX_CONFIG_BS_PLUGIN_CHECK" ]; then
+                        demyx_echo 'Activating demyx_browsersync plugin'
+                        demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin activate demyx_browsersync
+                    else
+                        demyx_echo 'Creating demyx_browsersync plugin'
+                        demyx_execute demyx_plugin; \
+                            docker cp "$DEMYX_APP_PATH"/demyx_browsersync.php "$DEMYX_APP_WP_CONTAINER":/var/www/html/wp-content/plugins; \
+                            rm "$DEMYX_APP_PATH"/demyx_browsersync.php
+                    
+                        demyx_echo 'Activating demyx_browsersync plugin'
+                        demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin activate demyx_browsersync
+                    fi
+
+                    if [[ "$DEMYX_CONFIG_CACHE_CHECK" = true ]]; then
+                        touch "$DEMYX_APP_PATH"/.cache
+                        demyx config "$DEMYX_APP_DOMAIN" --cache=false
+                    fi
+
+                    demyx config "$DEMYX_APP_DOMAIN" --opcache=false
+
+                    if [ "$DEMYX_CONFIG_FILES" = themes ]; then
+                        DEMYX_BS_FILES="\"/var/www/html/wp-content/themes/**/*\""
+                    elif [ "$DEMYX_CONFIG_FILES" = plugins ]; then
+                        DEMYX_BS_FILES="\"/var/www/html/wp-content/plugins/**/*\""
+                    elif [ "$DEMYX_CONFIG_FILES" = false ]; then
+                        DEMYX_BS_FILES=false
+                    elif [ -z "$DEMYX_CONFIG_FILES" ]; then
+                        DEMYX_BS_FILES='["/var/www/html/wp-content/themes/**/*", "/var/www/html/wp-content/plugins/**/*"]'
+                    else
+                        DEMYX_BS_FILES="\"$DEMYX_CONFIG_FILES/**/*\""
+                    fi
+
+                    demyx_echo 'Creating code-server'
+
+                    # Traefik backwards compatibility
+                    if [[ "$DEMYX_CHECK_TRAEFIK" = 1 ]]; then
+                        demyx_execute docker run -dit --rm \
+                            --name "$DEMYX_APP_COMPOSE_PROJECT"_cs \
+                            --net demyx \
+                            --hostname "$DEMYX_APP_COMPOSE_PROJECT" \
+                            --volumes-from "$DEMYX_APP_WP_CONTAINER" \
+                            -v demyx_cs:/home/www-data \
+                            -e PASSWORD="$MARIADB_ROOT_PASSWORD" \
+                            -e DEMYX=true \
+                            -e DEMYX_CODER_BASE_PATH="$DEMYX_CONFIG_DEV_BASE_PATH" \
+                            -e DEMYX_APP_DOMAIN="$DEMYX_APP_DOMAIN" \
+                            -e DEMYX_APP_WP_CONTAINER="$DEMYX_APP_WP_CONTAINER" \
+                            -e DEMYX_BS_FILES="$DEMYX_BS_FILES" \
+                            -l "traefik.enable=true" \
+                            -l "traefik.coder.frontend.rule=Host:${DEMYX_APP_DOMAIN}; PathPrefixStrip: /wp-demyx/cs/" \
+                            -l "traefik.coder.port=8080" \
+                            -l "traefik.bs.frontend.rule=Host:${DEMYX_APP_DOMAIN}; PathPrefixStrip: /wp-demyx/bs/" \
+                            -l "traefik.bs.port=3000" \
+                            -l "traefik.socket.frontend.rule=Host:${DEMYX_APP_DOMAIN}; PathPrefix: /browser-sync/socket.io/" \
+                            -l "traefik.socket.port=3000" \
+                            demyx/code-server:wp
+                    else
+                        demyx_execute docker run -dit --rm \
+                            --name "$DEMYX_APP_COMPOSE_PROJECT"_cs \
+                            --net demyx \
+                            --hostname "$DEMYX_APP_COMPOSE_PROJECT" \
+                            --volumes-from "$DEMYX_APP_WP_CONTAINER" \
+                            -v demyx_cs:/home/www-data \
+                            -e PASSWORD="$MARIADB_ROOT_PASSWORD" \
+                            -e DEMYX=true \
+                            -e DEMYX_CODER_BASE_PATH="$DEMYX_CONFIG_DEV_BASE_PATH" \
+                            -e DEMYX_APP_DOMAIN="$DEMYX_APP_DOMAIN" \
+                            -e DEMYX_APP_WP_CONTAINER="$DEMYX_APP_WP_CONTAINER" \
+                            -e DEMYX_BS_FILES="$DEMYX_BS_FILES" \
+                            -l "traefik.enable=true" \
+                            -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-cs-https.rule=(Host(\`${DEMYX_APP_DOMAIN}\`) && PathPrefix(\`${DEMYX_CONFIG_DEV_BASE_PATH}/cs/\`))" \
+                            -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-cs-https.middlewares=${DEMYX_APP_COMPOSE_PROJECT}-cs-prefix" \
+                            -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-cs-https.entrypoints=https" \
+                            -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-cs-https.tls.certresolver=demyx" \
+                            -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-cs-https.service=${DEMYX_APP_COMPOSE_PROJECT}-cs" \
+                            -l "traefik.http.middlewares.${DEMYX_APP_COMPOSE_PROJECT}-cs-prefix.stripprefix.prefixes=${DEMYX_CONFIG_DEV_BASE_PATH}/cs/" \
+                            -l "traefik.http.services.${DEMYX_APP_COMPOSE_PROJECT}-cs.loadbalancer.server.port=8080" \
+                            -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-bs-https.rule=(Host(\`${DEMYX_APP_DOMAIN}\`) && PathPrefix(\`${DEMYX_CONFIG_DEV_BASE_PATH}/bs/\`))" \
+                            -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-bs-https.middlewares=${DEMYX_APP_COMPOSE_PROJECT}-bs-prefix" \
+                            -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-bs-https.entrypoints=https" \
+                            -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-bs-https.tls.certresolver=demyx" \
+                            -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-bs-https.service=${DEMYX_APP_COMPOSE_PROJECT}-bs" \
+                            -l "traefik.http.middlewares.${DEMYX_APP_COMPOSE_PROJECT}-bs-prefix.stripprefix.prefixes=${DEMYX_CONFIG_DEV_BASE_PATH}/bs/" \
+                            -l "traefik.http.services.${DEMYX_APP_COMPOSE_PROJECT}-bs.loadbalancer.server.port=3000" \
+                            -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-socket-https.rule=(Host(\`${DEMYX_APP_DOMAIN}\`) && PathPrefix(\`/browser-sync/socket.io/\`))" \
+                            -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-socket-https.middlewares=${DEMYX_APP_COMPOSE_PROJECT}-socket-prefix" \
+                            -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-socket-https.entrypoints=https" \
+                            -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-socket-https.tls.certresolver=demyx" \
+                            -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-socket-https.service=${DEMYX_APP_COMPOSE_PROJECT}-socket" \
+                            -l "traefik.http.middlewares.${DEMYX_APP_COMPOSE_PROJECT}-socket-prefix.stripprefix.prefixes=${DEMYX_CONFIG_DEV_BASE_PATH}/bs/browser-sync/socket.io/" \
+                            -l "traefik.http.services.${DEMYX_APP_COMPOSE_PROJECT}-socket.loadbalancer.server.port=3000" \
+                            demyx/code-server:wp
+                    fi
                 else
+                    demyx config "$DEMYX_APP_DOMAIN" --healthcheck=false --bedrock=development
+                    
+                    demyx_echo 'Creating code-server'
                     demyx_execute docker run -dit --rm \
                         --name "$DEMYX_APP_COMPOSE_PROJECT"_cs \
                         --net demyx \
                         --hostname "$DEMYX_APP_COMPOSE_PROJECT" \
-                        --volumes-from "$DEMYX_APP_WP_CONTAINER" \
+                        -v wp_${DEMYX_APP_ID}:/var/www/html \
                         -v demyx_cs:/home/www-data \
                         -e PASSWORD="$MARIADB_ROOT_PASSWORD" \
-                        -e DEMYX=true \
-                        -e DEMYX_CODER_BASE_PATH="$DEMYX_CONFIG_DEV_BASE_PATH" \
-                        -e DEMYX_APP_DOMAIN="$DEMYX_APP_DOMAIN" \
+                        -e CODER_BASE_PATH="$DEMYX_CONFIG_DEV_BASE_PATH"/cs \
+                        -e WORDPRESS_DOMAIN="$DEMYX_APP_DOMAIN" \
+                        -e WORDPRESS_PHP_OPCACHE=false \
+                        -e WORDPRESS_NGINX_CACHE=false \
                         -e DEMYX_APP_WP_CONTAINER="$DEMYX_APP_WP_CONTAINER" \
-                        -e DEMYX_BS_FILES="$DEMYX_BS_FILES" \
                         -l "traefik.enable=true" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-http.rule=Host(\`${DEMYX_APP_DOMAIN}\`)" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-http.entrypoints=http" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-http.middlewares=${DEMYX_APP_COMPOSE_PROJECT}-redirect" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-http.service=${DEMYX_APP_COMPOSE_PROJECT}-http" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-https.rule=Host(\`${DEMYX_APP_DOMAIN}\`)" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-https.entrypoints=https" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-https.tls.certresolver=demyx" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-https.service=${DEMYX_APP_COMPOSE_PROJECT}-https" \
+                        -l "traefik.http.services.${DEMYX_APP_COMPOSE_PROJECT}-http.loadbalancer.server.port=80" \
+                        -l "traefik.http.services.${DEMYX_APP_COMPOSE_PROJECT}-https.loadbalancer.server.port=80" \
+                        -l "traefik.http.middlewares.${DEMYX_APP_COMPOSE_PROJECT}-redirect.redirectscheme.scheme=https" \
                         -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-cs-https.rule=(Host(\`${DEMYX_APP_DOMAIN}\`) && PathPrefix(\`${DEMYX_CONFIG_DEV_BASE_PATH}/cs/\`))" \
                         -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-cs-https.middlewares=${DEMYX_APP_COMPOSE_PROJECT}-cs-prefix" \
                         -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-cs-https.entrypoints=https" \
@@ -477,8 +530,32 @@ demyx_config() {
                         -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-socket-https.service=${DEMYX_APP_COMPOSE_PROJECT}-socket" \
                         -l "traefik.http.middlewares.${DEMYX_APP_COMPOSE_PROJECT}-socket-prefix.stripprefix.prefixes=${DEMYX_CONFIG_DEV_BASE_PATH}/bs/browser-sync/socket.io/" \
                         -l "traefik.http.services.${DEMYX_APP_COMPOSE_PROJECT}-socket.loadbalancer.server.port=3000" \
-                        demyx/code-server:wp
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-webpack-https.rule=(Host(\`${DEMYX_APP_DOMAIN}\`) && PathPrefix(\`/__webpack_hmr\`))" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-webpack-https.middlewares=${DEMYX_APP_COMPOSE_PROJECT}-webpack-prefix" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-webpack-https.entrypoints=https" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-webpack-https.tls.certresolver=demyx" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-webpack-https.service=${DEMYX_APP_COMPOSE_PROJECT}-webpack" \
+                        -l "traefik.http.middlewares.${DEMYX_APP_COMPOSE_PROJECT}-webpack-prefix.stripprefix.prefixes=${DEMYX_CONFIG_DEV_BASE_PATH}/bs/__webpack_hmr" \
+                        -l "traefik.http.services.${DEMYX_APP_COMPOSE_PROJECT}-webpack.loadbalancer.server.port=3000" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-js-https.rule=(Host(\`${DEMYX_APP_DOMAIN}\`) && PathPrefix(\`/app/themes/{path:[a-z0-9]+}/dist/{hash:[a-z.0-9]+}.hot-update.js\`))" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-js-https.middlewares=${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-js-prefix" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-js-https.entrypoints=https" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-js-https.tls.certresolver=demyx" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-js-https.service=${DEMYX_APP_COMPOSE_PROJECT}-webpack" \
+                        -l "traefik.http.middlewares.${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-js-prefix.stripprefix.prefixes=${DEMYX_CONFIG_DEV_BASE_PATH}/bs/app/themes/[a-z0-9]/dist/[a-z.0-9].hot-update.js" \
+                        -l "traefik.http.services.${DEMYX_APP_COMPOSE_PROJECT}-webpack.loadbalancer.server.port=3000" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-json-https.rule=(Host(\`${DEMYX_APP_DOMAIN}\`) && PathPrefix(\`/app/themes/{path:[a-z0-9]+}/dist/{hash:[a-z.0-9]+}.hot-update.json\`))" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-json-https.middlewares=${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-json-prefix" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-json-https.entrypoints=https" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-json-https.tls.certresolver=demyx" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-json-https.service=${DEMYX_APP_COMPOSE_PROJECT}-webpack" \
+                        -l "traefik.http.middlewares.${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-json-prefix.stripprefix.prefixes=${DEMYX_CONFIG_DEV_BASE_PATH}/bs/app/themes/[a-z0-9]/dist/[a-z.0-9].hot-update.json" \
+                        -l "traefik.http.services.${DEMYX_APP_COMPOSE_PROJECT}-webpack.loadbalancer.server.port=3000" \
+                    demyx/code-server:sage
                 fi
+
+                demyx compose "$DEMYX_APP_DOMAIN" wp stop
+                demyx compose "$DEMYX_APP_DOMAIN" wp rm -f
 
                 demyx_execute -v sed -i "s/DEMYX_APP_DEV=.*/DEMYX_APP_DEV=true/g" "$DEMYX_APP_PATH"/.env
 
@@ -492,23 +569,28 @@ demyx_config() {
                     [[ "$DEMYX_APP_DEV" = false ]] && demyx_die 'Dev mode is already turned off'
                 fi
 
-                demyx_echo 'Deactivating autover' 
-                demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin deactivate autover
+                if [[ "$DEMYX_APP_WP_IMAGE" = demyx/nginx-php-wordpress ]]; then
+                    demyx_echo 'Deactivating autover' 
+                    demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin deactivate autover
 
-                demyx_echo 'Deactivating demyx_browsersync' 
-                demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin deactivate demyx_browsersync; \
+                    demyx_echo 'Deactivating demyx_browsersync' 
+                    demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin deactivate demyx_browsersync; \
 
-                demyx config "$DEMYX_APP_DOMAIN" --opcache
+                    demyx config "$DEMYX_APP_DOMAIN" --opcache
 
-                demyx_echo 'Stopping coder-server'
-                demyx_execute docker stop "$DEMYX_APP_COMPOSE_PROJECT"_cs
+                    if [[ -f "$DEMYX_APP_PATH"/.cache ]]; then
+                        rm "$DEMYX_APP_PATH"/.cache
+                        demyx config "$DEMYX_APP_DOMAIN" --cache
+                    fi
+                else
+                    demyx_echo 'Stopping coder-server'
+                    demyx_execute docker stop "$DEMYX_APP_COMPOSE_PROJECT"_cs
+
+                    demyx compose "$DEMYX_APP_DOMAIN" up -d
+                    demyx config "$DEMYX_APP_DOMAIN" --healthcheck=true --bedrock=production
+                fi
                 
                 demyx_execute -v sed -i "s/DEMYX_APP_DEV=.*/DEMYX_APP_DEV=false/g" "$DEMYX_APP_PATH"/.env
-
-                if [[ -f "$DEMYX_APP_PATH"/.cache ]]; then
-                    rm "$DEMYX_APP_PATH"/.cache
-                    demyx config "$DEMYX_APP_DOMAIN" --cache
-                fi
             fi
             if [[ "$DEMYX_CONFIG_HEALTHCHECK" = true ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
