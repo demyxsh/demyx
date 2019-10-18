@@ -496,7 +496,6 @@ demyx_config() {
                         -e WORDPRESS_DOMAIN="$DEMYX_APP_DOMAIN" \
                         -e WORDPRESS_PHP_OPCACHE=false \
                         -e WORDPRESS_NGINX_CACHE=false \
-                        -e DEMYX_APP_WP_CONTAINER="$DEMYX_APP_WP_CONTAINER" \
                         -l "traefik.enable=true" \
                         -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-http.rule=Host(\`${DEMYX_APP_DOMAIN}\`)" \
                         -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-http.entrypoints=http" \
