@@ -7,7 +7,7 @@ demyx_plugin() {
     <?php
     /**
     * AUTO GENERATED
-    * @package demyx_browsersync
+    * @package demyx_helper
     * @version 1.0
     */
     /*
