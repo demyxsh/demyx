@@ -2,5 +2,15 @@
 # Demyx
 # https://demyx.sh
 
-shell2http -log=/var/log/demyx/api.log \
+shell2http -log=/var/log/demyx/api.log -form \
+    /run '
+        if [[ -d /demyx/app/wp/$v_domain ]]; then
+            echo "{\"status\": \"error\", \"message\": \"App already exists.\"}"
+        else
+            demyx run $v_domain > /dev/null
+            demyx info $v_domain --json
+        fi
+    ' \
+    /info 'demyx info $v_domain --json --no-volume' \
+    /sites 'demyx info all --no-volume --no-password' \
     /system 'demyx info system --json'
