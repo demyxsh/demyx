@@ -18,6 +18,12 @@ demyx_info() {
             --json)
                 DEMYX_INFO_JSON=1
                 ;;
+            --no-password)
+                DEMYX_INFO_NO_PASSWORD=1
+                ;;
+            --no-volume)
+                DEMYX_INFO_NO_VOLUME=1
+                ;;
             --quiet)
                 DEMYX_INFO_QUIET=1
                 ;;
@@ -38,6 +44,40 @@ demyx_info() {
     demyx_app_config
 
     if [[ "$DEMYX_TARGET" = all ]]; then
+        cd "$DEMYX_WP"
+        for i in *
+        do
+            source "$DEMYX_WP"/"$i"/.env
+
+            if [[ -z "$DEMYX_INFO_NO_VOLUME" ]]; then
+                DEMYX_INFO_DATA_VOLUME=$(docker exec "$DEMYX_APP_WP_CONTAINER" sh -c "du -sh /var/www/html" | cut -f1)
+                DEMYX_INFO_DB_VOLUME=$(docker exec "$DEMYX_APP_DB_CONTAINER" sh -c "du -sh /var/lib/mysql/$WORDPRESS_DB_NAME" | cut -f1)
+            fi
+
+            if [[ -n "$DEMYX_INFO_NO_PASSWORD" ]]; then
+                WORDPRESS_USER_PASSWORD=
+            fi
+
+            DEMYX_INFO_ALL_JSON+='{'
+            DEMYX_INFO_ALL_JSON+='"domain": "'$DEMYX_APP_DOMAIN'",'
+            DEMYX_INFO_ALL_JSON+='"path": "'$DEMYX_APP_PATH'",'
+            DEMYX_INFO_ALL_JSON+='"wp_user": "'$WORDPRESS_USER'",'
+            DEMYX_INFO_ALL_JSON+='"wp_password": "'$WORDPRESS_USER_PASSWORD'",'
+            DEMYX_INFO_ALL_JSON+='"wp_container": "'$DEMYX_APP_WP_CONTAINER'",'
+            DEMYX_INFO_ALL_JSON+='"db_container": "'$DEMYX_APP_DB_CONTAINER'",'
+            DEMYX_INFO_ALL_JSON+='"wp_volume": "'$DEMYX_INFO_DATA_VOLUME'",'
+            DEMYX_INFO_ALL_JSON+='"db_volume": "'$DEMYX_INFO_DB_VOLUME'",'
+            DEMYX_INFO_ALL_JSON+='"ssl": "'$DEMYX_APP_SSL'",'
+            DEMYX_INFO_ALL_JSON+='"cache": "'$DEMYX_APP_CACHE'",'
+            DEMYX_INFO_ALL_JSON+='"cdn": "'$DEMYX_APP_CDN'",'
+            DEMYX_INFO_ALL_JSON+='"auth": "'$DEMYX_APP_AUTH'",'
+            DEMYX_INFO_ALL_JSON+='"auth_wp": "'$DEMYX_APP_AUTH_WP'",'
+            DEMYX_INFO_ALL_JSON+='"dev": "'$DEMYX_APP_DEV'",'
+            DEMYX_INFO_ALL_JSON+='"healthcheck": "'$DEMYX_APP_HEALTHCHECK'"'
+            DEMYX_INFO_ALL_JSON+='},'
+        done
+        echo "[$DEMYX_INFO_ALL_JSON]" | sed 's|,]|]|g'
+    elif [[ "$DEMYX_TARGET" = env ]]; then
         [[ -z "$DEMYX_INFO_FILTER" ]] && demyx_die '--filter is required'
         cd "$DEMYX_WP"
         PRINT_TABLE="DEMYX^ $DEMYX_INFO_FILTER\n"
@@ -78,20 +118,21 @@ demyx_info() {
         DEMYX_INFO_CONTAINER_DEAD=$(/usr/local/bin/docker ps -q --filter "status=exited" | wc -l)
 
         if [[ -n "$DEMYX_INFO_JSON" ]]; then 
-            echo '{
-                "hostname": "'$DEMYX_MOTD_HOST'",
-                "mode": "'$DEMYX_MOTD_MODE'",
-                "wp_count": "'$DEMYX_INFO_WP_COUNT'",
-                "disk_used": "'$DEMYX_INFO_DISK_USED'",
-                "disk_total": "'$DEMYX_INFO_DISK_TOTAL'",
-                "disk_total_percentage": "'$DEMYX_INFO_DISK_PERCENTAGE'",
-                "memory_used": "'$DEMYX_INFO_MEMORY_USED'",
-                "memory_total": "'$DEMYX_INFO_MEMORY_TOTAL'",
-                "uptime": "'$DEMYX_INFO_UPTIME'",
-                "load_average": "'$DEMYX_INFO_LOAD_AVERAGE'",
-                "container_running": "'$DEMYX_INFO_CONTAINER_RUNNING'",
-                "container_dead": "'$DEMYX_INFO_CONTAINER_DEAD'"' | sed 's/                /    /g'
-            echo '}'
+            DEMYX_INFO_SYSTEM_JSON='{'
+            DEMYX_INFO_SYSTEM_JSON+='"hostname": "'$DEMYX_MOTD_HOST'",'
+            DEMYX_INFO_SYSTEM_JSON+='"mode": "'$DEMYX_MOTD_MODE'",'
+            DEMYX_INFO_SYSTEM_JSON+='"wp_count": "'$DEMYX_INFO_WP_COUNT'",'
+            DEMYX_INFO_SYSTEM_JSON+='"disk_used": "'$DEMYX_INFO_DISK_USED'",'
+            DEMYX_INFO_SYSTEM_JSON+='"disk_total": "'$DEMYX_INFO_DISK_TOTAL'",'
+            DEMYX_INFO_SYSTEM_JSON+='"disk_total_percentage": "'$DEMYX_INFO_DISK_PERCENTAGE'",'
+            DEMYX_INFO_SYSTEM_JSON+='"memory_used": "'$DEMYX_INFO_MEMORY_USED'",'
+            DEMYX_INFO_SYSTEM_JSON+='"memory_total": "'$DEMYX_INFO_MEMORY_TOTAL'",'
+            DEMYX_INFO_SYSTEM_JSON+='"uptime": "'$DEMYX_INFO_UPTIME'",'
+            DEMYX_INFO_SYSTEM_JSON+='"load_average": "'$DEMYX_INFO_LOAD_AVERAGE'",'
+            DEMYX_INFO_SYSTEM_JSON+='"container_running": "'$DEMYX_INFO_CONTAINER_RUNNING'",'
+            DEMYX_INFO_SYSTEM_JSON+='"container_dead": "'$DEMYX_INFO_CONTAINER_DEAD'"'
+            DEMYX_INFO_SYSTEM_JSON+='}'
+            echo "$DEMYX_INFO_SYSTEM_JSON"
         else
             PRINT_TABLE="DEMYX^ SYSTEM INFO\n"
             PRINT_TABLE+="HOSTNAME^ $DEMYX_MOTD_HOST\n"
@@ -126,8 +167,10 @@ demyx_info() {
                 demyx_die 'Filter not found'
             fi
         else
-            DEMYX_INFO_DATA_VOLUME=$(demyx exec "$DEMYX_APP_DOMAIN" sh -c "du -sh /var/www/html" | cut -f1)
-            DEMYX_INFO_DB_VOLUME=$(demyx exec "$DEMYX_APP_DOMAIN" db sh -c "du -sh /var/lib/mysql/$WORDPRESS_DB_NAME" | cut -f1)
+            if [[ -z "$DEMYX_INFO_NO_VOLUME" ]]; then
+                DEMYX_INFO_DATA_VOLUME=$(docker exec "$DEMYX_APP_WP_CONTAINER" sh -c "du -sh /var/www/html" | cut -f1)
+                DEMYX_INFO_DB_VOLUME=$(docker exec "$DEMYX_APP_DB_CONTAINER" sh -c "du -sh /var/lib/mysql/$WORDPRESS_DB_NAME" | cut -f1)
+            fi
 
             if [[ -n "$DEMYX_INFO_JSON" ]]; then
                 echo '{
