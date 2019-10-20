@@ -63,14 +63,17 @@ demyx_help() {
         echo
     elif [[ "$DEMYX_HELP" = info ]]; then
         echo
-        echo "demyx info <app>  <args>       Show environment info for an app"
-        echo "           all                 Use --filter for all WordPress sites"
-        echo "           stack               Show stack versions and other info"
-        echo "           system              Show miscellaneous server data"
-        echo "                  --all        Show all environment info"
-        echo "                  --filter     Filter environment variables"
-        echo "                  --json       Output data in JSON"
-        echo "                  --quiet      Prevent output of error if filter not found"
+        echo "demyx info <app>  <args>          Show environment info for an app"
+        echo "           all                    Loop through all apps"
+        echo "           env                    Use --filter for all WordPress sites"
+        echo "           stack                  Show stack versions and other info"
+        echo "           system                 Show miscellaneous server data"
+        echo "                  --all           Show all environment info"
+        echo "                  --filter        Filter environment variables"
+        echo "                  --json          Output data in JSON"
+        echo "                  --no-password   Omit passwords"
+        echo "                  --no-volume     Omit volume sizes"
+        echo "                  --quiet         Prevent output of error if filter not found"
         echo
     elif [[ "$DEMYX_HELP" = install ]]; then
         echo
