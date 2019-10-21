@@ -12,6 +12,7 @@ demyx_pull() {
     else
         docker pull demyx/demyx
         docker pull demyx/code-server:wp
+        docker pull demyx/code-server:sage
         docker pull demyx/docker-compose
         docker pull demyx/logrotate
         docker pull demyx/mariadb
