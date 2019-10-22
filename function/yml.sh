@@ -280,6 +280,13 @@ demyx_v2_yml() {
                         - WORDPRESS_BEDROCK_MODE=${DEMYX_APP_BEDROCK_MODE}'
         fi
 
+        if [[ "$DEMYX_COMMAND" = run ]]; then
+            DEMYX_YML_CREDENTIALS='- WORDPRESS_DB_HOST=${WORDPRESS_DB_HOST}
+                        - WORDPRESS_DB_NAME=${WORDPRESS_DB_NAME}
+                        - WORDPRESS_DB_USER=${WORDPRESS_DB_USER}
+                        - WORDPRESS_DB_PASSWORD=${WORDPRESS_DB_PASSWORD}'
+        fi
+
         cat > "$DEMYX_WP"/"$DEMYX_APP_DOMAIN"/docker-compose.yml <<-EOF
             # AUTO GENERATED
             version: "$DEMYX_DOCKER_COMPOSE"
@@ -328,10 +335,6 @@ demyx_v2_yml() {
                         - demyx
                     environment:
                         - TZ=America/Los_Angeles
-                        - WORDPRESS_DB_HOST=\${WORDPRESS_DB_HOST}
-                        - WORDPRESS_DB_NAME=\${WORDPRESS_DB_NAME}
-                        - WORDPRESS_DB_USER=\${WORDPRESS_DB_USER}
-                        - WORDPRESS_DB_PASSWORD=\${WORDPRESS_DB_PASSWORD}
                         - WORDPRESS_DOMAIN=\${DEMYX_APP_DOMAIN}
                         - WORDPRESS_UPLOAD_LIMIT=\${DEMYX_APP_UPLOAD_LIMIT}
                         - WORDPRESS_PHP_MEMORY=\${DEMYX_APP_PHP_MEMORY}
@@ -342,6 +345,7 @@ demyx_v2_yml() {
                         - WORDPRESS_NGINX_XMLRPC=\${DEMYX_APP_XMLRPC}
                         - WORDPRESS_NGINX_BASIC_AUTH=\${DEMYX_APP_AUTH_WP}
                         $DEMYX_YML_BEDROCK
+                        $DEMYX_YML_CREDENTIALS
                     volumes:
                         - wp_${DEMYX_APP_ID}:/var/www/html
                         - wp_${DEMYX_APP_ID}_log:/var/log/demyx

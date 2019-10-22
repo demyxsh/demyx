@@ -344,7 +344,7 @@ demyx_run() {
             [[ "$DEMYX_RUN_AUTH" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --auth
         fi
 
-        demyx config "$DEMYX_APP_DOMAIN" --healthcheck
+        demyx config "$DEMYX_APP_DOMAIN" --refresh --healthcheck
 
         PRINT_TABLE="DEMYX^ $DEMYX_RUN_PROTO/wp-admin\n"
         PRINT_TABLE+="WORDPRESS USER^ $WORDPRESS_USER\n"
