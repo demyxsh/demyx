@@ -269,19 +269,20 @@ demyx_v2_yml() {
         if [[ "$DEMYX_YML_AUTH_CHECK" = true && -f "$DEMYX_STACK"/.env ]]; then
             source "$DEMYX_STACK"/.env
             DEMYX_PARSE_BASIC_AUTH=$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}' | sed 's/\$/$$/g')
-            DEMYX_BASIC_AUTH="- \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-https.middlewares=\${DEMYX_APP_COMPOSE_PROJECT}-auth\"
+            DEMYX_BASIC_AUTH="
+                        - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-https.middlewares=\${DEMYX_APP_COMPOSE_PROJECT}-auth\"
                         - \"traefik.http.middlewares.\${DEMYX_APP_COMPOSE_PROJECT}-auth.basicauth.users=${DEMYX_PARSE_BASIC_AUTH}\""
-        else
-            DEMYX_BASIC_AUTH=
         fi
 
         if [[ "$DEMYX_APP_WP_IMAGE" = demyx/nginx-php-wordpress:bedrock ]]; then
-            DEMYX_YML_BEDROCK='- WORDPRESS_SSL=${DEMYX_APP_SSL}
+            DEMYX_YML_EXTRAS+='
+                        - WORDPRESS_SSL=${DEMYX_APP_SSL}
                         - WORDPRESS_BEDROCK_MODE=${DEMYX_APP_BEDROCK_MODE}'
         fi
 
         if [[ "$DEMYX_COMMAND" = run ]]; then
-            DEMYX_YML_CREDENTIALS='- WORDPRESS_DB_HOST=${WORDPRESS_DB_HOST}
+            DEMYX_YML_EXTRAS+='
+                        - WORDPRESS_DB_HOST=${WORDPRESS_DB_HOST}
                         - WORDPRESS_DB_NAME=${WORDPRESS_DB_NAME}
                         - WORDPRESS_DB_USER=${WORDPRESS_DB_USER}
                         - WORDPRESS_DB_PASSWORD=${WORDPRESS_DB_PASSWORD}'
@@ -343,16 +344,13 @@ demyx_v2_yml() {
                         - WORDPRESS_NGINX_CACHE=\${DEMYX_APP_CACHE}
                         - WORDPRESS_NGINX_RATE_LIMIT=\${DEMYX_APP_RATE_LIMIT}
                         - WORDPRESS_NGINX_XMLRPC=\${DEMYX_APP_XMLRPC}
-                        - WORDPRESS_NGINX_BASIC_AUTH=\${DEMYX_APP_AUTH_WP}
-                        $DEMYX_YML_BEDROCK
-                        $DEMYX_YML_CREDENTIALS
+                        - WORDPRESS_NGINX_BASIC_AUTH=\${DEMYX_APP_AUTH_WP}${DEMYX_YML_EXTRAS}
                     volumes:
                         - wp_${DEMYX_APP_ID}:/var/www/html
                         - wp_${DEMYX_APP_ID}_log:/var/log/demyx
                     labels:
                         - "traefik.enable=true"
-                        $DEMYX_PROTOCOL
-                        $DEMYX_BASIC_AUTH
+                        $DEMYX_PROTOCOL $DEMYX_BASIC_AUTH
             volumes:
                 wp_${DEMYX_APP_ID}:
                     name: wp_${DEMYX_APP_ID}
