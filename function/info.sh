@@ -67,6 +67,8 @@ demyx_info() {
             DEMYX_INFO_ALL_JSON+='"db_container": "'$DEMYX_APP_DB_CONTAINER'",'
             DEMYX_INFO_ALL_JSON+='"wp_volume": "'$DEMYX_INFO_DATA_VOLUME'",'
             DEMYX_INFO_ALL_JSON+='"db_volume": "'$DEMYX_INFO_DB_VOLUME'",'
+            DEMYX_INFO_ALL_JSON+='"cpu": "'$DEMYX_APP_CPU'",'
+            DEMYX_INFO_ALL_JSON+='"mem": "'$DEMYX_APP_MEM'",'
             DEMYX_INFO_ALL_JSON+='"ssl": "'$DEMYX_APP_SSL'",'
             DEMYX_INFO_ALL_JSON+='"cache": "'$DEMYX_APP_CACHE'",'
             DEMYX_INFO_ALL_JSON+='"cdn": "'$DEMYX_APP_CDN'",'
@@ -181,6 +183,8 @@ demyx_info() {
                     "db_container": "'$DEMYX_APP_DB_CONTAINER'",
                     "wp_volume": "'$DEMYX_INFO_DATA_VOLUME'",
                     "db_volume": "'$DEMYX_INFO_DB_VOLUME'",
+                    "cpu": "'$DEMYX_APP_CPU'",
+                    "mem": "'$DEMYX_APP_MEM'",
                     "ssl": "'$DEMYX_APP_SSL'",
                     "cache": "'$DEMYX_APP_CACHE'",
                     "cdn": "'$DEMYX_APP_CDN'",
@@ -200,6 +204,8 @@ demyx_info() {
                 PRINT_TABLE+="DB CONTAINER^ $DEMYX_APP_DB_CONTAINER\n"
                 PRINT_TABLE+="WP VOLUME^ $DEMYX_INFO_DATA_VOLUME\n"
                 PRINT_TABLE+="DB VOLUME^ $DEMYX_INFO_DB_VOLUME\n"
+                PRINT_TABLE+="CPU^ $DEMYX_APP_CPU\n"
+                PRINT_TABLE+="MEM^ $DEMYX_APP_MEM\n"
                 PRINT_TABLE+="UPLOAD LIMIT^ $DEMYX_APP_UPLOAD_LIMIT\n"
                 PRINT_TABLE+="PHP MEMORY^ $DEMYX_APP_PHP_MEMORY\n"
                 PRINT_TABLE+="PHP MAX EXECUTION TIME^ $DEMYX_APP_PHP_MAX_EXECUTION_TIME\n"
