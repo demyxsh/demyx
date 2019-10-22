@@ -26,7 +26,6 @@ demyx_env() {
         [[ -z "$WORDPRESS_DB_USER" ]] && WORDPRESS_DB_USER=$DEMYX_APP_CONTAINER
         [[ -z "$WORDPRESS_DB_PASSWORD" ]] && WORDPRESS_DB_PASSWORD=$(demyx util --pass --raw)
         [[ -z "$MARIADB_ROOT_PASSWORD" ]] && MARIADB_ROOT_PASSWORD=$(demyx util --pass --raw)
-        
         [[ -n "$DEMYX_RUN_SSL" ]] && DEMYX_APP_SSL="$DEMYX_RUN_SSL"
         [[ -n "$DEMYX_RUN_RATE_LIMIT" ]] && DEMYX_APP_RATE_LIMIT=false
         [[ -z "$DEMYX_APP_CACHE" ]] && DEMYX_APP_CACHE=false
@@ -41,6 +40,8 @@ demyx_env() {
         [[ -z "$DEMYX_APP_PHP_MAX_EXECUTION_TIME" ]] && DEMYX_APP_PHP_MAX_EXECUTION_TIME=300
         [[ -z "$DEMYX_APP_PHP_OPCACHE" ]] && DEMYX_APP_PHP_OPCACHE=true
         [[ -z "$DEMYX_APP_XMLRPC" ]] && DEMYX_APP_XMLRPC=false
+        [[ -z "$DEMYX_APP_CPU" ]] && DEMYX_APP_CPU=.25
+        [[ -z "$DEMYX_APP_MEM" ]] && DEMYX_APP_MEM=128m
 
         cat > "$DEMYX_WP"/"$DEMYX_TARGET"/.env <<-EOF
             # AUTO GENERATED
@@ -66,6 +67,8 @@ demyx_env() {
             DEMYX_APP_PHP_MAX_EXECUTION_TIME=$DEMYX_APP_PHP_MAX_EXECUTION_TIME
             DEMYX_APP_PHP_OPCACHE=$DEMYX_APP_PHP_OPCACHE
             DEMYX_APP_XMLRPC=$DEMYX_APP_XMLRPC
+            DEMYX_APP_CPU=$DEMYX_APP_CPU
+            DEMYX_APP_MEM=$DEMYX_APP_MEM
             DEMYX_APP_MONITOR_THRESHOLD=3
             DEMYX_APP_MONITOR_SCALE=5
             DEMYX_APP_MONITOR_CPU=25

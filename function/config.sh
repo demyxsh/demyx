@@ -42,6 +42,12 @@ demyx_config() {
             --clean)
                 DEMYX_CONFIG_CLEAN=1
                 ;;
+            --cpu=null|--cpu=?*)
+                DEMYX_CONFIG_CPU=${3#*=}
+                ;;
+            --cpu=)
+                demyx_die '"--cpu" cannot be empty'
+                ;;
             --dev|--dev=true)
                 DEMYX_CONFIG_DEV=true
                 ;;
@@ -62,6 +68,12 @@ demyx_config() {
                 ;;
             --healthcheck=false)
                 DEMYX_CONFIG_HEALTHCHECK=false
+                ;;
+            --mem=null|--mem=?*)
+                DEMYX_CONFIG_MEM=${3#*=}
+                ;;
+            --mem=)
+                demyx_die '"--mem" cannot be empty'
                 ;;
             --no-backup)
                 DEMYX_CONFIG_NO_BACKUP=1
@@ -358,6 +370,17 @@ demyx_config() {
 
                 demyx maldet "$DEMYX_APP_DOMAIN"
             fi
+            if [[ -n "$DEMYX_CONFIG_CPU" ]]; then
+                demyx_echo "Updating $DEMYX_APP_DOMAIN CPU to $DEMYX_CONFIG_CPU"
+
+                if [[ "$DEMYX_CONFIG_CPU" = null ]]; then
+                    demyx_execute sed -i "s/DEMYX_APP_CPU=.*/DEMYX_APP_CPU=/g" "$DEMYX_APP_PATH"/.env
+                else
+                    demyx_execute sed -i "s/DEMYX_APP_CPU=.*/DEMYX_APP_CPU=$DEMYX_CONFIG_CPU/g" "$DEMYX_APP_PATH"/.env
+                fi
+
+                demyx compose "$DEMYX_APP_DOMAIN" up -d
+            fi
             if [[ "$DEMYX_CONFIG_DEV" = true ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ "$DEMYX_APP_DEV" = true ]] && demyx_die 'Dev mode is already turned on'
@@ -582,6 +605,17 @@ demyx_config() {
                 fi
                 demyx_echo 'Turning off healthcheck'
                 demyx_execute sed -i "s/DEMYX_APP_HEALTHCHECK=.*/DEMYX_APP_HEALTHCHECK=false/g" "$DEMYX_APP_PATH"/.env
+            fi
+            if [[ -n "$DEMYX_CONFIG_MEM" ]]; then
+                demyx_echo "Updating $DEMYX_APP_DOMAIN memory to $DEMYX_CONFIG_MEM"
+
+                if [[ "$DEMYX_CONFIG_MEM" = null ]]; then
+                    demyx_execute sed -i "s/DEMYX_APP_MEM=.*/DEMYX_APP_MEM=/g" "$DEMYX_APP_PATH"/.env
+                else
+                    demyx_execute sed -i "s/DEMYX_APP_MEM=.*/DEMYX_APP_MEM=$DEMYX_CONFIG_MEM/g" "$DEMYX_APP_PATH"/.env
+                fi
+
+                demyx compose "$DEMYX_APP_DOMAIN" up -d
             fi
             if [[ "$DEMYX_CONFIG_OPCACHE" = true ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then

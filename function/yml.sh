@@ -334,6 +334,8 @@ demyx_v2_yml() {
                     restart: unless-stopped
                     networks:
                         - demyx
+                    cpus: \${DEMYX_APP_CPU}
+                    mem_limit: \${DEMYX_APP_MEM}
                     environment:
                         - TZ=America/Los_Angeles
                         - WORDPRESS_DOMAIN=\${DEMYX_APP_DOMAIN}
