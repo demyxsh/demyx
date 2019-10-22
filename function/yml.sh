@@ -294,13 +294,13 @@ demyx_v2_yml() {
             services:
                 db_${DEMYX_APP_ID}:
                     image: demyx/mariadb
+                    cpus: \${DEMYX_APP_DB_CPU}
+                    mem_limit: \${DEMYX_APP_DB_MEM}
                     restart: unless-stopped
                     networks:
                         - demyx
                     volumes:
                         - wp_${DEMYX_APP_ID}_db:/var/lib/mysql
-                    cpus: \${DEMYX_APP_DB_CPU}
-                    mem_limit: \${DEMYX_APP_DB_MEM}
                     environment:
                         - MARIADB_DATABASE=\${WORDPRESS_DB_NAME}
                         - MARIADB_USERNAME=\${WORDPRESS_DB_USER}
@@ -333,11 +333,11 @@ demyx_v2_yml() {
                         - TZ=America/Los_Angeles
                 wp_${DEMYX_APP_ID}:
                     image: \${DEMYX_APP_WP_IMAGE}
+                    cpus: \${DEMYX_APP_WP_CPU}
+                    mem_limit: \${DEMYX_APP_WP_MEM}
                     restart: unless-stopped
                     networks:
                         - demyx
-                    cpus: \${DEMYX_APP_WP_CPU}
-                    mem_limit: \${DEMYX_APP_WP_MEM}
                     environment:
                         - TZ=America/Los_Angeles
                         - WORDPRESS_DOMAIN=\${DEMYX_APP_DOMAIN}
@@ -398,6 +398,8 @@ demyx_stack_v2_yml() {
         DEMYX_YML_OUROBOROS='ouroboros:
                 container_name: demyx_ouroboros
                 image: pyouroboros/ouroboros
+                cpus: \${DEMYX_STACK_CPU}
+                mem_limit: \${DEMYX_STACK_MEM}
                 restart: unless-stopped
                 networks:
                     - demyx
@@ -433,6 +435,8 @@ demyx_stack_v2_yml() {
         services:
             traefik:
                 image: traefik
+                cpus: \${DEMYX_STACK_CPU}
+                mem_limit: \${DEMYX_STACK_MEM}
                 container_name: demyx_traefik
                 restart: unless-stopped
                 networks:
@@ -444,8 +448,6 @@ demyx_stack_v2_yml() {
                     - /var/run/docker.sock:/var/run/docker.sock:ro
                     - demyx_traefik:/demyx
                     - demyx_log:/var/log/demyx
-                cpus: \${DEMYX_STACK_CPU}
-                mem_limit: \${DEMYX_STACK_MEM}
                 environment:
                     - TRAEFIK_API=$DEMYX_STACK_API
                     - TRAEFIK_PROVIDERS_DOCKER=true
