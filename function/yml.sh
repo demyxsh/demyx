@@ -398,8 +398,8 @@ demyx_stack_v2_yml() {
         DEMYX_YML_OUROBOROS='ouroboros:
                 container_name: demyx_ouroboros
                 image: pyouroboros/ouroboros
-                cpus: \${DEMYX_STACK_CPU}
-                mem_limit: \${DEMYX_STACK_MEM}
+                cpus: ${DEMYX_STACK_CPU}
+                mem_limit: ${DEMYX_STACK_MEM}
                 restart: unless-stopped
                 networks:
                     - demyx
