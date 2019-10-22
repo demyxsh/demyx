@@ -444,6 +444,8 @@ demyx_stack_v2_yml() {
                     - /var/run/docker.sock:/var/run/docker.sock:ro
                     - demyx_traefik:/demyx
                     - demyx_log:/var/log/demyx
+                cpus: \${DEMYX_STACK_CPU}
+                mem_limit: \${DEMYX_STACK_MEM}
                 environment:
                     - TRAEFIK_API=$DEMYX_STACK_API
                     - TRAEFIK_PROVIDERS_DOCKER=true

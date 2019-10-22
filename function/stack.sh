@@ -42,6 +42,12 @@ demyx_stack() {
             --cf-api-key=)
                 demyx_die '"--cf-api-key" cannot be empty'
                 ;;
+            --cpu=null|--cpu=?*)
+                DEMYX_STACK_CPU=${3#*=}
+                ;;
+            --cpu=)
+                demyx_die '"--cpu" cannot be empty'
+                ;;
             --false)
                 DEMYX_STACK_FALSE=1
                 ;;
@@ -56,6 +62,12 @@ demyx_stack() {
                 ;;
             --ignore=)
                 demyx_die '"--ignore" cannot be empty'
+                ;;
+            --mem=null|--mem=?*)
+                DEMYX_STACK_MEM=${3#*=}
+                ;;
+            --mem=)
+                demyx_die '"--mem" cannot be empty'
                 ;;
             --monitor|--monitor=true)
                 DEMYX_STACK_MONITOR=true
@@ -203,12 +215,26 @@ demyx_stack() {
         demyx_execute sed -i "s|DEMYX_STACK_CLOUDFLARE=.*|DEMYX_STACK_CLOUDFLARE=false|g" "$DEMYX_STACK"/.env
 
         demyx compose stack up -d
+    elif [[ -n "$DEMYX_STACK_CPU" ]]; then
+        demyx_echo "Updating stack CPU to $DEMYX_STACK_CPU"
+        if [[ "$DEMYX_STACK_CPU" = null ]]; then
+            demyx_execute sed -i "s/DEMYX_STACK_CPU=.*/DEMYX_STACK_CPU=/g" "$DEMYX_STACK"/.env
+        else
+            demyx_execute sed -i "s/DEMYX_STACK_CPU=.*/DEMYX_STACK_CPU=$DEMYX_STACK_CPU/g" "$DEMYX_STACK"/.env
+        fi
     elif [[ "$DEMYX_STACK_HEALTHCHECK" = true ]]; then
         demyx_echo 'Turning on stack healthcheck'
         demyx_execute sed -i 's/DEMYX_STACK_HEALTHCHECK=.*/DEMYX_STACK_HEALTHCHECK=true/g' "$DEMYX_STACK"/.env
     elif [[ "$DEMYX_STACK_HEALTHCHECK" = false ]]; then
         demyx_echo 'Turning off stack healthcheck'
         demyx_execute sed -i 's/DEMYX_STACK_HEALTHCHECK=.*/DEMYX_STACK_HEALTHCHECK=false/g' "$DEMYX_STACK"/.env
+    elif [[ -n "$DEMYX_STACK_MEM" ]]; then
+        demyx_echo "Updating stack MEM to $DEMYX_STACK_MEM"
+        if [[ "$DEMYX_STACK_MEM" = null ]]; then
+            demyx_execute sed -i "s/DEMYX_STACK_MEM=.*/DEMYX_STACK_MEM=/g" "$DEMYX_STACK"/.env
+        else
+            demyx_execute sed -i "s/DEMYX_STACK_MEM=.*/DEMYX_STACK_MEM=$DEMYX_STACK_MEM/g" "$DEMYX_STACK"/.env
+        fi
     elif [[ "$DEMYX_STACK_MONITOR" = true ]]; then
         demyx_echo 'Turning on stack monitor'
         demyx_execute sed -i 's/DEMYX_STACK_MONITOR=.*/DEMYX_STACK_MONITOR=true/g' "$DEMYX_STACK"/.env
