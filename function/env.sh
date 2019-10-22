@@ -40,8 +40,10 @@ demyx_env() {
         [[ -z "$DEMYX_APP_PHP_MAX_EXECUTION_TIME" ]] && DEMYX_APP_PHP_MAX_EXECUTION_TIME=300
         [[ -z "$DEMYX_APP_PHP_OPCACHE" ]] && DEMYX_APP_PHP_OPCACHE=true
         [[ -z "$DEMYX_APP_XMLRPC" ]] && DEMYX_APP_XMLRPC=false
-        [[ -z "$DEMYX_APP_CPU" ]] && DEMYX_APP_CPU=.25
-        [[ -z "$DEMYX_APP_MEM" ]] && DEMYX_APP_MEM=128m
+        [[ -z "$DEMYX_APP_WP_CPU" ]] && DEMYX_APP_WP_CPU=.25
+        [[ -z "$DEMYX_APP_WP_MEM" ]] && DEMYX_APP_WP_MEM=64m
+        [[ -z "$DEMYX_APP_DB_CPU" ]] && DEMYX_APP_DB_CPU=.25
+        [[ -z "$DEMYX_APP_DB_MEM" ]] && DEMYX_APP_DB_MEM=64m
 
         cat > "$DEMYX_WP"/"$DEMYX_TARGET"/.env <<-EOF
             # AUTO GENERATED
@@ -67,8 +69,10 @@ demyx_env() {
             DEMYX_APP_PHP_MAX_EXECUTION_TIME=$DEMYX_APP_PHP_MAX_EXECUTION_TIME
             DEMYX_APP_PHP_OPCACHE=$DEMYX_APP_PHP_OPCACHE
             DEMYX_APP_XMLRPC=$DEMYX_APP_XMLRPC
-            DEMYX_APP_CPU=$DEMYX_APP_CPU
-            DEMYX_APP_MEM=$DEMYX_APP_MEM
+            DEMYX_APP_WP_CPU=$DEMYX_APP_WP_CPU
+            DEMYX_APP_WP_MEM=$DEMYX_APP_WP_MEM
+            DEMYX_APP_DB_CPU=$DEMYX_APP_DB_CPU
+            DEMYX_APP_DB_MEM=$DEMYX_APP_DB_MEM
             DEMYX_APP_MONITOR_THRESHOLD=3
             DEMYX_APP_MONITOR_SCALE=5
             DEMYX_APP_MONITOR_CPU=25

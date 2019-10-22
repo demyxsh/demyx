@@ -31,7 +31,8 @@ demyx_help() {
         echo "                   --cache          Turns on/off fastcgi cache"
         echo "                   --cdn            Turns on/off CDN, powered by Staticaly"
         echo "                   --clean          Creates new MariaDB credentials and reinstalls WordPress core files"
-        echo "                   --cpu            Change the app's container CPU usage, --cpu=null to remove cap"
+        echo "                   --db-cpu         Set the app's DB container CPU usage, --db-cpu=null to remove cap"
+        echo "                   --db-mem         Set the app's DB container MEM usage, --db-mem=null to remove cap"
         echo "                   --dev            Turns on/off development mode"
         echo "                   --files          BrowserSync arg: themes, plugins, or custom path"
         echo "                   --force          Force config"
@@ -45,6 +46,8 @@ demyx_help() {
         echo "                   --restart        Restart NGINX/PHP services"
         echo "                   --sftp           Turns on/off SFTP container"
         echo "                   --ssl            Turns on/off SSL"
+        echo "                   --wp-cpu         Set the app's container CPU usage, --wp-cpu=null to remove cap"
+        echo "                   --wp-mem         Set the app's container MEM usage, --wp-mem=null to remove cap"
         echo "                   --wp-update      Auto update WordPress core, themes, and plugins"
         echo "                   --xmlrpc         Turns on/off xmlrpc.php"
         echo

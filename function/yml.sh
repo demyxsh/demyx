@@ -299,6 +299,8 @@ demyx_v2_yml() {
                         - demyx
                     volumes:
                         - wp_${DEMYX_APP_ID}_db:/var/lib/mysql
+                    cpus: \${DEMYX_APP_DB_CPU}
+                    mem_limit: \${DEMYX_APP_DB_MEM}
                     environment:
                         - MARIADB_DATABASE=\${WORDPRESS_DB_NAME}
                         - MARIADB_USERNAME=\${WORDPRESS_DB_USER}
@@ -334,8 +336,8 @@ demyx_v2_yml() {
                     restart: unless-stopped
                     networks:
                         - demyx
-                    cpus: \${DEMYX_APP_CPU}
-                    mem_limit: \${DEMYX_APP_MEM}
+                    cpus: \${DEMYX_APP_WP_CPU}
+                    mem_limit: \${DEMYX_APP_WP_MEM}
                     environment:
                         - TZ=America/Los_Angeles
                         - WORDPRESS_DOMAIN=\${DEMYX_APP_DOMAIN}

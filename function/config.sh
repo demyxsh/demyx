@@ -42,11 +42,17 @@ demyx_config() {
             --clean)
                 DEMYX_CONFIG_CLEAN=1
                 ;;
-            --cpu=null|--cpu=?*)
-                DEMYX_CONFIG_CPU=${3#*=}
+            --db-cpu=null|--db-cpu=?*)
+                DEMYX_CONFIG_DB_CPU=${3#*=}
                 ;;
-            --cpu=)
-                demyx_die '"--cpu" cannot be empty'
+            --db-cpu=)
+                demyx_die '"--db-cpu" cannot be empty'
+                ;;
+            --db-mem=null|--db-mem=?*)
+                DEMYX_CONFIG_DB_MEM=${3#*=}
+                ;;
+            --db-mem=)
+                demyx_die '"--wp-db" cannot be empty'
                 ;;
             --dev|--dev=true)
                 DEMYX_CONFIG_DEV=true
@@ -68,12 +74,6 @@ demyx_config() {
                 ;;
             --healthcheck=false)
                 DEMYX_CONFIG_HEALTHCHECK=false
-                ;;
-            --mem=null|--mem=?*)
-                DEMYX_CONFIG_MEM=${3#*=}
-                ;;
-            --mem=)
-                demyx_die '"--mem" cannot be empty'
                 ;;
             --no-backup)
                 DEMYX_CONFIG_NO_BACKUP=1
@@ -116,6 +116,18 @@ demyx_config() {
                 ;;
             --ssl=false)
                 DEMYX_CONFIG_SSL=false
+                ;;
+            --wp-cpu=null|--wp-cpu=?*)
+                DEMYX_CONFIG_WP_CPU=${3#*=}
+                ;;
+            --wp-cpu=)
+                demyx_die '"--wp-cpu" cannot be empty'
+                ;;
+            --wp-mem=null|--wp-mem=?*)
+                DEMYX_CONFIG_WP_MEM=${3#*=}
+                ;;
+            --wp-mem=)
+                demyx_die '"--wp-mem" cannot be empty'
                 ;;
             --wp-update|--wp-update=true)
                 DEMYX_CONFIG_WP_UPDATE=true
@@ -370,17 +382,6 @@ demyx_config() {
 
                 demyx maldet "$DEMYX_APP_DOMAIN"
             fi
-            if [[ -n "$DEMYX_CONFIG_CPU" ]]; then
-                demyx_echo "Updating $DEMYX_APP_DOMAIN CPU to $DEMYX_CONFIG_CPU"
-
-                if [[ "$DEMYX_CONFIG_CPU" = null ]]; then
-                    demyx_execute sed -i "s/DEMYX_APP_CPU=.*/DEMYX_APP_CPU=/g" "$DEMYX_APP_PATH"/.env
-                else
-                    demyx_execute sed -i "s/DEMYX_APP_CPU=.*/DEMYX_APP_CPU=$DEMYX_CONFIG_CPU/g" "$DEMYX_APP_PATH"/.env
-                fi
-
-                demyx compose "$DEMYX_APP_DOMAIN" up -d
-            fi
             if [[ "$DEMYX_CONFIG_DEV" = true ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ "$DEMYX_APP_DEV" = true ]] && demyx_die 'Dev mode is already turned on'
@@ -593,6 +594,28 @@ demyx_config() {
                 
                 demyx_execute -v sed -i "s/DEMYX_APP_DEV=.*/DEMYX_APP_DEV=false/g" "$DEMYX_APP_PATH"/.env
             fi
+            if [[ -n "$DEMYX_CONFIG_DB_CPU" ]]; then
+                demyx_echo "[$DEMYX_APP_DOMAIN] Setting container's MEM to $DEMYX_CONFIG_DB_CPU"
+
+                if [[ "$DEMYX_CONFIG_DB_CPU" = null ]]; then
+                    demyx_execute sed -i "s/DEMYX_APP_DB_CPU=.*/DEMYX_APP_DB_CPU=/g" "$DEMYX_APP_PATH"/.env
+                else
+                    demyx_execute sed -i "s/DEMYX_APP_DB_CPU=.*/DEMYX_APP_DB_CPU=$DEMYX_CONFIG_DB_CPU/g" "$DEMYX_APP_PATH"/.env
+                fi
+
+                demyx compose "$DEMYX_APP_DOMAIN" up -d
+            fi
+            if [[ -n "$DEMYX_CONFIG_DB_MEM" ]]; then
+                demyx_echo "[$DEMYX_APP_DOMAIN] Setting container's MEM to $DEMYX_CONFIG_DB_MEM"
+
+                if [[ "$DEMYX_CONFIG_DB_MEM" = null ]]; then
+                    demyx_execute sed -i "s/DEMYX_APP_DB_MEM=.*/DEMYX_APP_DB_MEM=/g" "$DEMYX_APP_PATH"/.env
+                else
+                    demyx_execute sed -i "s/DEMYX_APP_DB_MEM=.*/DEMYX_APP_DB_MEM=$DEMYX_CONFIG_DB_MEM/g" "$DEMYX_APP_PATH"/.env
+                fi
+
+                demyx compose "$DEMYX_APP_DOMAIN" up -d
+            fi
             if [[ "$DEMYX_CONFIG_HEALTHCHECK" = true ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ "$DEMYX_APP_HEALTHCHECK" = true ]] && demyx_die 'Healthcheck is already turned on'
@@ -605,17 +628,6 @@ demyx_config() {
                 fi
                 demyx_echo 'Turning off healthcheck'
                 demyx_execute sed -i "s/DEMYX_APP_HEALTHCHECK=.*/DEMYX_APP_HEALTHCHECK=false/g" "$DEMYX_APP_PATH"/.env
-            fi
-            if [[ -n "$DEMYX_CONFIG_MEM" ]]; then
-                demyx_echo "Updating $DEMYX_APP_DOMAIN memory to $DEMYX_CONFIG_MEM"
-
-                if [[ "$DEMYX_CONFIG_MEM" = null ]]; then
-                    demyx_execute sed -i "s/DEMYX_APP_MEM=.*/DEMYX_APP_MEM=/g" "$DEMYX_APP_PATH"/.env
-                else
-                    demyx_execute sed -i "s/DEMYX_APP_MEM=.*/DEMYX_APP_MEM=$DEMYX_CONFIG_MEM/g" "$DEMYX_APP_PATH"/.env
-                fi
-
-                demyx compose "$DEMYX_APP_DOMAIN" up -d
             fi
             if [[ "$DEMYX_CONFIG_OPCACHE" = true ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
@@ -822,6 +834,28 @@ demyx_config() {
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" search-replace https://"$DEMYX_APP_DOMAIN" http://"$DEMYX_APP_DOMAIN"
 
                 demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
+            fi
+            if [[ -n "$DEMYX_CONFIG_WP_CPU" ]]; then
+                demyx_echo "[$DEMYX_APP_DOMAIN] Setting container's CPU to $DEMYX_CONFIG_WP_CPU"
+
+                if [[ "$DEMYX_CONFIG_WP_CPU" = null ]]; then
+                    demyx_execute sed -i "s/DEMYX_APP_WP_CPU=.*/DEMYX_APP_WP_CPU=/g" "$DEMYX_APP_PATH"/.env
+                else
+                    demyx_execute sed -i "s/DEMYX_APP_WP_CPU=.*/DEMYX_APP_WP_CPU=$DEMYX_CONFIG_WP_CPU/g" "$DEMYX_APP_PATH"/.env
+                fi
+
+                demyx compose "$DEMYX_APP_DOMAIN" up -d
+            fi
+            if [[ -n "$DEMYX_CONFIG_WP_MEM" ]]; then
+                demyx_echo "[$DEMYX_APP_DOMAIN] Setting container's CPU to $DEMYX_CONFIG_WP_MEM"
+
+                if [[ "$DEMYX_CONFIG_WP_MEM" = null ]]; then
+                    demyx_execute sed -i "s/DEMYX_APP_WP_MEM=.*/DEMYX_APP_WP_MEM=/g" "$DEMYX_APP_PATH"/.env
+                else
+                    demyx_execute sed -i "s/DEMYX_APP_WP_MEM=.*/DEMYX_APP_WP_MEM=$DEMYX_CONFIG_WP_MEM/g" "$DEMYX_APP_PATH"/.env
+                fi
+
+                demyx compose "$DEMYX_APP_DOMAIN" up -d
             fi
             if [[ "$DEMYX_CONFIG_WP_UPDATE" = true ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
