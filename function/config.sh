@@ -111,6 +111,12 @@ demyx_config() {
             --sftp=false)
                 DEMYX_CONFIG_SFTP=false
                 ;;
+            --sleep?*)
+                DEMYX_CONFIG_SLEEP=${3#*=}
+                ;;
+            --sleep=)
+                demyx_die '"--sleep" cannot be empty'
+                ;;
             --ssl|--ssl=true)
                 DEMYX_CONFIG_SSL=true
                 ;;
@@ -169,6 +175,10 @@ demyx_config() {
             if [[ -n "$DEMYX_CONFIG_RESTART" ]]; then
                 echo -e "\e[34m[INFO]\e[39m Restarting service for $i"
                 demyx config "$i" --restart="$DEMYX_CONFIG_RESTART"
+            fi
+            if [[ -n "$DEMYX_CONFIG_SLEEP" ]]; then
+                demyx_echo "Sleep for $DEMYX_CONFIG_SLEEP"
+                demyx_execute sleep "$DEMYX_CONFIG_SLEEP"
             fi
         done
     else

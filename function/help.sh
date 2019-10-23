@@ -45,6 +45,7 @@ demyx_help() {
         echo "                   --refresh        Regenerate config files and uploaded to container"
         echo "                   --restart        Restart NGINX/PHP services"
         echo "                   --sftp           Turns on/off SFTP container"
+        echo "                   --sleep          Set sleep when all loop is used"
         echo "                   --ssl            Turns on/off SSL"
         echo "                   --wp-cpu         Set the app's container CPU usage, --wp-cpu=null to remove cap"
         echo "                   --wp-mem         Set the app's container MEM usage, --wp-mem=null to remove cap"
