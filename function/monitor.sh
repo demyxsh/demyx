@@ -31,9 +31,6 @@ demyx_monitor() {
                         if [[ ! -f "$DEMYX_WP"/"$i"/.monitor_lock ]]; then
                             demyx_execute -v touch "$DEMYX_WP"/"$i"/.monitor_lock
                             demyx config "$i" --rate-limit=true
-                            #cd "$DEMYX_WP"/"$i" || exit
-                            #demyx_execute -v demyx compose "$i" up -d --scale wp_"$DEMYX_APP_ID"="$DEMYX_APP_MONITOR_SCALE" wp_"$DEMYX_APP_ID"
-                            #demyx_execute -v demyx compose "$i" up -d --scale db_"$DEMYX_APP_ID"="$DEMYX_APP_MONITOR_SCALE" db_"$DEMYX_APP_ID"
                             [[ -f "$DEMYX"/custom/callback.sh ]] && demyx_execute -v /bin/bash "$DEMYX"/custom/callback.sh "monitor-on" "$i" "$DEMYX_APP_MONITOR_WP_CHECK" "$DEMYX_APP_MONITOR_DB_CHECK"
                         fi
                     fi
@@ -47,9 +44,6 @@ demyx_monitor() {
                         if [[ -f "$DEMYX_WP"/"$i"/.monitor_lock ]]; then
                             demyx_execute -v rm "$DEMYX_WP"/"$i"/.monitor_lock
                             demyx config "$i" --rate-limit=false
-                            #cd "$DEMYX_WP"/"$i" || exit
-                            #demyx_execute -v demyx compose "$i" up -d --scale wp_"$DEMYX_APP_ID"=1 wp_"$DEMYX_APP_ID"
-                            #demyx_execute -v demyx compose "$i" up -d --scale db_"$DEMYX_APP_ID"=1 db_"$DEMYX_APP_ID"
                             [[ -f "$DEMYX"/custom/callback.sh ]] && demyx_execute -v /bin/bash "$DEMYX"/custom/callback.sh "monitor-off" "$i" "$DEMYX_APP_MONITOR_WP_CHECK" "$DEMYX_APP_MONITOR_DB_CHECK"
                         fi
                     fi
