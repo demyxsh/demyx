@@ -6,7 +6,7 @@
 demyx_compose() {
     demyx_app_config
 
-    [[ -z "$DEMYX_GET_APP" ]] && demyx_die --not-found
+    [[ -z "$DEMYX_GET_APP" && "$DEMYX_TARGET" != all ]] && demyx_die --not-found
 
     DEMYX_COMPOSE="$1"
 
