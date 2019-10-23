@@ -6,18 +6,18 @@
 demyx_compose() {
     demyx_app_config
 
-    [[ -z "$DEMYX_GET_APP" && "$DEMYX_TARGET" != all ]] && demyx_die --not-found
-
     DEMYX_COMPOSE="$1"
 
     if [[ "$DEMYX_TARGET" = all ]]; then
         shift
         cd "$DEMYX_WP" || exit
         for i in *
-        do 
+        do
+            [[ ! -d "$DEMYX_WP"/"$i" ]] && continue
             demyx compose "$i" "$@"
         done
     elif [[ "$DEMYX_APP_TYPE" = wp ]]; then
+        [[ ! -d "$DEMYX_WP"/"$DEMYX_APP_DOMAIN" ]] && demyx_die --not-found
         shift
         DEMYX_COMPOSE="$1"
         if [[ "$DEMYX_COMPOSE" = db ]]; then
@@ -72,6 +72,7 @@ demyx_compose() {
             demyx/docker-compose "$@"
         fi
     elif [[ -n "$DEMYX_GET_APP" ]]; then
+        [[ ! -d "$DEMYX_APP"/"$DEMYX_TARGET" ]] && demyx_die --not-found
         shift 1
         DEMYX_COMPOSE="$1"
         if [[ "$DEMYX_COMPOSE" = down ]]; then
@@ -113,6 +114,7 @@ demyx_compose() {
             demyx/docker-compose "$@"
         fi
     elif [[ -z "$DEMYX_GET_APP" ]]; then
+        [[ ! -d "$DEMYX_APP"/"$DEMYX_TARGET" ]] && demyx_die --not-found
         if [[ "$DEMYX_COMPOSE" = down ]]; then
             demyx_execute -v docker run -t --rm \
             -v /var/run/docker.sock:/var/run/docker.sock:ro \
