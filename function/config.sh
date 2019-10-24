@@ -495,7 +495,7 @@ demyx_config() {
                             -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-socket-https.service=${DEMYX_APP_COMPOSE_PROJECT}-socket" \
                             -l "traefik.http.middlewares.${DEMYX_APP_COMPOSE_PROJECT}-socket-prefix.stripprefix.prefixes=${DEMYX_CONFIG_DEV_BASE_PATH}/bs/browser-sync/socket.io/" \
                             -l "traefik.http.services.${DEMYX_APP_COMPOSE_PROJECT}-socket.loadbalancer.server.port=3000" \
-                            demyx/code-server:wp
+                            demyx/code-server:wp 2>/dev/null
                     fi
                 else
                     demyx config "$DEMYX_APP_DOMAIN" --healthcheck=false --bedrock=development
@@ -568,7 +568,7 @@ demyx_config() {
                         -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-json-https.service=${DEMYX_APP_COMPOSE_PROJECT}-webpack" \
                         -l "traefik.http.middlewares.${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-json-prefix.stripprefix.prefixes=${DEMYX_CONFIG_DEV_BASE_PATH}/bs/app/themes/[a-z0-9]/dist/[a-z.0-9].hot-update.json" \
                         -l "traefik.http.services.${DEMYX_APP_COMPOSE_PROJECT}-webpack.loadbalancer.server.port=3000" \
-                    demyx/code-server:sage
+                    demyx/code-server:sage 2>/dev/null
 
                     demyx compose "$DEMYX_APP_DOMAIN" wp stop
                     demyx compose "$DEMYX_APP_DOMAIN" wp rm -f
@@ -682,7 +682,7 @@ demyx_config() {
                     -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-pma-https.entrypoints=https" \
                     -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-pma-https.tls.certresolver=demyx" \
                     -l "traefik.http.middlewares.${DEMYX_APP_COMPOSE_PROJECT}-pma-prefix.stripprefix.prefixes=/wp-demyx/pma/" \
-                    phpmyadmin/phpmyadmin
+                    phpmyadmin/phpmyadmin 2>/dev/null
 
                 PRINT_TABLE="DEMYX^ PHPMYADMIN\n"
                 PRINT_TABLE+="URL^ $DEMYX_CONFIG_PMA_PROTO/wp-demyx/pma/\n"
@@ -789,7 +789,7 @@ demyx_config() {
                     --volumes-from "$DEMYX_APP_WP_CONTAINER" \
                     -v demyx_sftp:/home/www-data/.ssh \
                     -p "$DEMYX_SFTP_PORT":22 \
-                    demyx/ssh
+                    demyx/ssh 2>/dev/null
 
                 PRINT_TABLE="DEMYX^ SFTP\n"
                 PRINT_TABLE+="SFTP^ $DEMYX_APP_DOMAIN\n"
