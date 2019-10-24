@@ -696,7 +696,7 @@ demyx_config() {
                 fi
 
                 demyx_echo 'Turning on rate limiting'
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "sed -i 's|#limit_req|limit_req|g' /etc/nginx/nginx.conf"; \
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "sed -i 's|#limit_req|limit_req|g' /etc/nginx/nginx.conf; sed -i 's|#limit_conn|limit_conn|g' /etc/nginx/nginx.conf"; \
                     sed -i "s/DEMYX_APP_RATE_LIMIT=.*/DEMYX_APP_RATE_LIMIT=true/g" "$DEMYX_APP_PATH"/.env
 
                 demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
