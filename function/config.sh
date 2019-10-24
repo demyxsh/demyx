@@ -450,6 +450,8 @@ demyx_config() {
                             --name "$DEMYX_APP_WP_CONTAINER" \
                             --net demyx \
                             --hostname "$DEMYX_APP_COMPOSE_PROJECT" \
+                            --cpus=.50 \
+                            --memory=128m \
                             -v wp_"$DEMYX_APP_ID":/var/www/html \
                             -v demyx_cs:/home/www-data \
                             -e PASSWORD="$MARIADB_ROOT_PASSWORD" \
@@ -503,6 +505,8 @@ demyx_config() {
                         --name "$DEMYX_APP_COMPOSE_PROJECT"_cs \
                         --net demyx \
                         --hostname "$DEMYX_APP_COMPOSE_PROJECT" \
+                        --cpus=.50 \
+                        --memory=128m \
                         -v wp_${DEMYX_APP_ID}:/var/www/html \
                         -v demyx_cs:/home/www-data \
                         -e PASSWORD="$MARIADB_ROOT_PASSWORD" \
@@ -667,6 +671,8 @@ demyx_config() {
                 demyx_execute docker run -d --rm \
                     --name "$DEMYX_APP_COMPOSE_PROJECT"_pma \
                     --network demyx \
+                    --cpus="$DEMYX_CPU" \
+                    --memory="$DEMYX_MEM" \
                     -e PMA_HOST=db_"$DEMYX_APP_ID" \
                     -e MYSQL_ROOT_PASSWORD="$MARIADB_ROOT_PASSWORD" \
                     -e PMA_ABSOLUTE_URI=${DEMYX_CONFIG_PMA_PROTO}/wp-demyx/pma/ \
@@ -777,9 +783,11 @@ demyx_config() {
                 DEMYX_SFTP_PORT=$(demyx_open_port)
                 demyx_execute docker run -d --rm \
                     --name "$DEMYX_APP_COMPOSE_PROJECT"_sftp \
-                    -v demyx_sftp:/home/www-data/.ssh \
-                    --volumes-from "$DEMYX_APP_WP_CONTAINER" \
+                    --cpus="$DEMYX_CPU" \
+                    --memory="$DEMYX_MEM" \
                     --workdir /var/www/html \
+                    --volumes-from "$DEMYX_APP_WP_CONTAINER" \
+                    -v demyx_sftp:/home/www-data/.ssh \
                     -p "$DEMYX_SFTP_PORT":22 \
                     demyx/ssh
 
