@@ -60,6 +60,18 @@ demyx_config() {
             --dev=false)
                 DEMYX_CONFIG_DEV=false
                 ;;
+            --dev-cpu=null|--dev-cpu=?*)
+                DEMYX_CONFIG_DEV_CPU=${3#*=}
+                ;;
+            --dev-cpu=)
+                demyx_die '"--dev-cpu" cannot be empty'
+                ;;
+            --dev-mem=null|--dev-mem=?*)
+                DEMYX_CONFIG_DEV_MEM=${3#*=}
+                ;;
+            --dev-mem=)
+                demyx_die '"--dev-mem" cannot be empty'
+                ;;
             --files=?*)
                 DEMYX_CONFIG_FILES=${3#*=}
                 ;;
@@ -396,6 +408,24 @@ demyx_config() {
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ "$DEMYX_APP_DEV" = true ]] && demyx_die 'Dev mode is already turned on'
                 fi
+
+                if [[ "$DEMYX_CONFIG_DEV_CPU" = null ]]; then
+                    DEMYX_CONFIG_DEV_RESOURCES+=" "
+                elif [[ -z "$DEMYX_CONFIG_DEV_CPU" ]]; then
+                    DEMYX_CONFIG_DEV_RESOURCES+="--cpus=.5 "
+                else
+                    DEMYX_CONFIG_DEV_RESOURCES+="--cpus=$DEMYX_CONFIG_DEV_CPU "
+                fi
+
+                if [[ "$DEMYX_CONFIG_DEV_MEM" = null ]]; then
+                    DEMYX_CONFIG_DEV_RESOURCES+=" "
+                elif [[ -z "$DEMYX_CONFIG_DEV_MEM" ]]; then
+                    DEMYX_CONFIG_DEV_RESOURCES+="--memory=128m"
+                else
+                    DEMYX_CONFIG_DEV_RESOURCES+="--memory=$DEMYX_CONFIG_DEV_MEM"
+                fi
+
+                DEMYX_CONFIG_DEV_BASE_PATH=/wp-demyx
  
                 if [[ "$DEMYX_APP_SSL" = true ]]; then
                     DEMYX_CONFIG_DEV_PROTO="https://$DEMYX_APP_DOMAIN"
@@ -403,7 +433,7 @@ demyx_config() {
                     DEMYX_CONFIG_DEV_PROTO="http://$DEMYX_APP_DOMAIN"
                 fi
 
-                DEMYX_CONFIG_DEV_BASE_PATH=/wp-demyx
+                demyx config "$DEMYX_APP_DOMAIN" --healthcheck=false
 
                 if [[ "$DEMYX_APP_WP_IMAGE" = demyx/nginx-php-wordpress ]]; then
                     source "$DEMYX_STACK"/.env
@@ -417,6 +447,9 @@ demyx_config() {
                     else
                         DEMYX_BS_FILES=
                     fi
+
+                    demyx compose "$DEMYX_APP_DOMAIN" wp stop
+                    demyx compose "$DEMYX_APP_DOMAIN" wp rm -f
 
                     demyx_echo 'Creating code-server'
 
@@ -443,15 +476,11 @@ demyx_config() {
                             -l "traefik.socket.port=3000" \
                             demyx/code-server:wp
                     else
-                        demyx compose "$DEMYX_APP_DOMAIN" wp stop
-                        demyx compose "$DEMYX_APP_DOMAIN" wp rm -f
-
                         demyx_execute docker run -dit --rm \
                             --name "$DEMYX_APP_WP_CONTAINER" \
                             --net demyx \
                             --hostname "$DEMYX_APP_COMPOSE_PROJECT" \
-                            --cpus=.50 \
-                            --memory=128m \
+                            $DEMYX_CONFIG_DEV_RESOURCES \
                             -v wp_"$DEMYX_APP_ID":/var/www/html \
                             -v demyx_cs:/home/www-data \
                             -e PASSWORD="$MARIADB_ROOT_PASSWORD" \
@@ -498,15 +527,14 @@ demyx_config() {
                             demyx/code-server:wp 2>/dev/null
                     fi
                 else
-                    demyx config "$DEMYX_APP_DOMAIN" --healthcheck=false --bedrock=development
+                    demyx config "$DEMYX_APP_DOMAIN" --bedrock=development
                     
                     demyx_echo 'Creating code-server'
                     demyx_execute docker run -dit --rm \
-                        --name "$DEMYX_APP_COMPOSE_PROJECT"_cs \
+                        --name "$DEMYX_APP_WP_CONTAINER" \
                         --net demyx \
                         --hostname "$DEMYX_APP_COMPOSE_PROJECT" \
-                        --cpus=.50 \
-                        --memory=128m \
+                        $DEMYX_CONFIG_DEV_RESOURCES \
                         -v wp_${DEMYX_APP_ID}:/var/www/html \
                         -v demyx_cs:/home/www-data \
                         -e PASSWORD="$MARIADB_ROOT_PASSWORD" \
@@ -586,19 +614,16 @@ demyx_config() {
                     [[ "$DEMYX_APP_DEV" = false ]] && demyx_die 'Dev mode is already turned off'
                 fi
 
-                if [[ "$DEMYX_APP_WP_IMAGE" = demyx/nginx-php-wordpress ]]; then
-                    demyx_echo 'Stopping coder-server'
-                    demyx_execute docker stop "$DEMYX_APP_WP_CONTAINER"
-
-                    demyx compose "$DEMYX_APP_DOMAIN" up -d
-                else
-                    demyx_echo 'Stopping coder-server'
-                    demyx_execute docker stop "$DEMYX_APP_COMPOSE_PROJECT"_cs
-                    
-                    demyx compose "$DEMYX_APP_DOMAIN" up -d
-                    demyx config "$DEMYX_APP_DOMAIN" --healthcheck=true --bedrock=production
+                if [[ "$DEMYX_APP_WP_IMAGE" = demyx/nginx-php-wordpress:bedrock ]]; then
+                    demyx config "$DEMYX_APP_DOMAIN" --bedrock=production
                 fi
 
+                demyx_echo 'Stopping coder-server'
+                demyx_execute docker stop "$DEMYX_APP_WP_CONTAINER"
+
+                demyx compose "$DEMYX_APP_DOMAIN" up -d
+
+                demyx config "$DEMYX_APP_DOMAIN" --healthcheck
                 demyx_execute -v sed -i "s/DEMYX_APP_DEV=.*/DEMYX_APP_DEV=false/g" "$DEMYX_APP_PATH"/.env
             fi
             if [[ -n "$DEMYX_CONFIG_DB_CPU" ]]; then
