@@ -618,7 +618,7 @@ demyx_config() {
                     demyx config "$DEMYX_APP_DOMAIN" --bedrock=production
                 fi
 
-                demyx_echo 'Stopping coder-server'
+                demyx_echo 'Stopping code-server'
                 demyx_execute docker stop "$DEMYX_APP_WP_CONTAINER"
 
                 demyx compose "$DEMYX_APP_DOMAIN" up -d
