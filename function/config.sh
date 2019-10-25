@@ -425,7 +425,7 @@ demyx_config() {
                     DEMYX_CONFIG_DEV_RESOURCES+="--memory=$DEMYX_CONFIG_DEV_MEM"
                 fi
 
-                DEMYX_CONFIG_DEV_BASE_PATH=/wp-demyx
+                DEMYX_CONFIG_DEV_BASE_PATH=/demyx
  
                 if [[ "$DEMYX_APP_SSL" = true ]]; then
                     DEMYX_CONFIG_DEV_PROTO="https://$DEMYX_APP_DOMAIN"
@@ -468,9 +468,9 @@ demyx_config() {
                             -e DEMYX_APP_WP_CONTAINER="$DEMYX_APP_WP_CONTAINER" \
                             -e DEMYX_BS_FILES="$DEMYX_BS_FILES" \
                             -l "traefik.enable=true" \
-                            -l "traefik.coder.frontend.rule=Host:${DEMYX_APP_DOMAIN}; PathPrefixStrip: /wp-demyx/cs/" \
+                            -l "traefik.coder.frontend.rule=Host:${DEMYX_APP_DOMAIN}; PathPrefixStrip: /demyx/cs/" \
                             -l "traefik.coder.port=8080" \
-                            -l "traefik.bs.frontend.rule=Host:${DEMYX_APP_DOMAIN}; PathPrefixStrip: /wp-demyx/bs/" \
+                            -l "traefik.bs.frontend.rule=Host:${DEMYX_APP_DOMAIN}; PathPrefixStrip: /demyx/bs/" \
                             -l "traefik.bs.port=3000" \
                             -l "traefik.socket.frontend.rule=Host:${DEMYX_APP_DOMAIN}; PathPrefix: /browser-sync/socket.io/" \
                             -l "traefik.socket.port=3000" \
@@ -700,17 +700,17 @@ demyx_config() {
                     --memory="$DEMYX_MEM" \
                     -e PMA_HOST=db_"$DEMYX_APP_ID" \
                     -e MYSQL_ROOT_PASSWORD="$MARIADB_ROOT_PASSWORD" \
-                    -e PMA_ABSOLUTE_URI=${DEMYX_CONFIG_PMA_PROTO}/wp-demyx/pma/ \
+                    -e PMA_ABSOLUTE_URI=${DEMYX_CONFIG_PMA_PROTO}/demyx/pma/ \
                     -l "traefik.enable=true" \
-                    -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-pma-https.rule=(Host(\`${DEMYX_APP_DOMAIN}\`) && PathPrefix(\`/wp-demyx/pma/\`))" \
+                    -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-pma-https.rule=(Host(\`${DEMYX_APP_DOMAIN}\`) && PathPrefix(\`/demyx/pma/\`))" \
                     -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-pma-https.middlewares=${DEMYX_APP_COMPOSE_PROJECT}-pma-prefix" \
                     -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-pma-https.entrypoints=https" \
                     -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-pma-https.tls.certresolver=demyx" \
-                    -l "traefik.http.middlewares.${DEMYX_APP_COMPOSE_PROJECT}-pma-prefix.stripprefix.prefixes=/wp-demyx/pma/" \
+                    -l "traefik.http.middlewares.${DEMYX_APP_COMPOSE_PROJECT}-pma-prefix.stripprefix.prefixes=/demyx/pma/" \
                     phpmyadmin/phpmyadmin 2>/dev/null
 
                 PRINT_TABLE="DEMYX^ PHPMYADMIN\n"
-                PRINT_TABLE+="URL^ $DEMYX_CONFIG_PMA_PROTO/wp-demyx/pma/\n"
+                PRINT_TABLE+="URL^ $DEMYX_CONFIG_PMA_PROTO/demyx/pma/\n"
                 PRINT_TABLE+="USERNAME^ $WORDPRESS_DB_USER\n"
                 PRINT_TABLE+="PASSWORD^ $WORDPRESS_DB_PASSWORD\n"
                 demyx_execute -v demyx_table "$PRINT_TABLE"
