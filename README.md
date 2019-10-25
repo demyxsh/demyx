@@ -23,16 +23,14 @@ Demyx is a Docker image that automates WordPress installations. Traefik for reve
 
 ### WordPress Features
 * SSL turned on by default
-* Site-wide request rate limiting
 * Basic auth site-wide or wp-login.php
 * Secure NGINX/PHP configurations
 * Backup/Restore/Clone
 * CDN provided by Staticaly
 * FastCGI cache with nginx-helper plugin by rtCamp (WooCommerce ready)
-* Development mode includes the tools code-server, BrowserSync, and Demyx BrowserSync plugin
-* Auto scale containers with callback (see the custom folder)
+* Auto activate rate requests and limit connections when CPU is high
 * Custom healthchecks
-* WP-CLI
+* Development mode includes the tools code-server, BrowserSync, and demyx_helper plugin
 
 ### Demyx Image
 Since the image needs docker.sock to be mounted and the Docker binary is included, I've installed sudo to only allow the demyx user to execute only one script as root. The image is put in production mode by default, meaning that /demyx directory and all it's folders and files will be set to read-only mode. This prevents the non-privelege user to modify the script and do malicious things.
