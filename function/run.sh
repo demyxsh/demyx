@@ -225,6 +225,9 @@ demyx_run() {
         if [[ -n "$DEMYX_RUN_BEDROCK" ]]; then
             demyx_echo 'Initializing Bedrock'
             demyx_execute demyx_bedrock_ready
+        else
+            demyx_echo 'Initializing WordPress'
+            demyx_execute demyx_wordpress_ready
         fi
 
         if [[ -n "$DEMYX_RUN_CLONE" ]]; then

@@ -153,6 +153,12 @@ demyx_bedrock_ready() {
         sleep 1
     done
 }
+demyx_wordpress_ready() {
+    until docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "ls | grep wp-admin"
+    do
+        sleep 1
+    done
+}
 demyx_generate_password() {
     DEMYX_PASSWORD_1=$(tr -dc "[:xdigit:]" < /dev/urandom | head -c $(( ( RANDOM % 10 )  + 4 )) | sed -e 's/\r//g')
     DEMYX_PASSWORD_2=$(tr -dc "[:xdigit:]" < /dev/urandom | head -c $(( ( RANDOM % 10 )  + 4 )) | sed -e 's/\r//g')
