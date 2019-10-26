@@ -60,6 +60,9 @@ while :; do
         --ssh=?*)
             DEMYX_CHROOT_SSH=${1#*=}
             ;;
+        --ssh=)
+            printf '\e[31m[CRITICAL]\e[39m "--ssh" cannot be empty\n'
+            exit 1
         --)
             shift
             break
