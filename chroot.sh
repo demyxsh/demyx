@@ -7,6 +7,8 @@ DEMYX_CHROOT_CONTAINER_CHECK=$(docker ps -a | awk '{print $NF}' | grep -w demyx)
 DEMYX_CHROOT_HOST=$(hostname)
 DEMYX_CHROOT_SSH=2222
 DEMYX_CHROOT_API=false
+DEMYX_CHROOT_CPU=.25
+DEMYX_CHROOT_MEM=64m
 
 while :; do
     case "$1" in
@@ -32,8 +34,22 @@ while :; do
         update)
             DEMYX_CHROOT=update
             ;;
+        --cpu=null|--cpu=?*)
+            DEMYX_CHROOT_CPU=${1#*=}
+            ;;
+        --cpu=)
+            printf '\e[31m[CRITICAL]\e[39m "--cpu" cannot be empty\n'
+            exit 1
+            ;;
         --dev)
             DEMYX_CHROOT_MODE=development
+            ;;
+        --mem=null|--mem=?*)
+            DEMYX_CHROOT_MEM=${1#*=}
+            ;;
+        --mem=)
+            printf '\e[31m[CRITICAL]\e[39m "--mem" cannot be empty\n'
+            exit 1
             ;;
         --nc)
             DEMYX_CHROOT_NC=1
@@ -80,9 +96,22 @@ demyx_run() {
     DEMYX_CHROOT_API_DOMAIN="$(echo ${DEMYX_CHROOT_API_GET_ENV[1]} | awk -F '[=]' '{print $2}')"
     DEMYX_CHROOT_API_AUTH="$(echo ${DEMYX_CHROOT_API_GET_ENV[2]} | awk -F '[=]' '{print $2}')"
 
+    if [[ "$DEMYX_CHROOT_CPU" = null ]]; then
+        DEMYX_CHROOT_RESOURCES+=" "
+    else
+        DEMYX_CHROOT_RESOURCES+="--cpus=$DEMYX_CHROOT_CPU "
+    fi
+
+    if [[ "$DEMYX_CHROOT_MEM" = null ]]; then
+        DEMYX_CHROOT_RESOURCES+=" "
+    else
+        DEMYX_CHROOT_RESOURCES+="--memory=$DEMYX_CHROOT_MEM "
+    fi
+
     if [[ -n "$DEMYX_CHROOT_API_DOMAIN" ]]; then
         docker run -dit \
         --name demyx \
+        $DEMYX_CHROOT_RESOURCES \
         --restart unless-stopped \
         --hostname "$DEMYX_CHROOT_HOST" \
         --network demyx \
@@ -103,10 +132,11 @@ demyx_run() {
         -l "traefik.http.services.demyx.loadbalancer.server.port=8080" \
         -l "traefik.http.routers.demyx.middlewares=demyx-auth" \
         -l "traefik.http.middlewares.demyx-auth.basicauth.users=${DEMYX_CHROOT_API_AUTH}" \
-        demyx/demyx
+        demyx/demyx 2>/dev/null
     else
         docker run -dit \
         --name demyx \
+        $DEMYX_CHROOT_RESOURCES \
         --restart unless-stopped \
         --hostname "$DEMYX_CHROOT_HOST" \
         --network demyx \
@@ -119,7 +149,7 @@ demyx_run() {
         -v demyx_user:/home/demyx \
         -v demyx_log:/var/log/demyx \
         -p "$DEMYX_CHROOT_SSH":22 \
-        demyx/demyx
+        demyx/demyx 2>/dev/null
     fi
 }
 
@@ -134,7 +164,9 @@ elif [[ "$DEMYX_CHROOT" = help ]]; then
     echo "      restart         Stops, removes, and starts demyx container"
     echo "      tty             Execute root commands to demyx container from host"
     echo "      update          Update chroot.sh from GitHub"
+    echo "      --cpu           Set container CPU usage, --cpu=null to remove cap"
     echo "      --dev           Puts demyx container into development mode"
+    echo "      --mem           Set container MEM usage, --mem=null to remove cap"
     echo "      --nc            Starts demyx containr but prevent chrooting into container"
     echo "      --prod          Puts demyx container into production mode"
     echo "      --ssh           Override ssh port"
