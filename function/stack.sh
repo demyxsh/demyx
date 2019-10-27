@@ -1,7 +1,7 @@
 # Demyx
 # https://demyx.sh
 # 
-# demyx stack <docker-compose args>
+# demyx stack <args>
 #
 demyx_stack() {
     while :; do
@@ -43,7 +43,7 @@ demyx_stack() {
                 demyx_die '"--cf-api-key" cannot be empty'
                 ;;
             --cpu=null|--cpu=?*)
-                DEMYX_STACK_CPU=${3#*=}
+                DEMYX_STACK_CPU=${2#*=}
                 ;;
             --cpu=)
                 demyx_die '"--cpu" cannot be empty'
@@ -64,7 +64,7 @@ demyx_stack() {
                 demyx_die '"--ignore" cannot be empty'
                 ;;
             --mem=null|--mem=?*)
-                DEMYX_STACK_MEM=${3#*=}
+                DEMYX_STACK_MEM=${2#*=}
                 ;;
             --mem=)
                 demyx_die '"--mem" cannot be empty'
@@ -189,65 +189,71 @@ demyx_stack() {
         else
             demyx_die 'The stack is already updated.'
         fi
-    elif [[ "$DEMYX_STACK_AUTO_UPDATE" = true ]]; then
-        demyx_echo 'Turn on stack auto update'
-        demyx_execute sed -i 's/DEMYX_STACK_AUTO_UPDATE=.*/DEMYX_STACK_AUTO_UPDATE=true/g' "$DEMYX_STACK"/.env
-    elif [[ "$DEMYX_STACK_AUTO_UPDATE" = false ]]; then
-        demyx_echo 'Turn off stack auto update'
-        demyx_execute sed -i 's/DEMYX_STACK_AUTO_UPDATE=.*/DEMYX_STACK_AUTO_UPDATE=false/g' "$DEMYX_STACK"/.env
-    elif [[ "$DEMYX_STACK_CLOUDFLARE" = true ]]; then
-        [[ -z "$DEMYX_STACK_CLOUDFLARE_API_EMAIL" ]] && demyx_die '--cf-api-email is missing'
-        [[ -z "$DEMYX_STACK_CLOUDFLARE_API_KEY" ]] && demyx_die '--cf-api-key is missing'
-
-        source "$DEMYX_FUNCTION"/env.sh
-        source "$DEMYX_FUNCTION"/yml.sh
-
-        demyx_echo 'Enabling Cloudflare as the certificate resolver'
-        demyx_execute demyx_stack_v2_env; \
-            sed -i "s|DEMYX_STACK_CLOUDFLARE=.*|DEMYX_STACK_CLOUDFLARE=true|g" "$DEMYX_STACK"/.env; \
-            sed -i "s|DEMYX_STACK_CLOUDFLARE_EMAIL=.*|DEMYX_STACK_CLOUDFLARE_EMAIL=$DEMYX_STACK_CLOUDFLARE_API_EMAIL|g" "$DEMYX_STACK"/.env; \
-            sed -i "s|DEMYX_STACK_CLOUDFLARE_KEY=.*|DEMYX_STACK_CLOUDFLARE_KEY=$DEMYX_STACK_CLOUDFLARE_API_KEY|g" "$DEMYX_STACK"/.env; \
-            demyx_stack_v2_yml
-
-        demyx compose stack up -d
-    elif [[ "$DEMYX_STACK_CLOUDFLARE" = false ]]; then
-        demyx_echo 'Disabling Cloudflare as the certificate resolver, switching back to HTTP'
-        demyx_execute sed -i "s|DEMYX_STACK_CLOUDFLARE=.*|DEMYX_STACK_CLOUDFLARE=false|g" "$DEMYX_STACK"/.env
-
-        demyx compose stack up -d
-    elif [[ -n "$DEMYX_STACK_CPU" ]]; then
-        demyx_echo "Updating stack CPU to $DEMYX_STACK_CPU"
-        if [[ "$DEMYX_STACK_CPU" = null ]]; then
-            demyx_execute sed -i "s/DEMYX_STACK_CPU=.*/DEMYX_STACK_CPU=/g" "$DEMYX_STACK"/.env
-        else
-            demyx_execute sed -i "s/DEMYX_STACK_CPU=.*/DEMYX_STACK_CPU=$DEMYX_STACK_CPU/g" "$DEMYX_STACK"/.env
-        fi
-    elif [[ "$DEMYX_STACK_HEALTHCHECK" = true ]]; then
-        demyx_echo 'Turning on stack healthcheck'
-        demyx_execute sed -i 's/DEMYX_STACK_HEALTHCHECK=.*/DEMYX_STACK_HEALTHCHECK=true/g' "$DEMYX_STACK"/.env
-    elif [[ "$DEMYX_STACK_HEALTHCHECK" = false ]]; then
-        demyx_echo 'Turning off stack healthcheck'
-        demyx_execute sed -i 's/DEMYX_STACK_HEALTHCHECK=.*/DEMYX_STACK_HEALTHCHECK=false/g' "$DEMYX_STACK"/.env
-    elif [[ -n "$DEMYX_STACK_MEM" ]]; then
-        demyx_echo "Updating stack MEM to $DEMYX_STACK_MEM"
-        if [[ "$DEMYX_STACK_MEM" = null ]]; then
-            demyx_execute sed -i "s/DEMYX_STACK_MEM=.*/DEMYX_STACK_MEM=/g" "$DEMYX_STACK"/.env
-        else
-            demyx_execute sed -i "s/DEMYX_STACK_MEM=.*/DEMYX_STACK_MEM=$DEMYX_STACK_MEM/g" "$DEMYX_STACK"/.env
-        fi
-    elif [[ "$DEMYX_STACK_MONITOR" = true ]]; then
-        demyx_echo 'Turning on stack monitor'
-        demyx_execute sed -i 's/DEMYX_STACK_MONITOR=.*/DEMYX_STACK_MONITOR=true/g' "$DEMYX_STACK"/.env
-    elif [[ "$DEMYX_STACK_MONITOR" = false ]]; then
-        demyx_echo 'Turning off stack monitor'
-        demyx_execute sed -i 's/DEMYX_STACK_MONITOR=.*/DEMYX_STACK_MONITOR=false/g' "$DEMYX_STACK"/.env
-    elif [[ "$DEMYX_STACK_TELEMETRY" = true ]]; then
-        demyx_echo 'Turning on stack telemetry'
-        demyx_execute sed -i 's/DEMYX_STACK_TELEMETRY=.*/DEMYX_STACK_TELEMETRY=true/g' "$DEMYX_STACK"/.env
-    elif [[ "$DEMYX_STACK_TELEMETRY" = false ]]; then
-        demyx_echo 'Turning off stack telemetry'
-        demyx_execute sed -i 's/DEMYX_STACK_TELEMETRY=.*/DEMYX_STACK_TELEMETRY=false/g' "$DEMYX_STACK"/.env
     else
-        demyx_die --command-not-found
+        if [[ "$DEMYX_STACK_AUTO_UPDATE" = true ]]; then
+            demyx_echo 'Turn on stack auto update'
+            demyx_execute sed -i 's/DEMYX_STACK_AUTO_UPDATE=.*/DEMYX_STACK_AUTO_UPDATE=true/g' "$DEMYX_STACK"/.env
+        elif [[ "$DEMYX_STACK_AUTO_UPDATE" = false ]]; then
+            demyx_echo 'Turn off stack auto update'
+            demyx_execute sed -i 's/DEMYX_STACK_AUTO_UPDATE=.*/DEMYX_STACK_AUTO_UPDATE=false/g' "$DEMYX_STACK"/.env
+        fi
+        if [[ "$DEMYX_STACK_CLOUDFLARE" = true ]]; then
+            [[ -z "$DEMYX_STACK_CLOUDFLARE_API_EMAIL" ]] && demyx_die '--cf-api-email is missing'
+            [[ -z "$DEMYX_STACK_CLOUDFLARE_API_KEY" ]] && demyx_die '--cf-api-key is missing'
+
+            source "$DEMYX_FUNCTION"/env.sh
+            source "$DEMYX_FUNCTION"/yml.sh
+
+            demyx_echo 'Enabling Cloudflare as the certificate resolver'
+            demyx_execute demyx_stack_v2_env; \
+                sed -i "s|DEMYX_STACK_CLOUDFLARE=.*|DEMYX_STACK_CLOUDFLARE=true|g" "$DEMYX_STACK"/.env; \
+                sed -i "s|DEMYX_STACK_CLOUDFLARE_EMAIL=.*|DEMYX_STACK_CLOUDFLARE_EMAIL=$DEMYX_STACK_CLOUDFLARE_API_EMAIL|g" "$DEMYX_STACK"/.env; \
+                sed -i "s|DEMYX_STACK_CLOUDFLARE_KEY=.*|DEMYX_STACK_CLOUDFLARE_KEY=$DEMYX_STACK_CLOUDFLARE_API_KEY|g" "$DEMYX_STACK"/.env; \
+                demyx_stack_v2_yml
+
+            demyx compose stack up -d
+        elif [[ "$DEMYX_STACK_CLOUDFLARE" = false ]]; then
+            demyx_echo 'Disabling Cloudflare as the certificate resolver, switching back to HTTP'
+            demyx_execute sed -i "s|DEMYX_STACK_CLOUDFLARE=.*|DEMYX_STACK_CLOUDFLARE=false|g" "$DEMYX_STACK"/.env
+
+            demyx compose stack up -d
+        fi
+        if [[ -n "$DEMYX_STACK_CPU" ]]; then
+            demyx_echo "Updating stack CPU to $DEMYX_STACK_CPU"
+            if [[ "$DEMYX_STACK_CPU" = null ]]; then
+                demyx_execute sed -i "s/DEMYX_STACK_CPU=.*/DEMYX_STACK_CPU=/g" "$DEMYX_STACK"/.env
+            else
+                demyx_execute sed -i "s/DEMYX_STACK_CPU=.*/DEMYX_STACK_CPU=$DEMYX_STACK_CPU/g" "$DEMYX_STACK"/.env
+            fi
+        fi
+        if [[ "$DEMYX_STACK_HEALTHCHECK" = true ]]; then
+            demyx_echo 'Turning on stack healthcheck'
+            demyx_execute sed -i 's/DEMYX_STACK_HEALTHCHECK=.*/DEMYX_STACK_HEALTHCHECK=true/g' "$DEMYX_STACK"/.env
+        elif [[ "$DEMYX_STACK_HEALTHCHECK" = false ]]; then
+            demyx_echo 'Turning off stack healthcheck'
+            demyx_execute sed -i 's/DEMYX_STACK_HEALTHCHECK=.*/DEMYX_STACK_HEALTHCHECK=false/g' "$DEMYX_STACK"/.env
+        fi
+        if [[ -n "$DEMYX_STACK_MEM" ]]; then
+            demyx_echo "Updating stack MEM to $DEMYX_STACK_MEM"
+            if [[ "$DEMYX_STACK_MEM" = null ]]; then
+                demyx_execute sed -i "s/DEMYX_STACK_MEM=.*/DEMYX_STACK_MEM=/g" "$DEMYX_STACK"/.env
+            else
+                demyx_execute sed -i "s/DEMYX_STACK_MEM=.*/DEMYX_STACK_MEM=$DEMYX_STACK_MEM/g" "$DEMYX_STACK"/.env
+            fi
+        fi
+        if [[ "$DEMYX_STACK_MONITOR" = true ]]; then
+            demyx_echo 'Turning on stack monitor'
+            demyx_execute sed -i 's/DEMYX_STACK_MONITOR=.*/DEMYX_STACK_MONITOR=true/g' "$DEMYX_STACK"/.env
+        elif [[ "$DEMYX_STACK_MONITOR" = false ]]; then
+            demyx_echo 'Turning off stack monitor'
+            demyx_execute sed -i 's/DEMYX_STACK_MONITOR=.*/DEMYX_STACK_MONITOR=false/g' "$DEMYX_STACK"/.env
+        fi
+        if [[ "$DEMYX_STACK_TELEMETRY" = true ]]; then
+            demyx_echo 'Turning on stack telemetry'
+            demyx_execute sed -i 's/DEMYX_STACK_TELEMETRY=.*/DEMYX_STACK_TELEMETRY=true/g' "$DEMYX_STACK"/.env
+        elif [[ "$DEMYX_STACK_TELEMETRY" = false ]]; then
+            demyx_echo 'Turning off stack telemetry'
+            demyx_execute sed -i 's/DEMYX_STACK_TELEMETRY=.*/DEMYX_STACK_TELEMETRY=false/g' "$DEMYX_STACK"/.env
+        fi
     fi
 }
