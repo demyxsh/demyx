@@ -185,6 +185,11 @@ demyx_config() {
                 [[ -n "$DEMYX_CONFIG_WP_MEM" ]] && DEMYX_CONFIG_WP_MEM_FLAG="--wp-mem=$DEMYX_CONFIG_WP_MEM"
                 demyx config "$i" "$DEMYX_CONFIG_WP_CPU_FLAG" "$DEMYX_CONFIG_WP_MEM_FLAG"
             fi
+            if [[ -n "$DEMYX_CONFIG_DB_CPU" || -n "$DEMYX_CONFIG_DB_MEM" ]]; then
+                [[ -n "$DEMYX_CONFIG_DB_CPU" ]] && DEMYX_CONFIG_DB_CPU_FLAG="--db-cpu=$DEMYX_CONFIG_DB_CPU"
+                [[ -n "$DEMYX_CONFIG_DB_MEM" ]] && DEMYX_CONFIG_DB_MEM_FLAG="--db-mem=$DEMYX_CONFIG_DB_MEM"
+                demyx config "$i" "$DEMYX_CONFIG_DB_CPU_FLAG" "$DEMYX_CONFIG_DB_MEM_FLAG"
+            fi
             if [[ -n "$DEMYX_CONFIG_REFRESH" ]]; then
                 [[ -n "$DEMYX_CONFIG_NO_BACKUP" ]] && DEMYX_CONFIG_NO_BACKUP="--no-backup"
                 [[ -n "$DEMYX_CONFIG_SKIP_CHECKS" ]] && DEMYX_CONFIG_SKIP_CHECKS="--skip-checks"
@@ -633,7 +638,7 @@ demyx_config() {
                 demyx_execute -v sed -i "s/DEMYX_APP_DEV=.*/DEMYX_APP_DEV=false/g" "$DEMYX_APP_PATH"/.env
             fi
             if [[ -n "$DEMYX_CONFIG_DB_CPU" ]]; then
-                demyx_echo "Setting ${DEMYX_APP_DB_CONTAINER}'s MEM to $DEMYX_CONFIG_DB_CPU"
+                demyx_echo "Setting ${DEMYX_APP_DB_CONTAINER}'s CPU to $DEMYX_CONFIG_DB_CPU"
 
                 if [[ "$DEMYX_CONFIG_DB_CPU" = null ]]; then
                     demyx_execute sed -i "s/DEMYX_APP_DB_CPU=.*/DEMYX_APP_DB_CPU=/g" "$DEMYX_APP_PATH"/.env
@@ -642,7 +647,7 @@ demyx_config() {
                 fi
             fi
             if [[ -n "$DEMYX_CONFIG_DB_MEM" ]]; then
-                demyx_echo "Setting ${DEMYX_APP_DB_CONTAINER}'s MEM to $DEMYX_CONFIG_DB_CPU"
+                demyx_echo "Setting ${DEMYX_APP_DB_CONTAINER}'s MEM to $DEMYX_CONFIG_DB_MEM"
 
                 if [[ "$DEMYX_CONFIG_DB_MEM" = null ]]; then
                     demyx_execute sed -i "s/DEMYX_APP_DB_MEM=.*/DEMYX_APP_DB_MEM=/g" "$DEMYX_APP_PATH"/.env
