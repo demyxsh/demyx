@@ -7,8 +7,8 @@ DEMYX_CHROOT_CONTAINER_CHECK=$(docker ps -a | awk '{print $NF}' | grep -w demyx)
 DEMYX_CHROOT_HOST=$(hostname)
 DEMYX_CHROOT_SSH=2222
 DEMYX_CHROOT_API=false
-DEMYX_CHROOT_CPU=.25
-DEMYX_CHROOT_MEM=64m
+DEMYX_CHROOT_CPU=.50
+DEMYX_CHROOT_MEM=256m
 
 while :; do
     case "$1" in
