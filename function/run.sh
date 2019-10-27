@@ -187,7 +187,7 @@ demyx_run() {
                 --name "$DEMYX_APP_ID" \
                 --network demyx \
                 -v wp_"$DEMYX_APP_ID":/var/www/html \
-                demyx/utilities bash
+                demyx/utilities sh
                 
             demyx_echo 'Copying files' 
             demyx_execute docker cp "$DEMYX_APP_PATH"/html "$DEMYX_APP_ID":/var/www
@@ -208,7 +208,7 @@ demyx_run() {
                 --name "$DEMYX_APP_ID" \
                 --network demyx \
                 -v wp_"$DEMYX_APP_ID":/var/www/html \
-                demyx/utilities bash
+                demyx/utilities sh
 
             demyx_echo 'Copying files' 
             demyx_execute docker cp "$DEMYX_BACKUP"/"$DEMYX_RUN_TODAYS_DATE"/wp/"$DEMYX_RUN_ARCHIVE"/html "$DEMYX_APP_ID":/var/www
