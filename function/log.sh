@@ -37,14 +37,14 @@ demyx_log() {
         elif [[ -n "$DEMYX_LOG_ROTATE" ]]; then
             if [[ "$DEMYX_LOG_ROTATE" = demyx ]]; then
                 demyx_echo 'Rotating demyx log'
-                demyx_execute docker run -t --rm --volumes-from demyx demyx/logrotate
+                demyx_execute docker run -t --rm -e DEMYX_LOG=/var/log/demyx --volumes-from demyx demyx/logrotate
             elif [[ "$DEMYX_LOG_ROTATE" = wp ]]; then
                 cd "$DEMYX_WP" || exit
                 for i in *
                 do
                     source "$DEMYX_WP"/"$i"/.env
                     demyx_echo "Rotating $i log"
-                    demyx_execute docker run -t --rm --volumes-from "$DEMYX_APP_WP_CONTAINER" demyx/logrotate
+                    demyx_execute docker run -t --rm -e DEMYX_LOG=/var/log/demyx --volumes-from "$DEMYX_APP_WP_CONTAINER" demyx/logrotate
                 done
             fi
         else
