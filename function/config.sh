@@ -123,6 +123,9 @@ demyx_config() {
             --sftp=false)
                 DEMYX_CONFIG_SFTP=false
                 ;;
+            --skip-checks)
+                DEMYX_CONFIG_SKIP_CHECKS=1
+                ;;
             --sleep?*)
                 DEMYX_CONFIG_SLEEP=${3#*=}
                 ;;
@@ -178,11 +181,9 @@ demyx_config() {
         for i in *
         do
             if [[ -n "$DEMYX_CONFIG_REFRESH" ]]; then
-                if [[ -n "$DEMYX_CONFIG_NO_BACKUP" ]]; then
-                    demyx config "$i" --refresh --no-backup
-                else
-                    demyx config "$i" --refresh
-                fi
+                [[ -n "$DEMYX_CONFIG_NO_BACKUP" ]] && DEMYX_CONFIG_NO_BACKUP="--no-backup"
+                [[ -n "$DEMYX_CONFIG_SKIP_CHECKS" ]] && DEMYX_CONFIG_SKIP_CHECKS="--skip-checks"
+                demyx config "$i" --refresh "$DEMYX_CONFIG_NO_BACKUP" "$DEMYX_CONFIG_SKIP_CHECKS"
             fi
             if [[ -n "$DEMYX_CONFIG_RESTART" ]]; then
                 echo -e "\e[34m[INFO]\e[39m Restarting service for $i"
@@ -761,12 +762,14 @@ demyx_config() {
 
                 demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" up -d
 
-                [[ "$DEMYX_APP_RATE_LIMIT" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --rate-limit -f
-                [[ "$DEMYX_APP_CACHE" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --cache -f
-                [[ "$DEMYX_APP_AUTH" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --auth -f
-                [[ "$DEMYX_APP_AUTH_WP" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --auth-wp -f
-                [[ "$DEMYX_APP_CDN" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --cdn -f
-                [[ "$DEMYX_APP_HEALTHCHECK" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --healthcheck -f
+                if [[ -z "$DEMYX_CONFIG_SKIP_CHECKS" ]]; then
+                    [[ "$DEMYX_APP_RATE_LIMIT" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --rate-limit -f
+                    [[ "$DEMYX_APP_CACHE" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --cache -f
+                    [[ "$DEMYX_APP_AUTH" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --auth -f
+                    [[ "$DEMYX_APP_AUTH_WP" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --auth-wp -f
+                    [[ "$DEMYX_APP_CDN" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --cdn -f
+                    [[ "$DEMYX_APP_HEALTHCHECK" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --healthcheck -f
+                fi
             fi
             if [ "$DEMYX_CONFIG_RESTART" = nginx-php ]; then
                 demyx_echo "Restarting NGINX"
