@@ -51,7 +51,7 @@ demyx_utility() {
     done
 
     if [[ -n "$DEMYX_UTILITY_CREDENTIALS" ]]; then
-        DEMYX_UTILITY_USER=$(demyx util gpw 1 10 | sed -e 's/\r//g')
+        DEMYX_UTILITY_USER=$(demyx util --user --raw)
         DEMYX_UTILITY_PASS=$(demyx_generate_password)
         DEMYX_UTILITY_HTPASSWD_OUTPUT=$(demyx util htpasswd -nb $DEMYX_UTILITY_USER $DEMYX_UTILITY_PASS | sed -e 's/\r//g')
         PRINT_TABLE="DEMYX^ UTILITY\n"
@@ -98,7 +98,8 @@ demyx_utility() {
             demyx_execute -v demyx_table "$PRINT_TABLE"
         fi
     elif [[ -n "$DEMYX_UTILITY_USER" ]]; then
-        DEMYX_UTILITY_USER=$(demyx util gpw 1 10 | sed -e 's/\r//g')
+        source "$DEMYX_FUNCTION"/name.sh
+        DEMYX_UTILITY_USER=$(demyx_name)
         PRINT_TABLE="DEMYX^ UTILITY\n"
         PRINT_TABLE+="USERNAME^ $DEMYX_UTILITY_USER"
         
