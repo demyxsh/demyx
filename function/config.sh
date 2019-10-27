@@ -180,6 +180,11 @@ demyx_config() {
         cd "$DEMYX_WP" || exit
         for i in *
         do
+            if [[ -n "$DEMYX_CONFIG_WP_CPU" || -n "$DEMYX_CONFIG_WP_MEM" ]]; then
+                [[ -n "$DEMYX_CONFIG_WP_CPU" ]] && DEMYX_CONFIG_WP_CPU_FLAG="--wp-cpu=$DEMYX_CONFIG_WP_CPU"
+                [[ -n "$DEMYX_CONFIG_WP_MEM" ]] && DEMYX_CONFIG_WP_MEM_FLAG="--wp-mem=$DEMYX_CONFIG_WP_MEM"
+                demyx config "$i" "$DEMYX_CONFIG_WP_CPU_FLAG" "$DEMYX_CONFIG_WP_MEM_FLAG"
+            fi
             if [[ -n "$DEMYX_CONFIG_REFRESH" ]]; then
                 [[ -n "$DEMYX_CONFIG_NO_BACKUP" ]] && DEMYX_CONFIG_NO_BACKUP="--no-backup"
                 [[ -n "$DEMYX_CONFIG_SKIP_CHECKS" ]] && DEMYX_CONFIG_SKIP_CHECKS="--skip-checks"
