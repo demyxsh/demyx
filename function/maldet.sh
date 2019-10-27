@@ -11,11 +11,11 @@ demyx_maldet() {
         if [[ "$3" = db ]]; then
             demyx_execute -v docker run -it --rm \
             --volumes-from "$DEMYX_APP_DB_CONTAINER" \
-            demyx/utilities "demyx-maldet db"
+            demyx/utilities demyx-maldet db
         else
             demyx_execute -v docker run -it --rm \
             --volumes-from "$DEMYX_APP_WP_CONTAINER" \
-            demyx/utilities "demyx-maldet wp"
+            demyx/utilities demyx-maldet wp
         fi
     else
         demyx_die --not-found
