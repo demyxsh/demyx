@@ -11,7 +11,7 @@ if [[ "$DEMYX_HELPER_ARG" = development ]]; then
     sed -i "s|DEMYX_MOTD_MODE=.*|DEMYX_MOTD_MODE=development|g" /demyx/.env
 elif [[ "$DEMYX_HELPER_ARG" = production ]]; then
     export DEMYX_MODE=production
-	chmod -R a=X /demyx
+    chmod -R a=X /demyx
     sed -i "s|DEMYX_MOTD_MODE=.*|DEMYX_MOTD_MODE=production|g" /demyx/.env
 fi
 
