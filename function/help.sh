@@ -100,9 +100,14 @@ demyx_help() {
         echo
     elif [[ "$DEMYX_HELP" = log ]]; then
         echo
-        echo "demyx log <app> <args>          Show demyx/container logs"
+        echo "demyx log <app> <args>          Show demyx/container logs, defaults to demyx log"
+        echo "          api                   Show api log"
+        echo "          ouroboros             Show Ouroboros log"
+        echo "          traefik               Show Traefik logs"
+        echo "          domain.tld            Show WP container logs"
+        echo "                -e|--error      Show error log"
         echo "                -f|--follow     Follow log"
-        echo "                --rotate        Rotate logs for demyx, stack, and WP sites"
+        echo "                --rotate        Rotate logs"
         echo
     elif [[ "$DEMYX_HELP" = maldet ]]; then
         echo

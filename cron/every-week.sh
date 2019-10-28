@@ -5,11 +5,15 @@
 
 # Rotate demyx log
 echo -e "[$(date +%F-%T)] CROND: LOGROTATE DEMYX"
-/usr/local/bin/demyx log --rotate=demyx
+/usr/local/bin/demyx log --rotate
 
 # Rotate WordPress log
 echo -e "[$(date +%F-%T)] CROND: LOGROTATE WORDPRESS"
-/usr/local/bin/demyx log --rotate=wp
+cd /demyx/app/wp
+for i in *
+do
+    /usr/local/bin/demyx log "$i" --rotate
+done
 
 # Execute custom cron
 echo -e "[$(date +%F-%T)] CROND: CUSTOM EVERY WEEK"
