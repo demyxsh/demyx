@@ -60,6 +60,12 @@ demyx_config() {
             --dev=false)
                 DEMYX_CONFIG_DEV=false
                 ;;
+            --dev-base-path=?*)
+                DEMYX_CONFIG_DEV_BASE_PATH=${3#*=}
+                ;;
+            --dev-base-path=)
+                demyx_die '"--dev-base-path" cannot be empty'
+                ;;
             --dev-cpu=null|--dev-cpu=?*)
                 DEMYX_CONFIG_DEV_CPU=${3#*=}
                 ;;
@@ -439,7 +445,7 @@ demyx_config() {
                     DEMYX_CONFIG_DEV_RESOURCES+="--memory=$DEMYX_MEM"
                 fi
 
-                DEMYX_CONFIG_DEV_BASE_PATH=/demyx
+                [[ -z "$DEMYX_CONFIG_DEV_BASE_PATH" ]] && DEMYX_CONFIG_DEV_BASE_PATH=/demyx
                 DEMYX_CONFIG_DEV_CONTAINER_NAME="$DEMYX_APP_WP_CONTAINER"
                 DEMYX_CONFIG_DEV_VOLUME="-v wp_${DEMYX_APP_ID}:/var/www/html"
  
