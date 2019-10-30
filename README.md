@@ -31,6 +31,7 @@ Demyx is a Docker image that automates WordPress installations. Traefik for reve
 * Auto activate rate requests and limit connections when CPU is high
 * Custom healthchecks
 * Development mode includes the tools code-server, BrowserSync, and demyx_helper plugin
+* [Bedrock](https://roots.io/bedrock/)
 
 ### Demyx Image
 Since the image needs docker.sock to be mounted and the Docker binary is included, I've installed sudo to only allow the demyx user to execute only one script as root. The image is put in production mode by default, meaning that /demyx directory and all it's folders and files will be set to read-only mode. This prevents the non-privelege user to modify the script and do malicious things.
@@ -86,6 +87,9 @@ demyx exec run domain.tld --cdn --cache
 
 # Create a WordPress site in the demyx container
 demyx run domain.tld --cdn --cache
+
+# Create a WordPress site powered by Bedrock in the demyx container
+demyx run domain.tld --bedrock
 ```
 
 ### chroot.sh
