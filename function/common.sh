@@ -167,3 +167,7 @@ demyx_generate_password() {
     
     echo "${DEMYX_PASSWORD_1}-${DEMYX_PASSWORD_2}-${DEMYX_PASSWORD_3}-${DEMYX_PASSWORD_4}"
 }
+demyx_wp_check_empty() {
+    DEMYX_COMMON_WP_APPS="$(ls $DEMYX_WP)"
+    [[ -z "$DEMYX_COMMON_WP_APPS" ]] && exit 0
+}
