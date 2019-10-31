@@ -87,7 +87,7 @@ EOF
     sed -i 's/        //' "$DEMYX_STACK"/.env
 
     demyx_echo 'Creating stack .yml'
-    demyx_execute demyx_stack_v2_yml
+    demyx_execute demyx_stack_yml
 
     demyx_echo 'Creating stack config volume'
     demyx_execute docker volume create demyx_traefik

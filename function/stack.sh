@@ -143,13 +143,7 @@ demyx_stack() {
         source "$DEMYX_FUNCTION"/yml.sh
 
         demyx_echo 'Refreshing stack env and yml'
-
-        # Traefik backwards compatibility
-        if [[ "$DEMYX_CHECK_TRAEFIK" = 1 ]]; then
-            demyx_execute demyx_stack_env; demyx_stack_yml
-        else
-            demyx_execute demyx_stack_v2_env; demyx_stack_v2_yml
-        fi
+        demyx_execute demyx_stack_env; demyx_stack_yml
 
         demyx compose stack up -d --remove-orphans
     elif [[ "$DEMYX_STACK_SELECT" = upgrade ]]; then
@@ -205,11 +199,11 @@ demyx_stack() {
             source "$DEMYX_FUNCTION"/yml.sh
 
             demyx_echo 'Enabling Cloudflare as the certificate resolver'
-            demyx_execute demyx_stack_v2_env; \
+            demyx_execute demyx_stack_env; \
                 sed -i "s|DEMYX_STACK_CLOUDFLARE=.*|DEMYX_STACK_CLOUDFLARE=true|g" "$DEMYX_STACK"/.env; \
                 sed -i "s|DEMYX_STACK_CLOUDFLARE_EMAIL=.*|DEMYX_STACK_CLOUDFLARE_EMAIL=$DEMYX_STACK_CLOUDFLARE_API_EMAIL|g" "$DEMYX_STACK"/.env; \
                 sed -i "s|DEMYX_STACK_CLOUDFLARE_KEY=.*|DEMYX_STACK_CLOUDFLARE_KEY=$DEMYX_STACK_CLOUDFLARE_API_KEY|g" "$DEMYX_STACK"/.env; \
-                demyx_stack_v2_yml
+                demyx_stack_yml
 
             demyx compose stack up -d
         elif [[ "$DEMYX_STACK_CLOUDFLARE" = false ]]; then

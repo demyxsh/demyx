@@ -144,13 +144,7 @@ demyx_run() {
         demyx config "$DEMYX_APP_DOMAIN" --healthcheck=false
 
         demyx_echo 'Creating .yml'
-
-        # Traefik backwards compatibility
-        if [[ "$DEMYX_CHECK_TRAEFIK" = 1 ]]; then
-            demyx_execute demyx_yml
-        else
-            demyx_execute demyx_v2_yml
-        fi
+        demyx_execute demyx_yml
 
         # Recheck SSL
         DEMYX_RUN_SSL_RECHECK=$(grep DEMYX_APP_SSL "$DEMYX_APP_PATH"/.env | awk -F '[=]' '{print $2}')

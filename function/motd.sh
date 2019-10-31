@@ -95,6 +95,4 @@ demyx_motd() {
     demyx_motd_stack_upgrade_notice
     demyx_motd_dev_warning
     demyx_motd_app_check
-
-    demyx_execute -v echo -e "\n\e[33m[NOTICE]\e[39m Traefik backwards compatibility will be removed on November 1st, 2019."
 }
