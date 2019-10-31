@@ -11,10 +11,6 @@ demyx_motd_app_check() {
         fi
     done
 }
-demyx_motd_chroot_warning() {
-    DEMYX_MOTD_CHROOT_CHECK=$(docker run --rm -v /usr/local/bin:/usr/local/bin demyx/utilities "[[ -L /usr/local/bin/demyx ]] && echo true")
-    [[ "$DEMYX_MOTD_CHROOT_CHECK" = true ]] && demyx_execute -v echo -e "\e[33m[WARNING]\e[39m The demyx chroot.sh script needs to be updated on the host, please run this command:\n\ndocker run -t --rm -v /usr/local/bin:/usr/local/bin demyx/utilities \"rm -f /usr/local/bin/demyx; curl -s https://raw.githubusercontent.com/demyxco/demyx/master/chroot.sh -o /usr/local/bin/demyx; chmod +x /usr/local/bin/demyx\"\n"
-}
 demyx_motd_dev_warning() {
     DEMYX_COMMON_WP_NOT_EMPTY=$(ls "$DEMYX_WP")
     if [[ -n "$DEMYX_COMMON_WP_NOT_EMPTY" ]]; then
@@ -26,11 +22,6 @@ demyx_motd_dev_warning() {
                 demyx_execute -v echo -e "\e[33m[WARNING]\e[39m $i is in development mode"
             fi
         done
-    fi
-}
-demyx_motd_stack_upgrade_notice() {
-    if [[ "$DEMYX_CHECK_TRAEFIK" = 1 ]]; then
-        demyx_execute -v echo -e "\e[34m[INFO]\e[39m An upgrade is available for the stack, please run: demyx stack upgrade"
     fi
 }
 demyx_motd_git_latest() {
@@ -91,8 +82,6 @@ demyx_motd() {
 
     demyx_motd_git_latest
     demyx_execute -v demyx_table "$PRINT_MOTD_TABLE"
-    demyx_motd_chroot_warning
-    demyx_motd_stack_upgrade_notice
     demyx_motd_dev_warning
     demyx_motd_app_check
 }
