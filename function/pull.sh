@@ -17,6 +17,7 @@ demyx_pull() {
         docker pull demyx/logrotate
         docker pull demyx/mariadb
         docker pull demyx/nginx-php-wordpress
+        docker pull demyx/nginx-php-wordpress:bedrock
         docker pull demyx/ssh
         docker pull demyx/utilities
     fi
