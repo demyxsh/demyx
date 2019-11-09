@@ -10,15 +10,18 @@ demyx_pull() {
         docker pull demyx/"$DEMYX_PULL_IMAGE"
         [[ "$?" = 1 ]] && demyx help pull
     else
-        docker pull demyx/demyx
-        docker pull demyx/code-server:wp
         docker pull demyx/code-server:sage
+        docker pull demyx/code-server:wp
+        docker pull demyx/demyx
         docker pull demyx/docker-compose
         docker pull demyx/logrotate
         docker pull demyx/mariadb
+        docker pull demyx/nginx
         docker pull demyx/nginx-php-wordpress
         docker pull demyx/nginx-php-wordpress:bedrock
         docker pull demyx/ssh
         docker pull demyx/utilities
+        docker pull demyx/wordpress
+        docker pull demyx/wordpress:cli
     fi
 }
