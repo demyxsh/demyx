@@ -210,7 +210,7 @@ demyx_stack() {
             demyx_echo 'Disabling Cloudflare as the certificate resolver, switching back to HTTP'
             demyx_execute sed -i "s|DEMYX_STACK_CLOUDFLARE=.*|DEMYX_STACK_CLOUDFLARE=false|g" "$DEMYX_STACK"/.env
 
-            demyx compose stack up -d
+            demyx stack refresh
         fi
         if [[ -n "$DEMYX_STACK_CPU" ]]; then
             demyx_echo "Updating stack CPU to $DEMYX_STACK_CPU"
