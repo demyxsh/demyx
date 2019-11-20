@@ -11,7 +11,7 @@ demyx_backup() {
                 DEMYX_BACKUP_CONFIG=1
                 ;;
             --path=?*)
-                DEMYX_BACKUP_PATH=${3#*=}
+                DEMYX_BACKUP_PATH="${3#*=}"
                 ;;
             --)
                 shift
@@ -39,7 +39,7 @@ demyx_backup() {
             fi
         done
     else
-        DEMYX_BACKUP_TODAYS_DATE=$(date +%Y/%m/%d)
+        DEMYX_BACKUP_TODAYS_DATE="$(date +%Y/%m/%d)"
 
         demyx_app_config
 
@@ -69,7 +69,7 @@ demyx_backup() {
                 [[ -n "$DEMYX_BACKUP_PATH" ]] && mv "$DEMYX_BACKUP"/"$DEMYX_BACKUP_TODAYS_DATE"/wp/"$DEMYX_APP_DOMAIN".tgz "$DEMYX_BACKUP_PATH" && chown demyx:demyx "$DEMYX_BACKUP_PATH"/"$DEMYX_APP_DOMAIN".tgz
                 
                 demyx_echo 'Cleaning up'
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" rm "$DEMYX_APP_CONTAINER".sql; \
+                demyx_execute docker exec "$DEMYX_APP_WP_CONTAINER" rm "$DEMYX_APP_CONTAINER".sql; \
                     rm -rf "$DEMYX_APP_PATH"/html; \
                     rm -rf "$DEMYX_APP_PATH"/demyx
             fi
