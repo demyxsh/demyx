@@ -10,7 +10,7 @@ demyx_info() {
                 DEMYX_INFO_ALL=1
                 ;;
             --filter=?*)
-                DEMYX_INFO_FILTER=${3#*=}
+                DEMYX_INFO_FILTER="${3#*=}"
                 ;;
             --filter=)
                 demyx_die '"--filter" cannot be empty'
@@ -50,8 +50,8 @@ demyx_info() {
             source "$DEMYX_WP"/"$i"/.env
 
             if [[ -z "$DEMYX_INFO_NO_VOLUME" ]]; then
-                DEMYX_INFO_DATA_VOLUME=$(docker exec "$DEMYX_APP_WP_CONTAINER" sh -c "du -sh /var/www/html" | cut -f1)
-                DEMYX_INFO_DB_VOLUME=$(docker exec "$DEMYX_APP_DB_CONTAINER" sh -c "du -sh /var/lib/mysql/$WORDPRESS_DB_NAME" | cut -f1)
+                DEMYX_INFO_DATA_VOLUME="$(docker exec "$DEMYX_APP_WP_CONTAINER" du -sh /var/www/html | cut -f1)"
+                DEMYX_INFO_DB_VOLUME="$(docker exec "$DEMYX_APP_DB_CONTAINER" du -sh /var/lib/mysql/"$WORDPRESS_DB_NAME" | cut -f1)"
             fi
 
             if [[ -n "$DEMYX_INFO_NO_PASSWORD" ]]; then
@@ -63,6 +63,7 @@ demyx_info() {
             DEMYX_INFO_ALL_JSON+='"path": "'$DEMYX_APP_PATH'",'
             DEMYX_INFO_ALL_JSON+='"wp_user": "'$WORDPRESS_USER'",'
             DEMYX_INFO_ALL_JSON+='"wp_password": "'$WORDPRESS_USER_PASSWORD'",'
+            DEMYX_INFO_ALL_JSON+='"nx_container": "'$DEMYX_APP_NX_CONTAINER'",'
             DEMYX_INFO_ALL_JSON+='"wp_container": "'$DEMYX_APP_WP_CONTAINER'",'
             DEMYX_INFO_ALL_JSON+='"db_container": "'$DEMYX_APP_DB_CONTAINER'",'
             DEMYX_INFO_ALL_JSON+='"wp_volume": "'$DEMYX_INFO_DATA_VOLUME'",'
@@ -87,39 +88,49 @@ demyx_info() {
         PRINT_TABLE="DEMYX^ $DEMYX_INFO_FILTER\n"
         for i in *
         do
-            DEMYX_INFO_ALL_FILTER=$(grep "$DEMYX_INFO_FILTER" "$DEMYX_WP"/"$i"/.env | awk -F '[=]' '{print $2}')
+            DEMYX_INFO_ALL_FILTER="$(grep "$DEMYX_INFO_FILTER" "$DEMYX_WP"/"$i"/.env | awk -F '[=]' '{print $2}')"
             [[ -z "$DEMYX_INFO_ALL_FILTER" ]] && demyx_die "$DEMYX_INFO_FILTER is not a valid filter"
             PRINT_TABLE+="$i^ $DEMYX_INFO_ALL_FILTER\n"
         done
         demyx_execute -v -q demyx_table "$PRINT_TABLE"
     elif [[ "$DEMYX_TARGET" = stack ]]; then
-        source "$DEMYX_STACK"/.env
-        DEMYX_INFO_STACK_GET_NPW=$(wget -qO- https://raw.githubusercontent.com/demyxco/nginx-php-wordpress/master/README.md)
-        PRINT_TABLE="DEMYX^ STACK\n"
-        PRINT_TABLE+="IP^ $DEMYX_STACK_SERVER_IP\n"
-        PRINT_TABLE+="DOMAIN^ $DEMYX_STACK_DOMAIN\n"
-        PRINT_TABLE+="TRAEFIK^ $(docker run -t --rm --entrypoint traefik traefik version | head -1 | awk -F '[:]' '{print $2}' | sed 's| ||g' | sed 's/\r//g')\n"
-        PRINT_TABLE+="ALPINE^ $(grep "badge/alpine" <<< "$DEMYX_INFO_STACK_GET_NPW" | awk -F '[-]' '{print $2}')\n"
-        PRINT_TABLE+="NGINX^ $(grep "badge/nginx" <<< "$DEMYX_INFO_STACK_GET_NPW" | awk -F '[-]' '{print $2}')\n"
-        PRINT_TABLE+="PHP^ $(grep "badge/php" <<< "$DEMYX_INFO_STACK_GET_NPW" | awk -F '[-]' '{print $2}')\n"
-        PRINT_TABLE+="WORDPRESS^ $(grep "badge/wordpress" <<< "$DEMYX_INFO_STACK_GET_NPW" | awk -F '[-]' '{print $2}')\n"
-        PRINT_TABLE+="AUTO UPDATE^ $DEMYX_STACK_AUTO_UPDATE\n"
-        PRINT_TABLE+="MONITOR^ $DEMYX_STACK_MONITOR\n"
-        PRINT_TABLE+="HEALTHCHECK^ $DEMYX_STACK_HEALTHCHECK\n"
-        PRINT_TABLE+="LOG^ /var/log/demyx"
-        demyx_execute -v demyx_table "$PRINT_TABLE"
+        if [[ -n "$DEMYX_INFO_FILTER" ]]; then
+            DEMYX_INFO_FILTER="$(cat "$DEMYX_STACK"/.env | grep -w "$DEMYX_INFO_FILTER")"
+            if [[ -n "$DEMYX_INFO_FILTER" ]]; then
+                demyx_execute -v -q echo "$DEMYX_INFO_FILTER" | awk -F '[=]' '{print $2}'
+            else
+                demyx_die 'Filter not found'
+            fi
+        else
+            source "$DEMYX_STACK"/.env
+            DEMYX_INFO_STACK_GET_NPW="$(wget -qO- https://raw.githubusercontent.com/demyxco/nginx-php-wordpress/master/README.md)"
+            PRINT_TABLE="DEMYX^ STACK\n"
+            PRINT_TABLE+="IP^ $DEMYX_STACK_SERVER_IP\n"
+            PRINT_TABLE+="DOMAIN^ $DEMYX_STACK_DOMAIN\n"
+            PRINT_TABLE+="API^ $DEMYX_STACK_SERVER_API\n"
+            PRINT_TABLE+="TRAEFIK^ $(docker run -t --rm --entrypoint traefik traefik version | head -1 | awk -F '[:]' '{print $2}' | sed 's| ||g' | sed 's/\r//g')\n"
+            PRINT_TABLE+="ALPINE^ $(grep "badge/alpine" <<< "$DEMYX_INFO_STACK_GET_NPW" | awk -F '[-]' '{print $2}')\n"
+            PRINT_TABLE+="NGINX^ $(grep "badge/nginx" <<< "$DEMYX_INFO_STACK_GET_NPW" | awk -F '[-]' '{print $2}')\n"
+            PRINT_TABLE+="PHP^ $(grep "badge/php" <<< "$DEMYX_INFO_STACK_GET_NPW" | awk -F '[-]' '{print $2}')\n"
+            PRINT_TABLE+="WORDPRESS^ $(grep "badge/wordpress" <<< "$DEMYX_INFO_STACK_GET_NPW" | awk -F '[-]' '{print $2}')\n"
+            PRINT_TABLE+="AUTO UPDATE^ $DEMYX_STACK_AUTO_UPDATE\n"
+            PRINT_TABLE+="MONITOR^ $DEMYX_STACK_MONITOR\n"
+            PRINT_TABLE+="HEALTHCHECK^ $DEMYX_STACK_HEALTHCHECK\n"
+            PRINT_TABLE+="LOG^ /var/log/demyx"
+            demyx_execute -v demyx_table "$PRINT_TABLE"
+        fi
     elif [[ "$DEMYX_TARGET" = system ]]; then
         source "$DEMYX"/.env
-        DEMYX_INFO_WP_COUNT=$(find "$DEMYX_WP" -mindepth 1 -maxdepth 1 -type d | wc -l)
-        DEMYX_INFO_DISK_USED=$(df -h /demyx | sed '1d' | awk '{print $3}')
-        DEMYX_INFO_DISK_TOTAL=$(df -h /demyx | sed '1d' | awk '{print $2}')
-        DEMYX_INFO_DISK_PERCENTAGE=$(df -h /demyx | sed '1d' | awk '{print $5}')
-        DEMYX_INFO_MEMORY_USED=$(free -m | sed '1d' | sed '2d' | awk '{print $3}')
-        DEMYX_INFO_MEMORY_TOTAL=$(free -m | sed '1d' | sed '2d' | awk '{print $2}')
-        DEMYX_INFO_UPTIME=$(uptime | awk -F '[,]' '{print $1}' | awk -F '[up]' '{print $3}' | sed 's|^.||')
-        DEMYX_INFO_LOAD_AVERAGE=$(cat /proc/loadavg | awk '{print $1 " " $2 " " $3}')
-        DEMYX_INFO_CONTAINER_RUNNING=$(/usr/local/bin/docker ps -q | wc -l)
-        DEMYX_INFO_CONTAINER_DEAD=$(/usr/local/bin/docker ps -q --filter "status=exited" | wc -l)
+        DEMYX_INFO_WP_COUNT="$(find "$DEMYX_WP" -mindepth 1 -maxdepth 1 -type d | wc -l)"
+        DEMYX_INFO_DISK_USED="$(df -h /demyx | sed '1d' | awk '{print $3}')"
+        DEMYX_INFO_DISK_TOTAL="$(df -h /demyx | sed '1d' | awk '{print $2}')"
+        DEMYX_INFO_DISK_PERCENTAGE="$(df -h /demyx | sed '1d' | awk '{print $5}')"
+        DEMYX_INFO_MEMORY_USED="$(free -m | sed '1d' | sed '2d' | awk '{print $3}')"
+        DEMYX_INFO_MEMORY_TOTAL="$(free -m | sed '1d' | sed '2d' | awk '{print $2}')"
+        DEMYX_INFO_UPTIME="$(uptime | awk -F '[,]' '{print $1}' | awk -F '[up]' '{print $3}' | sed 's|^.||')"
+        DEMYX_INFO_LOAD_AVERAGE="$(cat /proc/loadavg | awk '{print $1 " " $2 " " $3}')"
+        DEMYX_INFO_CONTAINER_RUNNING="$(/usr/local/bin/docker ps -q | wc -l)"
+        DEMYX_INFO_CONTAINER_DEAD="$(/usr/local/bin/docker ps -q --filter "status=exited" | wc -l)"
 
         if [[ -n "$DEMYX_INFO_JSON" ]]; then 
             DEMYX_INFO_SYSTEM_JSON='{'
@@ -156,7 +167,7 @@ demyx_info() {
         fi
     elif [[ "$DEMYX_APP_TYPE" = wp ]]; then
         if [[ -n "$DEMYX_INFO_ALL" ]]; then
-            DEMYX_INFO_ALL=$(cat $DEMYX_APP_PATH/.env | sed '1d')
+            DEMYX_INFO_ALL="$(cat "$DEMYX_APP_PATH"/.env | sed '1d')"
             PRINT_TABLE="DEMYX^ INFO\n"
             for i in $DEMYX_INFO_ALL
             do
@@ -164,7 +175,7 @@ demyx_info() {
             done
             demyx_execute -v -q demyx_table "$PRINT_TABLE"
         elif [[ -n "$DEMYX_INFO_FILTER" ]]; then
-            DEMYX_INFO_FILTER=$(cat "$DEMYX_APP_PATH"/.env | grep -w "$DEMYX_INFO_FILTER")
+            DEMYX_INFO_FILTER="$(cat "$DEMYX_APP_PATH"/.env | grep -w "$DEMYX_INFO_FILTER")"
             if [[ -n "$DEMYX_INFO_FILTER" ]]; then
                 demyx_execute -v -q echo "$DEMYX_INFO_FILTER" | awk -F '[=]' '{print $2}'
             else
@@ -172,8 +183,8 @@ demyx_info() {
             fi
         else
             if [[ -z "$DEMYX_INFO_NO_VOLUME" ]]; then
-                DEMYX_INFO_DATA_VOLUME=$(docker exec "$DEMYX_APP_WP_CONTAINER" sh -c "du -sh /var/www/html" | cut -f1)
-                DEMYX_INFO_DB_VOLUME=$(docker exec "$DEMYX_APP_DB_CONTAINER" sh -c "du -sh /var/lib/mysql/$WORDPRESS_DB_NAME" | cut -f1)
+                DEMYX_INFO_DATA_VOLUME="$(docker exec "$DEMYX_APP_WP_CONTAINER" du -sh /var/www/html | cut -f1)"
+                DEMYX_INFO_DB_VOLUME="$(docker exec "$DEMYX_APP_DB_CONTAINER" du -sh /var/lib/mysql/"$WORDPRESS_DB_NAME" | cut -f1)"
             fi
 
             if [[ -n "$DEMYX_INFO_JSON" ]]; then
@@ -181,6 +192,7 @@ demyx_info() {
                     "path": "'$DEMYX_APP_PATH'",
                     "wp_user": "'$WORDPRESS_USER'",
                     "wp_password": "'$WORDPRESS_USER_PASSWORD'",
+                    "nx_container": "'$DEMYX_APP_NX_CONTAINER'",
                     "wp_container": "'$DEMYX_APP_WP_CONTAINER'",
                     "db_container": "'$DEMYX_APP_DB_CONTAINER'",
                     "wp_volume": "'$DEMYX_INFO_DATA_VOLUME'",
@@ -204,6 +216,7 @@ demyx_info() {
                 PRINT_TABLE+="PATH^ $DEMYX_APP_PATH\n"
                 PRINT_TABLE+="WP USER^ $WORDPRESS_USER\n"
                 PRINT_TABLE+="WP PASSWORD^ $WORDPRESS_USER_PASSWORD\n"
+                PRINT_TABLE+="NX CONTAINER^ $DEMYX_APP_NX_CONTAINER\n"
                 PRINT_TABLE+="WP CONTAINER^ $DEMYX_APP_WP_CONTAINER\n"
                 PRINT_TABLE+="DB CONTAINER^ $DEMYX_APP_DB_CONTAINER\n"
                 PRINT_TABLE+="WP VOLUME^ $DEMYX_INFO_DATA_VOLUME\n"
