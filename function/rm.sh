@@ -50,14 +50,15 @@ demyx_rm() {
             [[ "$DEMYX_RM_CONFIRM" != [yY] ]] && demyx_die 'Cancelled deletion'
         fi
 
-        DEMYX_RM_VOLUMES=$(docker volume ls | grep "$DEMYX_APP_ID" | awk '{print $2}' | awk 'BEGIN { ORS = " " } { print }')
+        DEMYX_RM_VOLUMES="$(docker volume ls | grep "$DEMYX_APP_ID" | awk '{print $2}' | awk 'BEGIN { ORS = " " } { print }')"
 
         cd "$DEMYX_APP_PATH" || exit
-        
-        demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" kill
-        demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" rm -f
 
-        DEMYX_RM_STRAGGLERS=$(docker ps | grep "$DEMYX_APP_COMPOSE_PROJECT" | awk '{print $(NF)}' | awk '$1 ~ /^'${DEMYX_APP_COMPOSE_PROJECT}'/')
+        demyx config "$DEMYX_APP_DOMAIN" --healthcheck=false
+        demyx compose "$DEMYX_APP_DOMAIN" kill
+        demyx compose "$DEMYX_APP_DOMAIN" rm -f
+
+        DEMYX_RM_STRAGGLERS="$(docker ps | grep "$DEMYX_APP_COMPOSE_PROJECT" | awk '{print $(NF)}' | awk '$1 ~ /^'"${DEMYX_APP_COMPOSE_PROJECT}"'/')"
 
         if [[ -n "$DEMYX_RM_STRAGGLERS" ]]; then
             for i in $DEMYX_RM_STRAGGLERS
