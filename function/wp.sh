@@ -10,10 +10,14 @@ demyx_wp() {
             demyx wp "$i" "$@"
         done
     elif [[ "$DEMYX_APP_TYPE" = wp ]]; then
+        # Will remove this backwards compability in December 2019
+        DEMYX_WP_CLI=demyx/wordpress:cli
+        [[ "$DEMYX_APP_WP_IMAGE" = demyx/nginx-php-wordpress ]] && DEMYX_WP_CLI=wordpress:cli
+
         demyx_execute -v docker run -t --rm \
             --volumes-from="$DEMYX_APP_WP_CONTAINER" \
             --network=container:"$DEMYX_APP_WP_CONTAINER" \
-            demyx/wordpress:cli "$@"
+            "$DEMYX_WP_CLI" "$@"
     else
         demyx_die --not-found
     fi
