@@ -19,6 +19,7 @@ demyx_help() {
         echo "                    db        docker-compose for the MariaDB container"
         echo "                    down      Shorthand for docker-compose stop/rm -f"
         echo "                    du        Shorthand for docker-compose stop/rm -f/up -d"
+        echo "                    nx        docker-compose for the NGINX container"
         echo "                    wp        docker-compose for the WordPress container"
         echo
     elif [[ "$DEMYX_HELP" = config ]]; then
@@ -37,7 +38,6 @@ demyx_help() {
         echo "                   --dev-base-path    Change code-server base path"
         echo "                   --dev-cpu          Set the dev app's container CPU usage, --dev-cpu=null to remove cap"
         echo "                   --dev-mem          Set the dev app's container MEM usage, --dev-mem=null to remove cap"
-        echo "                   --dev-standalone   Let code-server run NGINX, PHP, and WordPress"
         echo "                   --files            BrowserSync arg: themes, plugins, or custom path"
         echo "                   --force            Force config"
         echo "                   --healthcheck      Turns on/off healthcheck for WordPress container"
@@ -52,6 +52,7 @@ demyx_help() {
         echo "                   --skip-checks      Skip checking other configs (cache, cdn, rate limit, etc.)"
         echo "                   --sleep            Set sleep when all loop is used"
         echo "                   --ssl              Turns on/off SSL"
+        echo "                   --upgrade          Upgrade the app"
         echo "                   --wp-cpu           Set the app's container CPU usage, --wp-cpu=null to remove cap"
         echo "                   --wp-mem           Set the app's container MEM usage, --wp-mem=null to remove cap"
         echo "                   --wp-update        Auto update WordPress core, themes, and plugins"
@@ -62,10 +63,20 @@ demyx_help() {
         echo "demyx cp <app/path>:<path> <app/path>:<path>      Wrapper for docker cp"
         echo "         db                                       Target docker cp for MariaDB container"
         echo
+    elif [[ "$DEMYX_HELP" = cron ]]; then
+        echo
+        echo "demyx cron <arg>      Execute demyx cron"
+        echo "           daily      Execute every day cron"
+        echo "           minute     Execute every minute cron"
+        echo "           six-hour   Execute every six hour cron"
+        echo "           weekly     Execute every week cron"
+        echo
     elif [[ "$DEMYX_HELP" = exec ]]; then
         echo
         echo "demyx exec <app> <args>       Accepts all docker exec arguments (default flags: -it)"
         echo "                 db           Targets MariaDB container"
+        echo "                 nx           Targets NGINX container"
+        echo "                 -r           Execute as root"
         echo "                 -t           Allocate a non-interactive TTY"
         echo
     elif [[ "$DEMYX_HELP" = healthcheck ]]; then
@@ -104,6 +115,8 @@ demyx_help() {
         echo
         echo "demyx log <app> <args>          Show demyx/container logs, defaults to demyx log"
         echo "          api                   Show api log"
+        echo "          cron                  Show cron log"
+        echo "          main                  Show demyx container log, pass -e for error log"
         echo "          ouroboros             Show Ouroboros log"
         echo "          traefik               Show Traefik logs"
         echo "          domain.tld            Show WP container logs"
@@ -206,6 +219,7 @@ demyx_help() {
         echo "      compose         Accepts all docker-compose arguments"
         echo "      config          Modifies an app's configuration"
         echo "      cp              Wrapper for docker cp"
+        echo "      cron            Execute demyx cron"
         echo "      ctop            Htop but for containers"
         echo "      exec            Accepts all docker exec arguments"
         echo "      healthcheck     Checks if WordPress apps are up"
