@@ -31,19 +31,19 @@ demyx_stack() {
                 DEMYX_STACK_CLOUDFLARE=false
                 ;;
             --cf-api-email=?*)
-                DEMYX_STACK_CLOUDFLARE_API_EMAIL=${2#*=}
+                DEMYX_STACK_CLOUDFLARE_API_EMAIL="${2#*=}"
                 ;;
             --cf-api-email=)
                 demyx_die '"--cf-api-email" cannot be empty'
                 ;;
             --cf-api-key=?*)
-                DEMYX_STACK_CLOUDFLARE_API_KEY=${2#*=}
+                DEMYX_STACK_CLOUDFLARE_API_KEY="${2#*=}"
                 ;;
             --cf-api-key=)
                 demyx_die '"--cf-api-key" cannot be empty'
                 ;;
             --cpu=null|--cpu=?*)
-                DEMYX_STACK_CPU=${2#*=}
+                DEMYX_STACK_CPU="${2#*=}"
                 ;;
             --cpu=)
                 demyx_die '"--cpu" cannot be empty'
@@ -58,13 +58,13 @@ demyx_stack() {
                 DEMYX_STACK_HEALTHCHECK=false
                 ;;
             --ignore=?*)
-                DEMYX_STACK_IGNORE=${2#*=}
+                DEMYX_STACK_IGNORE="${2#*=}"
                 ;;
             --ignore=)
                 demyx_die '"--ignore" cannot be empty'
                 ;;
             --mem=null|--mem=?*)
-                DEMYX_STACK_MEM=${2#*=}
+                DEMYX_STACK_MEM="${2#*=}"
                 ;;
             --mem=)
                 demyx_die '"--mem" cannot be empty'
@@ -110,7 +110,7 @@ demyx_stack() {
         fi
     elif [[ "$DEMYX_STACK_SELECT" = ouroboros ]]; then
         if [[ -n "$DEMYX_STACK_IGNORE" ]]; then
-            DEMYX_STACK_OUROBOROS_IGNORE_CHECK=$(grep DEMYX_STACK_OUROBOROS_IGNORE "$DEMYX_STACK"/.env)
+            DEMYX_STACK_OUROBOROS_IGNORE_CHECK="$(grep DEMYX_STACK_OUROBOROS_IGNORE "$DEMYX_STACK"/.env)"
             
             # Regenerate stack's configs if the check returns null
             if [[ -z "$DEMYX_STACK_OUROBOROS_IGNORE_CHECK" ]]; then
