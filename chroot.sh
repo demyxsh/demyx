@@ -1,10 +1,11 @@
 #!/bin/bash
 # Demyx
 # https://demyx.sh
-# 
+#
 
-DEMYX_CHROOT_CONTAINER_CHECK=$(docker ps -a | awk '{print $NF}' | grep -w demyx)
-DEMYX_CHROOT_HOST=$(hostname)
+DEMYX_CHROOT_CONTAINER_CHECK="$(docker ps -a | awk '{print $NF}' | grep -w demyx)"
+DEMYX_CHROOT_HOST="$(hostname)"
+DEMYX_CHROOT_USER=demyx
 DEMYX_CHROOT_SSH=2222
 DEMYX_CHROOT_API=false
 DEMYX_CHROOT_CPU=.50
@@ -57,6 +58,9 @@ while :; do
         --prod)
             DEMYX_CHROOT_MODE=production
             ;;
+        -r|--root)
+            DEMYX_CHROOT_USER=root
+            ;;
         --ssh=?*)
             DEMYX_CHROOT_SSH=${1#*=}
             ;;
@@ -78,7 +82,7 @@ while :; do
     shift
 done
 demyx_mode() {
-    docker exec -t demyx demyx-helper "$DEMYX_CHROOT_MODE"
+    docker exec --user=root demyx demyx-mode "$DEMYX_CHROOT_MODE"
 }
 demyx_rm() {
     if [[ -n "$DEMYX_CHROOT_CONTAINER_CHECK" ]]; then
@@ -88,15 +92,15 @@ demyx_rm() {
 }
 demyx_run() {
     while true; do
-    DEMYX_SFTP_OPEN_PORT=$(netstat -tuplen 2>/dev/null | grep :"$DEMYX_CHROOT_SSH" || true)
+    DEMYX_SFTP_OPEN_PORT="$(netstat -tuplen 2>/dev/null | grep :${DEMYX_CHROOT_SSH} || true)"
         if [[ -z "$DEMYX_SFTP_OPEN_PORT" ]]; then
             break
         else
-            DEMYX_CHROOT_SSH=$((DEMYX_CHROOT_SSH+1))
+            DEMYX_CHROOT_SSH="$((DEMYX_CHROOT_SSH+1))"
         fi
     done
 
-    IFS=$'\r\n' GLOBIGNORE='*' command eval 'DEMYX_CHROOT_API_GET_ENV=($(docker run --rm --name demyx_tmp -v demyx:/demyx demyx/utilities "cat /demyx/app/stack/.env | sed 1d"))'
+    IFS=$'\r\n' GLOBIGNORE='*' command eval 'DEMYX_CHROOT_API_GET_ENV=($(docker run --user=root --rm --name demyx_tmp -v demyx:/demyx demyx/utilities "cat /demyx/app/stack/.env | sed 1d"))'
     DEMYX_CHROOT_API_DOMAIN="$(echo ${DEMYX_CHROOT_API_GET_ENV[1]} | awk -F '[=]' '{print $2}')"
     DEMYX_CHROOT_API_AUTH="$(echo ${DEMYX_CHROOT_API_GET_ENV[2]} | awk -F '[=]' '{print $2}')"
 
@@ -127,7 +131,7 @@ demyx_run() {
         -v demyx:/demyx \
         -v demyx_user:/home/demyx \
         -v demyx_log:/var/log/demyx \
-        -p "$DEMYX_CHROOT_SSH":22 \
+        -p "$DEMYX_CHROOT_SSH":2222 \
         -l "traefik.enable=true" \
         -l "traefik.http.routers.demyx.rule=Host(\`${DEMYX_CHROOT_API_DOMAIN}\`)" \
         -l "traefik.http.routers.demyx.entrypoints=https" \
@@ -152,7 +156,7 @@ demyx_run() {
         -v demyx:/demyx \
         -v demyx_user:/home/demyx \
         -v demyx_log:/var/log/demyx \
-        -p "$DEMYX_CHROOT_SSH":22 \
+        -p "$DEMYX_CHROOT_SSH":2222 \
         demyx/demyx 2>/dev/null
     fi
 }
@@ -173,6 +177,7 @@ elif [[ "$DEMYX_CHROOT" = help ]]; then
     echo "      --mem           Set container MEM usage, --mem=null to remove cap"
     echo "      --nc            Starts demyx containr but prevent chrooting into container"
     echo "      --prod          Puts demyx container into production mode"
+    echo "      -r, --root      Execute as root user"
     echo "      --ssh           Override ssh port"
     echo
 elif [[ "$DEMYX_CHROOT" = remove ]]; then
@@ -185,28 +190,28 @@ elif [[ "$DEMYX_CHROOT" = restart ]]; then
     demyx_run
     demyx_mode
     if [[ -z "$DEMYX_CHROOT_NC" ]]; then
-        docker exec -it demyx zsh
+        docker exec -it --user="$DEMYX_CHROOT_USER" demyx zsh
     fi
 elif [[ "$DEMYX_CHROOT" = tty ]]; then
-    docker exec -t demyx "$@"
+    docker exec -it --user="$DEMYX_CHROOT_USER" demyx "$@"
 elif [[ "$DEMYX_CHROOT" = update ]]; then
     docker run -t --rm -v /usr/local/bin:/usr/local/bin demyx/utilities "rm -f /usr/local/bin/demyx; curl -s https://raw.githubusercontent.com/demyxco/demyx/master/chroot.sh -o /usr/local/bin/demyx; chmod +x /usr/local/bin/demyx"
     echo -e "\e[32m[SUCCESS]\e[39m Demyx chroot has successfully updated"
 else
     if [[ -n "$DEMYX_CHROOT_CONTAINER_CHECK" ]]; then
-        DEMYX_MODE_CHECK=$(docker exec -t demyx sh -c "grep DEMYX_MOTD_MODE /demyx/.env | awk -F '[=]' '{print \$2}'")
+        DEMYX_MODE_CHECK="$(docker exec --user=root demyx sh -c "grep DEMYX_MOTD_MODE /demyx/.env | awk -F '[=]' '{print \$2}'")"
         if [[ -z "$DEMYX_CHROOT_MODE" ]]; then
             DEMYX_CHROOT_MODE="$DEMYX_MODE_CHECK"
         fi
         demyx_mode
         if [[ -z "$DEMYX_CHROOT_NC" ]]; then
-            docker exec -it demyx zsh
+            docker exec -it --user="$DEMYX_CHROOT_USER" demyx zsh
         fi
     else
         demyx_run
         demyx_mode
         if [[ -z "$DEMYX_CHROOT_NC" ]]; then
-            docker exec -it demyx zsh
+            docker exec -it --user="$DEMYX_CHROOT_USER" demyx zsh
         fi
     fi
 fi
