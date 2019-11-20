@@ -13,7 +13,7 @@ demyx_restore() {
                 DEMYX_RESTORE_CONFIG=1
                 ;;
             --date=?*)
-                DEMYX_RESTORE_DATE=${3#*=}
+                DEMYX_RESTORE_DATE="${3#*=}"
                 ;;
             --)
                 shift
@@ -30,7 +30,7 @@ demyx_restore() {
         shift
     done
 
-    DEMYX_RESTORE_TODAYS_DATE=$(date +%Y/%m/%d)
+    DEMYX_RESTORE_TODAYS_DATE="$(date +%Y/%m/%d)"
 
     demyx_app_config
     
@@ -80,7 +80,7 @@ demyx_restore() {
 
             cd "$DEMYX_APP_PATH" || exit
 
-            demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" db up -d --remove-orphans
+            demyx compose "$DEMYX_APP_DOMAIN" db up -d --remove-orphans
 
             demyx_echo 'Initializing MariaDB'
             demyx_execute demyx_mariadb_ready
@@ -95,8 +95,7 @@ demyx_restore() {
 
             demyx_echo 'Restoring files'
             demyx_execute docker cp html "$DEMYX_APP_ID":/var/www; \
-                docker cp demyx "$DEMYX_APP_ID":/var/log; \
-                docker exec -t "$DEMYX_APP_ID" chown -R www-data:www-data /var/www/html
+                docker cp demyx "$DEMYX_APP_ID":/var/log
 
             demyx_echo 'Restoring database'
             demyx_execute docker run -it --rm \
@@ -110,14 +109,14 @@ demyx_restore() {
             demyx_echo 'Stopping temporary container'
             demyx_execute docker stop "$DEMYX_APP_ID"
 
+            demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans            
             demyx config "$DEMYX_APP_DOMAIN" --healthcheck
 
             demyx_echo 'Cleaning up'
             demyx_execute rm -rf "$DEMYX_APP_PATH"/html; \
                 rm -rf "$DEMYX_APP_PATH"/demyx
 
-            demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" wp up -d --remove-orphans
-            demyx_execute -v demyx info "$DEMYX_APP_DOMAIN"    
+            demyx info "$DEMYX_APP_DOMAIN"
         fi
     else
         demyx_die --restore-not-found
