@@ -7,7 +7,7 @@ demyx_run() {
     while :; do
         case "$3" in
             --archive=?*)
-                DEMYX_RUN_ARCHIVE=${3#*=}
+                DEMYX_RUN_ARCHIVE="${3#*=}"
                 ;;
             --archive=)
                 demyx_die '"--archive" cannot be empty'
@@ -25,13 +25,13 @@ demyx_run() {
                 DEMYX_RUN_CDN=true
                 ;;
             --clone=?*)
-                DEMYX_RUN_CLONE=${3#*=}
+                DEMYX_RUN_CLONE="${3#*=}"
                 ;;
             --clone=)
                 demyx_die '"--clone" cannot be empty'
                 ;;
             --email=?*)
-                DEMYX_RUN_EMAIL=${3#*=}
+                DEMYX_RUN_EMAIL="${3#*=}"
                 ;;
             --email=)
                 demyx_die '"--email" cannot be empty'
@@ -40,7 +40,7 @@ demyx_run() {
                 DEMYX_RUN_FORCE=1
                 ;;
             --pass=?*)
-                DEMYX_RUN_PASSWORD=${3#*=}
+                DEMYX_RUN_PASSWORD="${3#*=}"
                 ;;
             --pass=)
                 demyx_die '"--password" cannot be empty'
@@ -58,13 +58,13 @@ demyx_run() {
                 DEMYX_RUN_SSL=false
                 ;;
             --type=wp|--type=php|--type=html)
-                DEMYX_RUN_TYPE=${3#*=}
+                DEMYX_RUN_TYPE="${3#*=}"
                 ;;
             --type=)
                 demyx_die '"--type" cannot be empty'
                 ;;
             --user=?*)
-                DEMYX_RUN_USER=${3#*=}
+                DEMYX_RUN_USER="${3#*=}"
                 ;;
             --user=)
                 demyx_die '"--user" cannot be empty'
@@ -83,15 +83,15 @@ demyx_run() {
         shift
     done
 
-    DEMYX_RUN_CHECK=$(find "$DEMYX_APP" -name "$DEMYX_TARGET" || true)
-    DEMYX_RUN_TODAYS_DATE=$(date +%Y/%m/%d)
+    DEMYX_RUN_CHECK="$(find "$DEMYX_APP" -name "$DEMYX_TARGET" || true)"
+    DEMYX_RUN_TODAYS_DATE="$(date +%Y/%m/%d)"
     
     if [[ ! -f "$DEMYX_BACKUP"/"$DEMYX_RUN_TODAYS_DATE"/wp/"$DEMYX_RUN_ARCHIVE".tgz && -n "$DEMYX_RUN_ARCHIVE" ]]; then
         demyx_die "${DEMYX_BACKUP}/${DEMYX_RUN_TODAYS_DATE}/${DEMYX_RUN_ARCHIVE}.tgz doesn't exist"
     fi
 
     if [[ -n "$DEMYX_RUN_CLONE" ]]; then
-        DEMYX_CLONE_CHECK=$(find "$DEMYX_APP" -name "$DEMYX_RUN_CLONE" || true)
+        DEMYX_CLONE_CHECK="$(find "$DEMYX_APP" -name "$DEMYX_RUN_CLONE" || true)"
         [[ -z "$DEMYX_CLONE_CHECK" ]] && demyx_die "App doesn't exist"
     fi
 
@@ -115,8 +115,8 @@ demyx_run() {
     [[ -z "$DEMYX_RUN_CDN" ]] && DEMYX_RUN_CDN=false
     [[ -z "$DEMYX_RUN_CACHE" ]] && DEMYX_RUN_CACHE=false
     [[ -z "$DEMYX_RUN_AUTH" ]] && DEMYX_RUN_AUTH=false
-    [[ -n "$DEMYX_RUN_CLONE" ]] && DEMYX_RUN_CLONE_APP=$(demyx info "$DEMYX_RUN_CLONE" --filter=DEMYX_APP_WP_CONTAINER)
-    [[ -n "$DEMYX_RUN_BEDROCK" ]] && DEMYX_APP_WP_IMAGE=demyx/nginx-php-wordpress:bedrock
+    [[ -n "$DEMYX_RUN_CLONE" ]] && DEMYX_RUN_CLONE_APP="$(demyx info "$DEMYX_RUN_CLONE" --filter=DEMYX_APP_WP_CONTAINER)"
+    [[ -n "$DEMYX_RUN_BEDROCK" ]] && DEMYX_APP_WP_IMAGE=demyx/wordpress:bedrock
 
     if [[ "$DEMYX_RUN_SSL" = true ]]; then 
         DEMYX_RUN_SSL=true
@@ -147,7 +147,7 @@ demyx_run() {
         demyx_execute demyx_yml
 
         # Recheck SSL
-        DEMYX_RUN_SSL_RECHECK=$(grep DEMYX_APP_SSL "$DEMYX_APP_PATH"/.env | awk -F '[=]' '{print $2}')
+        DEMYX_RUN_SSL_RECHECK="$(grep DEMYX_APP_SSL "$DEMYX_APP_PATH"/.env | awk -F '[=]' '{print $2}')"
         [[ "$DEMYX_RUN_SSL_RECHECK" = false ]] && DEMYX_RUN_PROTO="http://$DEMYX_TARGET"
 
         if [[ -n "$DEMYX_RUN_CLONE" ]]; then
@@ -170,7 +170,7 @@ demyx_run() {
         demyx_echo 'Creating log volume'
         demyx_execute docker volume create wp_"$DEMYX_APP_ID"_log
         
-        demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" up -d db_"$DEMYX_APP_ID"
+        demyx compose "$DEMYX_APP_DOMAIN" up -d db_"$DEMYX_APP_ID"
 
         demyx_echo 'Initializing MariaDB'
         demyx_execute demyx_mariadb_ready
@@ -214,7 +214,7 @@ demyx_run() {
             demyx_execute docker stop "$DEMYX_APP_ID"
         fi
 
-        demyx_execute -v demyx compose "$DEMYX_APP_DOMAIN" up -d wp_"$DEMYX_APP_ID"
+        demyx compose "$DEMYX_APP_DOMAIN" up -d wp_"$DEMYX_APP_ID" nx_"$DEMYX_APP_ID"
 
         if [[ -n "$DEMYX_RUN_BEDROCK" ]]; then
             demyx_echo 'Initializing Bedrock'
@@ -347,8 +347,9 @@ demyx_run() {
         PRINT_TABLE+="WORDPRESS USER^ $WORDPRESS_USER\n"
         PRINT_TABLE+="WORDPRESS PASSWORD^ $WORDPRESS_USER_PASSWORD\n"
         PRINT_TABLE+="WORDPRESS EMAIL^ $WORDPRESS_USER_EMAIL\n"
+        PRINT_TABLE+="NX CONTAINER^ $DEMYX_APP_NX_CONTAINER\n"
         PRINT_TABLE+="WP CONTAINER^ $DEMYX_APP_WP_CONTAINER\n"
-        PRINT_TABLE+="DP CONTAINER^ $DEMYX_APP_DB_CONTAINER\n"
+        PRINT_TABLE+="DB CONTAINER^ $DEMYX_APP_DB_CONTAINER\n"
         PRINT_TABLE+="SSL^ $DEMYX_RUN_SSL\n"
         PRINT_TABLE+="RATE LIMIT^ $DEMYX_RUN_RATE_LIMIT\n"
         PRINT_TABLE+="BASIC AUTH^ $DEMYX_RUN_AUTH\n"
