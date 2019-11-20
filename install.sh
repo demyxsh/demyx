@@ -93,12 +93,7 @@ if [[ -f /usr/local/bin/demyx ]]; then
 fi
 
 echo -e "\e[34m[INFO\e[39m] Installing demyx chroot"
-mkdir -p /demyx
-echo "DEMYX_CHROOT_USER=$DEMYX_INSTALL_HOST_USER" > /demyx/config
-wget https://raw.githubusercontent.com/demyxco/demyx/master/chroot.sh -qO /demyx/chroot.sh
-ln -s /demyx/chroot.sh /usr/local/bin/demyx
-chown -R "$DEMYX_INSTALL_HOST_USER":"$DEMYX_INSTALL_HOST_USER" /demyx
-chmod +x /demyx/chroot.sh
+docker run -t --user=root --rm -v /usr/local/bin:/usr/local/bin demyx/utilities "rm -f /usr/local/bin/demyx; curl -s https://raw.githubusercontent.com/demyxco/demyx/master/chroot.sh -o /usr/local/bin/demyx; chmod +x /usr/local/bin/demyx"
 
 demyx --nc
 echo -e "\e[34m[INFO\e[39m] Waiting for demyx container to initialize"
