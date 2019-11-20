@@ -110,13 +110,8 @@ demyx_stack() {
         fi
     elif [[ "$DEMYX_STACK_SELECT" = ouroboros ]]; then
         if [[ -n "$DEMYX_STACK_IGNORE" ]]; then
-            DEMYX_STACK_OUROBOROS_IGNORE_CHECK="$(grep DEMYX_STACK_OUROBOROS_IGNORE "$DEMYX_STACK"/.env)"
+            DEMYX_STACK_OUROBOROS_IGNORE_CHECK="$(demyx info stack --filter=DEMYX_STACK_OUROBOROS_IGNORE)"
             
-            # Regenerate stack's configs if the check returns null
-            if [[ -z "$DEMYX_STACK_OUROBOROS_IGNORE_CHECK" ]]; then
-                demyx stack refresh
-            fi
-
             if [[ "$DEMYX_STACK_IGNORE" = false ]]; then
                 demyx_echo 'Updating Ouroboros'
                 demyx_execute sed -i "s|DEMYX_STACK_OUROBOROS_IGNORE=.*|DEMYX_STACK_OUROBOROS_IGNORE=|g" "$DEMYX_STACK"/.env
