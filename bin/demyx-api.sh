@@ -1,7 +1,7 @@
-#!/usr/bin/with-contenv bash
+#!/bin/bash
 # Demyx
 # https://demyx.sh
-
+ 
 shell2http -log=/var/log/demyx/api.log -form \
     /run '
         if [[ -d /demyx/app/wp/$v_domain ]]; then

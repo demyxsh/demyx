@@ -1,10 +1,10 @@
-#!/usr/bin/with-contenv bash
+#!/bin/bash
 # Demyx
 # https://demyx.sh
  
 # Clone demyx if it doesn't exist
 if [[ ! -d /demyx/etc ]]; then
-    echo "Demyx is now installing..."
+    echo "[demyx] installing now..."
     git clone https://github.com/demyxco/demyx.git /demyx/etc
     mkdir -p /demyx/app/html
     mkdir -p /demyx/app/php
@@ -14,16 +14,6 @@ if [[ ! -d /demyx/etc ]]; then
     mkdir -p /demyx/custom
     touch /demyx/app/stack/.env
     cp /demyx/etc/example/example-callback.sh /demyx/custom
-    chown -R demyx:demyx /demyx
-    echo "Demyx is now installed"
-fi
-
-# Don't start API if DEMYX_STACK_SERVER_API is false
-if [[ -f /demyx/app/stack/.env ]]; then
-    DEMYX_STACK_SERVER_API=$(grep DEMYX_STACK_SERVER_API /demyx/app/stack/.env | awk -F '[=]' '{print $2}')
-    if [[ "$DEMYX_STACK_SERVER_API" = false ]]; then
-        rm -rf /etc/services.d/api
-    fi
 fi
 
 # Create /demyx/.env if it doesn't exist
@@ -66,4 +56,14 @@ fi
 chmod 700 /home/demyx/.ssh
 chmod 600 /etc/ssh/ssh_host_rsa_key
 
-demyx-helper "$DEMYX_MODE"
+# Show demyx help menu
+demyx
+
+# Start the API if DEMYX_STACK_SERVER_API has a url defined (Ex: api.domain.tld)
+DEMYX_STACK_SERVER_API="$(demyx info stack --filter=DEMYX_STACK_SERVER_API)"
+if [[ "$DEMYX_STACK_SERVER_API" != false ]]; then
+    demyx-api &
+fi
+
+demyx-ssh &
+demyx-crond

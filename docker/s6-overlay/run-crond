@@ -1,5 +1,0 @@
-#!/usr/bin/with-contenv bash
-# Demyx
-# https://demyx.sh
-
-crond -fL /var/log/demyx/cron.log

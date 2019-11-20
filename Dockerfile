@@ -14,7 +14,9 @@ ENV TZ America/Los_Angeles
 RUN set -ex; \
     apk add --no-cache --update \
     bash \
+    bind-tools \
     curl \
+    dumb-init \
     git \
     gnupg \
     htop \
@@ -43,10 +45,12 @@ RUN set -ex; \
     adduser -u 1000 -D -S -G demyx demyx; \
     echo demyx:demyx | chpasswd; \
     sed -i "s|/home/demyx:/sbin/nologin|/home/demyx:/bin/zsh|g" /etc/passwd; \
+    sed -i "s|#Port 22|Port 2222|g" /etc/ssh/sshd_config; \
     sed -i "s|#PermitRootLogin prohibit-password|PermitRootLogin no|g" /etc/ssh/sshd_config; \
     sed -i "s|#PubkeyAuthentication yes|PubkeyAuthentication yes|g" /etc/ssh/sshd_config; \
     sed -i "s|#PasswordAuthentication yes|PasswordAuthentication no|g" /etc/ssh/sshd_config; \
-    sed -i "s|#PermitEmptyPasswords no|PermitEmptyPasswords no|g" /etc/ssh/sshd_config
+    sed -i "s|#PermitEmptyPasswords no|PermitEmptyPasswords no|g" /etc/ssh/sshd_config; \
+    chown demyx:demyx /etc/ssh
 
 # Install Oh-My-Zsh with ys as the default theme
 RUN set -ex; \
@@ -67,16 +71,16 @@ RUN set -ex; \
     # Empty out Alpine Linux's MOTD and configure ours
     echo "" > /etc/motd; \
     echo 'cd /demyx && demyx motd' >> /root/.zshrc; \
-    echo 'cd /demyx && sudo demyx motd' >> /home/demyx/.zshrc
+    echo 'cd /demyx && demyx motd' >> /home/demyx/.zshrc
 
 # Allow demyx user to execute only one script and allow usage of environment variables
 RUN set -ex; \
-    echo "demyx ALL=(ALL) NOPASSWD:/demyx/etc/demyx.sh" >> /etc/sudoers; \
-    echo 'Defaults env_keep +="DEMYX_MODE"' >> /etc/sudoers; \
-    echo 'Defaults env_keep +="DEMYX_HOST"' >> /etc/sudoers; \
-    echo 'Defaults env_keep +="DEMYX_SSH"' >> /etc/sudoers; \
-    echo 'Defaults env_keep +="DEMYX_ET"' >> /etc/sudoers; \
-    echo 'Defaults env_keep +="TZ"' >> /etc/sudoers; \
+    echo "demyx ALL=(ALL) NOPASSWD: /usr/local/bin/demyx-main, /usr/sbin/crond" >> /etc/sudoers.d/demyx; \
+    echo 'Defaults env_keep +="DEMYX_MODE"' >> /etc/sudoers.d/demyx; \
+    echo 'Defaults env_keep +="DEMYX_HOST"' >> /etc/sudoers.d/demyx; \
+    echo 'Defaults env_keep +="DEMYX_SSH"' >> /etc/sudoers.d/demyx; \
+    echo 'Defaults env_keep +="DEMYX_ET"' >> /etc/sudoers.d/demyx; \
+    echo 'Defaults env_keep +="TZ"' >> /etc/sudoers.d/demyx; \
     mkdir /demyx; \
     ln -s /demyx /home/demyx; \
     \
@@ -85,42 +89,43 @@ RUN set -ex; \
     \
     chown -R demyx:demyx /demyx
 
-# Set cron
+# Set cron and log
 RUN set -ex; \
-    (echo "* * * * * /demyx/etc/cron/every-minute.sh") | crontab - ; \
-    (crontab -l 2>/dev/null; echo "0 */6 * * * /demyx/etc/cron/every-6-hour.sh") | crontab - ; \
-    (crontab -l 2>/dev/null; echo "0 0 * * * /demyx/etc/cron/every-day.sh") | crontab - ; \
-    (crontab -l 2>/dev/null; echo "0 0 * * 0 /demyx/etc/cron/every-week.sh") | crontab - ; \
+    echo "* * * * * /usr/local/bin/demyx cron minute" > /etc/crontabs/demyx; \
+    echo "0 */6 * * * /usr/local/bin/demyx cron six-hour" >> /etc/crontabs/demyx; \
+    echo "0 0 * * * /usr/local/bin/demyx cron daily" >> /etc/crontabs/demyx; \
+    echo "0 0 * * 0 /usr/local/bin/demyx cron weekly" >> /etc/crontabs/demyx; \
     mkdir -p /var/log/demyx; \
-    touch /var/log/demyx/demyx.log
+    touch /var/log/demyx/demyx.log; \
+    chown -R demyx:demyx /var/log/demyx
 
 # Sudo wrapper for demyx executable so demyx user doesn't have to type sudo on each demyx command
 RUN set -ex; \
     echo '#!/bin/bash' >> /usr/local/bin/demyx; \
-    echo 'sudo /demyx/etc/demyx.sh "$@"' >> /usr/local/bin/demyx; \
+    echo 'sudo /usr/local/bin/demyx-main "$@"' >> /usr/local/bin/demyx; \
     chmod +x /usr/local/bin/demyx
 
-# s6-overlay
-RUN set -ex; \
-    export DEMYX_S6_VERSION=$(curl -sL https://api.github.com/repos/just-containers/s6-overlay/releases/latest | grep '"name"' | head -n1 | awk -F '[:]' '{print $2}' | sed -e 's/"//g' | sed -e 's/,//g' | sed -e 's/ //g' | sed -e 's/\r//g'); \
-    if [ -z "$DEMYX_S6_VERSION" ]; then export DEMYX_S6_VERSION=v1.22.1.0; fi; \
-    wget https://github.com/just-containers/s6-overlay/releases/download/${DEMYX_S6_VERSION}/s6-overlay-amd64.tar.gz -qO /tmp/s6-overlay-amd64.tar.gz; \
-    tar xzf /tmp/s6-overlay-amd64.tar.gz -C /; \
-    rm -rf /tmp/*
-
-COPY s6-overlay/00-init /etc/cont-init.d/00-init
-COPY s6-overlay/run-crond /etc/services.d/crond/run
-COPY s6-overlay/run-sshd /etc/services.d/sshd/run
-COPY s6-overlay/run-api /etc/services.d/api/run
-
-# demyx-helper
-COPY demyx-helper.sh /usr/local/bin/demyx-helper
-RUN chmod +x /usr/local/bin/demyx-helper
+# Copy files
+COPY demyx.sh /usr/local/bin/demyx-main
+COPY bin/demyx-api.sh /usr/local/bin/demyx-api
+COPY bin/demyx-crond.sh /usr/local/bin/demyx-crond
+COPY bin/demyx-mode.sh /usr/local/bin/demyx-mode
+COPY bin/demyx-init.sh /usr/local/bin/demyx-init
+COPY bin/demyx-ssh.sh /usr/local/bin/demyx-ssh
 
 # demyx api
 COPY --from=demyx_api /app/shell2http /usr/local/bin
 
-EXPOSE 22
-EXPOSE 8080
+# Finalize
+RUN set -ex; \
+    chmod +x /usr/local/bin/demyx-api; \
+    chmod +x /usr/local/bin/demyx-crond; \
+    chmod +x /usr/local/bin/demyx-main; \
+    chmod +x /usr/local/bin/demyx-mode; \
+    chmod +x /usr/local/bin/demyx-init; \
+    chmod +x /usr/local/bin/demyx-ssh
+
+EXPOSE 2222 8080
 WORKDIR /demyx
-ENTRYPOINT ["/init"]
+USER demyx
+ENTRYPOINT ["dumb-init", "demyx-init"]
