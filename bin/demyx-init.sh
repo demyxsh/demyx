@@ -56,6 +56,10 @@ fi
 chmod 700 /home/demyx/.ssh
 chmod 600 /etc/ssh/ssh_host_rsa_key
 
+# Need to execute demyx update due to breaking changes
+# Will remove this in December 2019
+demyx update &
+
 # Show demyx help menu
 demyx
 
