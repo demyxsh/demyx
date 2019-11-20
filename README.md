@@ -133,6 +133,7 @@ demyx <arg>           Main demyx command
       compose         Accepts all docker-compose arguments
       config          Modifies an app's configuration
       cp              Wrapper for docker cp
+      cron            Execute demyx cron
       ctop            Htop but for containers
       exec            Accepts all docker exec arguments
       healthcheck     Checks if WordPress apps are up
