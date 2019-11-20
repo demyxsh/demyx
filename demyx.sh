@@ -26,6 +26,10 @@ elif [[ "$DEMYX_COMMAND" = cp ]]; then
     source "$DEMYX_FUNCTION"/cp.sh
     shift
     demyx_cp "$@"
+elif [[ "$DEMYX_COMMAND" = cron ]]; then
+    source "$DEMYX_FUNCTION"/cron.sh
+    shift
+    demyx_cron "$@"
 elif [[ "$DEMYX_COMMAND" = ctop ]]; then
     source "$DEMYX_FUNCTION"/ctop.sh
     shift
@@ -88,7 +92,7 @@ elif [[ "$DEMYX_COMMAND" = wp ]]; then
     shift 2
     demyx_wp "$@"
 else
-    "$DEMYX_SH" help
+    demyx help
 fi
 
 demyx_permission
