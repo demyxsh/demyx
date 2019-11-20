@@ -5,9 +5,7 @@
 #
 demyx_log() {
     while :; do
-        DEMYX_LOG_CASE="$3"
-        [[ -z "$DEMYX_LOG_CASE" ]] && DEMYX_LOG_CASE="$2"
-        case "$DEMYX_LOG_CASE" in
+        case "$3" in
             -e|--error)
                 DEMYX_LOG_ERROR=1
                 ;;
@@ -22,7 +20,7 @@ demyx_log() {
                 break
                 ;;
             -?*)
-                printf '\e[31m[CRITICAL]\e[39m Unknown option: %s\n' "$DEMYX_LOG_CASE" >&2
+                printf '\e[31m[CRITICAL]\e[39m Unknown option: %s\n' "$3" >&2
                 exit 1
                 ;;
             *) 
@@ -35,6 +33,19 @@ demyx_log() {
 
     if [[ "$DEMYX_TARGET" = api ]]; then
         tail "$DEMYX_LOG_FOLLOW" /var/log/demyx/api.log
+    elif [[ "$DEMYX_TARGET" = cron ]]; then
+        tail "$DEMYX_LOG_FOLLOW" /var/log/demyx/cron.log
+    elif [[ "$DEMYX_TARGET" = main ]]; then
+        if [[ -n "$DEMYX_LOG_ROTATE" ]]; then
+            demyx_echo 'Rotating demyx log'
+            demyx_execute docker run -t --rm -e DEMYX_LOG=/var/log/demyx --volumes-from demyx demyx/logrotate
+        else
+            if [[ -n "$DEMYX_LOG_ERROR" ]]; then
+                tail /var/log/demyx/demyx.log $DEMYX_LOG_FOLLOW
+            else
+                docker logs $DEMYX_LOG_FOLLOW demyx
+            fi
+        fi
     elif [[ "$DEMYX_TARGET" = ouroboros ]]; then
         docker logs demyx_ouroboros "$DEMYX_LOG_FOLLOW"
     elif [[ "$DEMYX_TARGET" = traefik ]]; then
@@ -51,13 +62,6 @@ demyx_log() {
             DEMYX_LOG_WP=access
             [[ -n "$DEMYX_LOG_ERROR" ]] && DEMYX_LOG_WP=error
             docker exec -it "$DEMYX_APP_WP_CONTAINER" tail $DEMYX_LOG_FOLLOW /var/log/demyx/"$DEMYX_APP_DOMAIN"."$DEMYX_LOG_WP".log
-        fi
-    else
-        if [[ -n "$DEMYX_LOG_ROTATE" ]]; then
-            demyx_echo 'Rotating demyx log'
-            demyx_execute docker run -t --rm -e DEMYX_LOG=/var/log/demyx --volumes-from demyx demyx/logrotate
-        else
-            docker logs $DEMYX_LOG_FOLLOW demyx
         fi
     fi
 }
