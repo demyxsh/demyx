@@ -41,7 +41,7 @@ demyx_list() {
         done
     else
         demyx_wp_check_empty true
-        DEMYX_LIST_WP_COUNT=$(find * -maxdepth 0 -type d | wc -l)
+        DEMYX_LIST_WP_COUNT="$(find * -maxdepth 0 -type d | wc -l)"
         PRINT_TABLE="DEMYX^ WORDPRESS ($DEMYX_LIST_WP_COUNT)\n"
         for i in *
         do

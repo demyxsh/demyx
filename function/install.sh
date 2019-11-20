@@ -7,13 +7,13 @@ demyx_install() {
     while :; do
         case "$2" in
             --domain=?*)
-                DEMYX_INSTALL_DOMAIN=${2#*=}
+                DEMYX_INSTALL_DOMAIN="${2#*=}"
                 ;;
             --domain=)
                 demyx_die '"--domain" cannot be empty'
                 ;;
             --email=?*)
-                DEMYX_INSTALL_EMAIL=${2#*=}
+                DEMYX_INSTALL_EMAIL="${2#*=}"
                 ;;
             --email=)
                 demyx_die '"--email" cannot be empty'
@@ -22,13 +22,13 @@ demyx_install() {
                 DEMYX_INSTALL_FORCE=1
                 ;;
             --pass=?*)
-                DEMYX_INSTALL_PASS=${2#*=}
+                DEMYX_INSTALL_PASS="${2#*=}"
                 ;;
             --pass=)
                 demyx_die '"--pass" cannot be empty'
                 ;;
             --user=?*)
-                DEMYX_INSTALL_USER=${2#*=}
+                DEMYX_INSTALL_USER="${2#*=}"
                 ;;
             --user=)
                 demyx_die '"--user" cannot be empty'
@@ -53,14 +53,14 @@ demyx_install() {
         [[ -z "$DEMYX_INSTALL_FORCE" ]] && demyx_die 'Demyx is already installed'
     fi
 
-    DEMYX_WILDCARD_CHECK=$(demyx util dig +short "*.$DEMYX_INSTALL_DOMAIN")
+    DEMYX_WILDCARD_CHECK="$(demyx util dig +short "*.$DEMYX_INSTALL_DOMAIN")"
     [[ -z "$DEMYX_WILDCARD_CHECK" ]] && demyx_die "Wildcard CNAME not detected, please add * as a CNAME to your domain's DNS and rerun installation"
     
     source "$DEMYX_FUNCTION"/env.sh
     source "$DEMYX_FUNCTION"/yml.sh
 
-    DEMYX_STACK_AUTH=$(demyx util --user="$DEMYX_INSTALL_USER" --htpasswd="$DEMYX_INSTALL_PASS" --raw)
-    DEMYX_STACK_SERVER_IP=$(demyx util curl -s https://ipecho.net/plain | sed -e 's/\r//g')
+    DEMYX_STACK_AUTH="$(demyx util --user="$DEMYX_INSTALL_USER" --htpasswd="$DEMYX_INSTALL_PASS" --raw)"
+    DEMYX_STACK_SERVER_IP="$(curl -m 10 -s https://ipecho.net/plain)"
 
     cat > "$DEMYX_STACK"/.env <<-EOF
         # AUTO GENERATED
