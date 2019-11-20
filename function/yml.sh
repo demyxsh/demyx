@@ -14,14 +14,14 @@ demyx_yml() {
                         - \"traefik.http.middlewares.\${DEMYX_APP_COMPOSE_PROJECT}-redirect.redirectscheme.scheme=http\""
 
         if [[ "$DEMYX_APP_SSL" = true ]]; then
-            DEMYX_SERVER_IP=$(demyx util curl -m 10 -s https://ipecho.net/plain | sed -e 's/\r//g')
-            DEMYX_SUBDOMAIN_CHECK=$(demyx util dig +short "$DEMYX_APP_DOMAIN" | sed -e '1d' | sed -e 's/\r//g')
-            DEMYX_CLOUDFLARE_CHECK=$(curl -m 10 -svo /dev/null "$DEMYX_APP_DOMAIN" 2>&1 | grep "Server: cloudflare" || true)
+            DEMYX_SERVER_IP="$(curl -m 10 -s https://ipecho.net/plain)"
+            DEMYX_SUBDOMAIN_CHECK="$(dig +short "$DEMYX_APP_DOMAIN" | sed -e '1d')"
+            DEMYX_CLOUDFLARE_CHECK="$(curl -m 10 -svo /dev/null "$DEMYX_APP_DOMAIN" 2>&1 | grep "Server: cloudflare" || true)"
         
             if [[ -n "$DEMYX_SUBDOMAIN_CHECK" ]]; then
                 DEMYX_DOMAIN_IP=$DEMYX_SUBDOMAIN_CHECK
             else
-                DEMYX_DOMAIN_IP=$(demyx util dig +short "$DEMYX_APP_DOMAIN" | sed -e 's/\r//g')
+                DEMYX_DOMAIN_IP="$(dig +short "$DEMYX_APP_DOMAIN")"
             fi
 
             if [[ "$DEMYX_SERVER_IP" = "$DEMYX_DOMAIN_IP" || -n "$DEMYX_CLOUDFLARE_CHECK" ]]; then
@@ -38,24 +38,26 @@ demyx_yml() {
             fi
         fi
         
-        DEMYX_YML_AUTH_CHECK=$(demyx info "$DEMYX_APP_DOMAIN" --filter=DEMYX_APP_AUTH)
+        DEMYX_YML_AUTH_CHECK="$(demyx info "$DEMYX_APP_DOMAIN" --filter=DEMYX_APP_AUTH)"
 
         if [[ "$DEMYX_YML_AUTH_CHECK" = true && -f "$DEMYX_STACK"/.env ]]; then
             source "$DEMYX_STACK"/.env
-            DEMYX_PARSE_BASIC_AUTH=$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}' | sed 's/\$/$$/g')
+            DEMYX_PARSE_BASIC_AUTH="$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}' | sed 's/\$/$$/g')"
             DEMYX_BASIC_AUTH="
                         - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-https.middlewares=\${DEMYX_APP_COMPOSE_PROJECT}-auth\"
                         - \"traefik.http.middlewares.\${DEMYX_APP_COMPOSE_PROJECT}-auth.basicauth.users=${DEMYX_PARSE_BASIC_AUTH}\""
         fi
 
-        if [[ "$DEMYX_APP_WP_IMAGE" = demyx/nginx-php-wordpress:bedrock ]]; then
-            DEMYX_YML_EXTRAS+='
+        if [[ "$DEMYX_APP_WP_IMAGE" = demyx/wordpress:bedrock ]]; then
+            DEMYX_YML_NX_EXTRAS+='
+                        - WORDPRESS_BEDROCK=true'
+            DEMYX_YML_WP_EXTRAS+='
                         - WORDPRESS_SSL=${DEMYX_APP_SSL}
                         - WORDPRESS_BEDROCK_MODE=${DEMYX_APP_BEDROCK_MODE}'
         fi
 
         if [[ "$DEMYX_COMMAND" = run ]]; then
-            DEMYX_YML_EXTRAS+='
+            DEMYX_YML_WP_EXTRAS+='
                         - WORDPRESS_DB_HOST=${WORDPRESS_DB_HOST}
                         - WORDPRESS_DB_NAME=${WORDPRESS_DB_NAME}
                         - WORDPRESS_DB_USER=${WORDPRESS_DB_USER}
@@ -105,6 +107,29 @@ demyx_yml() {
                         - MARIADB_WRITE_BUFFER=\${MARIADB_WRITE_BUFFER}
                         - MARIADB_MAX_CONNECTIONS=\${MARIADB_MAX_CONNECTIONS}
                         - TZ=America/Los_Angeles
+                nx_${DEMYX_APP_ID}:
+                    image: demyx/nginx
+                    cpus: \${DEMYX_APP_WP_CPU}
+                    mem_limit: \${DEMYX_APP_WP_MEM}
+                    restart: unless-stopped
+                    networks:
+                        - demyx
+                    environment:
+                        - TZ=America/Los_Angeles
+                        - WORDPRESS=true
+                        - WORDPRESS_CONTAINER=wp_${DEMYX_APP_ID}
+                        - NGINX_DOMAIN=\${DEMYX_APP_DOMAIN}
+                        - NGINX_CACHE=\${DEMYX_APP_CACHE}
+                        - NGINX_UPLOAD_LIMIT=\${DEMYX_APP_UPLOAD_LIMIT}
+                        - NGINX_RATE_LIMIT=\${DEMYX_APP_RATE_LIMIT}
+                        - NGINX_XMLRPC=\${DEMYX_APP_XMLRPC}
+                        - NGINX_BASIC_AUTH=\${DEMYX_APP_AUTH_WP}${DEMYX_YML_NX_EXTRAS}
+                    volumes:
+                        - wp_${DEMYX_APP_ID}:/var/www/html
+                        - wp_${DEMYX_APP_ID}_log:/var/log/demyx
+                    labels:
+                        - "traefik.enable=true"
+                        $DEMYX_PROTOCOL $DEMYX_BASIC_AUTH
                 wp_${DEMYX_APP_ID}:
                     image: \${DEMYX_APP_WP_IMAGE}
                     cpus: \${DEMYX_APP_WP_CPU}
@@ -119,16 +144,16 @@ demyx_yml() {
                         - WORDPRESS_PHP_MEMORY=\${DEMYX_APP_PHP_MEMORY}
                         - WORDPRESS_PHP_MAX_EXECUTION_TIME=\${DEMYX_APP_PHP_MAX_EXECUTION_TIME}
                         - WORDPRESS_PHP_OPCACHE=\${DEMYX_APP_PHP_OPCACHE}
-                        - WORDPRESS_NGINX_CACHE=\${DEMYX_APP_CACHE}
-                        - WORDPRESS_NGINX_RATE_LIMIT=\${DEMYX_APP_RATE_LIMIT}
-                        - WORDPRESS_NGINX_XMLRPC=\${DEMYX_APP_XMLRPC}
-                        - WORDPRESS_NGINX_BASIC_AUTH=\${DEMYX_APP_AUTH_WP}${DEMYX_YML_EXTRAS}
+                        - WORDPRESS_PHP_PM=\${DEMYX_APP_PHP_PM}
+                        - WORDPRESS_PHP_PM_MAX_CHILDREN=\${DEMYX_APP_PHP_PM_MAX_CHILDREN}
+                        - WORDPRESS_PHP_PM_START_SERVERS=\${DEMYX_APP_PHP_PM_START_SERVERS}
+                        - WORDPRESS_PHP_PM_MIN_SPARE_SERVERS=\${DEMYX_APP_PHP_PM_MIN_SPARE_SERVERS}
+                        - WORDPRESS_PHP_PM_MAX_SPARE_SERVERS=\${DEMYX_APP_PHP_PM_MAX_SPARE_SERVERS}
+                        - WORDPRESS_PHP_PM_PROCESS_IDLE_TIMEOUT=\${DEMYX_APP_PHP_PM_PROCESS_IDLE_TIMEOUT}
+                        - WORDPRESS_PHP_PM_MAX_REQUESTS=\${DEMYX_APP_PHP_PM_MAX_REQUESTS}${DEMYX_YML_WP_EXTRAS}
                     volumes:
                         - wp_${DEMYX_APP_ID}:/var/www/html
                         - wp_${DEMYX_APP_ID}_log:/var/log/demyx
-                    labels:
-                        - "traefik.enable=true"
-                        $DEMYX_PROTOCOL $DEMYX_BASIC_AUTH
             volumes:
                 wp_${DEMYX_APP_ID}:
                     name: wp_${DEMYX_APP_ID}
@@ -151,7 +176,7 @@ EOF
 }
 demyx_stack_yml() {
     if [[ -f "$DEMYX_STACK"/.env ]]; then
-        DEMYX_PARSE_BASIC_AUTH=$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}')
+        DEMYX_PARSE_BASIC_AUTH="$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}')"
         source "$DEMYX_STACK"/.env
         DEMYX_STACK_AUTH="$DEMYX_PARSE_BASIC_AUTH"
     fi
