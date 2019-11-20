@@ -126,53 +126,69 @@ demyx_table() {
     printTable '^' "$@"
 }
 demyx_permission() {
+    [[ -f "$DEMYX"/.env ]] && source "$DEMYX"/.env
+    [[ "$DEMYX_MOTD_MODE" = production ]] && demyx-mode production
     chown -R demyx:demyx "$DEMYX"
+
+    # Will remove this backwards compability in December 2019
+    chown -R demyx:demyx "$DEMYX_LOG"
 }
 demyx_app_config() {
-    DEMYX_GET_APP=$(find "$DEMYX_APP" -name "$DEMYX_TARGET")
-    [[ -f "$DEMYX_GET_APP"/.env ]] && source "$DEMYX_GET_APP"/.env && source "$DEMYX_FUNCTION"/app-check.sh
+    DEMYX_GET_APP="$(find "$DEMYX_APP" -name "$DEMYX_TARGET")"
+    [[ -f "$DEMYX_GET_APP"/.env ]] && source "$DEMYX_GET_APP"/.env
 }
 demyx_open_port() {
-    DEMYX_SFTP_PORT=$(docker run -it --rm \
+    DEMYX_SFTP_PORT="$(docker run -it --rm \
     --network host \
     -e DEMYX_SFTP_PORT="$DEMYX_SFTP_PORT_DEFAULT" \
-    demyx/utilities demyx-port)
+    demyx/utilities demyx-port)"
     
     echo "$DEMYX_SFTP_PORT" | sed -e 's/\r//g'
 }
 demyx_mariadb_ready() {
-    DEMYX_MARIADB_READY_PASSWORD=$(echo "$MARIADB_ROOT_PASSWORD" | sed -e 's/\r//g')
-    until docker exec -t "$DEMYX_APP_DB_CONTAINER" mysqladmin -u root -p"$DEMYX_MARIADB_READY_PASSWORD" status
+    until docker exec "$DEMYX_APP_DB_CONTAINER" mysqladmin -u root -p"$MARIADB_ROOT_PASSWORD" status 2>/dev/null
     do
         sleep 1
     done
 }
 demyx_bedrock_ready() {
-    until docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "ls | grep web"
+    until docker exec "$DEMYX_APP_WP_CONTAINER" sh -c "ls | grep web"
     do
         sleep 1
     done
 }
 demyx_wordpress_ready() {
-    until docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "ls | grep wp-admin"
+    until docker exec "$DEMYX_APP_WP_CONTAINER" sh -c "ls | grep wp-admin"
     do
         sleep 1
     done
 }
 demyx_generate_password() {
-    DEMYX_PASSWORD_1=$(tr -dc "[:xdigit:]" < /dev/urandom | head -c $(( ( RANDOM % 10 )  + 4 )) | sed -e 's/\r//g')
-    DEMYX_PASSWORD_2=$(tr -dc "[:xdigit:]" < /dev/urandom | head -c $(( ( RANDOM % 10 )  + 4 )) | sed -e 's/\r//g')
-    DEMYX_PASSWORD_3=$(tr -dc "[:xdigit:]" < /dev/urandom | head -c $(( ( RANDOM % 10 )  + 4 )) | sed -e 's/\r//g')
-    DEMYX_PASSWORD_4=$(tr -dc "[:xdigit:]" < /dev/urandom | head -c $(( ( RANDOM % 10 )  + 4 )) | sed -e 's/\r//g')
+    DEMYX_PASSWORD_1="$(tr -dc [:xdigit:] < /dev/urandom | head -c $(( ( RANDOM % 10 )  + 4 )) | sed -e 's/\r//g')"
+    DEMYX_PASSWORD_2="$(tr -dc [:xdigit:] < /dev/urandom | head -c $(( ( RANDOM % 10 )  + 4 )) | sed -e 's/\r//g')"
+    DEMYX_PASSWORD_3="$(tr -dc [:xdigit:] < /dev/urandom | head -c $(( ( RANDOM % 10 )  + 4 )) | sed -e 's/\r//g')"
+    DEMYX_PASSWORD_4="$(tr -dc [:xdigit:] < /dev/urandom | head -c $(( ( RANDOM % 10 )  + 4 )) | sed -e 's/\r//g')"
     
     echo "${DEMYX_PASSWORD_1}-${DEMYX_PASSWORD_2}-${DEMYX_PASSWORD_3}-${DEMYX_PASSWORD_4}"
 }
 demyx_wp_check_empty() {
-    DEMYX_COMMON_WP_APPS="$(ls $DEMYX_WP)"
+    DEMYX_COMMON_WP_APPS="$(ls "$DEMYX_WP")"
 
     if [[ "$1" = true ]]; then
         echo -e "\e[33m[WARNING]\e[39m There are no WordPress apps installed."
     fi
 
     [[ -z "$DEMYX_COMMON_WP_APPS" ]] && exit 0
+}
+demyx_upgrade_apps() {
+    demyx_wp_check_empty
+    
+    cd "$DEMYX_WP"
+    for i in *
+    do
+        DEMYX_CHECK_APP_IMAGE="$(demyx info "$i" --filter=DEMYX_APP_WP_IMAGE)"
+        if [[ "$DEMYX_CHECK_APP_IMAGE" = demyx/nginx-php-wordpress ]]; then
+            demyx_execute -v echo -e "- demyx config $i --upgrade"
+        fi
+    done
 }
