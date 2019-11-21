@@ -24,7 +24,6 @@ docker pull demyx/code-server:wp
 docker pull demyx/docker-compose
 docker pull demyx/logrotate
 docker pull demyx/mariadb
-docker pull demyx/nginx-php-wordpress
 docker pull demyx/ssh
 docker pull demyx/utilities
 docker pull phpmyadmin/phpmyadmin
@@ -74,28 +73,14 @@ if [[ -z "$DEMYX_INSTALL_HOST_USER" ]]; then
     exit 1
 fi
 
-echo -e "\e[34m[INFO\e[39m] Copying authorized_keys to installer container. If you can't SSH or if this fails, then please run on the host OS: 
-
-docker cp \"\$HOME\"/.ssh/authorized_keys demyx:/home/demyx/.ssh
-demyx restart
-"
-docker run -dit --rm \
---name demyx_install_container \
--v demyx_user:/home/demyx/.ssh \
-demyx/utilities bash
-
-DEMYX_AUTHORIZED_KEY=$(find /home -name "authorized_keys" | head -n 1)
-if [[ -n "$DEMYX_AUTHORIZED_KEY" ]]; then
-    docker cp "$DEMYX_AUTHORIZED_KEY" demyx:/home/demyx/.ssh
-fi
-
-docker stop demyx_install_container
-
 echo -e "\e[34m[INFO\e[39m] Installing demyx chroot"
 docker run -t --user=root --rm -v /usr/local/bin:/usr/local/bin demyx/utilities "rm -f /usr/local/bin/demyx; curl -s https://raw.githubusercontent.com/demyxco/demyx/master/chroot.sh -o /usr/local/bin/demyx; chmod +x /usr/local/bin/demyx"
 
 demyx --nc
 echo -e "\e[34m[INFO\e[39m] Waiting for demyx container to initialize"
+
 sleep 5
 demyx exec install --domain="$DEMYX_INSTALL_DOMAIN" --email="$DEMYX_INSTALL_EMAIL" --user="$DEMYX_INSTALL_USER" --pass="$DEMYX_INSTALL_PASS"
+
+echo -e "\e[34m[INFO\e[39m] To SSH into the demyx container, paste your keys in /home/demyx/.ssh/authorized_keys inside the demyx container. Then run on the host OS: demyx restart"
 demyx
