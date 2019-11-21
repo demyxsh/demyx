@@ -16,6 +16,10 @@ if [[ -z "$DEMYX_DOCKER_CHECK" ]]; then
 fi
 
 docker pull demyx/demyx
+docker pull demyx/nginx
+docker pull demyx/wordpress
+docker pull demyx/wordpress:cli
+docker pull demyx/wordpress:bedrock
 docker pull demyx/code-server:wp
 docker pull demyx/docker-compose
 docker pull demyx/logrotate
@@ -23,10 +27,9 @@ docker pull demyx/mariadb
 docker pull demyx/nginx-php-wordpress
 docker pull demyx/ssh
 docker pull demyx/utilities
-docker pull wordpress:cli
 docker pull phpmyadmin/phpmyadmin
 docker pull pyouroboros/ouroboros
-docker pull quay.io/vektorlab/ctop
+docker pull quay.io/vektorlab/ctop:0.7.1
 docker pull traefik
 docker network create demyx
 
@@ -74,7 +77,7 @@ fi
 echo -e "\e[34m[INFO\e[39m] Copying authorized_keys to installer container. If you can't SSH or if this fails, then please run on the host OS: 
 
 docker cp \"\$HOME\"/.ssh/authorized_keys demyx:/home/demyx/.ssh
-demyx rs
+demyx restart
 "
 docker run -dit --rm \
 --name demyx_install_container \
@@ -87,10 +90,6 @@ if [[ -n "$DEMYX_AUTHORIZED_KEY" ]]; then
 fi
 
 docker stop demyx_install_container
-
-if [[ -f /usr/local/bin/demyx ]]; then
-    rm /usr/local/bin/demyx
-fi
 
 echo -e "\e[34m[INFO\e[39m] Installing demyx chroot"
 docker run -t --user=root --rm -v /usr/local/bin:/usr/local/bin demyx/utilities "rm -f /usr/local/bin/demyx; curl -s https://raw.githubusercontent.com/demyxco/demyx/master/chroot.sh -o /usr/local/bin/demyx; chmod +x /usr/local/bin/demyx"
