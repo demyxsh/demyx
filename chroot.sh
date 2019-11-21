@@ -100,7 +100,7 @@ demyx_run() {
         fi
     done
 
-    IFS=$'\r\n' GLOBIGNORE='*' command eval 'DEMYX_CHROOT_API_GET_ENV=($(docker run --user=root --rm --name demyx_tmp -v demyx:/demyx demyx/utilities "cat /demyx/app/stack/.env | sed 1d"))'
+    IFS=$'\r\n' GLOBIGNORE='*' command eval 'DEMYX_CHROOT_API_GET_ENV=($(docker run --user=root --rm --name=demyx_tmp -v demyx:/demyx demyx/utilities "cat /demyx/app/stack/.env | sed 1d"))'
     DEMYX_CHROOT_API_DOMAIN="$(echo ${DEMYX_CHROOT_API_GET_ENV[1]} | awk -F '[=]' '{print $2}')"
     DEMYX_CHROOT_API_AUTH="$(echo ${DEMYX_CHROOT_API_GET_ENV[2]} | awk -F '[=]' '{print $2}')"
 
@@ -118,11 +118,11 @@ demyx_run() {
 
     if [[ -n "$DEMYX_CHROOT_API_DOMAIN" ]]; then
         docker run -dit \
-        --name demyx \
+        --name=demyx \
         $DEMYX_CHROOT_RESOURCES \
-        --restart unless-stopped \
-        --hostname "$DEMYX_CHROOT_HOST" \
-        --network demyx \
+        --restart=unless-stopped \
+        --hostname="$DEMYX_CHROOT_HOST" \
+        --network=demyx \
         -e DEMYX_MODE="$DEMYX_CHROOT_MODE" \
         -e DEMYX_HOST="$DEMYX_CHROOT_HOST" \
         -e DEMYX_SSH="$DEMYX_CHROOT_SSH" \
@@ -143,11 +143,11 @@ demyx_run() {
         demyx/demyx 2>/dev/null
     else
         docker run -dit \
-        --name demyx \
+        --name=demyx \
         $DEMYX_CHROOT_RESOURCES \
-        --restart unless-stopped \
-        --hostname "$DEMYX_CHROOT_HOST" \
-        --network demyx \
+        --restart=unless-stopped \
+        --hostname="$DEMYX_CHROOT_HOST" \
+        --network=demyx \
         -e DEMYX_MODE="$DEMYX_CHROOT_MODE" \
         -e DEMYX_HOST="$DEMYX_CHROOT_HOST" \
         -e DEMYX_SSH="$DEMYX_CHROOT_SSH" \
