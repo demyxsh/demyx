@@ -5,7 +5,6 @@
 # Clone demyx if it doesn't exist
 if [[ ! -d /demyx/etc ]]; then
     echo "[demyx] installing now..."
-    git clone https://github.com/demyxco/demyx.git /demyx/etc
     mkdir -p /demyx/app/html
     mkdir -p /demyx/app/php
     mkdir -p /demyx/app/wp
@@ -13,6 +12,7 @@ if [[ ! -d /demyx/etc ]]; then
     mkdir -p /demyx/backup
     mkdir -p /demyx/custom
     touch /demyx/app/stack/.env
+    git clone https://github.com/demyxco/demyx.git /demyx/etc
     cp /demyx/etc/example/example-callback.sh /demyx/custom
 fi
 
