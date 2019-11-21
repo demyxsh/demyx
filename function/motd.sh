@@ -18,8 +18,23 @@ demyx_motd_git_latest() {
     demyx_execute -v echo -e "Latest Updates\n----------------\n$DEMYX_MOTD_GIT_LOG\n"
 }
 demyx_motd() {
+    # Create /demyx/.env if it doesn't exist
+    if [[ ! -f /demyx/.env ]]; then
+        [[ -z "$DEMYX_MODE" ]] && DEMYX_MODE=production
+        [[ -z "$DEMYX_HOST" ]] && DEMYX_HOST="$(hostname)"
+        [[ -z "$DEMYX_SSH" ]] && DEMYX_SSH=2222
+        [[ -z "$DEMYX_STATUS" ]] && DEMYX_STATUS=0
+
+        echo "# AUTO GENERATED
+            DEMYX_MOTD_MODE=$DEMYX_MODE
+            DEMYX_MOTD_HOST=$DEMYX_HOST
+            DEMYX_MOTD_USER=demyx
+            DEMYX_MOTD_SSH=$DEMYX_SSH
+            DEMYX_MOTD_STATUS=$DEMYX_STATUS" | sed 's/            //g' > /demyx/.env
+    fi
+
     source /demyx/.env
-    
+
     if (( "$DEMYX_MOTD_STATUS" > 1 )); then
         DEMYX_MOTD_STATUS="$DEMYX_MOTD_STATUS UPDATES"
     elif [[ "$DEMYX_MOTD_STATUS" = 1 ]]; then

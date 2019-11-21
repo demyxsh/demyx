@@ -16,24 +16,6 @@ if [[ ! -d /demyx/etc ]]; then
     cp /demyx/etc/example/example-callback.sh /demyx/custom
 fi
 
-# Create /demyx/.env if it doesn't exist
-if [[ ! -f /demyx/.env ]]; then
-    [[ -z "$DEMYX_MODE" ]] && DEMYX_MODE=production
-    [[ -z "$DEMYX_HOST" ]] && DEMYX_HOST="$(hostname)"
-    [[ -z "$DEMYX_SSH" ]] && DEMYX_SSH=2222
-    [[ -z "$DEMYX_STATUS" ]] && DEMYX_STATUS=0
-
-    cat > /demyx/.env <<-EOF
-        # AUTO GENERATED
-        DEMYX_MOTD_MODE=$DEMYX_MODE
-        DEMYX_MOTD_HOST=$DEMYX_HOST
-        DEMYX_MOTD_USER=demyx
-        DEMYX_MOTD_SSH=$DEMYX_SSH
-        DEMYX_MOTD_STATUS=$DEMYX_STATUS
-EOF
-        sed -i 's/		//g' /demyx/.env
-fi
-
 # Make demyx user's .ssh directory if it isn't made yet
 if [[ ! -d /home/demyx/.ssh ]]; then
     mkdir -p /home/demyx/.ssh
