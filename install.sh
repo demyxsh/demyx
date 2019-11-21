@@ -66,13 +66,6 @@ if [[ -z "$DEMYX_INSTALL_PASS" ]]; then
     exit 1
 fi
 
-echo -e "\e[34m[INFO]\e[39m Enter non-root host OS username (or root if you don't have a non-priv user)"
-read -rep "Host username: " DEMYX_INSTALL_HOST_USER
-if [[ -z "$DEMYX_INSTALL_HOST_USER" ]]; then
-    echo -e "\e[31m[CRITICAL]\e[39m Host username cannot be empty"
-    exit 1
-fi
-
 echo -e "\e[34m[INFO\e[39m] Installing demyx chroot"
 docker run -t --user=root --rm -v /usr/local/bin:/usr/local/bin demyx/utilities "rm -f /usr/local/bin/demyx; curl -s https://raw.githubusercontent.com/demyxco/demyx/master/chroot.sh -o /usr/local/bin/demyx; chmod +x /usr/local/bin/demyx"
 
