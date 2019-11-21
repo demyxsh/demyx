@@ -38,15 +38,11 @@ fi
 chmod 700 /home/demyx/.ssh
 chmod 600 /etc/ssh/ssh_host_rsa_key
 
-# Need to execute demyx update due to breaking changes
-# Will remove this in December 2019
-demyx update &
-
 # Show demyx help menu
 demyx
 
 # Start the API if DEMYX_STACK_SERVER_API has a url defined (Ex: api.domain.tld)
-DEMYX_STACK_SERVER_API="$(demyx info stack --filter=DEMYX_STACK_SERVER_API)"
+DEMYX_STACK_SERVER_API="$(demyx info stack --filter=DEMYX_STACK_SERVER_API --quiet)"
 if [[ "$DEMYX_STACK_SERVER_API" != false ]]; then
     demyx-api &
 fi
