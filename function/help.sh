@@ -18,7 +18,7 @@ demyx_help() {
         echo "demyx compose <app> <args>    Accepts all docker-compose arguments"
         echo "                    db        docker-compose for the MariaDB container"
         echo "                    down      Shorthand for docker-compose stop/rm -f"
-        echo "                    du        Shorthand for docker-compose stop/rm -f/up -d"
+        echo "                    fr        Shorthand for docker-compose up -d --force-recreate --remove-orphans"
         echo "                    nx        docker-compose for the NGINX container"
         echo "                    wp        docker-compose for the WordPress container"
         echo

@@ -454,7 +454,7 @@ demyx_config() {
                 demyx_echo 'Removing maintenance mode'
                 demyx_execute docker exec "$DEMYX_APP_WP_CONTAINER" rm .maintenance
 
-                demyx compose "$DEMYX_APP_DOMAIN" du
+                demyx compose "$DEMYX_APP_DOMAIN" fr
                 demyx maldet "$DEMYX_APP_DOMAIN"
                 demyx config "$DEMYX_APP_DOMAIN" --healthcheck
             fi

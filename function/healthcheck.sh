@@ -29,7 +29,7 @@ demyx_healthcheck() {
                     if [[ "$DEMYX_APP_HEALTHCHECK_COUNT" != 3 ]]; then
                         DEMYX_APP_MONITOR_COUNT_UP="$((DEMYX_APP_HEALTHCHECK_COUNT+1))"
                         demyx_execute -v echo "DEMYX_APP_HEALTHCHECK_COUNT=$DEMYX_APP_MONITOR_COUNT_UP" > "$DEMYX_WP"/"$i"/.healthcheck
-                        demyx compose "$i" du
+                        demyx compose "$i" fr
                     else
                         if [[ ! -f "$DEMYX_WP"/"$i"/.healthcheck-lock ]]; then
                             DEMYX_HEALTHCHECK_HTTP_CODE="$(curl --write-out %{http_code} --silent --output /dev/null --head "$DEMYX_HEALTHCHECK_CONTAINER")"
