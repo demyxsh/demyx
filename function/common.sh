@@ -187,8 +187,8 @@ demyx_upgrade_apps() {
     cd "$DEMYX_WP"
     for i in *
     do
-        DEMYX_CHECK_APP_IMAGE="$(demyx info "$i" --filter=DEMYX_APP_WP_IMAGE)"
-        if [[ "$DEMYX_CHECK_APP_IMAGE" = demyx/nginx-php-wordpress ]]; then
+        DEMYX_CHECK_APP_IMAGE="$(grep DEMYX_APP_WP_IMAGE "$DEMYX_WP"/"$i"/.env | awk -F '[=]' '{print $2}')"
+        if [[ "$DEMYX_CHECK_APP_IMAGE" = demyx/nginx-php-wordpress || "$DEMYX_CHECK_APP_IMAGE" = demyx/nginx-php-wordpress:bedrock ]]; then
             demyx_execute -v echo -e "- demyx config $i --upgrade"
         fi
     done
