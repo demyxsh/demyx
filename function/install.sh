@@ -47,6 +47,9 @@ demyx_install() {
         shift
     done
 
+    # Create stack directory if it doesn't exist
+    [[ ! -d "$DEMYX_STACK" ]] && mkdir -p /demyx/app/stack
+
     if [[ -z "$DEMYX_INSTALL_DOMAIN" || -z "$DEMYX_INSTALL_EMAIL" || -z "$DEMYX_INSTALL_USER" || -z "$DEMYX_INSTALL_PASS" ]]; then
         demyx_die 'Missing required flags: --domain --email --user --pass'
     elif [[ -f "$DEMYX_STACK"/docker-compose.yml  ]]; then
@@ -62,8 +65,7 @@ demyx_install() {
     DEMYX_STACK_AUTH="$(demyx util --user="$DEMYX_INSTALL_USER" --htpasswd="$DEMYX_INSTALL_PASS" --raw)"
     DEMYX_STACK_SERVER_IP="$(curl -m 10 -s https://ipecho.net/plain)"
 
-    cat > "$DEMYX_STACK"/.env <<-EOF
-        # AUTO GENERATED
+    echo "# AUTO GENERATED
         DEMYX_STACK_SERVER_IP=$DEMYX_STACK_SERVER_IP
         DEMYX_STACK_SERVER_API=false
         DEMYX_STACK_AUTH=$DEMYX_STACK_AUTH
@@ -73,8 +75,10 @@ demyx_install() {
         DEMYX_STACK_AUTO_UPDATE=true
         DEMYX_STACK_MONITOR=true
         DEMYX_STACK_HEALTHCHECK=true
+        DEMYX_STACK_CPU=$DEMYX_CPU
+        DEMYX_STACK_MEM=$DEMYX_MEM
         DEMYX_STACK_OUROBOROS=true
-        DEMYX_STACK_OUROBOROS_IGNORE=
+        DEMYX_STACK_OUROBOROS_IGNORE=""
         DEMYX_STACK_ACME_EMAIL=$DEMYX_INSTALL_EMAIL
         DEMYX_STACK_ACME_STORAGE=/demyx/acme.json
         DEMYX_STACK_CLOUDFLARE=false
@@ -82,9 +86,7 @@ demyx_install() {
         DEMYX_STACK_CLOUDFLARE_KEY=
         DEMYX_STACK_LOG_LEVEL=INFO
         DEMYX_STACK_LOG_ACCESS=/var/log/demyx/access.log
-        DEMYX_STACK_LOG_ERROR=/var/log/demyx/error.log
-EOF
-    sed -i 's/        //' "$DEMYX_STACK"/.env
+        DEMYX_STACK_LOG_ERROR=/var/log/demyx/error.log" | sed 's|        ||g' > "$DEMYX_STACK"/.env
 
     demyx_echo 'Creating stack .yml'
     demyx_execute demyx_stack_yml
