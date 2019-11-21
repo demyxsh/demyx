@@ -177,7 +177,7 @@ demyx_wp_check_empty() {
         if [[ "$1" = true ]]; then
             demyx_die 'There are no WordPress apps installed.'
         else
-            demyx_die
+            exit 1
         fi
     fi
 }
