@@ -173,12 +173,13 @@ demyx_generate_password() {
 }
 demyx_wp_check_empty() {
     DEMYX_COMMON_WP_APPS="$(ls "$DEMYX_WP")"
-
-    if [[ "$1" = true ]]; then
-        echo -e "\e[33m[WARNING]\e[39m There are no WordPress apps installed."
+    if [[ -z "$DEMYX_COMMON_WP_APPS" ]]; then
+        if [[ "$1" = true ]]; then
+            demyx_die 'There are no WordPress apps installed.'
+        else
+            demyx_die
+        fi
     fi
-
-    [[ -z "$DEMYX_COMMON_WP_APPS" ]] && exit 0
 }
 demyx_upgrade_apps() {
     demyx_wp_check_empty
