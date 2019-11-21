@@ -70,8 +70,8 @@ echo -e "\e[34m[INFO\e[39m] Installing demyx chroot"
 docker run -t --user=root --rm -v /usr/local/bin:/usr/local/bin demyx/utilities "rm -f /usr/local/bin/demyx; curl -s https://raw.githubusercontent.com/demyxco/demyx/master/chroot.sh -o /usr/local/bin/demyx; chmod +x /usr/local/bin/demyx"
 
 demyx --nc
-echo -e "\e[34m[INFO\e[39m] Waiting for demyx container to initialize"
 
+echo -e "\e[34m[INFO\e[39m] Waiting for demyx container to initialize"
 sleep 5
 demyx exec install --domain="$DEMYX_INSTALL_DOMAIN" --email="$DEMYX_INSTALL_EMAIL" --user="$DEMYX_INSTALL_USER" --pass="$DEMYX_INSTALL_PASS"
 
