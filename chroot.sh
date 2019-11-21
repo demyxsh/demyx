@@ -121,6 +121,7 @@ demyx_run() {
     if [[ -n "$DEMYX_CHROOT_API_DOMAIN" ]]; then
         docker run -dit \
         --name=demyx \
+        --user="$DEMYX_CHROOT_USER" \
         $DEMYX_CHROOT_RESOURCES \
         --restart=unless-stopped \
         --hostname="$DEMYX_CHROOT_HOST" \
@@ -146,6 +147,7 @@ demyx_run() {
     else
         docker run -dit \
         --name=demyx \
+        --user="$DEMYX_CHROOT_USER" \
         $DEMYX_CHROOT_RESOURCES \
         --restart=unless-stopped \
         --hostname="$DEMYX_CHROOT_HOST" \
