@@ -99,7 +99,7 @@ demyx_info() {
             if [[ -n "$DEMYX_INFO_FILTER" ]]; then
                 demyx_execute -v -q echo "$DEMYX_INFO_FILTER" | awk -F '[=]' '{print $2}'
             else
-                demyx_die 'Filter not found'
+                [[ -z "$DEMYX_INFO_QUIET" ]] && demyx_die 'Filter not found'
             fi
         else
             source "$DEMYX_STACK"/.env
