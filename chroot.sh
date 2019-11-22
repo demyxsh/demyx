@@ -205,7 +205,7 @@ elif [[ "$DEMYX_CHROOT" = update ]]; then
     echo -e "\e[32m[SUCCESS]\e[39m Demyx chroot has successfully updated"
 else
     if [[ -n "$DEMYX_CHROOT_CONTAINER_CHECK" ]]; then
-        DEMYX_MODE_CHECK="$(docker exec --user=root demyx sh -c "grep DEMYX_ENV_MODE /demyx/.env | awk -F '[=]' '{print \$2}'")"
+        DEMYX_MODE_CHECK="$(docker exec --user=root demyx sh -c "[[ -f /demyx/.env ]] && grep DEMYX_ENV_MODE /demyx/.env | awk -F '[=]' '{print \$2}'")"
         if [[ -z "$DEMYX_CHROOT_MODE" ]]; then
             DEMYX_CHROOT_MODE="$DEMYX_MODE_CHECK"
         fi
