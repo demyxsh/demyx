@@ -136,7 +136,17 @@ demyx_permission() {
 demyx_app_config() {
     DEMYX_GET_APP="$(find "$DEMYX_APP" -name "$DEMYX_TARGET")"
     [[ -f "$DEMYX_GET_APP"/.env ]] && source "$DEMYX_GET_APP"/.env
+    demyx_app_is_up
 }
+demyx_app_is_up() {
+    DEMYX_APP_IS_UP_CHECK="$(docker ps)"
+    DEMYX_APP_IS_UP_CHECK_DB="$(echo "$DEMYX_APP_IS_UP_CHECK" | grep "$DEMYX_APP_DB_CONTAINER")"
+    DEMYX_APP_IS_UP_CHECK_NX="$(echo "$DEMYX_APP_IS_UP_CHECK" | grep "$DEMYX_APP_NX_CONTAINER")"
+    DEMYX_APP_IS_UP_CHECK_WP="$(echo "$DEMYX_APP_IS_UP_CHECK" | grep "$DEMYX_APP_WP_CONTAINER")"
+    if [[ -z "$DEMYX_APP_IS_UP_CHECK_DB" || -z "$DEMYX_APP_IS_UP_CHECK_NX" || -z "$DEMYX_APP_IS_UP_CHECK_WP" ]]; then
+        demyx_die "$DEMYX_APP_DOMAIN isn't running"
+    fi
+} 
 demyx_open_port() {
     DEMYX_SFTP_PORT="$(docker run -it --rm \
     --network host \
