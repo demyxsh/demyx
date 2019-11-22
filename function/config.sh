@@ -44,12 +44,14 @@ demyx_config() {
                 ;;
             --db-cpu=null|--db-cpu=?*)
                 DEMYX_CONFIG_DB_CPU="${3#*=}"
+                DEMYX_CONFIG_RESOURCE=1
                 ;;
             --db-cpu=)
                 demyx_die '"--db-cpu" cannot be empty'
                 ;;
             --db-mem=null|--db-mem=?*)
                 DEMYX_CONFIG_DB_MEM="${3#*=}"
+                DEMYX_CONFIG_RESOURCE=1
                 ;;
             --db-mem=)
                 demyx_die '"--wp-db" cannot be empty'
@@ -198,12 +200,14 @@ demyx_config() {
                 ;;
             --wp-cpu=null|--wp-cpu=?*)
                 DEMYX_CONFIG_WP_CPU="${3#*=}"
+                DEMYX_CONFIG_RESOURCE=1
                 ;;
             --wp-cpu=)
                 demyx_die '"--wp-cpu" cannot be empty'
                 ;;
             --wp-mem=null|--wp-mem=?*)
                 DEMYX_CONFIG_WP_MEM="${3#*=}"
+                DEMYX_CONFIG_RESOURCE=1
                 ;;
             --wp-mem=)
                 demyx_die '"--wp-mem" cannot be empty'
@@ -238,15 +242,12 @@ demyx_config() {
         cd "$DEMYX_WP" || exit
         for i in *
         do
-            if [[ -n "$DEMYX_CONFIG_WP_CPU" || -n "$DEMYX_CONFIG_WP_MEM" ]]; then
-                [[ -n "$DEMYX_CONFIG_WP_CPU" ]] && DEMYX_CONFIG_WP_CPU_FLAG="--wp-cpu=$DEMYX_CONFIG_WP_CPU"
-                [[ -n "$DEMYX_CONFIG_WP_MEM" ]] && DEMYX_CONFIG_WP_MEM_FLAG="--wp-mem=$DEMYX_CONFIG_WP_MEM"
-                demyx config "$i" "$DEMYX_CONFIG_WP_CPU_FLAG" "$DEMYX_CONFIG_WP_MEM_FLAG"
-            fi
-            if [[ -n "$DEMYX_CONFIG_DB_CPU" || -n "$DEMYX_CONFIG_DB_MEM" ]]; then
+            if [[ -n "$DEMYX_CONFIG_RESOURCE" ]]; then
                 [[ -n "$DEMYX_CONFIG_DB_CPU" ]] && DEMYX_CONFIG_DB_CPU_FLAG="--db-cpu=$DEMYX_CONFIG_DB_CPU"
                 [[ -n "$DEMYX_CONFIG_DB_MEM" ]] && DEMYX_CONFIG_DB_MEM_FLAG="--db-mem=$DEMYX_CONFIG_DB_MEM"
-                demyx config "$i" "$DEMYX_CONFIG_DB_CPU_FLAG" "$DEMYX_CONFIG_DB_MEM_FLAG"
+                [[ -n "$DEMYX_CONFIG_WP_CPU" ]] && DEMYX_CONFIG_WP_CPU_FLAG="--wp-cpu=$DEMYX_CONFIG_WP_CPU"
+                [[ -n "$DEMYX_CONFIG_WP_MEM" ]] && DEMYX_CONFIG_WP_MEM_FLAG="--wp-mem=$DEMYX_CONFIG_WP_MEM"
+                demyx config "$i" "$DEMYX_CONFIG_WP_CPU_FLAG" "$DEMYX_CONFIG_WP_MEM_FLAG" "$DEMYX_CONFIG_DB_CPU_FLAG" "$DEMYX_CONFIG_DB_MEM_FLAG"
             fi
             if [[ -n "$DEMYX_CONFIG_REFRESH" ]]; then
                 [[ -n "$DEMYX_CONFIG_NO_BACKUP" ]] && DEMYX_CONFIG_NO_BACKUP="--no-backup"
@@ -556,9 +557,9 @@ demyx_config() {
                     
                     demyx_echo 'Creating code-server'
                     demyx_execute docker run -dit --rm \
-                        --name "$DEMYX_APP_COMPOSE_PROJECT"_cs \
-                        --net demyx \
-                        --hostname "$DEMYX_APP_COMPOSE_PROJECT" \
+                        --name="$DEMYX_APP_COMPOSE_PROJECT"_cs \
+                        --network=demyx \
+                        --hostname="$DEMYX_APP_COMPOSE_PROJECT" \
                         $DEMYX_CONFIG_DEV_RESOURCES \
                         --volumes-from="$DEMYX_APP_WP_CONTAINER" \
                         -v demyx_cs:/home/demyx \
@@ -656,24 +657,6 @@ demyx_config() {
                 demyx config "$DEMYX_APP_DOMAIN" --opcache
                 demyx_execute -v sed -i "s|DEMYX_APP_DEV=.*|DEMYX_APP_DEV=false|g" "$DEMYX_APP_PATH"/.env
             fi
-            if [[ -n "$DEMYX_CONFIG_DB_CPU" ]]; then
-                demyx_echo "Setting ${DEMYX_APP_DB_CONTAINER}'s CPU to $DEMYX_CONFIG_DB_CPU"
-
-                if [[ "$DEMYX_CONFIG_DB_CPU" = null ]]; then
-                    demyx_execute sed -i "s|DEMYX_APP_DB_CPU=.*|DEMYX_APP_DB_CPU=|g" "$DEMYX_APP_PATH"/.env
-                else
-                    demyx_execute sed -i "s|DEMYX_APP_DB_CPU=.*|DEMYX_APP_DB_CPU=$DEMYX_CONFIG_DB_CPU|g" "$DEMYX_APP_PATH"/.env
-                fi
-            fi
-            if [[ -n "$DEMYX_CONFIG_DB_MEM" ]]; then
-                demyx_echo "Setting ${DEMYX_APP_DB_CONTAINER}'s MEM to $DEMYX_CONFIG_DB_MEM"
-
-                if [[ "$DEMYX_CONFIG_DB_MEM" = null ]]; then
-                    demyx_execute sed -i "s|DEMYX_APP_DB_MEM=.*|DEMYX_APP_DB_MEM=|g" "$DEMYX_APP_PATH"/.env
-                else
-                    demyx_execute sed -i "s|DEMYX_APP_DB_MEM=.*|DEMYX_APP_DB_MEM=$DEMYX_CONFIG_DB_MEM|g" "$DEMYX_APP_PATH"/.env
-                fi
-            fi
             if [[ "$DEMYX_CONFIG_HEALTHCHECK" = true ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ "$DEMYX_APP_HEALTHCHECK" = true ]] && demyx_die 'Healthcheck is already turned on'
@@ -752,8 +735,8 @@ demyx_config() {
 
                 demyx_echo 'Creating phpMyAdmin container'
                 demyx_execute docker run -d --rm \
-                    --name "$DEMYX_APP_COMPOSE_PROJECT"_pma \
-                    --network demyx \
+                    --name="$DEMYX_APP_COMPOSE_PROJECT"_pma \
+                    --network=demyx \
                     --cpus="$DEMYX_CPU" \
                     --memory="$DEMYX_MEM" \
                     -e PMA_HOST=db_"$DEMYX_APP_ID" \
@@ -823,6 +806,46 @@ demyx_config() {
                     [[ "$DEMYX_APP_HEALTHCHECK" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --healthcheck -f
                 fi
             fi
+            if [[ -n "$DEMYX_CONFIG_RESOURCE" ]]; then
+                if [[ -n "$DEMYX_CONFIG_DB_CPU" ]]; then
+                    demyx_echo "Updating $DEMYX_APP_DOMAIN database CPU"
+
+                    if [[ "$DEMYX_CONFIG_DB_CPU" = null ]]; then
+                        demyx_execute sed -i "s|DEMYX_APP_DB_CPU=.*|DEMYX_APP_DB_CPU=|g" "$DEMYX_APP_PATH"/.env
+                    else
+                        demyx_execute sed -i "s|DEMYX_APP_DB_CPU=.*|DEMYX_APP_DB_CPU=$DEMYX_CONFIG_DB_CPU|g" "$DEMYX_APP_PATH"/.env
+                    fi
+                fi
+                if [[ -n "$DEMYX_CONFIG_DB_MEM" ]]; then
+                    demyx_echo "Updating $DEMYX_APP_DOMAIN database MEM"
+
+                    if [[ "$DEMYX_CONFIG_DB_MEM" = null ]]; then
+                        demyx_execute sed -i "s|DEMYX_APP_DB_MEM=.*|DEMYX_APP_DB_MEM=|g" "$DEMYX_APP_PATH"/.env
+                    else
+                        demyx_execute sed -i "s|DEMYX_APP_DB_MEM=.*|DEMYX_APP_DB_MEM=$DEMYX_CONFIG_DB_MEM|g" "$DEMYX_APP_PATH"/.env
+                    fi
+                fi
+                if [[ -n "$DEMYX_CONFIG_WP_CPU" ]]; then
+                    demyx_echo "Updating $DEMYX_APP_DOMAIN CPU"
+
+                    if [[ "$DEMYX_CONFIG_WP_CPU" = null ]]; then
+                        demyx_execute sed -i "s|DEMYX_APP_WP_CPU=.*|DEMYX_APP_WP_CPU=|g" "$DEMYX_APP_PATH"/.env
+                    else
+                        demyx_execute sed -i "s|DEMYX_APP_WP_CPU=.*|DEMYX_APP_WP_CPU=$DEMYX_CONFIG_WP_CPU|g" "$DEMYX_APP_PATH"/.env
+                    fi
+                fi
+                if [[ -n "$DEMYX_CONFIG_WP_MEM" ]]; then
+                    demyx_echo "Updating $DEMYX_APP_DOMAIN MEM"
+
+                    if [[ "$DEMYX_CONFIG_WP_MEM" = null ]]; then
+                        demyx_execute sed -i "s|DEMYX_APP_WP_MEM=.*|DEMYX_APP_WP_MEM=|g" "$DEMYX_APP_PATH"/.env
+                    else
+                        demyx_execute sed -i "s|DEMYX_APP_WP_MEM=.*|DEMYX_APP_WP_MEM=$DEMYX_CONFIG_WP_MEM|g" "$DEMYX_APP_PATH"/.env
+                    fi
+                fi
+
+                demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
+            fi
             if [ "$DEMYX_CONFIG_RESTART" = nginx-php ]; then
                 demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
                 demyx config "$DEMYX_APP_DOMAIN" --restart=php
@@ -846,7 +869,7 @@ demyx_config() {
                     
                     demyx_echo 'Creating temporary SSH container'
                     demyx_execute docker run -d --rm \
-                        --name demyx_sftp \
+                        --name=demyx_sftp \
                         -v demyx_sftp:/home/demyx/.ssh \
                         demyx/ssh
 
@@ -859,7 +882,7 @@ demyx_config() {
 
                 demyx_echo 'Creating SFTP container' 
                 demyx_execute docker run -dit --rm \
-                    --name "$DEMYX_APP_COMPOSE_PROJECT"_sftp \
+                    --name="$DEMYX_APP_COMPOSE_PROJECT"_sftp \
                     --cpus="$DEMYX_CPU" \
                     --memory="$DEMYX_MEM" \
                     --workdir=/var/www/html \
@@ -932,24 +955,6 @@ demyx_config() {
                 if [[ -n "$(demyx_upgrade_apps)" ]]; then
                     demyx_execute -v echo -e '\n\e[33m[WARNING]\e[39m These sites needs upgrading:'; \
                         demyx_upgrade_apps
-                fi
-            fi
-            if [[ -n "$DEMYX_CONFIG_WP_CPU" ]]; then
-                demyx_echo "Setting ${DEMYX_APP_WP_CONTAINER}'s CPU to $DEMYX_CONFIG_WP_CPU"
-
-                if [[ "$DEMYX_CONFIG_WP_CPU" = null ]]; then
-                    demyx_execute sed -i "s|DEMYX_APP_WP_CPU=.*|DEMYX_APP_WP_CPU=|g" "$DEMYX_APP_PATH"/.env
-                else
-                    demyx_execute sed -i "s|DEMYX_APP_WP_CPU=.*|DEMYX_APP_WP_CPU=$DEMYX_CONFIG_WP_CPU|g" "$DEMYX_APP_PATH"/.env
-                fi
-            fi
-            if [[ -n "$DEMYX_CONFIG_WP_MEM" ]]; then
-                demyx_echo "Setting ${DEMYX_APP_WP_CONTAINER}'s MEM to $DEMYX_CONFIG_WP_MEM"
-
-                if [[ "$DEMYX_CONFIG_WP_MEM" = null ]]; then
-                    demyx_execute sed -i "s|DEMYX_APP_WP_MEM=.*|DEMYX_APP_WP_MEM=|g" "$DEMYX_APP_PATH"/.env
-                else
-                    demyx_execute sed -i "s|DEMYX_APP_WP_MEM=.*|DEMYX_APP_WP_MEM=$DEMYX_CONFIG_WP_MEM|g" "$DEMYX_APP_PATH"/.env
                 fi
             fi
             if [[ "$DEMYX_CONFIG_WP_UPDATE" = true ]]; then
