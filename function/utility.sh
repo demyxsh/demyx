@@ -109,7 +109,7 @@ demyx_utility() {
             demyx_execute -v demyx_table "$PRINT_TABLE"
         fi
     elif [[ -n "$DEMYX_UTILITY_KILL" ]]; then
-        DEMYX_UTILITIES_CHECK="$(docker ps | grep -s demyx/utilities | awk '{print $1}' | awk 'BEGIN { ORS = " " } { print }')"
+        DEMYX_UTILITIES_CHECK="$(echo "$DEMYX_DOCKER_PS" | grep -s demyx/utilities | awk '{print $1}' | awk 'BEGIN { ORS = " " } { print }')"
         for i in "$DEMYX_UTILITIES_CHECK"
         do
             demyx_echo "Killing demyx/utility $i"

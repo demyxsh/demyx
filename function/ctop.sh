@@ -22,7 +22,7 @@ demyx_ctop() {
         esac
         shift
     done
-    DEMYX_CTOP_CHECK="$(docker ps | grep quay.io/vektorlab/ctop || true)"
+    DEMYX_CTOP_CHECK="$(echo "$DEMYX_DOCKER_PS" | grep quay.io/vektorlab/ctop || true)"
 
     if [[ "$DEMYX_CTOP_FORCE" ]]; then
         if [[ -n "$DEMYX_CTOP_CHECK" ]]; then

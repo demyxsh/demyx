@@ -742,7 +742,7 @@ demyx_config() {
             if [[ "$DEMYX_CONFIG_PMA" = true ]]; then
                 demyx_app_is_up
 
-                DEMYX_CONFIG_PMA_CONTAINER_CHECK="$(docker ps | grep "$DEMYX_APP_COMPOSE_PROJECT"_pma || true)"
+                DEMYX_CONFIG_PMA_CONTAINER_CHECK="$(echo "$DEMYX_DOCKER_PS" | grep "$DEMYX_APP_COMPOSE_PROJECT"_pma || true)"
                 [[ -n "$DEMYX_CONFIG_PMA_CONTAINER_CHECK" ]] && demyx_die 'phpMyAdmin container is already running'
 
                 if [[ "$DEMYX_APP_SSL" = true ]]; then
@@ -777,7 +777,7 @@ demyx_config() {
             elif [[ "$DEMYX_CONFIG_PMA" = false ]]; then
                 demyx_app_is_up
 
-                DEMYX_CONFIG_PMA_CONTAINER_CHECK="$(docker ps | grep "$DEMYX_APP_COMPOSE_PROJECT"_pma || true)"
+                DEMYX_CONFIG_PMA_CONTAINER_CHECK="$(echo "$DEMYX_DOCKER_PS" | grep "$DEMYX_APP_COMPOSE_PROJECT"_pma || true)"
                 [[ -z "$DEMYX_CONFIG_PMA_CONTAINER_CHECK" ]] && demyx_die 'No phpMyAdmin container running'
 
                 demyx_echo 'Stopping phpMyAdmin container'
@@ -890,7 +890,7 @@ demyx_config() {
                 demyx_app_is_up
                 
                 DEMYX_SFTP_VOLUME_CHECK="$(docker volume ls | grep demyx_sftp || true)"
-                DEMYX_SFTP_CONTAINER_CHECK="$(docker ps | grep "$DEMYX_APP_COMPOSE_PROJECT"_sftp || true)"
+                DEMYX_SFTP_CONTAINER_CHECK="$(echo "$DEMYX_DOCKER_PS" | grep "$DEMYX_APP_COMPOSE_PROJECT"_sftp || true)"
                 DEMYX_SFTP_PORT="$(demyx_open_port)"
 
                 [[ -n "$DEMYX_SFTP_CONTAINER_CHECK" ]] && demyx_die 'SFTP container is already running'
@@ -931,7 +931,7 @@ demyx_config() {
             elif [[ "$DEMYX_CONFIG_SFTP" = false ]]; then
                 demyx_app_is_up
                 
-                DEMYX_SFTP_CONTAINER_CHECK="$(docker ps | grep "$DEMYX_APP_COMPOSE_PROJECT"_sftp || true)"
+                DEMYX_SFTP_CONTAINER_CHECK="$(echo "$DEMYX_DOCKER_PS" | grep "$DEMYX_APP_COMPOSE_PROJECT"_sftp || true)"
                 [[ -z "$DEMYX_SFTP_CONTAINER_CHECK" ]] && demyx_die 'No SFTP container running'
 
                 demyx_echo 'Stopping SFTP container' 
