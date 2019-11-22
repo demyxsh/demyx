@@ -1,6 +1,9 @@
 # Demyx
 # https://demyx.sh
 
+# Global environment variables
+DEMYX_DOCKER_PS="$(docker ps)"
+
 demyx_die() {
     while :; do
         case "$1" in
@@ -138,10 +141,9 @@ demyx_app_config() {
     [[ -f "$DEMYX_GET_APP"/.env ]] && source "$DEMYX_GET_APP"/.env
 }
 demyx_app_is_up() {
-    DEMYX_APP_IS_UP_CHECK="$(docker ps)"
-    DEMYX_APP_IS_UP_CHECK_DB="$(echo "$DEMYX_APP_IS_UP_CHECK" | grep "$DEMYX_APP_DB_CONTAINER")"
-    DEMYX_APP_IS_UP_CHECK_NX="$(echo "$DEMYX_APP_IS_UP_CHECK" | grep "$DEMYX_APP_NX_CONTAINER")"
-    DEMYX_APP_IS_UP_CHECK_WP="$(echo "$DEMYX_APP_IS_UP_CHECK" | grep "$DEMYX_APP_WP_CONTAINER")"
+    DEMYX_APP_IS_UP_CHECK_DB="$(echo "$DEMYX_DOCKER_PS" | grep "$DEMYX_APP_DB_CONTAINER")"
+    DEMYX_APP_IS_UP_CHECK_NX="$(echo "$DEMYX_DOCKER_PS" | grep "$DEMYX_APP_NX_CONTAINER")"
+    DEMYX_APP_IS_UP_CHECK_WP="$(echo "$DEMYX_DOCKER_PS" | grep "$DEMYX_APP_WP_CONTAINER")"
     if [[ -z "$DEMYX_APP_IS_UP_CHECK_DB" || -z "$DEMYX_APP_IS_UP_CHECK_NX" || -z "$DEMYX_APP_IS_UP_CHECK_WP" ]]; then
         demyx_die "$DEMYX_APP_DOMAIN isn't running"
     fi
