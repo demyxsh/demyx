@@ -28,7 +28,6 @@ docker pull demyx/ssh
 docker pull demyx/utilities
 docker pull phpmyadmin/phpmyadmin
 docker pull pyouroboros/ouroboros
-docker pull quay.io/vektorlab/ctop:0.7.1
 docker pull traefik
 docker network create demyx
 
