@@ -243,16 +243,10 @@ demyx_config() {
         for i in *
         do
             if [[ -n "$DEMYX_CONFIG_RESOURCE" ]]; then
-                [[ -n "$DEMYX_CONFIG_DB_CPU" ]] && DEMYX_CONFIG_DB_CPU_FLAG="--db-cpu=$DEMYX_CONFIG_DB_CPU"
-                [[ -n "$DEMYX_CONFIG_DB_MEM" ]] && DEMYX_CONFIG_DB_MEM_FLAG="--db-mem=$DEMYX_CONFIG_DB_MEM"
-                [[ -n "$DEMYX_CONFIG_WP_CPU" ]] && DEMYX_CONFIG_WP_CPU_FLAG="--wp-cpu=$DEMYX_CONFIG_WP_CPU"
-                [[ -n "$DEMYX_CONFIG_WP_MEM" ]] && DEMYX_CONFIG_WP_MEM_FLAG="--wp-mem=$DEMYX_CONFIG_WP_MEM"
-                demyx config "$i" "$DEMYX_CONFIG_WP_CPU_FLAG" "$DEMYX_CONFIG_WP_MEM_FLAG" "$DEMYX_CONFIG_DB_CPU_FLAG" "$DEMYX_CONFIG_DB_MEM_FLAG"
+                demyx config "$i" "$@"
             fi
             if [[ -n "$DEMYX_CONFIG_REFRESH" ]]; then
-                [[ -n "$DEMYX_CONFIG_NO_BACKUP" ]] && DEMYX_CONFIG_NO_BACKUP="--no-backup"
-                [[ -n "$DEMYX_CONFIG_SKIP_CHECKS" ]] && DEMYX_CONFIG_SKIP_CHECKS="--skip-checks"
-                demyx config "$i" --refresh "$DEMYX_CONFIG_NO_BACKUP" "$DEMYX_CONFIG_SKIP_CHECKS"
+                demyx config "$i" --refresh "$@"
             fi
             if [[ -n "$DEMYX_CONFIG_RESTART" ]]; then
                 echo -e "\e[34m[INFO]\e[39m Restarting service for $i"
