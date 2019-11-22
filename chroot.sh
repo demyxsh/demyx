@@ -82,7 +82,11 @@ while :; do
     shift
 done
 demyx_mode() {
-    docker exec --user=root demyx demyx-mode "$DEMYX_CHROOT_MODE"
+    if [[ "$DEMYX_CHROOT_MODE" = development ]]; then
+        docker exec --user=root demyx demyx-dev
+    else
+        docker exec demyx demyx-prod
+    fi
 }
 demyx_rm() {
     if [[ -n "$DEMYX_CHROOT_CONTAINER_CHECK" ]]; then
