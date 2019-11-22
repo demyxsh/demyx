@@ -166,7 +166,7 @@ demyx_run() {
 }
 
 if [[ "$DEMYX_CHROOT" = execute ]]; then
-    docker exec -t demyx demyx "$@"
+    docker exec -it demyx demyx "$@"
 elif [[ "$DEMYX_CHROOT" = help ]]; then
     echo
     echo "demyx <args>          Chroot into the demyx container"
