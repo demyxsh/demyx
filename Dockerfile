@@ -1,4 +1,5 @@
 FROM msoap/shell2http as demyx_api
+FROM quay.io/vektorlab/ctop:0.7.1 as demyx_ctop
 FROM alpine
 
 LABEL sh.demyx.image demyx/demyx
@@ -78,7 +79,7 @@ RUN set -ex; \
 
 # Allow demyx user to execute only one script and allow usage of environment variables
 RUN set -ex; \
-    echo "demyx ALL=(ALL) NOPASSWD: /etc/demyx/demyx.sh, /etc/demyx/bin/demyx-env.sh, /etc/demyx/bin/demyx-prod.sh, /etc/demyx/bin/demyx-skel.sh, /usr/sbin/crond" >> /etc/sudoers.d/demyx; \
+    echo "demyx ALL=(ALL) NOPASSWD: /etc/demyx/demyx.sh, /etc/demyx/bin/demyx-env.sh, /etc/demyx/bin/demyx-prod.sh, /etc/demyx/bin/demyx-skel.sh, /usr/sbin/crond, /usr/local/bin/ctop-bin" >> /etc/sudoers.d/demyx; \
     echo 'Defaults env_keep +="DEMYX_MODE"' >> /etc/sudoers.d/demyx; \
     echo 'Defaults env_keep +="DEMYX_HOST"' >> /etc/sudoers.d/demyx; \
     echo 'Defaults env_keep +="DEMYX_SSH"' >> /etc/sudoers.d/demyx; \
@@ -107,9 +108,15 @@ RUN set -ex; \
 COPY . /etc/demyx
 # demyx api
 COPY --from=demyx_api /app/shell2http /usr/local/bin
+# ctop
+COPY --from=demyx_ctop /ctop /usr/local/bin/ctop-bin
 
 # Sudo wrappers
 RUN set -ex; \
+    echo '#!/bin/bash' >> /usr/local/bin/ctop; \
+    echo 'sudo /usr/local/bin/ctop-bin' >> /usr/local/bin/ctop; \
+    chmod +x /usr/local/bin/ctop; \
+    \
     echo '#!/bin/bash' >> /usr/local/bin/demyx; \
     echo 'sudo /etc/demyx/demyx.sh "$@"' >> /usr/local/bin/demyx; \
     chmod +x /etc/demyx/demyx.sh; \

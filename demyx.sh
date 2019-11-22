@@ -30,10 +30,6 @@ elif [[ "$DEMYX_COMMAND" = cron ]]; then
     source "$DEMYX_FUNCTION"/cron.sh
     shift
     demyx_cron "$@"
-elif [[ "$DEMYX_COMMAND" = ctop ]]; then
-    source "$DEMYX_FUNCTION"/ctop.sh
-    shift
-    demyx_ctop "$@"
 elif [[ "$DEMYX_COMMAND" = exec ]]; then
     source "$DEMYX_FUNCTION"/exec.sh
     shift 2

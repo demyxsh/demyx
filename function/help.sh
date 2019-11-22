@@ -227,7 +227,6 @@ demyx_help() {
         echo "      config          Modifies an app's configuration"
         echo "      cp              Wrapper for docker cp"
         echo "      cron            Execute demyx cron"
-        echo "      ctop            Htop but for containers"
         echo "      exec            Accepts all docker exec arguments"
         echo "      healthcheck     Checks if WordPress apps are up"
         echo "      info            Shows an app's .env and filter output"
