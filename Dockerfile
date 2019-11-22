@@ -44,12 +44,15 @@ RUN set -ex; \
     addgroup -g 1000 -S demyx; \
     adduser -u 1000 -D -S -G demyx demyx; \
     echo demyx:demyx | chpasswd; \
+    mkdir -p /home/demyx; \
+    \
     sed -i "s|/home/demyx:/sbin/nologin|/home/demyx:/bin/zsh|g" /etc/passwd; \
     sed -i "s|#Port 22|Port 2222|g" /etc/ssh/sshd_config; \
     sed -i "s|#PermitRootLogin prohibit-password|PermitRootLogin no|g" /etc/ssh/sshd_config; \
     sed -i "s|#PubkeyAuthentication yes|PubkeyAuthentication yes|g" /etc/ssh/sshd_config; \
     sed -i "s|#PasswordAuthentication yes|PasswordAuthentication no|g" /etc/ssh/sshd_config; \
     sed -i "s|#PermitEmptyPasswords no|PermitEmptyPasswords no|g" /etc/ssh/sshd_config; \
+    \
     chown demyx:demyx /etc/ssh
 
 # Install Oh-My-Zsh with ys as the default theme
@@ -75,12 +78,13 @@ RUN set -ex; \
 
 # Allow demyx user to execute only one script and allow usage of environment variables
 RUN set -ex; \
-    echo "demyx ALL=(ALL) NOPASSWD: /usr/local/bin/demyx-main, /usr/sbin/crond" >> /etc/sudoers.d/demyx; \
+    echo "demyx ALL=(ALL) NOPASSWD: /etc/demyx/demyx.sh, /etc/demyx/bin/demyx-env.sh, /etc/demyx/bin/demyx-prod.sh, /usr/sbin/crond" >> /etc/sudoers.d/demyx; \
     echo 'Defaults env_keep +="DEMYX_MODE"' >> /etc/sudoers.d/demyx; \
     echo 'Defaults env_keep +="DEMYX_HOST"' >> /etc/sudoers.d/demyx; \
     echo 'Defaults env_keep +="DEMYX_SSH"' >> /etc/sudoers.d/demyx; \
     echo 'Defaults env_keep +="DEMYX_ET"' >> /etc/sudoers.d/demyx; \
     echo 'Defaults env_keep +="TZ"' >> /etc/sudoers.d/demyx; \
+    \
     mkdir /demyx; \
     ln -s /demyx /home/demyx; \
     \
@@ -99,31 +103,44 @@ RUN set -ex; \
     touch /var/log/demyx/demyx.log; \
     chown -R demyx:demyx /var/log/demyx
 
-# Sudo wrapper for demyx executable so demyx user doesn't have to type sudo on each demyx command
-RUN set -ex; \
-    echo '#!/bin/bash' >> /usr/local/bin/demyx; \
-    echo 'sudo /usr/local/bin/demyx-main "$@"' >> /usr/local/bin/demyx; \
-    chmod +x /usr/local/bin/demyx
-
 # Copy files
-COPY demyx.sh /usr/local/bin/demyx-main
-COPY bin/demyx-api.sh /usr/local/bin/demyx-api
-COPY bin/demyx-crond.sh /usr/local/bin/demyx-crond
-COPY bin/demyx-mode.sh /usr/local/bin/demyx-mode
-COPY bin/demyx-init.sh /usr/local/bin/demyx-init
-COPY bin/demyx-ssh.sh /usr/local/bin/demyx-ssh
-
+COPY . /etc/demyx
 # demyx api
 COPY --from=demyx_api /app/shell2http /usr/local/bin
 
+# Sudo wrappers
+RUN set -ex; \
+    echo '#!/bin/bash' >> /usr/local/bin/demyx; \
+    echo 'sudo /etc/demyx/demyx.sh "$@"' >> /usr/local/bin/demyx; \
+    chmod +x /etc/demyx/demyx.sh; \
+    chmod +x /usr/local/bin/demyx; \
+    \
+    echo '#!/bin/bash' >> /usr/local/bin/demyx-env; \
+    echo 'sudo /etc/demyx/bin/demyx-env.sh' >> /usr/local/bin/demyx-env; \
+    chmod +x /etc/demyx/bin/demyx-env.sh; \
+    chmod +x /usr/local/bin/demyx-env; \
+    \
+    echo '#!/bin/bash' >> /usr/local/bin/demyx-prod; \
+    echo 'sudo /etc/demyx/bin/demyx-prod.sh' >> /usr/local/bin/demyx-prod; \
+    chmod +x /etc/demyx/bin/demyx-prod.sh; \
+    chmod +x /usr/local/bin/demyx-prod
+
 # Finalize
 RUN set -ex; \
-    chmod +x /usr/local/bin/demyx-api; \
-    chmod +x /usr/local/bin/demyx-crond; \
-    chmod +x /usr/local/bin/demyx-main; \
-    chmod +x /usr/local/bin/demyx-mode; \
-    chmod +x /usr/local/bin/demyx-init; \
-    chmod +x /usr/local/bin/demyx-ssh
+    chmod +x /etc/demyx/bin/demyx-api.sh; \
+    ln -s /etc/demyx/bin/demyx-api.sh /usr/local/bin/demyx-api; \
+    \
+    chmod +x /etc/demyx/bin/demyx-crond.sh; \
+    ln -s /etc/demyx/bin/demyx-crond.sh /usr/local/bin/demyx-crond; \
+    \
+    chmod +x /etc/demyx/bin/demyx-dev.sh; \
+    ln -s /etc/demyx/bin/demyx-dev.sh /usr/local/bin/demyx-dev; \
+    \
+    chmod +x /etc/demyx/bin/demyx-init.sh; \
+    ln -s /etc/demyx/bin/demyx-init.sh /usr/local/bin/demyx-init; \
+    \
+    chmod +x /etc/demyx/bin/demyx-ssh.sh; \
+    ln -s /etc/demyx/bin/demyx-ssh.sh /usr/local/bin/demyx-ssh
 
 EXPOSE 2222 8080
 WORKDIR /demyx

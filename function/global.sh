@@ -130,9 +130,7 @@ demyx_table() {
 }
 demyx_permission() {
     [[ -f "$DEMYX"/.env ]] && source "$DEMYX"/.env
-    [[ "$DEMYX_MOTD_MODE" = production ]] && demyx-mode production
     chown -R demyx:demyx "$DEMYX"
-
     # Will remove this backwards compability in December 2019
     chown -R demyx:demyx "$DEMYX_LOG"
 }

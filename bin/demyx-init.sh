@@ -1,51 +1,36 @@
 #!/bin/bash
 # Demyx
 # https://demyx.sh
- 
-# Clone demyx if it doesn't exist
-if [[ ! -d /demyx/etc ]]; then
-    echo "[demyx] installing now..."
-    mkdir -p /demyx/app/html
-    mkdir -p /demyx/app/php
-    mkdir -p /demyx/app/wp
-    mkdir -p /demyx/app/stack
-    mkdir -p /demyx/backup
-    mkdir -p /demyx/custom
-    touch /demyx/app/stack/.env
-    git clone https://github.com/demyxco/demyx.git /demyx/etc
-    cp /demyx/etc/example/example-callback.sh /demyx/custom
+
+source /etc/demyx/.config
+
+# Initialize files/directories
+if [[ -z "$(ls -A "$DEMYX")" ]]; then
+    echo "[demyx] initialize files/directories..."
+    mkdir -p "$DEMYX_APP"/html
+    mkdir -p "$DEMYX_APP"/php
+    mkdir -p "$DEMYX_APP"/wp
+    mkdir -p "$DEMYX_APP"/stack
+    mkdir -p "$DEMYX_BACKUP"
+    mkdir -p "$DEMYX"/custom
+    cp "$DEMYX_ETC"/example/example-callback.sh "$DEMYX"/custom
 fi
 
-# Make demyx user's .ssh directory if it isn't made yet
-if [[ ! -d /home/demyx/.ssh ]]; then
-    mkdir -p /home/demyx/.ssh
+# Run init scripts when docker.sock is mounted
+if [[ -n "$(ls /run | grep docker.sock)" ]]; then
+    # Execute update script
+    demyx update
+
+    # Start the API if DEMYX_STACK_SERVER_API has a url defined (Ex: api.domain.tld)
+    DEMYX_STACK_SERVER_API="$(demyx info stack --filter=DEMYX_STACK_SERVER_API --quiet)"
+    [[ "$DEMYX_STACK_SERVER_API" != false ]] && demyx-api &
 fi
 
-# Prevents ssh errors from local machine
-if [[ -f /home/demyx/.ssh/ssh_host_rsa_key ]]; then
-    cp /home/demyx/.ssh/ssh_host_rsa_key /etc/ssh
-    cp /home/demyx/.ssh/ssh_host_rsa_key.pub /etc/ssh
-else
-    ssh-keygen -f /etc/ssh/ssh_host_rsa_key -N '' -t rsa
-    cp /etc/ssh/ssh_host_rsa_key /home/demyx/.ssh
-    cp /etc/ssh/ssh_host_rsa_key.pub /home/demyx/.ssh
-fi
-
-# Set proper ssh permissions
-if [[ -f /home/demyx/.ssh/authorized_keys ]]; then
-    chmod 644 /home/demyx/.ssh/authorized_keys
-fi
-chmod 700 /home/demyx/.ssh
-chmod 600 /etc/ssh/ssh_host_rsa_key
-
-# Show demyx help menu
-demyx
-
-# Start the API if DEMYX_STACK_SERVER_API has a url defined (Ex: api.domain.tld)
-DEMYX_STACK_SERVER_API="$(demyx info stack --filter=DEMYX_STACK_SERVER_API --quiet)"
-if [[ "$DEMYX_STACK_SERVER_API" != false ]]; then
-    demyx-api &
-fi
-
+# Run sshd
 demyx-ssh &
+
+# Run sudo commands
+demyx-env
+# Don't run demyx-prod when DEMYX_MODE=development
+[[ "$DEMYX_MODE" != development ]] && demyx-prod
 demyx-crond

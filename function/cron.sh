@@ -45,22 +45,16 @@ demyx_cron() {
         demyx_execute docker stop demyx_ouroboros; \
             docker rm -f demyx_ouroboros
         
+        # Auto update
         if [[ "$DEMYX_STACK_AUTO_UPDATE" = true ]]; then
             # Auto update demyx images incase Ouroboros crashes
             demyx_echo "[$(date +%F-%T)] CROND: PULL DEMYX IMAGES"
             demyx_execute demyx pull
-        fi
 
-        # Auto update Demyx core files
-        if [[ "$DEMYX_STACK_AUTO_UPDATE" = true ]]; then
             demyx_echo "[$(date +%F-%T)] CROND: UPDATE DEMYX CORE"
             demyx_execute demyx update
         fi
-
-        # Update demyx chroot.sh on the host using a container
-        demyx_echo "[$(date +%F-%T)] CROND: UPDATE DEMYX CHROOT"
-        demyx_execute docker run -t --user=root --rm -v /usr/local/bin:/usr/local/bin demyx/utilities "rm -f /usr/local/bin/demyx; curl -s https://raw.githubusercontent.com/demyxco/demyx/master/chroot.sh -o /usr/local/bin/demyx; chmod +x /usr/local/bin/demyx"
-
+        
         # Update Oh My Zsh and its plugin
         cd /home/demyx/.oh-my-zsh
         demyx_echo "[$(date +%F-%T)] CROND: UPDATE OH-MY-ZSH"
@@ -113,11 +107,11 @@ demyx_cron() {
         fi
     elif [[ "$DEMYX_CRON" = six-hour ]]; then
         # Check for Demyx updates
-        cd "$DEMYX_ETC"
-        git remote update
-        DEMYX_CRON_UPDATES="$(git rev-list HEAD...origin/master --count)"
-        demyx_echo "[$(date +%F-%T)] CROND: CHECK DEMYX UPDATE"
-        demyx_execute sed -i "s|DEMYX_MOTD_STATUS=.*|DEMYX_MOTD_STATUS=$DEMYX_CRON_UPDATES|g" "$DEMYX"/.env
+        #cd "$DEMYX_ETC"
+        #git remote update
+        #DEMYX_CRON_UPDATES="$(git rev-list HEAD...origin/master --count)"
+        #demyx_echo "[$(date +%F-%T)] CROND: CHECK DEMYX UPDATE"
+        #demyx_execute sed -i "s|DEMYX_ENV_STATUS=.*|DEMYX_ENV_STATUS=$DEMYX_CRON_UPDATES|g" "$DEMYX"/.env
 
         # Run WP cron
         demyx_echo "[$(date +%F-%T)] CROND: WORDPRESS EVENT CRON"

@@ -1,0 +1,9 @@
+# Ignore everything
+**
+
+# Only allow
+!/.config
+!/demyx.sh
+!/bin/**
+!/example/**
+!/function/**

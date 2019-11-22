@@ -5,7 +5,7 @@
 # demyx <args>
 #
 trap 'exit' ERR
-source /demyx/etc/.config
+source /etc/demyx/.config
 source "$DEMYX_FUNCTION"/global.sh
 source "$DEMYX_FUNCTION"/help.sh
 source "$DEMYX_FUNCTION"/check.sh

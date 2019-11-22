@@ -69,11 +69,11 @@ fi
 echo -e "\e[34m[INFO\e[39m] Installing demyx chroot"
 docker run -t --user=root --rm -v /usr/local/bin:/usr/local/bin demyx/utilities "rm -f /usr/local/bin/demyx; curl -s https://raw.githubusercontent.com/demyxco/demyx/master/chroot.sh -o /usr/local/bin/demyx; chmod +x /usr/local/bin/demyx"
 
-demyx --root --nc
+demyx --nc
 
 echo -e "\e[34m[INFO\e[39m] Waiting for demyx container to initialize"
 sleep 5
 demyx exec install --domain="$DEMYX_INSTALL_DOMAIN" --email="$DEMYX_INSTALL_EMAIL" --user="$DEMYX_INSTALL_USER" --pass="$DEMYX_INSTALL_PASS"
 
 echo -e "\e[34m[INFO\e[39m] To SSH into the demyx container, paste your keys in /home/demyx/.ssh/authorized_keys inside the demyx container. Then run on the host OS: demyx restart"
-demyx restart
+demyx
