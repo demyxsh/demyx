@@ -199,7 +199,7 @@ elif [[ "$DEMYX_CHROOT" = restart ]]; then
 elif [[ "$DEMYX_CHROOT" = tty ]]; then
     docker exec -it --user="$DEMYX_CHROOT_USER" demyx "$@"
 elif [[ "$DEMYX_CHROOT" = update ]]; then
-    docker run --user=root --rm -v /usr/local/bin:/usr/local/bin demyx/utilities "rm -f /usr/local/bin/demyx; curl -s https://raw.githubusercontent.com/demyxco/demyx/master/chroot.sh -o /usr/local/bin/demyx; chmod +x /usr/local/bin/demyx"
+    docker run -t --user=root --rm -v /usr/local/bin:/usr/local/bin demyx/utilities "rm -f /usr/local/bin/demyx; curl -s https://raw.githubusercontent.com/demyxco/demyx/master/chroot.sh -o /usr/local/bin/demyx; chmod +x /usr/local/bin/demyx"
     echo -e "\e[32m[SUCCESS]\e[39m Demyx chroot has successfully updated"
 else
     if [[ -n "$DEMYX_CHROOT_CONTAINER_CHECK" ]]; then
