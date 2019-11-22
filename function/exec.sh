@@ -34,6 +34,7 @@ demyx_exec() {
     done
 
     demyx_app_config
+    demyx_app_is_up
 
     # If -t flag is passed then TTY only
     if [[ -n "$DEMYX_EXEC_TTY" ]]; then

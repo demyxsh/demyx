@@ -30,6 +30,7 @@ demyx_log() {
     done
 
     demyx_app_config
+    demyx_app_is_up
 
     if [[ "$DEMYX_TARGET" = api ]]; then
         tail "$DEMYX_LOG_FOLLOW" /var/log/demyx/api.log

@@ -5,6 +5,7 @@
 
 demyx_maldet() {
     demyx_app_config
+    demyx_app_is_up
 
     if [[ "$DEMYX_APP_TYPE" = wp ]]; then
         echo -e "\e[34m[INFO]\e[39m Scanning has initiated, this may take a while ... "

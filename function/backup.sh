@@ -42,6 +42,7 @@ demyx_backup() {
         DEMYX_BACKUP_TODAYS_DATE="$(date +%Y/%m/%d)"
 
         demyx_app_config
+        demyx_app_is_up
 
         if [[ "$DEMYX_APP_TYPE" = wp ]]; then
             if [[ -n "$DEMYX_BACKUP_CONFIG" ]]; then

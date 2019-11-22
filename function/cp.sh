@@ -4,6 +4,8 @@
 # demyx cp <app/path>:<path> <app/path>:<path>
 #
 demyx_cp() {
+    demyx_app_is_up
+
     if [[ "$1" = db ]]; then
         DEMYX_CP_FIRST_ARG="$2"
         DEMYX_CP_SECOND_ARG="$3"

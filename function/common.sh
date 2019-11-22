@@ -136,7 +136,6 @@ demyx_permission() {
 demyx_app_config() {
     DEMYX_GET_APP="$(find "$DEMYX_APP" -name "$DEMYX_TARGET")"
     [[ -f "$DEMYX_GET_APP"/.env ]] && source "$DEMYX_GET_APP"/.env
-    demyx_app_is_up
 }
 demyx_app_is_up() {
     DEMYX_APP_IS_UP_CHECK="$(docker ps)"

@@ -285,6 +285,8 @@ demyx_config() {
                 demyx compose "$DEMYX_APP_DOMAIN" nx up -d --remove-orphans
             fi
             if [[ "$DEMYX_CONFIG_AUTH_WP" = true ]]; then
+                demyx_app_is_up
+
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ "$DEMYX_APP_AUTH_WP" != false ]] && demyx_die 'Basic WP Auth is already turned on'
                 fi
@@ -303,6 +305,8 @@ demyx_config() {
 
                 demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
             elif [[ "$DEMYX_CONFIG_AUTH_WP" = false ]]; then
+                demyx_app_is_up
+
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ "$DEMYX_APP_AUTH_WP" = false ]] && demyx_die 'Basic WP Auth is already turned off'
                 fi
@@ -319,6 +323,8 @@ demyx_config() {
                 demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
             fi
             if [[ "$DEMYX_CONFIG_BEDROCK" = production ]]; then
+                demyx_app_is_up
+
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ "$DEMYX_APP_BEDROCK_MODE" = production ]] && demyx_die "Production mode is already set"
                 fi
@@ -327,6 +333,8 @@ demyx_config() {
                 demyx_execute docker exec "$DEMYX_APP_WP_CONTAINER" sh -c 'sed -i "s|WP_ENV=.*|WP_ENV=production|g" /var/www/html/.env' && \
                     sed -i "s|DEMYX_APP_BEDROCK_MODE=.*|DEMYX_APP_BEDROCK_MODE=production|g" "$DEMYX_APP_PATH"/.env
             elif [[ "$DEMYX_CONFIG_BEDROCK" = development ]]; then
+                demyx_app_is_up
+
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ "$DEMYX_APP_BEDROCK_MODE" = development ]] && demyx_die "Development mode is already set"
                 fi
@@ -336,6 +344,8 @@ demyx_config() {
                     sed -i "s|DEMYX_APP_BEDROCK_MODE=.*|DEMYX_APP_BEDROCK_MODE=development|g" "$DEMYX_APP_PATH"/.env
             fi
             if [[ "$DEMYX_CONFIG_CACHE" = true ]]; then
+                demyx_app_is_up
+
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ "$DEMYX_APP_CACHE" = true ]] && demyx_die 'Cache is already turned on'
                 fi
@@ -359,6 +369,8 @@ demyx_config() {
 
                 demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
             elif [[ "$DEMYX_CONFIG_CACHE" = false ]]; then
+                demyx_app_is_up
+
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ "$DEMYX_APP_CACHE" = false ]] && demyx_die 'Cache is already turned off'
                 fi
@@ -399,6 +411,8 @@ demyx_config() {
                     sed -i "s|DEMYX_APP_CDN=.*|DEMYX_APP_CDN=false|g" "$DEMYX_APP_PATH"/.env
             fi
             if [[ -n "$DEMYX_CONFIG_CLEAN" ]]; then
+                demyx_app_is_up
+
                 if [[ -z "$DEMYX_CONFIG_NO_BACKUP" ]]; then
                     demyx backup "$DEMYX_APP_DOMAIN"
                 fi
@@ -454,6 +468,8 @@ demyx_config() {
                 demyx config "$DEMYX_APP_DOMAIN" --healthcheck
             fi
             if [[ "$DEMYX_CONFIG_DEV" = true || -n "$DEMYX_CONFIG_DEV_STANDALONE" ]]; then
+                demyx_app_is_up
+
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ "$DEMYX_APP_DEV" = true ]] && demyx_die 'Dev mode is already turned on'
                 fi
@@ -625,6 +641,8 @@ demyx_config() {
                 PRINT_TABLE+="PASSWORD^ $MARIADB_ROOT_PASSWORD"
                 demyx_execute -v demyx_table "$PRINT_TABLE"
             elif [[ "$DEMYX_CONFIG_DEV" = false ]]; then
+                demyx_app_is_up
+
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ "$DEMYX_APP_DEV" = false ]] && demyx_die 'Dev mode is already turned off'
                 fi
@@ -665,6 +683,8 @@ demyx_config() {
                 demyx_execute sed -i "s|DEMYX_APP_HEALTHCHECK=.*|DEMYX_APP_HEALTHCHECK=false|g" "$DEMYX_APP_PATH"/.env
             fi
             if [[ "$DEMYX_CONFIG_OPCACHE" = true ]]; then
+                demyx_app_is_up
+
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ "$DEMYX_APP_PHP_OPCACHE" = true ]] && demyx_die 'PHP opcache is already turned on'
                 fi
@@ -675,6 +695,8 @@ demyx_config() {
 
                 demyx config "$DEMYX_APP_DOMAIN" --restart=php
             elif [[ "$DEMYX_CONFIG_OPCACHE" = false ]]; then
+                demyx_app_is_up
+
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ "$DEMYX_APP_PHP_OPCACHE" = false ]] && demyx_die 'PHP opcache is already turned off'
                 fi
@@ -718,6 +740,8 @@ demyx_config() {
                 demyx compose "$DEMYX_APP_DOMAIN" up -d wp_"$DEMYX_APP_ID"
             fi
             if [[ "$DEMYX_CONFIG_PMA" = true ]]; then
+                demyx_app_is_up
+
                 DEMYX_CONFIG_PMA_CONTAINER_CHECK="$(docker ps | grep "$DEMYX_APP_COMPOSE_PROJECT"_pma || true)"
                 [[ -n "$DEMYX_CONFIG_PMA_CONTAINER_CHECK" ]] && demyx_die 'phpMyAdmin container is already running'
 
@@ -751,6 +775,8 @@ demyx_config() {
                 PRINT_TABLE+="PASSWORD^ $WORDPRESS_DB_PASSWORD\n"
                 demyx_execute -v demyx_table "$PRINT_TABLE"
             elif [[ "$DEMYX_CONFIG_PMA" = false ]]; then
+                demyx_app_is_up
+
                 DEMYX_CONFIG_PMA_CONTAINER_CHECK="$(docker ps | grep "$DEMYX_APP_COMPOSE_PROJECT"_pma || true)"
                 [[ -z "$DEMYX_CONFIG_PMA_CONTAINER_CHECK" ]] && demyx_die 'No phpMyAdmin container running'
 
@@ -758,6 +784,8 @@ demyx_config() {
                 demyx_execute docker stop "$DEMYX_APP_COMPOSE_PROJECT"_pma
             fi
             if [[ "$DEMYX_CONFIG_RATE_LIMIT" = true ]]; then
+                demyx_app_is_up
+
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ "$DEMYX_APP_RATE_LIMIT" = true ]] && demyx_die 'Rate limit is already turned on'
                 fi
@@ -768,6 +796,8 @@ demyx_config() {
 
                 demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
             elif [[ "$DEMYX_CONFIG_RATE_LIMIT" = false ]]; then
+                demyx_app_is_up
+
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ "$DEMYX_APP_RATE_LIMIT" = false ]] && demyx_die 'Rate limit is already turned off'
                 fi
@@ -840,17 +870,25 @@ demyx_config() {
 
                 demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
             fi
-            if [ "$DEMYX_CONFIG_RESTART" = nginx-php ]; then
-                demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
-                demyx config "$DEMYX_APP_DOMAIN" --restart=php
-            elif [ "$DEMYX_CONFIG_RESTART" = nginx ]; then
-                demyx_echo "Restarting NGINX"
-                demyx_execute docker exec -t "$DEMYX_APP_NX_CONTAINER" sh -c "rm -rf /tmp/nginx-cache; sudo nginx -c /demyx/wp.conf -s reload"
-            elif [ "$DEMYX_CONFIG_RESTART" = php ]; then
-                demyx_echo "Restarting php-fpm"
-                demyx_execute docker exec "$DEMYX_APP_WP_CONTAINER" sh -c "pkill php-fpm"
+            if [[ -n "$DEMYX_CONFIG_RESTART" ]]; then
+                demyx_app_is_up
+
+                if [[ "$DEMYX_CONFIG_RESTART" = nginx-php ]]; then
+                    demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
+                    demyx config "$DEMYX_APP_DOMAIN" --restart=php
+                elif [ "$DEMYX_CONFIG_RESTART" = nginx ]; then
+                    demyx_app_is_up
+
+                    demyx_echo "Restarting NGINX"
+                    demyx_execute docker exec -t "$DEMYX_APP_NX_CONTAINER" sh -c "rm -rf /tmp/nginx-cache; sudo nginx -c /demyx/wp.conf -s reload"
+                elif [ "$DEMYX_CONFIG_RESTART" = php ]; then
+                    demyx_echo "Restarting php-fpm"
+                    demyx_execute docker exec "$DEMYX_APP_WP_CONTAINER" sh -c "pkill php-fpm"
+                fi
             fi
             if [[ "$DEMYX_CONFIG_SFTP" = true ]]; then
+                demyx_app_is_up
+                
                 DEMYX_SFTP_VOLUME_CHECK="$(docker volume ls | grep demyx_sftp || true)"
                 DEMYX_SFTP_CONTAINER_CHECK="$(docker ps | grep "$DEMYX_APP_COMPOSE_PROJECT"_sftp || true)"
                 DEMYX_SFTP_PORT="$(demyx_open_port)"
@@ -891,6 +929,8 @@ demyx_config() {
                 PRINT_TABLE+="SFTP PORT^ $DEMYX_SFTP_PORT\n"
                 demyx_execute -v demyx_table "$PRINT_TABLE"
             elif [[ "$DEMYX_CONFIG_SFTP" = false ]]; then
+                demyx_app_is_up
+                
                 DEMYX_SFTP_CONTAINER_CHECK="$(docker ps | grep "$DEMYX_APP_COMPOSE_PROJECT"_sftp || true)"
                 [[ -z "$DEMYX_SFTP_CONTAINER_CHECK" ]] && demyx_die 'No SFTP container running'
 
@@ -929,6 +969,8 @@ demyx_config() {
                 demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
             fi
             if [[ -n "$DEMYX_CONFIG_UPGRADE" ]]; then
+                demyx_app_is_up
+                
                 DEMYX_CHECK_APP_IMAGE="$(demyx info "$DEMYX_APP_DOMAIN" --filter=DEMYX_APP_WP_IMAGE)"
                 [[ "$DEMYX_CHECK_APP_IMAGE" = demyx/wordpress || "$DEMYX_CHECK_APP_IMAGE" = demyx/wordpress:bedrock ]] && demyx_die 'Already upgraded.'
 
@@ -967,6 +1009,8 @@ demyx_config() {
                 demyx_execute sed -i "s|DEMYX_APP_WP_UPDATE=.*|DEMYX_APP_WP_UPDATE=false|g" "$DEMYX_APP_PATH"/.env
             fi
             if [[ "$DEMYX_CONFIG_XMLRPC" = true ]]; then
+                demyx_app_is_up
+                
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ "$DEMYX_APP_XMLRPC" = true ]] && demyx_die 'WordPress xmlrpc is already turned on'
                 fi
@@ -977,6 +1021,8 @@ demyx_config() {
 
                 demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
             elif [[ "$DEMYX_CONFIG_XMLRPC" = false ]]; then
+                demyx_app_is_up
+                
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ "$DEMYX_APP_XMLRPC" = false ]] && demyx_die 'WordPress xmlrpc is already turned off'
                 fi

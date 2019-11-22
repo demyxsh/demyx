@@ -3,6 +3,8 @@
 
 demyx_wp() {
     demyx_app_config
+    demyx_app_is_up
+    
     if [[ "$DEMYX_TARGET" = all ]]; then
         cd "$DEMYX_WP" || exit
         for i in *
