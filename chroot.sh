@@ -81,6 +81,14 @@ while :; do
     esac
     shift
 done
+demyx_until() {
+    if [[ "$DEMYX_CHROOT_MODE" = development ]]; then
+        until docker exec -t demyx sh -c "stat /demyx | grep 111" 2>/dev/null
+        do
+            sleep 1
+        done
+    fi
+}
 demyx_mode() {
     if [[ "$DEMYX_CHROOT_MODE" = development ]]; then
         docker exec -t --user=root demyx demyx-dev
@@ -129,6 +137,7 @@ demyx_run() {
         --restart=unless-stopped \
         --hostname="$DEMYX_CHROOT_HOST" \
         --network=demyx \
+        -e TEST=cim \
         -e DEMYX_MODE="$DEMYX_CHROOT_MODE" \
         -e DEMYX_HOST="$DEMYX_CHROOT_HOST" \
         -e DEMYX_SSH="$DEMYX_CHROOT_SSH" \
@@ -154,6 +163,7 @@ demyx_run() {
         --restart=unless-stopped \
         --hostname="$DEMYX_CHROOT_HOST" \
         --network=demyx \
+        -e TEST=cim \
         -e DEMYX_MODE="$DEMYX_CHROOT_MODE" \
         -e DEMYX_HOST="$DEMYX_CHROOT_HOST" \
         -e DEMYX_SSH="$DEMYX_CHROOT_SSH" \
@@ -165,6 +175,8 @@ demyx_run() {
         -p "$DEMYX_CHROOT_SSH":2222 \
         demyx/demyx 2>/dev/null
     fi
+
+    demyx_until
 }
 
 if [[ "$DEMYX_CHROOT" = execute ]]; then
@@ -189,9 +201,6 @@ elif [[ "$DEMYX_CHROOT" = help ]]; then
 elif [[ "$DEMYX_CHROOT" = remove ]]; then
     demyx_rm
 elif [[ "$DEMYX_CHROOT" = restart ]]; then
-    if [[ -z "$DEMYX_CHROOT_MODE" ]]; then
-        DEMYX_CHROOT_MODE=production
-    fi
     demyx_rm
     demyx_run
     demyx_mode
@@ -201,7 +210,7 @@ elif [[ "$DEMYX_CHROOT" = restart ]]; then
 elif [[ "$DEMYX_CHROOT" = tty ]]; then
     docker exec -it --user="$DEMYX_CHROOT_USER" demyx "$@"
 elif [[ "$DEMYX_CHROOT" = update ]]; then
-    docker run -t --user=root --rm -v /usr/local/bin:/usr/local/bin demyx/utilities "rm -f /usr/local/bin/demyx; curl -s https://raw.githubusercontent.com/demyxco/demyx/master/chroot.sh -o /usr/local/bin/demyx; chmod +x /usr/local/bin/demyx"
+    docker run -t --user=root --privileged --rm -v /usr/local/bin:/usr/local/bin demyx/utilities demyx-chroot
     echo -e "\e[32m[SUCCESS]\e[39m Demyx chroot has successfully updated"
 else
     if [[ -n "$DEMYX_CHROOT_CONTAINER_CHECK" ]]; then
@@ -215,7 +224,6 @@ else
         fi
     else
         demyx_run
-        demyx_mode
         if [[ -z "$DEMYX_CHROOT_NC" ]]; then
             docker exec -it --user="$DEMYX_CHROOT_USER" demyx zsh
         fi
