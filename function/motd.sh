@@ -39,7 +39,6 @@ demyx_motd() {
         - Bugs: github.com/demyxco/demyx/issues
         - Contact: info@demyx.sh
 
-        Latest Updates
         " | sed 's/        //g'
     
     if [[ -n "$(demyx_upgrade_apps)" ]]; then
