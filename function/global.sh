@@ -148,7 +148,7 @@ demyx_app_is_up() {
 } 
 demyx_open_port() {
     DEMYX_SFTP_PORT="$(docker run -it --rm \
-    --network host \
+    --network=host \
     -e DEMYX_SFTP_PORT="$DEMYX_SFTP_PORT_DEFAULT" \
     demyx/utilities demyx-port)"
     
