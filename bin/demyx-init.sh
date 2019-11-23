@@ -20,8 +20,8 @@ fi
 # Run sshd
 demyx-ssh &
 
-# Run sudo commands
-demyx-env
-# Don't run demyx-prod when DEMYX_MODE=development
-[[ "$DEMYX_MODE" != development ]] && demyx-prod
+# Set /demyx to read-only
+demyx-prod
+
+# Final process to run in the foreground
 demyx-crond

@@ -79,7 +79,7 @@ RUN set -ex; \
 
 # Allow demyx user to execute only one script and allow usage of environment variables
 RUN set -ex; \
-    echo "demyx ALL=(ALL) NOPASSWD: /etc/demyx/demyx.sh, /etc/demyx/bin/demyx-env.sh, /etc/demyx/bin/demyx-prod.sh, /etc/demyx/bin/demyx-skel.sh, /usr/sbin/crond, /usr/local/bin/ctop-bin" >> /etc/sudoers.d/demyx; \
+    echo "demyx ALL=(ALL) NOPASSWD: /etc/demyx/demyx.sh, /etc/demyx/bin/demyx-prod.sh, /etc/demyx/bin/demyx-skel.sh, /usr/sbin/crond, /usr/local/bin/ctop-bin" >> /etc/sudoers.d/demyx; \
     echo 'Defaults env_keep +="DEMYX_MODE"' >> /etc/sudoers.d/demyx; \
     echo 'Defaults env_keep +="DEMYX_HOST"' >> /etc/sudoers.d/demyx; \
     echo 'Defaults env_keep +="DEMYX_SSH"' >> /etc/sudoers.d/demyx; \
@@ -121,11 +121,6 @@ RUN set -ex; \
     echo 'sudo /etc/demyx/demyx.sh "$@"' >> /usr/local/bin/demyx; \
     chmod +x /etc/demyx/demyx.sh; \
     chmod +x /usr/local/bin/demyx; \
-    \
-    echo '#!/bin/bash' >> /usr/local/bin/demyx-env; \
-    echo 'sudo /etc/demyx/bin/demyx-env.sh' >> /usr/local/bin/demyx-env; \
-    chmod +x /etc/demyx/bin/demyx-env.sh; \
-    chmod +x /usr/local/bin/demyx-env; \
     \
     echo '#!/bin/bash' >> /usr/local/bin/demyx-prod; \
     echo 'sudo /etc/demyx/bin/demyx-prod.sh' >> /usr/local/bin/demyx-prod; \
