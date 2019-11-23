@@ -155,19 +155,19 @@ demyx_open_port() {
     echo "$DEMYX_SFTP_PORT" | sed -e 's/\r//g'
 }
 demyx_mariadb_ready() {
-    until docker exec "$DEMYX_APP_DB_CONTAINER" mysqladmin -u root -p"$MARIADB_ROOT_PASSWORD" status 2>/dev/null
+    until docker exec -t "$DEMYX_APP_DB_CONTAINER" mysqladmin -u root -p"$MARIADB_ROOT_PASSWORD" status 2>/dev/null
     do
         sleep 1
     done
 }
 demyx_bedrock_ready() {
-    until docker exec "$DEMYX_APP_WP_CONTAINER" sh -c "ls | grep web"
+    until docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "ls | grep web"
     do
         sleep 1
     done
 }
 demyx_wordpress_ready() {
-    until docker exec "$DEMYX_APP_WP_CONTAINER" sh -c "ls | grep wp-admin"
+    until docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "ls | grep wp-admin"
     do
         sleep 1
     done

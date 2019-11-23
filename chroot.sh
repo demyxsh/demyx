@@ -83,9 +83,9 @@ while :; do
 done
 demyx_mode() {
     if [[ "$DEMYX_CHROOT_MODE" = development ]]; then
-        docker exec --user=root demyx demyx-dev
+        docker exec -t --user=root demyx demyx-dev
     else
-        docker exec demyx demyx-prod
+        docker exec -t demyx demyx-prod
     fi
 }
 demyx_rm() {
@@ -105,7 +105,7 @@ demyx_run() {
     done
 
     if [[ -n "$DEMYX_CHROOT_CONTAINER_CHECK" ]]; then
-        IFS=$'\r\n' GLOBIGNORE='*' command eval 'DEMYX_CHROOT_API_GET_ENV=($(docker run --user=root --rm --name=demyx_tmp -v demyx:/demyx demyx/utilities "cat /demyx/app/stack/.env | sed 1d"))'
+        IFS=$'\r\n' GLOBIGNORE='*' command eval 'DEMYX_CHROOT_API_GET_ENV=($(docker run -t --user=root --rm --name=demyx_tmp -v demyx:/demyx demyx/utilities "cat /demyx/app/stack/.env | sed 1d"))'
         DEMYX_CHROOT_API_DOMAIN="$(echo ${DEMYX_CHROOT_API_GET_ENV[1]} | awk -F '[=]' '{print $2}')"
         DEMYX_CHROOT_API_AUTH="$(echo ${DEMYX_CHROOT_API_GET_ENV[2]} | awk -F '[=]' '{print $2}')"
     fi
@@ -205,7 +205,7 @@ elif [[ "$DEMYX_CHROOT" = update ]]; then
     echo -e "\e[32m[SUCCESS]\e[39m Demyx chroot has successfully updated"
 else
     if [[ -n "$DEMYX_CHROOT_CONTAINER_CHECK" ]]; then
-        DEMYX_MODE_CHECK="$(docker exec --user=root demyx sh -c "[[ -f /demyx/.env ]] && grep DEMYX_ENV_MODE /demyx/.env | awk -F '[=]' '{print \$2}'")"
+        DEMYX_MODE_CHECK="$(docker exec -t --user=root demyx sh -c "[[ -f /demyx/.env ]] && grep DEMYX_ENV_MODE /demyx/.env | awk -F '[=]' '{print \$2}'")"
         if [[ -z "$DEMYX_CHROOT_MODE" ]]; then
             DEMYX_CHROOT_MODE="$DEMYX_MODE_CHECK"
         fi
