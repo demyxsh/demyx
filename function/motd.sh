@@ -37,8 +37,8 @@ demyx_motd() {
 
         - Help: demyx help
         - Bugs: github.com/demyxco/demyx/issues
+        - Chat: https://webchat.freenode.net/?channel=#demyx
         - Contact: info@demyx.sh
-
         " | sed 's/        //g'
     
     if [[ -n "$(demyx_upgrade_apps)" ]]; then
