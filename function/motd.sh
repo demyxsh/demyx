@@ -19,6 +19,7 @@ demyx_motd_git_latest() {
 }
 demyx_motd() {
     source /demyx/.env
+    [[ -z "$DEMYX_ENV_STATUS" ]] && DEMYX_ENV_STATUS=0
 
     if (( "$DEMYX_ENV_STATUS" > 1 )); then
         DEMYX_MOTD_STATUS="$DEMYX_ENV_STATUS UPDATES"
@@ -37,6 +38,8 @@ demyx_motd() {
         - Help: demyx help
         - Bugs: github.com/demyxco/demyx/issues
         - Contact: info@demyx.sh
+
+        Latest Updates
         " | sed 's/        //g'
     
     if [[ -n "$(demyx_upgrade_apps)" ]]; then
