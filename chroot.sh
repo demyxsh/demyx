@@ -83,7 +83,7 @@ while :; do
 done
 demyx_until() {
     if [[ "$DEMYX_CHROOT_MODE" = development ]]; then
-        until docker exec -t demyx sh -c "stat /demyx | grep 111" 2>/dev/null
+        until docker exec -t demyx stat /demyx | grep -q 111
         do
             sleep 1
         done
