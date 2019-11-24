@@ -55,9 +55,6 @@ demyx_install() {
     elif [[ -f "$DEMYX_STACK"/docker-compose.yml  ]]; then
         [[ -z "$DEMYX_INSTALL_FORCE" ]] && demyx_die 'Demyx is already installed'
     fi
-
-    DEMYX_WILDCARD_CHECK="$(demyx util dig +short "*.$DEMYX_INSTALL_DOMAIN")"
-    [[ -z "$DEMYX_WILDCARD_CHECK" ]] && demyx_die "Wildcard CNAME not detected, please add * as a CNAME to your domain's DNS and rerun installation"
     
     source "$DEMYX_FUNCTION"/env.sh
     source "$DEMYX_FUNCTION"/yml.sh
