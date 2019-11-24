@@ -15,21 +15,42 @@ if [[ ! -f "$DEMYX_DOCKER_CHECK" ]]; then
     exit 1
 fi
 
-docker pull demyx/demyx
-docker pull demyx/nginx
-docker pull demyx/wordpress
-docker pull demyx/wordpress:cli
-docker pull demyx/wordpress:bedrock
-docker pull demyx/code-server:wp
-docker pull demyx/docker-compose
-docker pull demyx/logrotate
-docker pull demyx/mariadb
-docker pull demyx/ssh
-docker pull demyx/utilities
-docker pull phpmyadmin/phpmyadmin
-docker pull pyouroboros/ouroboros
-docker pull traefik
-docker network create demyx
+while :; do
+    case "$1" in
+        --skip-checks)
+            DEMYX_INSTALL_SKIP_CHECKS=1
+            ;;
+        --)
+            shift
+            break
+            ;;
+        -?*)
+            printf '\e[31m[CRITICAL]\e[39m Unknown option: %s\n' "$1" >&2
+            exit 1
+            ;;
+        *)
+            break
+    esac
+    shift
+done
+
+if [[ -z "$DEMYX_INSTALL_SKIP_CHECKS" ]]; then
+    docker pull demyx/demyx
+    docker pull demyx/nginx
+    docker pull demyx/wordpress
+    docker pull demyx/wordpress:cli
+    docker pull demyx/wordpress:bedrock
+    docker pull demyx/code-server:wp
+    docker pull demyx/docker-compose
+    docker pull demyx/logrotate
+    docker pull demyx/mariadb
+    docker pull demyx/ssh
+    docker pull demyx/utilities
+    docker pull phpmyadmin/phpmyadmin
+    docker pull pyouroboros/ouroboros
+    docker pull traefik
+    docker network create demyx
+fi
 
 echo -e "\e[34m[INFO]\e[39m Enter top level domain for Traefik dashboard"
 read -rep "Domain: " DEMYX_INSTALL_DOMAIN
@@ -38,10 +59,12 @@ if [[ -z "$DEMYX_INSTALL_DOMAIN" ]]; then
     exit 1
 fi
 
-DEMYX_WILDCARD_CHECK=$(docker run -t --rm demyx/utilities "dig +short '*.$DEMYX_INSTALL_DOMAIN'")
-if [[ -z "$DEMYX_WILDCARD_CHECK" ]]; then
-    echo -e "\e[31m[CRITICAL]\e[39m Wildcard CNAME not detected, please add * as a CNAME to your domain's DNS and rerun installation"
-    exit
+if [[ -z "$DEMYX_INSTALL_SKIP_CHECKS" ]]; then
+    DEMYX_WILDCARD_CHECK=$(docker run -t --rm demyx/utilities "dig +short 'traefik.$DEMYX_INSTALL_DOMAIN'")
+    if [[ -z "$DEMYX_WILDCARD_CHECK" ]]; then
+        echo -e "\e[31m[CRITICAL]\e[39m Wildcard CNAME not detected, please add * as a CNAME to your domain's DNS and rerun installation"
+        exit
+    fi
 fi
 
 echo -e "\e[34m[INFO\e[39m] Lets Encrypt SSL notifications"
