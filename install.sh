@@ -10,7 +10,7 @@ if [[ "$DEMYX_SUDO_CHECK" != 0 ]]; then
     exit 1
 fi
 
-if [[ -z "$DEMYX_DOCKER_CHECK" ]]; then
+if [[ ! -f "$DEMYX_DOCKER_CHECK" ]]; then
     echo -e "\e[31m[CRITICAL]\e[39m Docker must be installed"
     exit 1
 fi
