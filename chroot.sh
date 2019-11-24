@@ -137,7 +137,6 @@ demyx_run() {
         --restart=unless-stopped \
         --hostname="$DEMYX_CHROOT_HOST" \
         --network=demyx \
-        -e TEST=cim \
         -e DEMYX_MODE="$DEMYX_CHROOT_MODE" \
         -e DEMYX_HOST="$DEMYX_CHROOT_HOST" \
         -e DEMYX_SSH="$DEMYX_CHROOT_SSH" \
@@ -163,7 +162,6 @@ demyx_run() {
         --restart=unless-stopped \
         --hostname="$DEMYX_CHROOT_HOST" \
         --network=demyx \
-        -e TEST=cim \
         -e DEMYX_MODE="$DEMYX_CHROOT_MODE" \
         -e DEMYX_HOST="$DEMYX_CHROOT_HOST" \
         -e DEMYX_SSH="$DEMYX_CHROOT_SSH" \
