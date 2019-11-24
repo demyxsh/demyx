@@ -258,9 +258,9 @@ demyx_stack_yml() {
                     - TRAEFIK_CERTIFICATESRESOLVERS_DEMYX_ACME_STORAGE=\${DEMYX_STACK_ACME_STORAGE}
                     - TRAEFIK_LOG=true
                     - TRAEFIK_LOG_LEVEL=INFO
-                    - TRAEFIK_LOG_FILEPATH=\${DEMYX_STACK_LOG_ERROR}
+                    - TRAEFIK_LOG_FILEPATH=/var/log/demyx/traefik.error.log
                     - TRAEFIK_ACCESSLOG=true
-                    - TRAEFIK_ACCESSLOG_FILEPATH=\${DEMYX_STACK_LOG_ACCESS}
+                    - TRAEFIK_ACCESSLOG_FILEPATH=/var/log/demyx/traefik.access.log
                     - TZ=America/Los_Angeles
                 $DEMYX_STACK_TRAEFIK_LABEL
             $DEMYX_YML_OUROBOROS
