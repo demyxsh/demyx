@@ -22,9 +22,9 @@ script:
   - docker build --no-cache -t demyx/"$DEMYX_REPOSITORY" docker/.
   - docker run -dit --name=demyx --rm --hostname=travis-ci -e DEMYX_MODE=production -e DEMYX_HOST=travis-ci -e DEMYX_SSH=2222 -e TZ=America/Los_Angeles -v demyx:/demyx -v demyx_user:/home/demyx -v demyx_log:/var/log/demyx -v /var/run/docker.sock:/var/run/docker.sock:ro -p 2222:2222 demyx/"$DEMYX_REPOSITORY"
   - sleep 5
-  - docker exec -t demyx demyx motd
-  - docker exec -t demyx demyx run domain.tld --auth --cdn --cache
-  - docker exec -t demyx demyx wp domain.tld core is-installed
+  - docker exec -it demyx demyx motd
+  - docker exec -it demyx demyx run domain.tld --auth --cdn --cache
+  - docker exec -it demyx demyx wp domain.tld core is-installed
 
 after_success:
   - echo "$DEMYX_PASSWORD" | docker login -u "$DEMYX_USERNAME" --password-stdin
