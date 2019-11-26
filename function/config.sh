@@ -3,9 +3,6 @@
 # 
 # demyx config <app> <args>
 #
-
-DEMYX_SFTP_PORT_DEFAULT=22222
-
 demyx_config() {
     while :; do
         case "$3" in
@@ -79,6 +76,9 @@ demyx_config() {
                 ;;
             --dev-mem=)
                 demyx_die '"--dev-mem" cannot be empty'
+                ;;
+            --expose)
+                DEMYX_CONFIG_EXPOSE=1
                 ;;
             --files=?*)
                 DEMYX_CONFIG_FILES="${3#*=}"
@@ -490,13 +490,16 @@ demyx_config() {
                     DEMYX_CONFIG_DEV_RESOURCES+="--memory=$DEMYX_MEM"
                 fi
  
-                if [[ "$DEMYX_APP_SSL" = true ]]; then
-                    DEMYX_CONFIG_DEV_PROTO="https://$DEMYX_APP_DOMAIN"
-                else
+                [[ -z "$DEMYX_CONFIG_DEV_BASE_PATH" ]] && DEMYX_CONFIG_DEV_BASE_PATH=/demyx
+
+                if [[ "$DEMYX_APP_SSL" = false ]]; then
                     DEMYX_CONFIG_DEV_PROTO="http://$DEMYX_APP_DOMAIN"
+                else
+                    DEMYX_CONFIG_DEV_PROTO="https://$DEMYX_APP_DOMAIN"
                 fi
 
-                [[ -z "$DEMYX_CONFIG_DEV_BASE_PATH" ]] && DEMYX_CONFIG_DEV_BASE_PATH=/demyx
+                DEMYX_CONFIG_DEV_CS_URI="${DEMYX_CONFIG_DEV_PROTO}${DEMYX_CONFIG_DEV_BASE_PATH}/cs/"
+                DEMYX_CONFIG_DEV_BS_URI="${DEMYX_CONFIG_DEV_PROTO}${DEMYX_CONFIG_DEV_BASE_PATH}/bs/"
 
                 demyx config "$DEMYX_APP_DOMAIN" --opcache=false
 
@@ -514,54 +517,95 @@ demyx_config() {
                     fi
 
                     demyx_echo 'Creating browser-sync'
-                    demyx_execute docker run -dit --rm \
-                        --name="$DEMYX_APP_COMPOSE_PROJECT"_bs \
-                        --network=demyx \
-                        $DEMYX_CONFIG_DEV_RESOURCES \
-                        --volumes-from="$DEMYX_APP_WP_CONTAINER" \
-                        -e BS_PROXY="$DEMYX_APP_NX_CONTAINER" \
-                        -e BS_DOMAIN="$DEMYX_APP_DOMAIN" \
-                        -e BS_FILES="$DEMYX_BS_FILES" \
-                        -e BS_PATH="$DEMYX_CONFIG_DEV_BASE_PATH" \
-                        -l "traefik.enable=true" \
-                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-bs.rule=(Host(\`${DEMYX_APP_DOMAIN}\`) && PathPrefix(\`${DEMYX_CONFIG_DEV_BASE_PATH}/bs/\`))" \
-                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-bs.entrypoints=https" \
-                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-bs.middlewares=${DEMYX_APP_COMPOSE_PROJECT}-bs-prefix" \
-                        -l "traefik.http.middlewares.${DEMYX_APP_COMPOSE_PROJECT}-bs-prefix.stripprefix.prefixes=${DEMYX_CONFIG_DEV_BASE_PATH}/bs/" \
-                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-bs.service=${DEMYX_APP_COMPOSE_PROJECT}-bs" \
-                        -l "traefik.http.services.${DEMYX_APP_COMPOSE_PROJECT}-bs.loadbalancer.server.port=3000" \
-                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-bs.priority=99" \
-                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-bs.tls.certresolver=demyx" \
-                        \
-                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-socket.rule=(Host(\`${DEMYX_APP_DOMAIN}\`) && PathPrefix(\`/browser-sync/socket.io/\`))" \
-                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-socket.middlewares=${DEMYX_APP_COMPOSE_PROJECT}-socket-prefix" \
-                        -l "traefik.http.middlewares.${DEMYX_APP_COMPOSE_PROJECT}-socket-prefix.stripprefix.prefixes=${DEMYX_CONFIG_DEV_BASE_PATH}/bs/browser-sync/socket.io/" \
-                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-socket.service=${DEMYX_APP_COMPOSE_PROJECT}-socket" \
-                        -l "traefik.http.services.${DEMYX_APP_COMPOSE_PROJECT}-socket.loadbalancer.server.port=3000" \
-                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-socket.priority=99" \
-                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-socket.tls.certresolver=demyx" \
-                        demyx/browsersync 2>/dev/null
 
-                    demyx_echo 'Creating code-server'
-                    demyx_execute docker run -dit --rm \
-                        --name="$DEMYX_APP_COMPOSE_PROJECT"_cs \
-                        --network=demyx \
-                        --hostname="$DEMYX_APP_COMPOSE_PROJECT" \
-                        $DEMYX_CONFIG_DEV_RESOURCES \
-                        --volumes-from="$DEMYX_APP_WP_CONTAINER" \
-                        -v demyx_cs:/home/demyx \
-                        -e PASSWORD="$MARIADB_ROOT_PASSWORD" \
-                        -e CODER_BASE_PATH="$DEMYX_CONFIG_DEV_BASE_PATH" \
-                        -l "traefik.enable=true" \
-                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-cs.rule=(Host(\`${DEMYX_APP_DOMAIN}\`) && PathPrefix(\`${DEMYX_CONFIG_DEV_BASE_PATH}/cs/\`))" \
-                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-cs.entrypoints=https" \
-                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-cs.middlewares=${DEMYX_APP_COMPOSE_PROJECT}-cs-prefix" \
-                        -l "traefik.http.middlewares.${DEMYX_APP_COMPOSE_PROJECT}-cs-prefix.stripprefix.prefixes=${DEMYX_CONFIG_DEV_BASE_PATH}/cs/" \
-                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-cs.service=${DEMYX_APP_COMPOSE_PROJECT}-cs" \
-                        -l "traefik.http.services.${DEMYX_APP_COMPOSE_PROJECT}-cs.loadbalancer.server.port=8080" \
-                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-cs.priority=99" \
-                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-cs.tls.certresolver=demyx" \
-                        demyx/code-server:wp 2>/dev/null
+                    if [[ -n "$DEMYX_CONFIG_EXPOSE" || -n "$(demyx_validate_ip)" ]]; then
+                        DEMYX_IP_DOMAIN="$(demyx info stack --filter=DEMYX_STACK_SERVER_IP)"
+                        DEMYX_CONFIG_DEV_BS_PORT="$(demyx_open_port 3000)"
+                        DEMYX_CONFIG_DEV_CS_PORT="$(demyx_open_port 8080)"
+                        DEMYX_CONFIG_DEV_BS_URI="http://${DEMYX_IP_DOMAIN}:${DEMYX_CONFIG_DEV_BS_PORT}"
+                        DEMYX_CONFIG_DEV_CS_URI="http://${DEMYX_IP_DOMAIN}:${DEMYX_CONFIG_DEV_CS_PORT}"
+                        
+                        demyx_execute docker run -dit --rm \
+                            --name="$DEMYX_APP_COMPOSE_PROJECT"_bs \
+                            --network=demyx \
+                            $DEMYX_CONFIG_DEV_RESOURCES \
+                            --volumes-from="$DEMYX_APP_WP_CONTAINER" \
+                            -p "$DEMYX_CONFIG_DEV_BS_PORT":3000 \
+                            -e BS_DOMAIN_MATCH="${DEMYX_CONFIG_DEV_PROTO}" \
+                            -e BS_DOMAIN_RETURN="$DEMYX_CONFIG_DEV_BS_URI" \
+                            -e BS_DOMAIN_SOCKET="$DEMYX_CONFIG_DEV_BS_URI" \
+                            -e BS_PROXY="$DEMYX_APP_NX_CONTAINER" \
+                            -e BS_FILES="$DEMYX_BS_FILES" \
+                            -e BS_PATH=false \
+                            -e BS_PREFIX=false \
+                            demyx/browsersync 2>/dev/null
+
+                        demyx_echo 'Creating code-server'
+                        demyx_execute docker run -dit --rm \
+                            --name="$DEMYX_APP_COMPOSE_PROJECT"_cs \
+                            --network=demyx \
+                            --hostname="$DEMYX_APP_COMPOSE_PROJECT" \
+                            $DEMYX_CONFIG_DEV_RESOURCES \
+                            --volumes-from="$DEMYX_APP_WP_CONTAINER" \
+                            -p "$DEMYX_CONFIG_DEV_CS_PORT":8080 \
+                            -v demyx_cs:/home/demyx \
+                            -e PASSWORD="$MARIADB_ROOT_PASSWORD" \
+                            -e CODER_BASE_PATH=false \
+                            -e CODER_BASE_PREFIX=false \
+                            demyx/code-server:wp 2>/dev/null
+                    else
+                        demyx_execute docker run -dit --rm \
+                            --name="$DEMYX_APP_COMPOSE_PROJECT"_bs \
+                            --network=demyx \
+                            $DEMYX_CONFIG_DEV_RESOURCES \
+                            --volumes-from="$DEMYX_APP_WP_CONTAINER" \
+                            -e BS_DOMAIN_MATCH="$DEMYX_CONFIG_DEV_BS_URI" \
+                            -e BS_DOMAIN_RETURN="$DEMYX_CONFIG_DEV_BS_URI" \
+                            -e BS_DOMAIN_SOCKET="$DEMYX_CONFIG_DEV_BS_URI" \
+                            -e BS_PROXY="$DEMYX_APP_NX_CONTAINER" \
+                            -e BS_DOMAIN="$DEMYX_APP_DOMAIN" \
+                            -e BS_FILES="$DEMYX_BS_FILES" \
+                            -e BS_PATH="$DEMYX_CONFIG_DEV_BASE_PATH" \
+                            -l "traefik.enable=true" \
+                            -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-bs.rule=(Host(\`${DEMYX_APP_DOMAIN}\`) && PathPrefix(\`${DEMYX_CONFIG_DEV_BASE_PATH}/bs/\`))" \
+                            -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-bs.entrypoints=https" \
+                            -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-bs.middlewares=${DEMYX_APP_COMPOSE_PROJECT}-bs-prefix" \
+                            -l "traefik.http.middlewares.${DEMYX_APP_COMPOSE_PROJECT}-bs-prefix.stripprefix.prefixes=${DEMYX_CONFIG_DEV_BASE_PATH}/bs/" \
+                            -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-bs.service=${DEMYX_APP_COMPOSE_PROJECT}-bs" \
+                            -l "traefik.http.services.${DEMYX_APP_COMPOSE_PROJECT}-bs.loadbalancer.server.port=3000" \
+                            -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-bs.priority=99" \
+                            -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-bs.tls.certresolver=demyx" \
+                            \
+                            -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-socket.rule=(Host(\`${DEMYX_APP_DOMAIN}\`) && PathPrefix(\`/browser-sync/socket.io/\`))" \
+                            -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-socket.middlewares=${DEMYX_APP_COMPOSE_PROJECT}-socket-prefix" \
+                            -l "traefik.http.middlewares.${DEMYX_APP_COMPOSE_PROJECT}-socket-prefix.stripprefix.prefixes=${DEMYX_CONFIG_DEV_BASE_PATH}/bs/browser-sync/socket.io/" \
+                            -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-socket.service=${DEMYX_APP_COMPOSE_PROJECT}-socket" \
+                            -l "traefik.http.services.${DEMYX_APP_COMPOSE_PROJECT}-socket.loadbalancer.server.port=3000" \
+                            -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-socket.priority=99" \
+                            -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-socket.tls.certresolver=demyx" \
+                            demyx/browsersync 2>/dev/null
+
+                        demyx_echo 'Creating code-server'
+                        demyx_execute docker run -dit --rm \
+                            --name="$DEMYX_APP_COMPOSE_PROJECT"_cs \
+                            --network=demyx \
+                            --hostname="$DEMYX_APP_COMPOSE_PROJECT" \
+                            $DEMYX_CONFIG_DEV_RESOURCES \
+                            --volumes-from="$DEMYX_APP_WP_CONTAINER" \
+                            -v demyx_cs:/home/demyx \
+                            -e PASSWORD="$MARIADB_ROOT_PASSWORD" \
+                            -e CODER_BASE_PATH="$DEMYX_CONFIG_DEV_BASE_PATH" \
+                            -l "traefik.enable=true" \
+                            -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-cs.rule=(Host(\`${DEMYX_APP_DOMAIN}\`) && PathPrefix(\`${DEMYX_CONFIG_DEV_BASE_PATH}/cs/\`))" \
+                            -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-cs.entrypoints=https" \
+                            -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-cs.middlewares=${DEMYX_APP_COMPOSE_PROJECT}-cs-prefix" \
+                            -l "traefik.http.middlewares.${DEMYX_APP_COMPOSE_PROJECT}-cs-prefix.stripprefix.prefixes=${DEMYX_CONFIG_DEV_BASE_PATH}/cs/" \
+                            -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-cs.service=${DEMYX_APP_COMPOSE_PROJECT}-cs" \
+                            -l "traefik.http.services.${DEMYX_APP_COMPOSE_PROJECT}-cs.loadbalancer.server.port=8080" \
+                            -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-cs.priority=99" \
+                            -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-cs.tls.certresolver=demyx" \
+                            demyx/code-server:wp 2>/dev/null
+                    fi
                 else
                     demyx config "$DEMYX_APP_DOMAIN" --bedrock=development
                     
@@ -636,8 +680,8 @@ demyx_config() {
                 demyx_execute -v sed -i "s|DEMYX_APP_DEV=.*|DEMYX_APP_DEV=true|g" "$DEMYX_APP_PATH"/.env
 
                 PRINT_TABLE="DEMYX^ DEVELOPMENT\n"
-                PRINT_TABLE+="CODE-SERVER^ ${DEMYX_CONFIG_DEV_PROTO}${DEMYX_CONFIG_DEV_BASE_PATH}/cs/\n"
-                PRINT_TABLE+="BROWSERSYNC^ ${DEMYX_CONFIG_DEV_PROTO}${DEMYX_CONFIG_DEV_BASE_PATH}/bs/\n"
+                PRINT_TABLE+="CODE-SERVER^ $DEMYX_CONFIG_DEV_CS_URI\n"
+                PRINT_TABLE+="BROWSERSYNC^ $DEMYX_CONFIG_DEV_BS_URI\n"
                 PRINT_TABLE+="PASSWORD^ $MARIADB_ROOT_PASSWORD"
                 demyx_execute -v demyx_table "$PRINT_TABLE"
             elif [[ "$DEMYX_CONFIG_DEV" = false ]]; then
@@ -745,32 +789,53 @@ demyx_config() {
                 DEMYX_CONFIG_PMA_CONTAINER_CHECK="$(echo "$DEMYX_DOCKER_PS" | grep "$DEMYX_APP_COMPOSE_PROJECT"_pma || true)"
                 [[ -n "$DEMYX_CONFIG_PMA_CONTAINER_CHECK" ]] && demyx_die 'phpMyAdmin container is already running'
 
-                if [[ "$DEMYX_APP_SSL" = true ]]; then
-                    DEMYX_CONFIG_PMA_PROTO="https://$DEMYX_APP_DOMAIN"
-                else
+                if [[ -n "$DEMYX_CONFIG_EXPOSE" || "$DEMYX_APP_SSL" = false ]]; then
+                    [[ -n "$DEMYX_CONFIG_EXPOSE" ]] && DEMYX_APP_DOMAIN="$(demyx info stack --filter=DEMYX_STACK_SERVER_IP)"
                     DEMYX_CONFIG_PMA_PROTO="http://$DEMYX_APP_DOMAIN"
+                else
+                    DEMYX_CONFIG_PMA_PROTO="https://$DEMYX_APP_DOMAIN"
                 fi
+                
+                DEMYX_CONFIG_PMA_ABSOLUTE_URI="$DEMYX_CONFIG_PMA_PROTO"/demyx/pma/
 
                 demyx_echo 'Creating phpMyAdmin container'
-                demyx_execute docker run -d --rm \
-                    --name="$DEMYX_APP_COMPOSE_PROJECT"_pma \
-                    --network=demyx \
-                    --cpus="$DEMYX_CPU" \
-                    --memory="$DEMYX_MEM" \
-                    -e PMA_HOST=db_"$DEMYX_APP_ID" \
-                    -e MYSQL_ROOT_PASSWORD="$MARIADB_ROOT_PASSWORD" \
-                    -e PMA_ABSOLUTE_URI=${DEMYX_CONFIG_PMA_PROTO}/demyx/pma/ \
-                    -l "traefik.enable=true" \
-                    -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-pma.rule=(Host(\`${DEMYX_APP_DOMAIN}\`) && PathPrefix(\`/demyx/pma/\`))" \
-                    -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-pma.entrypoints=https" \
-                    -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-pma.middlewares=${DEMYX_APP_COMPOSE_PROJECT}-pma-prefix" \
-                    -l "traefik.http.middlewares.${DEMYX_APP_COMPOSE_PROJECT}-pma-prefix.stripprefix.prefixes=/demyx/pma/" \
-                    -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-pma.tls.certresolver=demyx" \
-                    -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-pma.priority=99" \
-                    phpmyadmin/phpmyadmin 2>/dev/null
+
+                if [[ -n "$DEMYX_CONFIG_EXPOSE" || -n "$(demyx_validate_ip)" ]]; then
+                    DEMYX_CONFIG_PMA_PORT="$(demyx_open_port 8080)"
+                    DEMYX_CONFIG_PMA_ABSOLUTE_URI="$DEMYX_CONFIG_PMA_PROTO":"$DEMYX_CONFIG_PMA_PORT"
+
+                    demyx_execute docker run -d --rm \
+                        --name="$DEMYX_APP_COMPOSE_PROJECT"_pma \
+                        --network=demyx \
+                        --cpus="$DEMYX_CPU" \
+                        --memory="$DEMYX_MEM" \
+                        -p "$DEMYX_CONFIG_PMA_PORT":80 \
+                        -e PMA_HOST=db_"$DEMYX_APP_ID" \
+                        -e MYSQL_ROOT_PASSWORD="$MARIADB_ROOT_PASSWORD" \
+                        -e PMA_ABSOLUTE_URI="$DEMYX_CONFIG_PMA_ABSOLUTE_URI" \
+                        phpmyadmin/phpmyadmin 2>/dev/null
+                else
+                    demyx_execute docker run -d --rm \
+                        --name="$DEMYX_APP_COMPOSE_PROJECT"_pma \
+                        --network=demyx \
+                        --cpus="$DEMYX_CPU" \
+                        --memory="$DEMYX_MEM" \
+                        -p "$DEMYX_CONFIG_PMA_PORT":80 \
+                        -e PMA_HOST=db_"$DEMYX_APP_ID" \
+                        -e MYSQL_ROOT_PASSWORD="$MARIADB_ROOT_PASSWORD" \
+                        -e PMA_ABSOLUTE_URI="$DEMYX_CONFIG_PMA_ABSOLUTE_URI" \
+                        -l "traefik.enable=true" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-pma.rule=(Host(\`${DEMYX_APP_DOMAIN}\`) && PathPrefix(\`/demyx/pma/\`))" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-pma.entrypoints=https" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-pma.middlewares=${DEMYX_APP_COMPOSE_PROJECT}-pma-prefix" \
+                        -l "traefik.http.middlewares.${DEMYX_APP_COMPOSE_PROJECT}-pma-prefix.stripprefix.prefixes=/demyx/pma/" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-pma.tls.certresolver=demyx" \
+                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-pma.priority=99" \
+                        phpmyadmin/phpmyadmin 2>/dev/null
+                fi
 
                 PRINT_TABLE="DEMYX^ PHPMYADMIN\n"
-                PRINT_TABLE+="URL^ $DEMYX_CONFIG_PMA_PROTO/demyx/pma/\n"
+                PRINT_TABLE+="URL^ $DEMYX_CONFIG_PMA_ABSOLUTE_URI\n"
                 PRINT_TABLE+="USERNAME^ $WORDPRESS_DB_USER\n"
                 PRINT_TABLE+="PASSWORD^ $WORDPRESS_DB_PASSWORD\n"
                 demyx_execute -v demyx_table "$PRINT_TABLE"
