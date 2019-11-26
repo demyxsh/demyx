@@ -8,8 +8,11 @@ LABEL sh.demyx.url https://demyx.sh
 LABEL sh.demyx.github https://github.com/demyxco
 LABEL sh.demyx.registry https://hub.docker.com/u/demyx
 
-# Set default timezone
-ENV TZ America/Los_Angeles
+# Set default environment variables
+ENV DEMYX_BRANCH=stable
+ENV DEMYX_MODE=production
+ENV DEMYX_SSH=2222
+ENV TZ=America/Los_Angeles
 
 # Install custom packages
 RUN set -ex; \
