@@ -14,6 +14,23 @@ demyx_motd_dev_warning() {
         done
     fi
 }
+demyx_motd_stack_check() {
+    if [[ -f "$DEMYX_STACK"/.env ]]; then
+        source "$DEMYX_STACK"/.env
+        if [[ "$DEMYX_STACK_AUTO_UPDATE" = false ]]; then
+            demyx_execute -v echo -e "\e[33m[WARNING]\e[39m Auto updates are disabled, demyx stack --auto-update to enable"
+        fi
+        if [[ "$DEMYX_STACK_BACKUP" = false ]]; then
+            demyx_execute -v echo -e "\e[33m[WARNING]\e[39m Auto backups are disabled, demyx stack --backup to enable"
+        fi
+        if [[ "$DEMYX_STACK_MONITOR" = false ]]; then
+            demyx_execute -v echo -e "\e[33m[WARNING]\e[39m Global monitors are disabled, demyx stack --monitor to enable"
+        fi
+        if [[ "$DEMYX_STACK_HEALTHCHECK" = false ]]; then
+            demyx_execute -v echo -e "\e[33m[WARNING]\e[39m Global healthchecks are disabled, demyx stack --healthcheck to enable"
+        fi
+    fi
+}
 #demyx_motd_git_latest() {
 #    cd "$DEMYX_ETC" || exit
 #    DEMYX_MOTD_GIT_LOG="$(git --no-pager log -5 --format=format:'- %s %C(white dim)(%ar)%C(reset)')"
@@ -74,6 +91,6 @@ demyx_motd() {
         PRINT_MOTD_TABLE+="CONTAINERS^ $DEMYX_MOTD_SYSTEM_CONTAINER $DEMYX_MOTD_SYSTEM_CONTAINER_DEAD_COUNT"
         demyx_execute -v demyx_table "$PRINT_MOTD_TABLE"
     fi
-    
+    demyx_motd_stack_check
     demyx_motd_dev_warning
 }
