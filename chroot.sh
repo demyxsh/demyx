@@ -5,6 +5,7 @@
 
 DEMYX_CHROOT_CONTAINER_CHECK="$(docker ps -a | awk '{print $NF}' | grep -w demyx)"
 DEMYX_CHROOT_HOST="$(hostname)"
+DEMYX_CHROOT_BRANCH=stable
 DEMYX_CHROOT_USER=demyx
 DEMYX_CHROOT_SSH=2222
 DEMYX_CHROOT_API=false
@@ -44,6 +45,9 @@ while :; do
             ;;
         --dev)
             DEMYX_CHROOT_MODE=development
+            ;;
+        --edge)
+            DEMYX_CHROOT_BRANCH=edge
             ;;
         --mem=null|--mem=?*)
             DEMYX_CHROOT_MEM=${1#*=}
@@ -112,11 +116,9 @@ demyx_run() {
         fi
     done
 
-    if [[ -n "$DEMYX_CHROOT_CONTAINER_CHECK" ]]; then
-        IFS=$'\r\n' GLOBIGNORE='*' command eval 'DEMYX_CHROOT_API_GET_ENV=($(docker run -t --user=root --rm --name=demyx_tmp -v demyx:/demyx demyx/utilities "cat /demyx/app/stack/.env | sed 1d"))'
-        DEMYX_CHROOT_API_DOMAIN="$(echo ${DEMYX_CHROOT_API_GET_ENV[1]} | awk -F '[=]' '{print $2}')"
-        DEMYX_CHROOT_API_AUTH="$(echo ${DEMYX_CHROOT_API_GET_ENV[2]} | awk -F '[=]' '{print $2}')"
-    fi
+    DEMYX_CHROOT_API_GET_ENV="$(docker run -t --user=root --rm -v demyx:/demyx demyx/utilities '[[ -f /demyx/app/stack/.env ]] && cat /demyx/app/stack/.env')"
+    DEMYX_CHROOT_API_DOMAIN="$(echo "$DEMYX_CHROOT_API_GET_ENV" | grep DEMYX_STACK_SERVER_API | awk -F '[=]' '{print $2}')"
+    DEMYX_CHROOT_API_AUTH="$(echo "$DEMYX_CHROOT_API_GET_ENV" | grep DEMYX_STACK_AUTH | awk -F '[=]' '{print $2}')"
 
     if [[ "$DEMYX_CHROOT_CPU" = null ]]; then
         DEMYX_CHROOT_RESOURCES+=" "
@@ -130,49 +132,35 @@ demyx_run() {
         DEMYX_CHROOT_RESOURCES+="--memory=$DEMYX_CHROOT_MEM "
     fi
 
-    if [[ -n "$DEMYX_CHROOT_API_DOMAIN" ]]; then
-        docker run -dit \
-        --name=demyx \
-        $DEMYX_CHROOT_RESOURCES \
-        --restart=unless-stopped \
-        --hostname="$DEMYX_CHROOT_HOST" \
-        --network=demyx \
-        -e DEMYX_MODE="$DEMYX_CHROOT_MODE" \
-        -e DEMYX_HOST="$DEMYX_CHROOT_HOST" \
-        -e DEMYX_SSH="$DEMYX_CHROOT_SSH" \
-        -e TZ=America/Los_Angeles \
-        -v /var/run/docker.sock:/var/run/docker.sock:ro \
-        -v demyx:/demyx \
-        -v demyx_user:/home/demyx \
-        -v demyx_log:/var/log/demyx \
-        -p "$DEMYX_CHROOT_SSH":2222 \
-        -l "traefik.enable=true" \
-        -l "traefik.http.routers.demyx.rule=Host(\`${DEMYX_CHROOT_API_DOMAIN}\`)" \
-        -l "traefik.http.routers.demyx.entrypoints=https" \
-        -l "traefik.http.routers.demyx.tls.certresolver=demyx" \
-        -l "traefik.http.routers.demyx.service=demyx" \
-        -l "traefik.http.services.demyx.loadbalancer.server.port=8080" \
-        -l "traefik.http.routers.demyx.middlewares=demyx-auth" \
-        -l "traefik.http.middlewares.demyx-auth.basicauth.users=${DEMYX_CHROOT_API_AUTH}" \
-        demyx/demyx 2>/dev/null
-    else
-        docker run -dit \
-        --name=demyx \
-        $DEMYX_CHROOT_RESOURCES \
-        --restart=unless-stopped \
-        --hostname="$DEMYX_CHROOT_HOST" \
-        --network=demyx \
-        -e DEMYX_MODE="$DEMYX_CHROOT_MODE" \
-        -e DEMYX_HOST="$DEMYX_CHROOT_HOST" \
-        -e DEMYX_SSH="$DEMYX_CHROOT_SSH" \
-        -e TZ=America/Los_Angeles \
-        -v /var/run/docker.sock:/var/run/docker.sock:ro \
-        -v demyx:/demyx \
-        -v demyx_user:/home/demyx \
-        -v demyx_log:/var/log/demyx \
-        -p "$DEMYX_CHROOT_SSH":2222 \
-        demyx/demyx 2>/dev/null
+    if [[ -n "$DEMYX_CHROOT_API_DOMAIN" && -n "$DEMYX_CHROOT_API_AUTH" ]]; then
+        DEMYX_CHROOT_API_LABELS="-l traefik.enable=true
+        -l traefik.http.routers.demyx.rule=Host(\`$DEMYX_CHROOT_API_DOMAIN\`)
+        -l traefik.http.routers.demyx.entrypoints=https
+        -l traefik.http.routers.demyx.tls.certresolver=demyx
+        -l traefik.http.routers.demyx.service=demyx
+        -l traefik.http.services.demyx.loadbalancer.server.port=8080
+        -l traefik.http.routers.demyx.middlewares=demyx-auth
+        -l traefik.http.middlewares.demyx-auth.basicauth.users=$DEMYX_CHROOT_API_AUTH"
     fi
+    
+    docker run -dit \
+    --name=demyx \
+    $DEMYX_CHROOT_RESOURCES \
+    --restart=unless-stopped \
+    --hostname="$DEMYX_CHROOT_HOST" \
+    --network=demyx \
+    -e DEMYX_BRANCH="$DEMYX_CHROOT_BRANCH" \
+    -e DEMYX_MODE="$DEMYX_CHROOT_MODE" \
+    -e DEMYX_HOST="$DEMYX_CHROOT_HOST" \
+    -e DEMYX_SSH="$DEMYX_CHROOT_SSH" \
+    -e TZ=America/Los_Angeles \
+    -v /var/run/docker.sock:/var/run/docker.sock:ro \
+    -v demyx:/demyx \
+    -v demyx_user:/home/demyx \
+    -v demyx_log:/var/log/demyx \
+    -p "$DEMYX_CHROOT_SSH":2222 \
+    $DEMYX_CHROOT_API_LABELS \
+    demyx/demyx 2>/dev/null
 
     demyx_until
 }
@@ -190,6 +178,7 @@ elif [[ "$DEMYX_CHROOT" = help ]]; then
     echo "      update          Update chroot.sh from GitHub"
     echo "      --cpu           Set container CPU usage, --cpu=null to remove cap"
     echo "      --dev           Puts demyx container into development mode"
+    echo "      --edge          Use latest code updates from git repo"
     echo "      --mem           Set container MEM usage, --mem=null to remove cap"
     echo "      --nc            Starts demyx containr but prevent chrooting into container"
     echo "      --prod          Puts demyx container into production mode"
@@ -212,7 +201,7 @@ elif [[ "$DEMYX_CHROOT" = update ]]; then
     echo -e "\e[32m[SUCCESS]\e[39m Demyx chroot has successfully updated"
 else
     if [[ -n "$DEMYX_CHROOT_CONTAINER_CHECK" ]]; then
-        DEMYX_MODE_CHECK="$(docker exec -t --user=root demyx sh -c "[[ -f /demyx/.env ]] && grep DEMYX_ENV_MODE /demyx/.env | awk -F '[=]' '{print \$2}'")"
+        DEMYX_MODE_CHECK="$(docker exec -t demyx sh -c "[[ -f /tmp/demyx-dev ]] && echo 'development'")"
         if [[ -z "$DEMYX_CHROOT_MODE" ]]; then
             DEMYX_CHROOT_MODE="$DEMYX_MODE_CHECK"
         fi
