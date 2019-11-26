@@ -34,7 +34,7 @@ demyx_yml() {
                       - \"traefik.http.middlewares.\${DEMYX_APP_COMPOSE_PROJECT}-redirect.redirectscheme.scheme=https\""
             else
                 sed -i "s|DEMYX_APP_SSL=.*|DEMYX_APP_SSL=false|g" "$DEMYX_APP_PATH"/.env
-                echo -e "\e[33m[WARNING]\e[39m $DEMYX_TARGET does not point to server's IP! Proceeding without SSL..."
+                echo -e "\e[33m[WARNING]\e[39m $DEMYX_TARGET does not point to server's IP or isn't using a domain name!"
             fi
         fi
         
