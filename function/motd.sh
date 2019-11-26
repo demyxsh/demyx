@@ -2,15 +2,17 @@
 # https://demyx.sh
 
 demyx_motd_dev_warning() {
-    demyx_wp_check_empty
-    cd "$DEMYX_WP"
-    for i in *
-    do
-        DEMYX_COMMON_DEV_CHECK="$(grep DEMYX_APP_DEV "$DEMYX_WP"/"$i"/.env | awk -F '[=]' '{print $2}')"
-        if [[ "$DEMYX_COMMON_DEV_CHECK" = true ]]; then
-            demyx_execute -v echo -e "\e[33m[WARNING]\e[39m $i is in development mode"
-        fi
-    done
+    DEMYX_MOTD_CHECK_WP="$(ls -A "$DEMYX_WP")"
+    if [[ -n "$DEMYX_MOTD_CHECK_WP" ]]; then
+        cd "$DEMYX_WP"
+        for i in *
+        do
+            DEMYX_COMMON_DEV_CHECK="$(grep DEMYX_APP_DEV "$DEMYX_WP"/"$i"/.env | awk -F '[=]' '{print $2}')"
+            if [[ "$DEMYX_COMMON_DEV_CHECK" = true ]]; then
+                demyx_execute -v echo -e "\e[33m[WARNING]\e[39m $i is in development mode"
+            fi
+        done
+    fi
 }
 #demyx_motd_git_latest() {
 #    cd "$DEMYX_ETC" || exit
