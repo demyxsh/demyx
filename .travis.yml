@@ -19,7 +19,7 @@ before_install:
   - docker pull demyx/wordpress:cli
 
 script:
-  - docker build --no-cache -t demyx/"$DEMYX_REPOSITORY" docker/.
+  - docker build --no-cache -t demyx/"$DEMYX_REPOSITORY" .
   - docker run -dit --name=demyx --rm --hostname=travis-ci -e DEMYX_MODE=production -e DEMYX_HOST=travis-ci -e DEMYX_SSH=2222 -e TZ=America/Los_Angeles -v demyx:/demyx -v demyx_user:/home/demyx -v demyx_log:/var/log/demyx -v /var/run/docker.sock:/var/run/docker.sock:ro -p 2222:2222 demyx/"$DEMYX_REPOSITORY"
   - sleep 5
   - docker exec -it demyx demyx motd
