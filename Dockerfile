@@ -10,6 +10,7 @@ LABEL sh.demyx.registry https://hub.docker.com/u/demyx
 
 # Set default environment variables
 ENV DEMYX_BRANCH=stable
+ENV DEMYX_HOST=demyx
 ENV DEMYX_MODE=production
 ENV DEMYX_SSH=2222
 ENV TZ=America/Los_Angeles
