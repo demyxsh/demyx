@@ -7,6 +7,14 @@ if [[ ! -d /home/demyx/.ssh ]]; then
     mkdir -p /home/demyx/.ssh
 fi
 
+# Usable environment variables
+echo "# AUTO GENERATED
+DEMYX_BRANCH=$DEMYX_BRANCH
+DEMYX_MODE=$DEMYX_MODE
+DEMYX_HOST=$DEMYX_HOST
+DEMYX_SSH=$DEMYX_SSH
+" > /home/demyx/.ssh/environment
+
 # Prevents ssh errors from local machine
 if [[ -f /home/demyx/.ssh/ssh_host_rsa_key ]]; then
     cp /home/demyx/.ssh/ssh_host_rsa_key /etc/ssh

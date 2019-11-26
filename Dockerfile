@@ -57,6 +57,7 @@ RUN set -ex; \
     sed -i "s|#PubkeyAuthentication yes|PubkeyAuthentication yes|g" /etc/ssh/sshd_config; \
     sed -i "s|#PasswordAuthentication yes|PasswordAuthentication no|g" /etc/ssh/sshd_config; \
     sed -i "s|#PermitEmptyPasswords no|PermitEmptyPasswords no|g" /etc/ssh/sshd_config; \
+    sed -i "s|#PermitUserEnvironment no|PermitUserEnvironment yes|g" /etc/ssh/sshd_config; \
     \
     chown demyx:demyx /etc/ssh
 
