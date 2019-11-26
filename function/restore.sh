@@ -15,6 +15,9 @@ demyx_restore() {
             --date=?*)
                 DEMYX_RESTORE_DATE="${3#*=}"
                 ;;
+            --date=)
+                demyx_die '"--date" cannot be empty'
+                ;;
             --)
                 shift
                 break
