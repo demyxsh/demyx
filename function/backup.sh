@@ -13,6 +13,9 @@ demyx_backup() {
             --path=?*)
                 DEMYX_BACKUP_PATH="${3#*=}"
                 ;;
+            --path=)
+                demyx_die '"--path" cannot be empty'
+                ;;
             --)
                 shift
                 break
