@@ -1,9 +1,6 @@
 # Demyx
 # https://demyx.sh
 
-# Global environment variables
-DEMYX_DOCKER_PS="$(docker ps)"
-
 demyx_die() {
     while :; do
         case "$1" in
@@ -206,3 +203,12 @@ demyx_upgrade_apps() {
 demyx_validate_ip() {
     echo "$DEMYX_APP_DOMAIN" | grep -E '(([0-9]{1,3})\.){3}([0-9]{1,3}){1}'  | grep -vE '25[6-9]|2[6-9][0-9]|[3-9][0-9][0-9]' | grep -Eo '(([0-9]{1,2}|1[0-9]{1,2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]{1,2}|1[0-9]{1,2}|2[0-4][0-9]|25[0-5]){1}'
 }
+demyx_check_docker_sock() {
+    DEMYX_GLOBAL_CHECK_DOCKER_SOCK="$(ls /run | grep docker.sock)"
+    [[ -n "$DEMYX_GLOBAL_CHECK_DOCKER_SOCK" ]] && echo true
+}
+
+if [[ "$(demyx_check_docker_sock)" = true ]]; then
+    # Global environment variables
+    DEMYX_DOCKER_PS="$(docker ps)"
+fi
