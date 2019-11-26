@@ -90,7 +90,7 @@ demyx_execute() {
         echo -en "\e[32mdone\e[39m\n"
     fi
 
-    [[ "$DEMYX_EXECUTE" == *"WARNING"* ]] && echo -e "\e[33m[WARNING]\e[39m \"demyx log\" for more info"
+    [[ "$DEMYX_EXECUTE" == *"WARNING"* ]] && echo -e "\e[33m[WARNING]\e[39m Proceeding without SSL, see \"demyx log\" for more info"
 
     # Remove passwords from log
     DEMYX_COMMON_LOG="$(echo -e "[$(date +%F-%T)] ========================================")\n"
@@ -147,12 +147,13 @@ demyx_app_is_up() {
     fi
 } 
 demyx_open_port() {
-    DEMYX_SFTP_PORT="$(docker run -it --rm \
-    --network=host \
-    -e DEMYX_SFTP_PORT="$DEMYX_SFTP_PORT_DEFAULT" \
-    demyx/utilities demyx-port)"
+    DEMYX_UTILITIES_PORT=22222
+    [[ -n "$1" ]] && DEMYX_UTILITIES_PORT="$1"
     
-    echo "$DEMYX_SFTP_PORT" | sed -e 's/\r//g'
+    docker run -it --rm \
+    --network=host \
+    -e DEMYX_UTILITIES_PORT="$DEMYX_UTILITIES_PORT" \
+    demyx/utilities demyx-port | sed 's/\r//g'
 }
 demyx_mariadb_ready() {
     until docker exec -t "$DEMYX_APP_DB_CONTAINER" mysqladmin -u root -p"$MARIADB_ROOT_PASSWORD" status 2>/dev/null
@@ -201,4 +202,7 @@ demyx_upgrade_apps() {
             demyx_execute -v echo -e "- demyx config $i --upgrade"
         fi
     done
+}
+demyx_validate_ip() {
+    echo "$DEMYX_APP_DOMAIN" | grep -E '(([0-9]{1,3})\.){3}([0-9]{1,3}){1}'  | grep -vE '25[6-9]|2[6-9][0-9]|[3-9][0-9][0-9]' | grep -Eo '(([0-9]{1,2}|1[0-9]{1,2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]{1,2}|1[0-9]{1,2}|2[0-4][0-9]|25[0-5]){1}'
 }
