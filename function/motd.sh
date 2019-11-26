@@ -39,7 +39,9 @@ demyx_motd() {
         else
             DEMYX_MOTD_MODE=production
         fi
-        DEMYX_MOTD_BACKUPS="$(du -sh "$DEMYX_BACKUP_WP" | cut -f1)"
+
+        DEMYX_MOTD_BACKUPS="$([[ -d "$DEMYX_BACKUP_WP" ]] && du -sh "$DEMYX_BACKUP_WP" | cut -f1)"
+        [[ -z "$DEMYX_MOTD_BACKUPS" ]] && DEMYX_MOTD_BACKUPS=0
         DEMYX_MOTD_SYSTEM_INFO="$(demyx info system --json)"
         DEMYX_MOTD_SYSTEM_DISK="$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .disk_used | sed 's|"||g')"
         DEMYX_MOTD_SYSTEM_DISK_TOTAL="$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .disk_total | sed 's|"||g')"
