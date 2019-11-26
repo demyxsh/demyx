@@ -30,14 +30,14 @@ demyx_restore() {
         shift
     done
 
-    DEMYX_RESTORE_TODAYS_DATE="$(date +%Y/%m/%d)"
+    DEMYX_RESTORE_TODAYS_DATE="$(date +%Y-%m-%d)"
 
     demyx_app_config
     
     if [[ -n "$DEMYX_RESTORE_DATE" ]]; then
-        [[ ! -f "$DEMYX_BACKUP"/"$DEMYX_RESTORE_DATE"/wp/"$DEMYX_TARGET".tgz ]] && demyx_die 'No file found'
+        [[ ! -f "$DEMYX_BACKUP_WP"/"$DEMYX_TARGET"/"$DEMYX_RESTORE_DATE"-"$DEMYX_TARGET".tgz ]] && demyx_die 'No file found'
     else
-        [[ ! -f "$DEMYX_BACKUP"/"$DEMYX_RESTORE_TODAYS_DATE"/wp/"$DEMYX_TARGET".tgz ]] && demyx_die 'No file found'
+        [[ ! -f "$DEMYX_BACKUP_WP"/"$DEMYX_TARGET"/"$DEMYX_RESTORE_TODAYS_DATE"-"$DEMYX_TARGET".tgz ]] && demyx_die 'No file found'
     fi
 
     if [[ "$DEMYX_APP_TYPE" = wp || -n "$DEMYX_RESTORE_FORCE" ]]; then
@@ -59,10 +59,10 @@ demyx_restore() {
 
             if [[ -n "$DEMYX_RESTORE_DATE" ]]; then
                 demyx_echo "Extracting archive from $DEMYX_RESTORE_DATE"
-                demyx_execute tar -xzf "$DEMYX_BACKUP"/"$DEMYX_RESTORE_DATE"/wp/"$DEMYX_TARGET".tgz -C "$DEMYX_WP"
+                demyx_execute tar -xzf "$DEMYX_BACKUP_WP"/"$DEMYX_TARGET"/"$DEMYX_RESTORE_DATE"-"$DEMYX_TARGET".tgz -C "$DEMYX_WP"
             else
                 demyx_echo 'Extracting archive'
-                demyx_execute tar -xzf "$DEMYX_BACKUP"/"$DEMYX_RESTORE_TODAYS_DATE"/wp/"$DEMYX_TARGET".tgz -C "$DEMYX_WP"
+                demyx_execute tar -xzf "$DEMYX_BACKUP_WP"/"$DEMYX_TARGET"/"$DEMYX_RESTORE_TODAYS_DATE"-"$DEMYX_TARGET".tgz -C "$DEMYX_WP"
             fi
 
             demyx_app_config
@@ -101,7 +101,7 @@ demyx_restore() {
             demyx_execute docker run -it --rm \
                 --volumes-from "$DEMYX_APP_ID" \
                 --network container:"$DEMYX_APP_ID" \
-                wordpress:cli db import "$DEMYX_APP_CONTAINER".sql
+                demyx/wordpress:cli db import "$DEMYX_APP_CONTAINER".sql
 
             demyx_echo 'Removing backup database'
             demyx_execute docker exec -t "$DEMYX_APP_ID" rm /var/www/html/"$DEMYX_APP_CONTAINER".sql
