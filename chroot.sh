@@ -6,6 +6,7 @@
 DEMYX_CHROOT_CONTAINER_CHECK="$(docker ps -a | awk '{print $NF}' | grep -w demyx)"
 DEMYX_CHROOT_HOST="$(hostname)"
 DEMYX_CHROOT_BRANCH=stable
+DEMYX_CHROOT_MODE=production
 DEMYX_CHROOT_USER=demyx
 DEMYX_CHROOT_SSH=2222
 DEMYX_CHROOT_API=false
