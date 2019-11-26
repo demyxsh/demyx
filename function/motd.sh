@@ -34,8 +34,11 @@ demyx_motd() {
         demyx_execute -v echo -e '\e[31m==========[BREAKING CHANGES]==========\e[39m\n\nFor best security practice and performance, all demyx containers will now\nrun as the demyx user, including the WordPress containers. Each WordPress\nsites will now have a total of 3 containers: MariaDB, NGINX, and WordPress.\nCertain demyx commands will not work until you upgrade the sites.\n\nPlease run the following commands:\n'
         demyx_upgrade_apps
     else
-        DEMYX_MOTD_MODE="$DEMYX_MODE"
-        [[ -f /tmp/demyx-dev ]] && DEMYX_MOTD_MODE=development
+        if [[ -f /tmp/demyx-dev ]]; then
+            DEMYX_MOTD_MODE=development
+        else
+            DEMYX_MOTD_MODE=production
+        fi
         DEMYX_MOTD_BACKUPS="$(du -sh "$DEMYX_BACKUP_WP" | cut -f1)"
         DEMYX_MOTD_SYSTEM_INFO="$(demyx info system --json)"
         DEMYX_MOTD_SYSTEM_DISK="$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .disk_used | sed 's|"||g')"
