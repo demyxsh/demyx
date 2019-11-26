@@ -39,7 +39,7 @@ demyx_backup() {
             fi
         done
     else
-        DEMYX_BACKUP_TODAYS_DATE="$(date +%Y/%m/%d)"
+        DEMYX_BACKUP_TODAYS_DATE="$(date +%Y-%m-%d)"
 
         demyx_app_config
         demyx_app_is_up
@@ -53,7 +53,7 @@ demyx_backup() {
                 demyx_echo 'Backing up configs'
                 demyx_execute tar -czf "$DEMYX_BACKUP"/config/"$DEMYX_APP_DOMAIN".tgz -C "$DEMYX_WP" "$DEMYX_APP_DOMAIN"
             else
-                [[ ! -d "$DEMYX_BACKUP"/"$DEMYX_BACKUP_TODAYS_DATE"/wp ]] && mkdir -p "$DEMYX_BACKUP"/"$DEMYX_BACKUP_TODAYS_DATE"/wp
+                [[ ! -d "$DEMYX_BACKUP_WP"/"$DEMYX_APP_DOMAIN" ]] && mkdir -p "$DEMYX_BACKUP_WP"/"$DEMYX_APP_DOMAIN"
 
                 demyx_echo 'Exporting database'
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" db export "$DEMYX_APP_CONTAINER".sql
@@ -65,9 +65,9 @@ demyx_backup() {
                 demyx_execute docker cp "$DEMYX_APP_WP_CONTAINER":/var/log/demyx "$DEMYX_APP_PATH"
 
                 demyx_echo 'Archiving directory'
-                demyx_execute tar -czf "$DEMYX_BACKUP"/"$DEMYX_BACKUP_TODAYS_DATE"/wp/"$DEMYX_APP_DOMAIN".tgz -C "$DEMYX_WP" "$DEMYX_APP_DOMAIN"
+                demyx_execute tar -czf "$DEMYX_BACKUP_WP"/"$DEMYX_APP_DOMAIN"/"$DEMYX_BACKUP_TODAYS_DATE"-"$DEMYX_APP_DOMAIN".tgz -C "$DEMYX_WP" "$DEMYX_APP_DOMAIN"
 
-                [[ -n "$DEMYX_BACKUP_PATH" ]] && mv "$DEMYX_BACKUP"/"$DEMYX_BACKUP_TODAYS_DATE"/wp/"$DEMYX_APP_DOMAIN".tgz "$DEMYX_BACKUP_PATH" && chown demyx:demyx "$DEMYX_BACKUP_PATH"/"$DEMYX_APP_DOMAIN".tgz
+                [[ -n "$DEMYX_BACKUP_PATH" ]] && mv "$DEMYX_BACKUP_WP"/"$DEMYX_APP_DOMAIN"/"$DEMYX_BACKUP_TODAYS_DATE"-"$DEMYX_APP_DOMAIN".tgz "$DEMYX_BACKUP_PATH" && chown demyx:demyx "$DEMYX_BACKUP_PATH"/"$DEMYX_APP_DOMAIN".tgz
                 
                 demyx_echo 'Cleaning up'
                 demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" rm "$DEMYX_APP_CONTAINER".sql; \
