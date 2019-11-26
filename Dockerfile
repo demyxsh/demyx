@@ -83,10 +83,10 @@ RUN set -ex; \
 # Allow demyx user to execute only one script and allow usage of environment variables
 RUN set -ex; \
     echo "demyx ALL=(ALL) NOPASSWD: /etc/demyx/demyx.sh, /etc/demyx/bin/demyx-prod.sh, /etc/demyx/bin/demyx-skel.sh, /usr/sbin/crond, /usr/local/bin/ctop-bin" >> /etc/sudoers.d/demyx; \
+    echo 'Defaults env_keep +="DEMYX_BRANCH"' >> /etc/sudoers.d/demyx; \
     echo 'Defaults env_keep +="DEMYX_MODE"' >> /etc/sudoers.d/demyx; \
     echo 'Defaults env_keep +="DEMYX_HOST"' >> /etc/sudoers.d/demyx; \
     echo 'Defaults env_keep +="DEMYX_SSH"' >> /etc/sudoers.d/demyx; \
-    echo 'Defaults env_keep +="DEMYX_ET"' >> /etc/sudoers.d/demyx; \
     echo 'Defaults env_keep +="TZ"' >> /etc/sudoers.d/demyx; \
     \
     mkdir /demyx; \
