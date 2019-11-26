@@ -191,6 +191,7 @@ demyx_help() {
         echo "            refresh           Refresh env and yml stack files"
         echo "            upgrade           Upgrade acme.json and configs for Traefik v2"
         echo "            --auto-update     Auto update Demyx core files"
+        echo "            --backup          Turns on/off WordPress backups"
         echo "            --cloudflare      Turns on/off Cloudflare as the CA resolver"
         echo "            --cf-api-email    Required Cloudflare email for --cloudflare"
         echo "            --cf-api-key      Required Cloudflare api key for --cloudflare"

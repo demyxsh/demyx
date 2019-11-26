@@ -140,8 +140,9 @@ demyx_info() {
             PRINT_TABLE+="AUTO UPDATE^ $DEMYX_STACK_AUTO_UPDATE\n"
             PRINT_TABLE+="MONITOR^ $DEMYX_STACK_MONITOR\n"
             PRINT_TABLE+="HEALTHCHECK^ $DEMYX_STACK_HEALTHCHECK\n"
-            PRINT_TABLE+="BACKUP^ $DEMYX_BACKUP_WP\n"
-            PRINT_TABLE+="LOG^ /var/log/demyx\n"
+            PRINT_TABLE+="BACKUP^ $DEMYX_STACK_BACKUP\n"
+            PRINT_TABLE+="BACKUP PATH^ $DEMYX_BACKUP_WP\n"
+            PRINT_TABLE+="LOG PATH^ /var/log/demyx\n"
             demyx_execute -v demyx_table "$PRINT_TABLE"
         fi
     elif [[ "$DEMYX_TARGET" = system ]]; then

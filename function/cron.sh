@@ -71,9 +71,11 @@ demyx_cron() {
             demyx_execute -v bash /demyx/custom/cron/every-day.sh
         fi
 
-        # Backup WordPress sites at midnight
-        echo "[$(date +%F-%T)] CROND: WORDPRESS BACKUP"
-        demyx_execute -v demyx backup all
+        if [[ "$DEMYX_STACK_BACKUP" = true ]]; then
+            # Backup WordPress sites at midnight
+            echo "[$(date +%F-%T)] CROND: WORDPRESS BACKUP"
+            demyx_execute -v demyx backup all
+        fi
 
         # WP auto update
         echo "[$(date +%F-%T)] CROND: WORDPRESS UPDATE"

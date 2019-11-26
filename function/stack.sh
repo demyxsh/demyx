@@ -24,6 +24,12 @@ demyx_stack() {
             --auto-update=false)
                 DEMYX_STACK_AUTO_UPDATE=false
                 ;;
+            --backup|--backup=true)
+                DEMYX_STACK_BACKUP=true
+                ;;
+            --backup=false)
+                DEMYX_STACK_BACKUP=false
+                ;;
             --cloudflare|--cloudflare=true)
                 DEMYX_STACK_CLOUDFLARE=true
                 ;;
@@ -187,6 +193,13 @@ demyx_stack() {
         elif [[ "$DEMYX_STACK_AUTO_UPDATE" = false ]]; then
             demyx_echo 'Turn off stack auto update'
             demyx_execute sed -i 's/DEMYX_STACK_AUTO_UPDATE=.*/DEMYX_STACK_AUTO_UPDATE=false/g' "$DEMYX_STACK"/.env
+        fi
+        if [[ "$DEMYX_STACK_BACKUP" = true ]]; then
+            demyx_echo 'Turning on stack backup'
+            demyx_execute sed -i 's/DEMYX_STACK_BACKUP=.*/DEMYX_STACK_BACKUP=true/g' "$DEMYX_STACK"/.env
+        elif [[ "$DEMYX_STACK_BACKUP" = false ]]; then
+            demyx_echo 'Turning off stack backup'
+            demyx_execute sed -i 's/DEMYX_STACK_BACKUP=.*/DEMYX_STACK_BACKUP=false/g' "$DEMYX_STACK"/.env
         fi
         if [[ "$DEMYX_STACK_CLOUDFLARE" = true ]]; then
             [[ -z "$DEMYX_STACK_CLOUDFLARE_API_EMAIL" ]] && demyx_die '--cf-api-email is missing'
