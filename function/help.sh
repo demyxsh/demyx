@@ -192,6 +192,7 @@ demyx_help() {
         echo "            upgrade           Upgrade acme.json and configs for Traefik v2"
         echo "            --auto-update     Auto update Demyx core files"
         echo "            --backup          Turns on/off WordPress backups"
+        echo "            --backup-limit    Set how many daily backup files to keep per site, defaults to 30"
         echo "            --cloudflare      Turns on/off Cloudflare as the CA resolver"
         echo "            --cf-api-email    Required Cloudflare email for --cloudflare"
         echo "            --cf-api-key      Required Cloudflare api key for --cloudflare"

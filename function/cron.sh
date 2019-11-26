@@ -75,6 +75,10 @@ demyx_cron() {
             # Backup WordPress sites at midnight
             echo "[$(date +%F-%T)] CROND: WORDPRESS BACKUP"
             demyx_execute -v demyx backup all
+
+            # Delete backups older than X amounts of days
+            echo "[$(date +%F-%T)] CROND: DELETING BACKUPS OLDER THAN $DEMYX_STACK_BACKUP_LIMIT"
+            demyx_execute -v find "$DEMYX_BACKUP_WP" -type f -mindepth 1 -mtime +"$DEMYX_STACK_BACKUP_LIMIT" -delete
         fi
 
         # WP auto update
