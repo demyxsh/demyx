@@ -12,23 +12,12 @@ demyx_motd_dev_warning() {
         fi
     done
 }
-demyx_motd_git_latest() {
-    cd "$DEMYX_ETC" || exit
-    DEMYX_MOTD_GIT_LOG="$(git --no-pager log -5 --format=format:'- %s %C(white dim)(%ar)%C(reset)')"
-    demyx_execute -v echo -e "Latest Updates\n----------------\n$DEMYX_MOTD_GIT_LOG\n"
-}
+#demyx_motd_git_latest() {
+#    cd "$DEMYX_ETC" || exit
+#    DEMYX_MOTD_GIT_LOG="$(git --no-pager log -5 --format=format:'- %s %C(white dim)(%ar)%C(reset)')"
+#    demyx_execute -v echo -e "Latest Updates\n----------------\n$DEMYX_MOTD_GIT_LOG\n"
+#}
 demyx_motd() {
-    source /demyx/.env
-    [[ -z "$DEMYX_ENV_STATUS" ]] && DEMYX_ENV_STATUS=0
-
-    if (( "$DEMYX_ENV_STATUS" > 1 )); then
-        DEMYX_MOTD_STATUS="$DEMYX_ENV_STATUS UPDATES"
-    elif [[ "$DEMYX_ENV_STATUS" = 1 ]]; then
-        DEMYX_MOTD_STATUS="1 UPDATE"
-    else
-        DEMYX_MOTD_STATUS="UPDATED"
-    fi
-
     echo "
         Demyx
         https://demyx.sh
@@ -45,7 +34,9 @@ demyx_motd() {
         demyx_execute -v echo -e '\e[31m==========[BREAKING CHANGES]==========\e[39m\n\nFor best security practice and performance, all demyx containers will now\nrun as the demyx user, including the WordPress containers. Each WordPress\nsites will now have a total of 3 containers: MariaDB, NGINX, and WordPress.\nCertain demyx commands will not work until you upgrade the sites.\n\nPlease run the following commands:\n'
         demyx_upgrade_apps
     else
-        DEMYX_MOTD_MODE="$(echo "$DEMYX_ENV_MODE" | tr [a-z] [A-Z] | sed -e 's/\r//g')"
+        DEMYX_MOTD_MODE="$DEMYX_MODE"
+        [[ -f /tmp/demyx-dev ]] && DEMYX_MOTD_MODE=development
+        DEMYX_MOTD_BACKUPS="$(du -sh "$DEMYX_BACKUP_WP" | cut -f1)"
         DEMYX_MOTD_SYSTEM_INFO="$(demyx info system --json)"
         DEMYX_MOTD_SYSTEM_DISK="$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .disk_used | sed 's|"||g')"
         DEMYX_MOTD_SYSTEM_DISK_TOTAL="$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .disk_total | sed 's|"||g')"
@@ -64,10 +55,11 @@ demyx_motd() {
             DEMYX_MOTD_SYSTEM_CONTAINER_DEAD_COUNT="($DEMYX_MOTD_SYSTEM_CONTAINER_DEAD dead)"
         fi
 
-        PRINT_MOTD_TABLE="DEMYX^ SYSTEM INFO - $DEMYX_MOTD_STATUS\n"
-        PRINT_MOTD_TABLE+="MODE^ $DEMYX_MOTD_MODE\n"
-        PRINT_MOTD_TABLE+="HOST^ $DEMYX_ENV_HOST\n"
-        PRINT_MOTD_TABLE+="SSH^ $DEMYX_ENV_SSH\n"
+        PRINT_MOTD_TABLE="DEMYX^ SYSTEM INFO\n"
+        PRINT_MOTD_TABLE+="MODE^ $(echo "$DEMYX_MOTD_MODE" | tr [a-z] [A-Z])\n"
+        PRINT_MOTD_TABLE+="HOST^ $DEMYX_HOST\n"
+        PRINT_MOTD_TABLE+="SSH^ $DEMYX_SSH\n"
+        PRINT_MOTD_TABLE+="BACKUPS^ $DEMYX_MOTD_BACKUPS\n"
         PRINT_MOTD_TABLE+="DISK^ $DEMYX_MOTD_SYSTEM_DISK/$DEMYX_MOTD_SYSTEM_DISK_TOTAL ($DEMYX_MOTD_SYSTEM_DISK_TOTAL_PERCENTAGE)\n"
         PRINT_MOTD_TABLE+="MEMORY^ $DEMYX_MOTD_SYSTEM_MEMORY/$DEMYX_MOTD_SYSTEM_MEMORY_TOTAL\n"
         PRINT_MOTD_TABLE+="UPTIME^ ${DEMYX_MOTD_SYSTEM_UPTIME}\n"
