@@ -207,6 +207,13 @@ demyx_check_docker_sock() {
     DEMYX_GLOBAL_CHECK_DOCKER_SOCK="$(ls /run | grep docker.sock)"
     [[ -n "$DEMYX_GLOBAL_CHECK_DOCKER_SOCK" ]] && echo true
 }
+demyx_get_mode() {
+    if [[ -f /tmp/demyx-dev ]]; then
+        echo development
+    else
+        echo production
+    fi
+}
 
 if [[ "$(demyx_check_docker_sock)" = true ]]; then
     # Global environment variables
