@@ -147,6 +147,8 @@ demyx_info() {
             demyx_execute -v demyx_table "$PRINT_TABLE"
         fi
     elif [[ "$DEMYX_TARGET" = system ]]; then
+        DEMYX_INFO_HOST="$(hostname)"
+        DEMYX_INFO_MODE="$(demyx_get_mode)"
         DEMYX_INFO_WP_COUNT="$(find "$DEMYX_WP" -mindepth 1 -maxdepth 1 -type d | wc -l)"
         DEMYX_INFO_DISK_USED="$(df -h /demyx | sed '1d' | awk '{print $3}')"
         DEMYX_INFO_DISK_TOTAL="$(df -h /demyx | sed '1d' | awk '{print $2}')"
@@ -163,8 +165,8 @@ demyx_info() {
 
         if [[ -n "$DEMYX_INFO_JSON" ]]; then 
             DEMYX_INFO_SYSTEM_JSON='{'
-            DEMYX_INFO_SYSTEM_JSON+='"hostname": "'$DEMYX_HOST'",'
-            DEMYX_INFO_SYSTEM_JSON+='"mode": "'$DEMYX_MODE'",'
+            DEMYX_INFO_SYSTEM_JSON+='"hostname": "'$DEMYX_INFO_HOST'",'
+            DEMYX_INFO_SYSTEM_JSON+='"mode": "'$DEMYX_INFO_MODE'",'
             DEMYX_INFO_SYSTEM_JSON+='"wp_count": "'$DEMYX_INFO_WP_COUNT'",'
             DEMYX_INFO_SYSTEM_JSON+='"disk_used": "'$DEMYX_INFO_DISK_USED'",'
             DEMYX_INFO_SYSTEM_JSON+='"disk_total": "'$DEMYX_INFO_DISK_TOTAL'",'
@@ -179,8 +181,8 @@ demyx_info() {
             echo "$DEMYX_INFO_SYSTEM_JSON"
         else
             PRINT_TABLE="DEMYX^ SYSTEM INFO\n"
-            PRINT_TABLE+="HOSTNAME^ $DEMYX_HOST\n"
-            PRINT_TABLE+="MODE^ $DEMYX_MODE\n"
+            PRINT_TABLE+="HOSTNAME^ $DEMYX_INFO_HOST\n"
+            PRINT_TABLE+="MODE^ $DEMYX_INFO_MODE\n"
             PRINT_TABLE+="WORDPRESS APPS^ $DEMYX_INFO_WP_COUNT\n"
             PRINT_TABLE+="DISK USED^ $DEMYX_INFO_DISK_USED\n"
             PRINT_TABLE+="DISK TOTAL^ $DEMYX_INFO_DISK_TOTAL\n"
