@@ -6,6 +6,12 @@
 demyx_log() {
     while :; do
         case "$3" in
+            -c|--container)
+                DEMYX_LOG_CONTAINER=1
+                ;;
+            -d|--database)
+                DEMYX_LOG_DATABASE=1
+                ;;
             -e|--error)
                 DEMYX_LOG_ERROR=1
                 ;;
@@ -41,10 +47,10 @@ demyx_log() {
             demyx_echo 'Rotating demyx log'
             demyx_execute docker run -t --rm -e DEMYX_LOG=/var/log/demyx --volumes-from demyx demyx/logrotate
         else
-            if [[ -n "$DEMYX_LOG_ERROR" ]]; then
-                tail /var/log/demyx/demyx.log $DEMYX_LOG_FOLLOW
-            else
+            if [[ -n "$DEMYX_LOG_CONTAINER" ]]; then
                 docker logs $DEMYX_LOG_FOLLOW demyx
+            else
+                tail /var/log/demyx/demyx.log $DEMYX_LOG_FOLLOW
             fi
         fi
     elif [[ "$DEMYX_TARGET" = ouroboros ]]; then
@@ -61,8 +67,12 @@ demyx_log() {
             demyx_execute docker run -t --rm -e DEMYX_LOG=/var/log/demyx --volumes-from "$DEMYX_APP_WP_CONTAINER" demyx/logrotate
         else
             DEMYX_LOG_WP=access
-            [[ -n "$DEMYX_LOG_ERROR" ]] && DEMYX_LOG_WP=error
-            docker exec -it "$DEMYX_APP_WP_CONTAINER" tail $DEMYX_LOG_FOLLOW /var/log/demyx/"$DEMYX_APP_DOMAIN"."$DEMYX_LOG_WP".log
+            if [[ -n "$DEMYX_LOG_DATABASE" ]]; then
+                docker exec -it "$DEMYX_APP_DB_CONTAINER" tail $DEMYX_LOG_FOLLOW /var/log/demyx/mariadb.log
+            elif [[ -n "$DEMYX_LOG_ERROR" ]]; then
+                DEMYX_LOG_WP=error
+                docker exec -it "$DEMYX_APP_WP_CONTAINER" tail $DEMYX_LOG_FOLLOW /var/log/demyx/"$DEMYX_APP_DOMAIN"."$DEMYX_LOG_WP".log
+            fi
         fi
     fi
 }
