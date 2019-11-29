@@ -61,6 +61,7 @@ demyx_help() {
         echo "                   --sleep                    Set sleep when all loop is used"
         echo "                   --ssl                      Turns on/off SSL"
         echo "                   --upgrade                  Upgrade the app"
+        echo "                   --upgrade-db               Upgrade MariaDB"
         echo "                   --wp-cpu                   Set the app's container CPU usage, --wp-cpu=null to remove cap"
         echo "                   --wp-mem                   Set the app's container MEM usage, --wp-mem=null to remove cap"
         echo "                   --wp-update                Auto update WordPress core, themes, and plugins"
@@ -122,16 +123,18 @@ demyx_help() {
         echo
     elif [[ "$DEMYX_HELP" = log ]]; then
         echo
-        echo "demyx log <app> <args>          Show demyx/container logs, defaults to demyx log"
-        echo "          api                   Show api log"
-        echo "          cron                  Show cron log"
-        echo "          main                  Show demyx container log, pass -e for error log"
-        echo "          ouroboros             Show Ouroboros log"
-        echo "          traefik               Show Traefik logs"
-        echo "          domain.tld            Show WP container logs"
-        echo "                -e|--error      Show error log"
-        echo "                -f|--follow     Follow log"
-        echo "                --rotate        Rotate logs"
+        echo "demyx log <app> <args>            Show demyx/container logs, defaults to demyx log"
+        echo "          api                     Show api log"
+        echo "          cron                    Show cron log"
+        echo "          main                    Show demyx container log, pass -e for error log"
+        echo "          ouroboros               Show Ouroboros log"
+        echo "          traefik                 Show Traefik logs"
+        echo "          domain.tld              Show WP container logs"
+        echo "                -c|--container    Show container log"
+        echo "                -d|--database     Show log for MariaDB"
+        echo "                -e|--error        Show error log"
+        echo "                -f|--follow       Follow log"
+        echo "                --rotate          Rotate logs"
         echo
     elif [[ "$DEMYX_HELP" = maldet ]]; then
         echo
