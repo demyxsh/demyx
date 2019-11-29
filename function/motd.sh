@@ -1,6 +1,21 @@
 # Demyx
 # https://demyx.sh
 
+demyx_motd_mariadb_check() {
+    DEMYX_MOTD_CHECK_WP="$(ls -A "$DEMYX_WP")"
+    if [[ -n "$DEMYX_MOTD_CHECK_WP" ]]; then
+        cd "$DEMYX_WP"
+        for i in *
+        do
+            DEMYX_MOTD_CHECK_MARIADB="$(grep "demyx/mariadb:edge" /demyx/app/wp/"$i"/docker-compose.yml)"
+            [[ -z "$DEMYX_MOTD_CHECK_MARIADB" ]] && DEMYX_MOTD_CHECK_MARIADB_TRUE=true
+        done
+
+        if [[ "$DEMYX_MOTD_CHECK_MARIADB_TRUE" = true ]]; then
+            demyx_execute -v echo -e "\e[34m[INFO]\e[39m MariaDB needs an upgrade. This will temporarily bring down the sites during the upgrade. Please run the commands:\n\n- Test a single site: demyx config domain.tld --upgrade-db\n- Upgrade all sites: demyx config all --upgrade-db\n"
+        fi
+    fi
+}
 demyx_motd_dev_warning() {
     DEMYX_MOTD_CHECK_WP="$(ls -A "$DEMYX_WP")"
     if [[ -n "$DEMYX_MOTD_CHECK_WP" ]]; then
@@ -85,7 +100,9 @@ demyx_motd() {
         PRINT_MOTD_TABLE+="LOAD^ $DEMYX_MOTD_SYSTEM_LOAD\n"
         PRINT_MOTD_TABLE+="CONTAINERS^ $DEMYX_MOTD_SYSTEM_CONTAINER $DEMYX_MOTD_SYSTEM_CONTAINER_DEAD_COUNT"
         demyx_execute -v demyx_table "$PRINT_MOTD_TABLE"
+        echo
     fi
+    demyx_motd_mariadb_check
     demyx_motd_stack_check
     demyx_motd_dev_warning
 }
