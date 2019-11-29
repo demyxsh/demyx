@@ -116,7 +116,15 @@ demyx_info() {
         done
         demyx_execute -v -q demyx_table "$PRINT_TABLE"
     elif [[ "$DEMYX_TARGET" = stack ]]; then
-        if [[ -n "$DEMYX_INFO_FILTER" ]]; then
+        if [[ -n "$DEMYX_INFO_ALL" ]]; then
+            DEMYX_INFO_ALL="$(cat "$DEMYX_STACK"/.env | sed '1d')"
+            PRINT_TABLE="DEMYX^ INFO\n"
+            for i in $DEMYX_INFO_ALL
+            do
+                PRINT_TABLE+="$(echo "$i" | awk -F '[=]' '{print $1}')^ $(echo "$i" | awk -F '[=]' '{print $2}')\n"
+            done
+            demyx_execute -v -q demyx_table "$PRINT_TABLE"
+        elif [[ -n "$DEMYX_INFO_FILTER" ]]; then
             DEMYX_INFO_FILTER="$(cat "$DEMYX_STACK"/.env | grep -w "$DEMYX_INFO_FILTER")"
             if [[ -n "$DEMYX_INFO_FILTER" ]]; then
                 demyx_execute -v -q echo "$DEMYX_INFO_FILTER" | awk -F '[=]' '{print $2}'
@@ -137,6 +145,7 @@ demyx_info() {
             PRINT_TABLE+="NGINX^ $(grep "badge/nginx" <<< "$DEMYX_INFO_STACK_GET_NGINX" | awk -F '[-]' '{print $2}')\n"
             PRINT_TABLE+="PHP^ $(grep "badge/php" <<< "$DEMYX_INFO_STACK_GET_WORDPRESS" | awk -F '[-]' '{print $2}')\n"
             PRINT_TABLE+="WORDPRESS^ $(grep "badge/wordpress" <<< "$DEMYX_INFO_STACK_GET_WORDPRESS" | awk -F '[-]' '{print $2}')\n"
+            PRINT_TABLE+="TELEMETRY^ $DEMYX_STACK_TELEMETRY\n"
             PRINT_TABLE+="AUTO UPDATE^ $DEMYX_STACK_AUTO_UPDATE\n"
             PRINT_TABLE+="MONITOR^ $DEMYX_STACK_MONITOR\n"
             PRINT_TABLE+="HEALTHCHECK^ $DEMYX_STACK_HEALTHCHECK\n"
