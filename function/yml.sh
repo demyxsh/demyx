@@ -69,7 +69,7 @@ demyx_yml() {
             version: "$DEMYX_DOCKER_COMPOSE"
             services:
                 db_${DEMYX_APP_ID}:
-                    image: demyx/mariadb
+                    image: demyx/mariadb:edge
                     cpus: \${DEMYX_APP_DB_CPU}
                     mem_limit: \${DEMYX_APP_DB_MEM}
                     restart: unless-stopped
