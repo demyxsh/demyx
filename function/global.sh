@@ -128,7 +128,6 @@ demyx_table() {
 demyx_permission() {
     [[ -f "$DEMYX"/.env ]] && source "$DEMYX"/.env
     chown -R demyx:demyx "$DEMYX"
-    # Will remove this backwards compability in December 2019
     chown -R demyx:demyx "$DEMYX_LOG"
 }
 demyx_app_config() {
@@ -142,7 +141,7 @@ demyx_app_is_up() {
     if [[ -z "$DEMYX_APP_IS_UP_CHECK_DB" || -z "$DEMYX_APP_IS_UP_CHECK_NX" || -z "$DEMYX_APP_IS_UP_CHECK_WP" ]]; then
         demyx_die "$DEMYX_APP_DOMAIN isn't running"
     fi
-} 
+}
 demyx_open_port() {
     DEMYX_UTILITIES_PORT=22222
     [[ -n "$1" ]] && DEMYX_UTILITIES_PORT="$1"
@@ -153,7 +152,7 @@ demyx_open_port() {
     demyx/utilities demyx-port | sed 's/\r//g'
 }
 demyx_mariadb_ready() {
-    until docker exec -t "$DEMYX_APP_DB_CONTAINER" mysqladmin -u root -p"$MARIADB_ROOT_PASSWORD" status 2>/dev/null
+    until docker exec -t "$DEMYX_APP_DB_CONTAINER" mysqladmin -u "$WORDPRESS_DB_USER" -p"$WORDPRESS_DB_PASSWORD" status 2>/dev/null
     do
         sleep 1
     done
