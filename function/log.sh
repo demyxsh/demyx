@@ -50,16 +50,16 @@ demyx_log() {
             if [[ -n "$DEMYX_LOG_CONTAINER" ]]; then
                 docker logs $DEMYX_LOG_FOLLOW demyx
             else
-                tail /var/log/demyx/demyx.log $DEMYX_LOG_FOLLOW
+                tail -200 $DEMYX_LOG_FOLLOW /var/log/demyx/demyx.log
             fi
         fi
     elif [[ "$DEMYX_TARGET" = ouroboros ]]; then
         docker logs demyx_ouroboros "$DEMYX_LOG_FOLLOW"
     elif [[ "$DEMYX_TARGET" = traefik ]]; then
         if [[ -n "$DEMYX_LOG_ERROR" ]]; then
-            tail "$DEMYX_LOG_FOLLOW" /var/log/demyx/traefik.error.log
+            tail -200 $DEMYX_LOG_FOLLOW /var/log/demyx/traefik.error.log
         else
-            tail "$DEMYX_LOG_FOLLOW" /var/log/demyx/traefik.access.log
+            tail -200 $DEMYX_LOG_FOLLOW /var/log/demyx/traefik.access.log
         fi
     elif [[ "$DEMYX_APP_TYPE" = wp ]]; then
         if [[ -n "$DEMYX_LOG_ROTATE" ]]; then
@@ -68,10 +68,10 @@ demyx_log() {
         else
             DEMYX_LOG_WP=access
             if [[ -n "$DEMYX_LOG_DATABASE" ]]; then
-                docker exec -it "$DEMYX_APP_DB_CONTAINER" tail $DEMYX_LOG_FOLLOW /var/log/demyx/"$DEMYX_APP_DOMAIN".mariadb.log
+                docker exec -it "$DEMYX_APP_DB_CONTAINER" tail -200 $DEMYX_LOG_FOLLOW /var/log/demyx/"$DEMYX_APP_DOMAIN".mariadb.log
             elif [[ -n "$DEMYX_LOG_ERROR" ]]; then
                 DEMYX_LOG_WP=error
-                docker exec -it "$DEMYX_APP_WP_CONTAINER" tail $DEMYX_LOG_FOLLOW /var/log/demyx/"$DEMYX_APP_DOMAIN"."$DEMYX_LOG_WP".log
+                docker exec -it "$DEMYX_APP_WP_CONTAINER" tail -200 $DEMYX_LOG_FOLLOW /var/log/demyx/"$DEMYX_APP_DOMAIN"."$DEMYX_LOG_WP".log
             fi
         fi
     fi
