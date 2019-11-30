@@ -79,6 +79,7 @@ demyx_yml() {
                         - wp_${DEMYX_APP_ID}_db:/var/lib/mysql
                         - wp_${DEMYX_APP_ID}_log:/var/log/demyx
                     environment:
+                        - MARIADB_DOMAIN=\${DEMYX_APP_DOMAIN}
                         - MARIADB_DATABASE=\${WORDPRESS_DB_NAME}
                         - MARIADB_USERNAME=\${WORDPRESS_DB_USER}
                         - MARIADB_PASSWORD=\${WORDPRESS_DB_PASSWORD}
