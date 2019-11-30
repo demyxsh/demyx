@@ -146,7 +146,7 @@ I have a telemetry setting that is enabled by default. It sends a curl request t
 
 If you are uncomfortable with this, then you can turn off telemetry by running the command below OR keep it turned on to show your support!
 
-* [Curl](https://github.com/demyxco/demyx/blob/master/cron/every-day.sh#L10)
+* [Curl](https://github.com/demyxco/demyx/blob/master/function/cron.sh#L40)
 * [Statistics](https://demyx.sh/statistics/)
 
 ```
