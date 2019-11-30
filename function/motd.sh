@@ -82,6 +82,7 @@ demyx_motd() {
         DEMYX_MOTD_SYSTEM_LOAD="$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .load_average | sed 's|"||g')"
         DEMYX_MOTD_SYSTEM_CONTAINER="$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .container_running | sed 's|"||g')"
         DEMYX_MOTD_SYSTEM_CONTAINER_DEAD="$(echo "$DEMYX_MOTD_SYSTEM_INFO" | jq .container_dead | sed 's|"||g')"
+        DEMYX_MOTD_GET_RECENT_MODIFIED="$(find "$DEMYX_ETC" -type f -mtime -1 | head -1 | awk '{print $NF}')"
 
         if [[ "$DEMYX_MOTD_SYSTEM_CONTAINER_DEAD" = 0 ]]; then
             DEMYX_MOTD_SYSTEM_CONTAINER_DEAD_COUNT=
@@ -90,6 +91,7 @@ demyx_motd() {
         fi
 
         PRINT_MOTD_TABLE="DEMYX^ SYSTEM INFO\n"
+        PRINT_MOTD_TABLE+="UPDATED^ $(stat -c '%y' "$DEMYX_MOTD_GET_RECENT_MODIFIED" | awk -F '[.]' '{print $1}')\n"
         PRINT_MOTD_TABLE+="MODE^ $(echo "$DEMYX_MOTD_MODE" | tr [a-z] [A-Z])\n"
         PRINT_MOTD_TABLE+="HOST^ $DEMYX_HOST\n"
         PRINT_MOTD_TABLE+="SSH^ $DEMYX_SSH\n"
