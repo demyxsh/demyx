@@ -506,6 +506,7 @@ demyx_config() {
                     DEMYX_CONFIG_DEV_PROTO="https://$DEMYX_APP_DOMAIN"
                 fi
 
+                DEMYX_CONFIG_DEV_PASSWORD="$(demyx util --pass --raw)"
                 DEMYX_CONFIG_DEV_CS_URI="${DEMYX_CONFIG_DEV_PROTO}${DEMYX_CONFIG_DEV_BASE_PATH}/cs/"
                 DEMYX_CONFIG_DEV_BS_URI="${DEMYX_CONFIG_DEV_PROTO}${DEMYX_CONFIG_DEV_BASE_PATH}/bs/"
 
@@ -557,21 +558,21 @@ demyx_config() {
                             --volumes-from="$DEMYX_APP_WP_CONTAINER" \
                             -p "$DEMYX_CONFIG_DEV_CS_PORT":8080 \
                             -v demyx_cs:/home/demyx \
-                            -e PASSWORD="$MARIADB_ROOT_PASSWORD" \
+                            -e PASSWORD="$DEMYX_CONFIG_DEV_PASSWORD" \
                             -e CODER_BASE_PATH=false \
                             -e CODER_BASE_PREFIX=false \
                             demyx/code-server:wp 2>/dev/null
                     else
+                    
                         demyx_execute docker run -dit --rm \
                             --name="$DEMYX_APP_COMPOSE_PROJECT"_bs \
                             --network=demyx \
                             $DEMYX_CONFIG_DEV_RESOURCES \
                             --volumes-from="$DEMYX_APP_WP_CONTAINER" \
-                            -e BS_DOMAIN_MATCH="$DEMYX_CONFIG_DEV_BS_URI" \
-                            -e BS_DOMAIN_RETURN="$DEMYX_CONFIG_DEV_BS_URI" \
-                            -e BS_DOMAIN_SOCKET="$DEMYX_CONFIG_DEV_BS_URI" \
+                            -e BS_DOMAIN_MATCH="$DEMYX_APP_DOMAIN" \
+                            -e BS_DOMAIN_RETURN="${DEMYX_APP_DOMAIN}" \
+                            -e BS_DOMAIN_SOCKET="${DEMYX_APP_DOMAIN}" \
                             -e BS_PROXY="$DEMYX_APP_NX_CONTAINER" \
-                            -e BS_DOMAIN="$DEMYX_APP_DOMAIN" \
                             -e BS_FILES="$DEMYX_BS_FILES" \
                             -e BS_PATH="$DEMYX_CONFIG_DEV_BASE_PATH" \
                             -l "traefik.enable=true" \
@@ -601,7 +602,7 @@ demyx_config() {
                             $DEMYX_CONFIG_DEV_RESOURCES \
                             --volumes-from="$DEMYX_APP_WP_CONTAINER" \
                             -v demyx_cs:/home/demyx \
-                            -e PASSWORD="$MARIADB_ROOT_PASSWORD" \
+                            -e PASSWORD="$DEMYX_CONFIG_DEV_PASSWORD" \
                             -e CODER_BASE_PATH="$DEMYX_CONFIG_DEV_BASE_PATH" \
                             -l "traefik.enable=true" \
                             -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-cs.rule=(Host(\`${DEMYX_APP_DOMAIN}\`) && PathPrefix(\`${DEMYX_CONFIG_DEV_BASE_PATH}/cs/\`))" \
@@ -625,7 +626,7 @@ demyx_config() {
                         $DEMYX_CONFIG_DEV_RESOURCES \
                         --volumes-from="$DEMYX_APP_WP_CONTAINER" \
                         -v demyx_cs:/home/demyx \
-                        -e PASSWORD="$MARIADB_ROOT_PASSWORD" \
+                        -e PASSWORD="$DEMYX_CONFIG_DEV_PASSWORD" \
                         -e CODER_BASE_PATH="$DEMYX_CONFIG_DEV_BASE_PATH" \
                         -e BS_PROXY="$DEMYX_APP_NX_CONTAINER" \
                         -l "traefik.enable=true" \
@@ -690,7 +691,7 @@ demyx_config() {
                 PRINT_TABLE="DEMYX^ DEVELOPMENT\n"
                 PRINT_TABLE+="CODE-SERVER^ $DEMYX_CONFIG_DEV_CS_URI\n"
                 PRINT_TABLE+="BROWSERSYNC^ $DEMYX_CONFIG_DEV_BS_URI\n"
-                PRINT_TABLE+="PASSWORD^ $MARIADB_ROOT_PASSWORD"
+                PRINT_TABLE+="PASSWORD^ $DEMYX_CONFIG_DEV_PASSWORD"
                 demyx_execute -v demyx_table "$PRINT_TABLE"
             elif [[ "$DEMYX_CONFIG_DEV" = false ]]; then
                 demyx_app_is_up
