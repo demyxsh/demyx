@@ -13,6 +13,6 @@ if [[ -z "$(ls -A "$DEMYX")" ]]; then
     mkdir -p "$DEMYX_APP"/stack
     mkdir -p "$DEMYX_BACKUP"
     mkdir -p "$DEMYX"/custom
-    cp "$DEMYX_ETC"/example/example-callback.sh "$DEMYX"/custom
+    cp -r "$DEMYX_ETC"/example "$DEMYX"/custom
     chown -R demyx:demyx "$DEMYX"
 fi
