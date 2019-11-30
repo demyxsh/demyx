@@ -99,14 +99,15 @@ docker run -dit \
 (host) demyx help
 ```
 demyx <args>          Chroot into the demyx container
-      exec            Send demyx commands from host
+      cmd             Send demyx commands from host
       help            Demyx help
       rm              Stops and removes demyx container
       restart         Stops, removes, and starts demyx container
-      tty             Execute root commands to demyx container from host
+      sh              Execute root commands to demyx container from host
       update          Update chroot.sh from GitHub
       --cpu           Set container CPU usage, --cpu=null to remove cap
       --dev           Puts demyx container into development mode
+      --edge          Use latest code updates from git repo
       --mem           Set container MEM usage, --mem=null to remove cap
       --nc            Starts demyx containr but prevent chrooting into container
       --prod          Puts demyx container into production mode

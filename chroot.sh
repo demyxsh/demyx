@@ -15,8 +15,8 @@ DEMYX_CHROOT_MEM=512m
 
 while :; do
     case "$1" in
-        exec)
-            DEMYX_CHROOT=execute
+        cmd)
+            DEMYX_CHROOT=command
             shift
             break
             ;;
@@ -29,8 +29,8 @@ while :; do
         restart)
             DEMYX_CHROOT=restart
             ;;
-        tty)
-            DEMYX_CHROOT=tty
+        sh)
+            DEMYX_CHROOT=shell
             shift
             break
             ;;
@@ -166,16 +166,16 @@ demyx_run() {
     demyx_until
 }
 
-if [[ "$DEMYX_CHROOT" = execute ]]; then
+if [[ "$DEMYX_CHROOT" = command ]]; then
     docker exec -it demyx demyx "$@"
 elif [[ "$DEMYX_CHROOT" = help ]]; then
     echo
     echo "demyx <args>          Chroot into the demyx container"
-    echo "      exec            Send demyx commands from host"
+    echo "      cmd             Send demyx commands from host"
     echo "      help            Demyx help"
     echo "      rm              Stops and removes demyx container"
     echo "      restart         Stops, removes, and starts demyx container"
-    echo "      tty             Execute root commands to demyx container from host"
+    echo "      sh              Execute root commands to demyx container from host"
     echo "      update          Update chroot.sh from GitHub"
     echo "      --cpu           Set container CPU usage, --cpu=null to remove cap"
     echo "      --dev           Puts demyx container into development mode"
@@ -195,7 +195,7 @@ elif [[ "$DEMYX_CHROOT" = restart ]]; then
     if [[ -z "$DEMYX_CHROOT_NC" ]]; then
         docker exec -it --user="$DEMYX_CHROOT_USER" demyx zsh
     fi
-elif [[ "$DEMYX_CHROOT" = tty ]]; then
+elif [[ "$DEMYX_CHROOT" = shell ]]; then
     docker exec -it --user="$DEMYX_CHROOT_USER" demyx "$@"
 elif [[ "$DEMYX_CHROOT" = update ]]; then
     docker run -t --user=root --privileged --rm -v /usr/local/bin:/usr/local/bin demyx/utilities demyx-chroot
