@@ -1,8 +1,27 @@
 # Demyx
 # https://demyx.sh
 
+DEMYX_MOTD_CHECK_WP="$(ls -A "$DEMYX_WP")"
+
+demyx_motd_dev_warning() {
+    if [[ -n "$DEMYX_MOTD_CHECK_WP" ]]; then
+        cd "$DEMYX_WP"
+        for i in *
+        do
+            DEMYX_COMMON_DEV_CHECK="$(grep DEMYX_APP_DEV "$DEMYX_WP"/"$i"/.env | awk -F '[=]' '{print $2}')"
+            if [[ "$DEMYX_COMMON_DEV_CHECK" = true ]]; then
+                demyx_execute -v echo -e "\e[33m[WARNING]\e[39m $i is in development mode"
+            fi
+        done
+    fi
+}
+demyx_motd_getting_started() {
+    if [[ -z "$DEMYX_MOTD_CHECK_WP" ]]; then
+        demyx_execute -v echo -e "\e[34m[INFO]\e[39m To create a WordPress site: demyx run domain.tld"
+        demyx_execute -v echo -e "\e[34m[INFO]\e[39m To create a Bedrock site: demyx run domain.tld --bedrock"
+    fi
+}
 demyx_motd_mariadb_check() {
-    DEMYX_MOTD_CHECK_WP="$(ls -A "$DEMYX_WP")"
     if [[ -n "$DEMYX_MOTD_CHECK_WP" ]]; then
         cd "$DEMYX_WP"
         for i in *
@@ -14,19 +33,6 @@ demyx_motd_mariadb_check() {
         if [[ "$DEMYX_MOTD_CHECK_MARIADB_TRUE" = true ]]; then
             demyx_execute -v echo -e "\e[34m[INFO]\e[39m MariaDB needs an upgrade. This will temporarily bring down the sites during the upgrade. Please run the commands:\n\n- Test a single site: demyx config domain.tld --upgrade-db\n- Upgrade all sites: demyx config all --upgrade-db\n"
         fi
-    fi
-}
-demyx_motd_dev_warning() {
-    DEMYX_MOTD_CHECK_WP="$(ls -A "$DEMYX_WP")"
-    if [[ -n "$DEMYX_MOTD_CHECK_WP" ]]; then
-        cd "$DEMYX_WP"
-        for i in *
-        do
-            DEMYX_COMMON_DEV_CHECK="$(grep DEMYX_APP_DEV "$DEMYX_WP"/"$i"/.env | awk -F '[=]' '{print $2}')"
-            if [[ "$DEMYX_COMMON_DEV_CHECK" = true ]]; then
-                demyx_execute -v echo -e "\e[33m[WARNING]\e[39m $i is in development mode"
-            fi
-        done
     fi
 }
 demyx_motd_stack_check() {
@@ -104,6 +110,7 @@ demyx_motd() {
         demyx_execute -v demyx_table "$PRINT_MOTD_TABLE"
         echo
     fi
+    demyx_motd_getting_started
     demyx_motd_mariadb_check
     demyx_motd_stack_check
     demyx_motd_dev_warning
