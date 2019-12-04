@@ -13,6 +13,7 @@ DEMYX_BRANCH=$DEMYX_BRANCH
 DEMYX_MODE=$DEMYX_MODE
 DEMYX_HOST=$DEMYX_HOST
 DEMYX_SSH=$DEMYX_SSH
+DOCKER_HOST=${DOCKER_HOST:-/var/run/docker.sock}
 " > /home/demyx/.ssh/environment
 
 # Prevents ssh errors from local machine
