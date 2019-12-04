@@ -17,9 +17,9 @@ demyx_healthcheck() {
                 [[ -n "$DEMYX_APP_NX_CONTAINER" ]] && DEMYX_HEALTHCHECK_CONTAINER="$DEMYX_APP_NX_CONTAINER"
                 [[ "$DEMYX_APP_HEALTHCHECK" = false ]] && continue
 
-                DEMYX_HEALTHCHECK_STATUS="$(curl -sSf "$DEMYX_HEALTHCHECK_CONTAINER" > /dev/null; echo "$?")"
+                DEMYX_HEALTHCHECK_STATUS="$(curl -sL -o /dev/null -w "%{http_code}" "$DEMYX_HEALTHCHECK_CONTAINER")"
 
-                if [[ "$DEMYX_HEALTHCHECK_STATUS" != 0 ]]; then
+                if [[ "$DEMYX_HEALTHCHECK_STATUS" != 200 ]]; then
                     if [[ ! -f "$DEMYX_WP"/"$i"/.healthcheck ]]; then
                         demyx_execute -v echo "DEMYX_APP_HEALTHCHECK_COUNT=0" > "$DEMYX_WP"/"$i"/.healthcheck
                     fi
