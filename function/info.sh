@@ -131,8 +131,8 @@ demyx_info() {
             fi
         else
             source "$DEMYX_STACK"/.env
-            DEMYX_INFO_STACK_GET_NGINX="$(wget -qO- https://raw.githubusercontent.com/demyxco/nginx/master/README.md)"
-            DEMYX_INFO_STACK_GET_WORDPRESS="$(wget -qO- https://raw.githubusercontent.com/demyxco/wordpress/master/README.md)"
+            DEMYX_INFO_STACK_GET_NGINX="$(curl -s https://raw.githubusercontent.com/demyxco/nginx/master/README.md)"
+            DEMYX_INFO_STACK_GET_WORDPRESS="$(curl -s https://raw.githubusercontent.com/demyxco/wordpress/master/README.md)"
             DEMYX_INFO_TRAEFIK_CHECK="$(echo "$DEMYX_DOCKER_PS" | grep demyx_traefik)"
             [[ -n "$DEMYX_INFO_TRAEFIK_CHECK" ]] && DEMYX_INFO_TRAEFIK_VERSION="$(docker exec -t demyx_traefik traefik version | head -1 | awk -F '[:]' '{print $2}' | sed 's| ||g' | sed 's/\r//g')"
             PRINT_TABLE="DEMYX^ STACK\n"
