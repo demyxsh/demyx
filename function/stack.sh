@@ -148,20 +148,6 @@ demyx_stack() {
             demyx stack refresh
         fi
     elif [[ "$DEMYX_STACK_SELECT" = refresh ]]; then
-        until [[ "$(docker inspect demyx_socket | jq -r '.[].State.Running')" = true ]]
-        do
-            if [[ "$(docker inspect demyx_socket | jq -r '.[].State.Running')" = false ]]; then 
-                demyx_echo 'Stopping socket container'
-                demyx_execute docker stop demyx_socket; \
-                    docker rm -f demyx_socket
-            fi
-
-            demyx_echo 'Starting socket container'
-            demyx_execute demyx_socket
-            
-            sleep 1
-        done
-
         demyx_echo 'Backing up stack directory as /demyx/backup/stack.tgz'
         demyx_execute tar -czf /demyx/backup/stack.tgz -C /demyx/app stack
 
