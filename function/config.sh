@@ -372,7 +372,7 @@ demyx_config() {
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" option update rt_wp_nginx_helper_options '{"enable_purge":"1","cache_method":"enable_fastcgi","purge_method":"get_request","enable_map":null,"enable_log":null,"log_level":"INFO","log_filesize":"5","enable_stamp":null,"purge_homepage_on_edit":"1","purge_homepage_on_del":"1","purge_archive_on_edit":"1","purge_archive_on_del":"1","purge_archive_on_new_comment":"1","purge_archive_on_deleted_comment":"1","purge_page_on_mod":"1","purge_page_on_new_comment":"1","purge_page_on_deleted_comment":"1","redis_hostname":"127.0.0.1","redis_port":"6379","redis_prefix":"nginx-cache:","purge_url":"","redis_enabled_by_constant":0}' --format=json
 
                 demyx_echo 'Updating configs'
-                demyx_execute docker exec -t "$DEMYX_APP_NX_CONTAINER" sh -c "sed -i 's|#include /demyx/cache|include /demyx/cache|g' /demyx/wp.conf" && \
+                demyx_execute docker exec -t -e NGINX_CACHE=true "$DEMYX_APP_NX_CONTAINER" demyx-wp; \
                     sed -i "s|DEMYX_APP_CACHE=.*|DEMYX_APP_CACHE=true|g" "$DEMYX_APP_PATH"/.env
 
                 demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
@@ -387,7 +387,7 @@ demyx_config() {
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin deactivate nginx-helper
                 
                 demyx_echo 'Updating configs'
-                demyx_execute docker exec -t "$DEMYX_APP_NX_CONTAINER" sh -c "sed -i 's|include /demyx/cache|#include /demyx/cache|g' /demyx/wp.conf" && \
+                demyx_execute docker exec -t -e NGINX_CACHE=false "$DEMYX_APP_NX_CONTAINER" demyx-wp; \
                     sed -i "s|DEMYX_APP_CACHE=.*|DEMYX_APP_CACHE=false|g" "$DEMYX_APP_PATH"/.env
 
                 demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
