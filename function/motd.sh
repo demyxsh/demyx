@@ -3,6 +3,11 @@
 
 DEMYX_MOTD_CHECK_WP="$(ls -A "$DEMYX_WP")"
 
+demyx_motd_yml_check() {
+    if [[ ! -f "$DEMYX"/docker-compose.yml ]]; then
+        demyx_execute -v echo -e "\e[33m[WARNING]\e[39m demyx helper script needs to be updated on the host, please run these commands on the host:\n- demyx update\n- demyx restart"
+    fi
+}
 demyx_motd_dev_warning() {
     if [[ -n "$DEMYX_MOTD_CHECK_WP" ]]; then
         cd "$DEMYX_WP"
@@ -110,6 +115,7 @@ demyx_motd() {
         demyx_execute -v demyx_table "$PRINT_MOTD_TABLE"
         echo
     fi
+    demyx_motd_yml_check
     demyx_motd_getting_started
     demyx_motd_mariadb_check
     demyx_motd_stack_check
