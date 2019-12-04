@@ -204,8 +204,8 @@ demyx_validate_ip() {
 }
 demyx_check_docker_sock() {
     DEMYX_GLOBAL_CHECK_DOCKER_SOCK="$(ls /run | grep docker.sock)"
-    [[ -n "$DEMYX_GLOBAL_CHECK_DOCKER_SOCK" ]] && echo true
-    [[ -n "$DOCKER_HOST" ]] && echo true
+    [[ -n "$DEMYX_GLOBAL_CHECK_DOCKER_SOCK" ]] && echo volume
+    [[ -n "$DOCKER_HOST" ]] && echo proxy
 }
 demyx_get_mode() {
     if [[ -f /tmp/demyx-dev ]]; then
@@ -232,7 +232,7 @@ demyx_socket() {
     demyx/docker-socket-proxy 2>/dev/null
 }
 
-if [[ "$(demyx_check_docker_sock)" = true ]]; then
+if [[ -n "$(demyx_check_docker_sock)" ]]; then
     # Global environment variables
     DEMYX_DOCKER_PS="$(docker ps)"
 fi
