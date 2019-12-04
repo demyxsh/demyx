@@ -73,6 +73,9 @@ while :; do
             printf '\e[31m[CRITICAL]\e[39m "--ssh" cannot be empty\n'
             exit 1
             ;;
+        --stack)
+            DEMYX_CHROOT_STACK=1
+            ;;
         --)
             shift
             break
@@ -147,6 +150,7 @@ elif [[ "$DEMYX_CHROOT" = help ]]; then
     echo "      --prod          Puts demyx container into production mode"
     echo "      -r, --root      Execute as root user"
     echo "      --ssh           Override ssh port"
+    echo "      --stack         Pulls all demyx images when running demyx update"
     echo
 elif [[ "$DEMYX_CHROOT" = remove ]]; then
     demyx_rm
@@ -159,8 +163,25 @@ elif [[ "$DEMYX_CHROOT" = restart ]]; then
 elif [[ "$DEMYX_CHROOT" = shell ]]; then
     docker exec -it --user="$DEMYX_CHROOT_USER" demyx "$@"
 elif [[ "$DEMYX_CHROOT" = update ]]; then
+    if [[ -n "$DEMYX_CHROOT_STACK" ]]; then
+        docker pull demyx/browsersync
+        docker pull demyx/code-server:wp
+        docker pull demyx/demyx
+        docker pull demyx/docker-compose
+        docker pull demyx/docker-socket-proxy
+        docker pull demyx/logrotate
+        docker pull demyx/mariadb:edge
+        docker pull demyx/nginx
+        docker pull demyx/ssh
+        docker pull demyx/traefik
+        docker pull demyx/utilities
+        docker pull demyx/wordpress
+        docker pull demyx/wordpress:cli
+    fi
+
     docker run -t --user=root --privileged --rm -v /usr/local/bin:/usr/local/bin demyx/utilities demyx-chroot
-    echo -e "\e[32m[SUCCESS]\e[39m Demyx chroot has successfully updated"
+
+    echo -e "\e[32m[SUCCESS]\e[39m Successfully updated"
 else
     if [[ -n "$DEMYX_CHROOT_DEMYX_CHECK" ]]; then
         DEMYX_MODE_CHECK="$(docker exec -t demyx sh -c "[[ -f /tmp/demyx-dev ]] && echo 'development'")"
