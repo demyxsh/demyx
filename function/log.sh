@@ -70,8 +70,9 @@ demyx_log() {
             if [[ -n "$DEMYX_LOG_DATABASE" ]]; then
                 docker exec -it "$DEMYX_APP_DB_CONTAINER" tail -200 $DEMYX_LOG_FOLLOW /var/log/demyx/"$DEMYX_APP_DOMAIN".mariadb.log
             elif [[ -n "$DEMYX_LOG_ERROR" ]]; then
-                DEMYX_LOG_WP=error
-                docker exec -it "$DEMYX_APP_WP_CONTAINER" tail -200 $DEMYX_LOG_FOLLOW /var/log/demyx/"$DEMYX_APP_DOMAIN"."$DEMYX_LOG_WP".log
+                docker exec -it "$DEMYX_APP_WP_CONTAINER" tail -200 $DEMYX_LOG_FOLLOW /var/log/demyx/"$DEMYX_APP_DOMAIN".error.log
+            else
+                docker exec -it "$DEMYX_APP_WP_CONTAINER" tail -200 $DEMYX_LOG_FOLLOW /var/log/demyx/"$DEMYX_APP_DOMAIN".access.log
             fi
         fi
     fi
