@@ -22,8 +22,9 @@ demyx_motd_dev_warning() {
 }
 demyx_motd_getting_started() {
     if [[ -z "$DEMYX_MOTD_CHECK_WP" ]]; then
-        demyx_execute -v echo -e "\e[34m[INFO]\e[39m To create a WordPress site: demyx run domain.tld"
-        demyx_execute -v echo -e "\e[34m[INFO]\e[39m To create a Bedrock site: demyx run domain.tld --bedrock"
+        DEMYX_MOTD_GETTING_STARTED_DOMAIN="$(demyx info stack --filter=DEMYX_STACK_DOMAIN)"
+        demyx_execute -v echo -e "\e[34m[INFO]\e[39m To create a WordPress site: demyx run ${DEMYX_MOTD_GETTING_STARTED_DOMAIN:-domain.tld}"
+        demyx_execute -v echo -e "\e[34m[INFO]\e[39m To create a Bedrock site: demyx run ${DEMYX_MOTD_GETTING_STARTED_DOMAIN:-domain.tld} --bedrock"
     fi
 }
 demyx_motd_mariadb_check() {
