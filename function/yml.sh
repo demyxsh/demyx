@@ -196,7 +196,7 @@ demyx_stack_yml() {
     fi
 
     # Will remove this backwards compability in January 1st, 2020
-    if [[ ! -f "$DEMYX"/docker-compose.yml ]]; then
+    if [[ "$(demyx_check_docker_sock)" = volume ]]; then
         DEMYX_YML_TRAEFIK=traefik
         DEMYX_YML_TRAEFIK_PORTS="ports:
                     - 80:80
