@@ -8,6 +8,12 @@ demyx_compose() {
 
     DEMYX_COMPOSE="$1"
 
+    if [[ "$(demyx_check_docker_sock)" = volume ]]; then
+        DEMYX_COMPOSE_SOCKET="-v /var/run/docker.sock:/var/run/docker.sock:ro"
+    else
+        DEMYX_COMPOSE_SOCKET="-e DOCKER_HOST=tcp://demyx_socket:2375"
+    fi
+
     if [[ "$DEMYX_TARGET" = all ]]; then
         shift
         cd "$DEMYX_WP" || exit
@@ -23,28 +29,28 @@ demyx_compose() {
         if [[ "$DEMYX_COMPOSE" = db ]]; then
             shift
             demyx_execute -v docker run -t --rm \
-            -e DOCKER_HOST=tcp://demyx_socket:2375 \
+            $DEMYX_COMPOSE_SOCKET \
             --network=demyx_socket \
             --volumes-from=demyx \
             --workdir="$DEMYX_APP_PATH" \
             demyx/docker-compose "$@" db_"$DEMYX_APP_ID"
         elif [[ "$DEMYX_COMPOSE" = down ]]; then
             demyx_execute -v docker run -t --rm \
-            -e DOCKER_HOST=tcp://demyx_socket:2375 \
+            $DEMYX_COMPOSE_SOCKET \
             --network=demyx_socket \
             --volumes-from=demyx \
             --workdir="$DEMYX_APP_PATH" \
             demyx/docker-compose stop
 
             demyx_execute -v docker run -t --rm \
-            -e DOCKER_HOST=tcp://demyx_socket:2375 \
+            $DEMYX_COMPOSE_SOCKET \
             --network=demyx_socket \
             --volumes-from=demyx \
             --workdir="$DEMYX_APP_PATH" \
             demyx/docker-compose rm -f
         elif [[ "$DEMYX_COMPOSE" = fr ]]; then
             demyx_execute -v docker run -t --rm \
-            -e DOCKER_HOST=tcp://demyx_socket:2375 \
+            $DEMYX_COMPOSE_SOCKET \
             --network=demyx_socket \
             --volumes-from=demyx \
             --workdir="$DEMYX_APP_PATH" \
@@ -52,7 +58,7 @@ demyx_compose() {
         elif [[ "$DEMYX_COMPOSE" = nx ]]; then
             shift
             demyx_execute -v docker run -t --rm \
-            -e DOCKER_HOST=tcp://demyx_socket:2375 \
+            $DEMYX_COMPOSE_SOCKET \
             --network=demyx_socket \
             --volumes-from=demyx \
             --workdir="$DEMYX_APP_PATH" \
@@ -60,14 +66,14 @@ demyx_compose() {
         elif [[ "$DEMYX_COMPOSE" = wp ]]; then
             shift
             demyx_execute -v docker run -t --rm \
-            -e DOCKER_HOST=tcp://demyx_socket:2375 \
+            $DEMYX_COMPOSE_SOCKET \
             --network=demyx_socket \
             --volumes-from=demyx \
             --workdir="$DEMYX_APP_PATH" \
             demyx/docker-compose "$@" wp_"$DEMYX_APP_ID"
         else
             demyx_execute -v docker run -t --rm \
-            -e DOCKER_HOST=tcp://demyx_socket:2375 \
+            $DEMYX_COMPOSE_SOCKET \
             --network=demyx_socket \
             --volumes-from=demyx \
             --workdir="$DEMYX_APP_PATH" \
@@ -79,14 +85,14 @@ demyx_compose() {
         DEMYX_COMPOSE="$1"
         if [[ "$DEMYX_COMPOSE" = down ]]; then
             demyx_execute -v docker run -t --rm \
-            -e DOCKER_HOST=tcp://demyx_socket:2375 \
+            $DEMYX_COMPOSE_SOCKET \
             --network=demyx_socket \
             --volumes-from=demyx \
             --workdir="$DEMYX_APP"/"$DEMYX_TARGET" \
             demyx/docker-compose stop
 
             demyx_execute -v docker run -t --rm \
-            -e DOCKER_HOST=tcp://demyx_socket:2375 \
+            $DEMYX_COMPOSE_SOCKET \
             --network=demyx_socket \
             --volumes-from=demyx \
             --workdir="$DEMYX_APP"/"$DEMYX_TARGET" \
@@ -94,14 +100,14 @@ demyx_compose() {
         elif [[ "$DEMYX_COMPOSE" = fr ]]; then
             shift
             demyx_execute -v docker run -t --rm \
-            -e DOCKER_HOST=tcp://demyx_socket:2375 \
+            $DEMYX_COMPOSE_SOCKET \
             --network=demyx_socket \
             --volumes-from=demyx \
             --workdir="$DEMYX_APP"/"$DEMYX_TARGET" \
             demyx/docker-compose up -d --force-recreate --remove-orphans
         else
             demyx_execute -v docker run -t --rm \
-            -e DOCKER_HOST=tcp://demyx_socket:2375 \
+            $DEMYX_COMPOSE_SOCKET \
             --network=demyx_socket \
             --volumes-from=demyx \
             --workdir="$DEMYX_APP"/"$DEMYX_TARGET" \
@@ -111,28 +117,28 @@ demyx_compose() {
         [[ ! -d "$DEMYX_APP"/"$DEMYX_TARGET" ]] && demyx_die --not-found
         if [[ "$DEMYX_COMPOSE" = down ]]; then
             demyx_execute -v docker run -t --rm \
-            -e DOCKER_HOST=tcp://demyx_socket:2375 \
+            $DEMYX_COMPOSE_SOCKET \
             --network=demyx_socket \
             --volumes-from=demyx \
             --workdir="$PWD" \
             demyx/docker-compose stop
 
             demyx_execute -v docker run -t --rm \
-            -e DOCKER_HOST=tcp://demyx_socket:2375 \
+            $DEMYX_COMPOSE_SOCKET \
             --network=demyx_socket \
             --volumes-from=demyx \
             --workdir="$PWD" \
             demyx/docker-compose rm -f
         elif [[ "$DEMYX_COMPOSE" = fr ]]; then
             demyx_execute -v docker run -t --rm \
-            -e DOCKER_HOST=tcp://demyx_socket:2375 \
+            $DEMYX_COMPOSE_SOCKET \
             --network=demyx_socket \
             --volumes-from=demyx \
             --workdir="$PWD" \
             demyx/docker-compose up -d --force-recreate --remove-orphans
         else
             demyx_execute -v docker run -t --rm \
-            -e DOCKER_HOST=tcp://demyx_socket:2375 \
+            $DEMYX_COMPOSE_SOCKET \
             --network=demyx_socket \
             --volumes-from=demyx \
             --workdir="$PWD" \
