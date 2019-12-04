@@ -59,7 +59,7 @@ demyx run domain.tld --bedrock
 ```
 
 ### Demyx Image
-Since the image needs docker.sock to be mounted and the Docker binary is included, I've installed sudo to only allow the demyx user to execute only one script as root. The image is put in production mode by default, meaning that /demyx directory and all it's folders and files will be set to read-only mode. This prevents the non-privelege user to modify the script and do malicious things.
+Demyx needs access to the docker.sock as a non-root user, which the chroot helper script will set that up for you. Sudo is installed to only allow the demyx user to execute specific scripts as root. The image is put in production mode by default, meaning that /demyx directory and all its folders and files will be set to read-only mode by root. This prevents the non-privelege user to modify the script and do malicious things.
 
 * user/group: demyx:demyx (1000:1000)
 * docker (binary)
@@ -70,7 +70,6 @@ Since the image needs docker.sock to be mounted and the Docker binary is include
 * jq
 * nano
 * oh-my-zsh
-* s6-overlay
 * sudo
 * tzdata
 * util-linux
@@ -78,24 +77,8 @@ Since the image needs docker.sock to be mounted and the Docker binary is include
 * zsh
 
 ### chroot.sh
-This script helps you change root to the demyx container, it's installed on the host OS and lives in /usr/local/bin. Executing the install script will automatically install the Demyx chroot script. The chroot script will start the demyx container and binds port 2222 for SSH. SSH port can be overriden by the script.
-```
-docker run -dit \
-    --name=demyx \
-    --restart=unless-stopped \
-    --hostname="$DEMYX_CHROOT_HOST" \
-    --network=demyx \
-    -e DEMYX_HOST="$DEMYX_CHROOT_HOST" \
-    -e DEMYX_SSH="$DEMYX_CHROOT_SSH" \
-    -e DEMYX_MODE="$DEMYX_CHROOT_MODE" \
-    -v /var/run/docker.sock:/var/run/docker.sock:ro \
-    -v demyx:/demyx \
-    -v demyx_user:/home/demyx \
-    -v demyx_log:/var/log/demyx \
-    -e TZ=America/Los_Angeles \
-    -p "$DEMYX_CHROOT_SSH":2222 \
-    demyx/demyx
-```
+This script helps you change root to the demyx container, it's installed on the host OS and lives in /usr/local/bin. The script will generate a docker-compose.yml for demyx and the [demyx/docker-socket-proxy](https://github.com/demyxco/docker-socket-proxy). Executing the install script will automatically install the Demyx chroot script. The chroot script will start the demyx container and binds port 2222 for SSH. SSH port can be overriden by the script.
+
 (host) demyx help
 ```
 demyx <args>          Chroot into the demyx container
@@ -113,6 +96,7 @@ demyx <args>          Chroot into the demyx container
       --prod          Puts demyx container into production mode
       -r, --root      Execute as root user
       --ssh           Override ssh port
+      --stack         Pulls all demyx images when running demyx update
 ```
 
 ### Commands
