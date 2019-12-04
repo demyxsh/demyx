@@ -17,7 +17,7 @@ demyx_healthcheck() {
                 [[ -n "$DEMYX_APP_NX_CONTAINER" ]] && DEMYX_HEALTHCHECK_CONTAINER="$DEMYX_APP_NX_CONTAINER"
                 [[ "$DEMYX_APP_HEALTHCHECK" = false ]] && continue
 
-                DEMYX_HEALTHCHECK_STATUS="$(curl -sL -o /dev/null -w "%{http_code}" "$DEMYX_HEALTHCHECK_CONTAINER")"
+                DEMYX_HEALTHCHECK_STATUS="$(curl -sL -m 1 -o /dev/null -w "%{http_code}" "$DEMYX_HEALTHCHECK_CONTAINER")"
 
                 if [[ "$DEMYX_HEALTHCHECK_STATUS" != 200 ]]; then
                     if [[ ! -f "$DEMYX_WP"/"$i"/.healthcheck ]]; then
@@ -32,9 +32,11 @@ demyx_healthcheck() {
                         demyx compose "$i" fr
                     else
                         if [[ ! -f "$DEMYX_WP"/"$i"/.healthcheck-lock ]]; then
-                            DEMYX_HEALTHCHECK_HTTP_CODE="$(curl --write-out %{http_code} --silent --output /dev/null --head "$DEMYX_HEALTHCHECK_CONTAINER")"
+                            DEMYX_HEALTHCHECK_SERVER_IP="$(demyx info stack --filter=DEMYX_STACK_SERVER_IP)"
+                            DEMYX_HEALTHCHECK_IP="$(dig +short "$DEMYX_APP_DOMAIN")"
+                            DEMYX_HEALTHCHECK_NS="$(dig +short NS "$DEMYX_APP_DOMAIN" | tr -d '\n')"
                             touch "$DEMYX_WP"/"$i"/.healthcheck-lock
-                            [[ -f "$DEMYX"/custom/callback.sh ]] && demyx_execute -v /bin/bash "$DEMYX"/custom/callback.sh "healthcheck" "$i" "$DEMYX_HEALTHCHECK_HTTP_CODE"
+                            [[ -f "$DEMYX"/custom/callback.sh ]] && demyx_execute -v /bin/bash "$DEMYX"/custom/callback.sh "healthcheck" "$i" "$DEMYX_HEALTHCHECK_STATUS" "$DEMYX_HEALTHCHECK_SERVER_IP" "$DEMYX_HEALTHCHECK_IP" "$DEMYX_HEALTHCHECK_NS"
                         fi
                     fi
                 else
