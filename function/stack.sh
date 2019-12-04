@@ -185,7 +185,7 @@ demyx_stack() {
             demyx_execute docker run -dit --rm --name demyx_upgrade demyx/utilities sh
 
             demyx_echo 'Downloading and extracting Traefik Migration Tool'
-            demyx_execute wget https://github.com/containous/traefik-migration-tool/releases/download/v0.8.0/traefik-migration-tool_v0.8.0_linux_amd64.tar.gz -qO /tmp/traefik-migration-tool_v0.8.0_linux_amd64.tar.gz; \
+            demyx_execute curl -sL https://github.com/containous/traefik-migration-tool/releases/download/v0.8.0/traefik-migration-tool_v0.8.0_linux_amd64.tar.gz -o /tmp/traefik-migration-tool_v0.8.0_linux_amd64.tar.gz; \
                 tar -xzf /tmp/traefik-migration-tool_v0.8.0_linux_amd64.tar.gz -C /tmp
 
             demyx_echo 'Upgrading acme.json'
