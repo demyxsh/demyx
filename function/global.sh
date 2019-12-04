@@ -205,6 +205,7 @@ demyx_validate_ip() {
 demyx_check_docker_sock() {
     DEMYX_GLOBAL_CHECK_DOCKER_SOCK="$(ls /run | grep docker.sock)"
     [[ -n "$DEMYX_GLOBAL_CHECK_DOCKER_SOCK" ]] && echo true
+    [[ -n "$DOCKER_HOST" ]] && echo true
 }
 demyx_get_mode() {
     if [[ -f /tmp/demyx-dev ]]; then
