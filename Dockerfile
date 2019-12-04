@@ -34,16 +34,6 @@ RUN set -ex; \
     util-linux \
     zsh
 
-# Download latest Docker client binary
-RUN set -ex; \
-    export DEMYX_DOCKER_BINARY=$(curl -sL https://api.github.com/repos/docker/docker-ce/releases/latest | grep '"name":' | awk -F '[:]' '{print $2}' | sed -e 's/"//g' | sed -e 's/,//g' | sed -e 's/ //g' | sed -e 's/\r//g'); \
-    # Set fixed version as a fallback if curling fails
-    if [ -z "$DEMYX_DOCKER_BINARY" ]; then export DEMYX_DOCKER_BINARY=18.09.9; fi; \
-    wget https://download.docker.com/linux/static/stable/x86_64/docker-"$DEMYX_DOCKER_BINARY".tgz -qO /tmp/docker-"$DEMYX_DOCKER_BINARY".tgz; \
-    tar -xzf /tmp/docker-"$DEMYX_DOCKER_BINARY".tgz -C /tmp; \
-    mv /tmp/docker/docker /usr/local/bin; \
-    rm -rf /tmp/*
-
 # Create demyx user and configure ssh
 RUN set -ex; \
     addgroup -g 1000 -S demyx; \
@@ -115,14 +105,20 @@ COPY . /etc/demyx
 # demyx api
 COPY --from=demyx_api /app/shell2http /usr/local/bin
 # ctop
-COPY --from=demyx_ctop /ctop /usr/local/bin/ctop-bin
+COPY --from=demyx_ctop /ctop /usr/local/bin/ctop
+
+# Download latest Docker client binary
+RUN set -ex; \
+    export DEMYX_DOCKER_BINARY=$(curl -sL https://api.github.com/repos/docker/docker-ce/releases/latest | grep '"name":' | awk -F '[:]' '{print $2}' | sed -e 's/"//g' | sed -e 's/,//g' | sed -e 's/ //g' | sed -e 's/\r//g'); \
+    # Set fixed version as a fallback if curling fails
+    if [ -z "$DEMYX_DOCKER_BINARY" ]; then export DEMYX_DOCKER_BINARY=18.09.9; fi; \
+    wget https://download.docker.com/linux/static/stable/x86_64/docker-"$DEMYX_DOCKER_BINARY".tgz -qO /tmp/docker-"$DEMYX_DOCKER_BINARY".tgz; \
+    tar -xzf /tmp/docker-"$DEMYX_DOCKER_BINARY".tgz -C /tmp; \
+    mv /tmp/docker/docker /usr/local/bin; \
+    rm -rf /tmp/*
 
 # Sudo wrappers
 RUN set -ex; \
-    echo '#!/bin/bash' >> /usr/local/bin/ctop; \
-    echo 'sudo /usr/local/bin/ctop-bin' >> /usr/local/bin/ctop; \
-    chmod +x /usr/local/bin/ctop; \
-    \
     echo '#!/bin/bash' >> /usr/local/bin/demyx; \
     echo 'sudo /etc/demyx/demyx.sh "$@"' >> /usr/local/bin/demyx; \
     chmod +x /etc/demyx/demyx.sh; \
@@ -140,6 +136,12 @@ RUN set -ex; \
 
 # Finalize
 RUN set -ex; \
+    # Lockdown these binaries
+    rm -f /usr/bin/wget; \
+    chmod o-x /usr/bin/curl; \
+    chmod o-x /usr/local/bin/docker; \
+    chown root:root /usr/local/bin/docker; \
+    \
     chmod +x /etc/demyx/bin/demyx-api.sh; \
     ln -s /etc/demyx/bin/demyx-api.sh /usr/local/bin/demyx-api; \
     \
@@ -147,13 +149,17 @@ RUN set -ex; \
     ln -s /etc/demyx/bin/demyx-crond.sh /usr/local/bin/demyx-crond; \
     \
     chmod +x /etc/demyx/bin/demyx-dev.sh; \
+    chmod o-x /etc/demyx/bin/demyx-dev.sh; \
     ln -s /etc/demyx/bin/demyx-dev.sh /usr/local/bin/demyx-dev; \
     \
     chmod +x /etc/demyx/bin/demyx-init.sh; \
     ln -s /etc/demyx/bin/demyx-init.sh /usr/local/bin/demyx-init; \
     \
     chmod +x /etc/demyx/bin/demyx-ssh.sh; \
-    ln -s /etc/demyx/bin/demyx-ssh.sh /usr/local/bin/demyx-ssh
+    ln -s /etc/demyx/bin/demyx-ssh.sh /usr/local/bin/demyx-ssh; \
+    \
+    chmod +x /etc/demyx/bin/demyx-yml.sh; \
+    ln -s /etc/demyx/bin/demyx-yml.sh /usr/local/bin/demyx-yml
 
 EXPOSE 2222 8080
 WORKDIR /demyx
