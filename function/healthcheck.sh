@@ -33,10 +33,12 @@ demyx_healthcheck() {
                     else
                         if [[ ! -f "$DEMYX_WP"/"$i"/.healthcheck-lock ]]; then
                             DEMYX_HEALTHCHECK_SERVER_IP="$(demyx info stack --filter=DEMYX_STACK_SERVER_IP)"
-                            DEMYX_HEALTHCHECK_IP="$(dig +short "$DEMYX_APP_DOMAIN")"
-                            DEMYX_HEALTHCHECK_NS="$(dig +short NS "$DEMYX_APP_DOMAIN" | tr -d '\n')"
+                            DEMYX_HEALTHCHECK_IP="$(dig +short "$DEMYX_APP_DOMAIN" | tr '\r\n' ' ')"
+                            DEMYX_HEALTHCHECK_NS="$(dig +short NS "$DEMYX_APP_DOMAIN" | tr '\r\n' ' ')"
                             touch "$DEMYX_WP"/"$i"/.healthcheck-lock
-                            [[ -f "$DEMYX"/custom/callback.sh ]] && demyx_execute -v /bin/bash "$DEMYX"/custom/callback.sh "healthcheck" "$i" "$DEMYX_HEALTHCHECK_STATUS" "$DEMYX_HEALTHCHECK_SERVER_IP" "$DEMYX_HEALTHCHECK_IP" "$DEMYX_HEALTHCHECK_NS"
+                            if [[ -f "$DEMYX"/custom/callback.sh ]]; then
+                                bash "$DEMYX"/custom/callback.sh "healthcheck" "$i" "$DEMYX_HEALTHCHECK_STATUS" "$DEMYX_HEALTHCHECK_SERVER_IP" "$DEMYX_HEALTHCHECK_IP" "$DEMYX_HEALTHCHECK_NS"
+                            fi
                         fi
                     fi
                 else
