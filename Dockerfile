@@ -89,6 +89,7 @@ RUN set -ex; \
     echo 'Defaults env_keep +="DEMYX_MODE"' >> /etc/sudoers.d/demyx; \
     echo 'Defaults env_keep +="DEMYX_HOST"' >> /etc/sudoers.d/demyx; \
     echo 'Defaults env_keep +="DEMYX_SSH"' >> /etc/sudoers.d/demyx; \
+    echo 'Defaults env_keep +="DOCKER_HOST"' >> /etc/sudoers.d/demyx; \
     echo 'Defaults env_keep +="TZ"' >> /etc/sudoers.d/demyx; \
     \
     mkdir /demyx; \
