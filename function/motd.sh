@@ -5,7 +5,7 @@ DEMYX_MOTD_CHECK_WP="$(ls -A "$DEMYX_WP")"
 
 demyx_motd_yml_check() {
     if [[ ! -f "$DEMYX"/docker-compose.yml ]]; then
-        demyx_execute -v echo -e "\e[33m[WARNING]\e[39m demyx helper script needs to be updated on the host, please run these commands on the host:\n- demyx update\n- demyx restart"
+        demyx_execute -v echo -e "\e[31m[CRITICAL]\e[39m The demyx stack needs to be updated on the host, please run these commands on the host:\n\n- demyx update\n- demyx update --stack (needs to be ran again with this flag)\n- demyx restart\n"
     fi
 }
 demyx_motd_dev_warning() {
@@ -21,10 +21,16 @@ demyx_motd_dev_warning() {
     fi
 }
 demyx_motd_getting_started() {
-    if [[ -z "$DEMYX_MOTD_CHECK_WP" ]]; then
-        DEMYX_MOTD_GETTING_STARTED_DOMAIN="$(demyx info stack --filter=DEMYX_STACK_DOMAIN)"
+    if [[ ! -f "$DEMYX_STACK"/.env ]]; then
+        demyx_execute -v echo -e "\e[34m[INFO]\e[39m Looks like the stack isn't installed, run this command to install:\n\n- demyx stack install --domain=your-domain --email=info@your-domain --user=your-user --pass=your-pass\n"
         demyx_execute -v echo -e "\e[34m[INFO]\e[39m To create a WordPress site: demyx run ${DEMYX_MOTD_GETTING_STARTED_DOMAIN:-domain.tld}"
         demyx_execute -v echo -e "\e[34m[INFO]\e[39m To create a Bedrock site: demyx run ${DEMYX_MOTD_GETTING_STARTED_DOMAIN:-domain.tld} --bedrock"
+    else
+        if [[ -z "$DEMYX_MOTD_CHECK_WP" ]]; then
+            DEMYX_MOTD_GETTING_STARTED_DOMAIN="$(demyx info stack --filter=DEMYX_STACK_DOMAIN)"
+            demyx_execute -v echo -e "\e[34m[INFO]\e[39m To create a WordPress site: demyx run ${DEMYX_MOTD_GETTING_STARTED_DOMAIN:-domain.tld}"
+            demyx_execute -v echo -e "\e[34m[INFO]\e[39m To create a Bedrock site: demyx run ${DEMYX_MOTD_GETTING_STARTED_DOMAIN:-domain.tld} --bedrock"
+        fi
     fi
 }
 demyx_motd_mariadb_check() {
