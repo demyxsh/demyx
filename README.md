@@ -49,7 +49,7 @@ sh -c "$(curl -fsSL https://raw.githubusercontent.com/demyxco/demyx/master/insta
 ### Getting Started
 ```
 # Create a WordPress site on the host OS
-demyx exec run domain.tld --cdn --cache
+demyx cmd run domain.tld --cdn --cache
 
 # Create a WordPress site in the demyx container
 demyx run domain.tld --cdn --cache
@@ -151,7 +151,7 @@ If you are uncomfortable with this, then you can turn off telemetry by running t
 
 ```
 # Execute in the host OS
-demyx exec stack --telemetry=false
+demyx cmd stack --telemetry=false
 
 # Execute in the demyx container
 demyx stack --telemetry=false
