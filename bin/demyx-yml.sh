@@ -4,11 +4,11 @@
 
 # Scan for open ports starting with 2222
 while true; do
-DEMYX_YML_SFTP_OPEN_PORT="$(netstat -tuplen 2>/dev/null | grep :${DEMYX_YML_SSH} || true)"
+DEMYX_YML_SFTP_OPEN_PORT="$(netstat -tuplen 2>/dev/null | grep :${DEMYX_SSH:-2222} || true)"
     if [[ -z "$DEMYX_YML_SFTP_OPEN_PORT" ]]; then
         break
     else
-        DEMYX_YML_SSH="$((DEMYX_YML_SSH+1))"
+        DEMYX_SSH="$((DEMYX_SSH+1))"
     fi
 done
 
@@ -46,8 +46,8 @@ services:
   socket:
     privileged: true
     image: demyx/docker-socket-proxy
-    cpus: ${DEMYX_YML_CPU}
-    mem_limit: ${DEMYX_YML_MEM}
+    cpus: ${DEMYX_CPU:-.5}
+    mem_limit: ${DEMYX_MEM:-512m}
     container_name: demyx_socket
     restart: unless-stopped
     networks:
@@ -65,11 +65,11 @@ services:
       - VOLUMES=1
   demyx:
     image: demyx/demyx
-    cpus: ${DEMYX_YML_CPU}
-    mem_limit: ${DEMYX_YML_MEM}
+    cpus: ${DEMYX_CPU:-.5}
+    mem_limit: ${DEMYX_MEM:-512m}
     container_name: demyx
     restart: unless-stopped
-    hostname: ${DEMYX_YML_HOST}
+    hostname: $DEMYX_HOST
     depends_on: 
       - socket
     networks:
@@ -81,13 +81,13 @@ services:
       - demyx_log:/var/log/demyx
     environment:
       - DOCKER_HOST=tcp://demyx_socket:2375
-      - DEMYX_BRANCH="$DEMYX_YML_BRANCH"
-      - DEMYX_MODE="$DEMYX_YML_MODE"
-      - DEMYX_HOST="$DEMYX_YML_HOST"
-      - DEMYX_SSH="$DEMYX_YML_SSH"
+      - DEMYX_BRANCH="$DEMYX_BRANCH"
+      - DEMYX_MODE="$DEMYX_MODE"
+      - DEMYX_HOST="$DEMYX_HOST"
+      - DEMYX_SSH="$DEMYX_SSH"
       - TZ=America/Los_Angeles
     ports:
-      - ${DEMYX_YML_SSH}:2222
+      - ${DEMYX_SSH}:2222
     $DEMYX_YML_LABELS
 volumes:
   demyx:

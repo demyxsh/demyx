@@ -117,12 +117,12 @@ demyx_run() {
     --workdir=/demyx \
     --network=host \
     -v demyx:/demyx \
-    -e DEMYX_YML_CPU="$DEMYX_CHROOT_CPU" \
-    -e DEMYX_YML_MEM="$DEMYX_CHROOT_MEM" \
-    -e DEMYX_YML_BRANCH="$DEMYX_CHROOT_BRANCH" \
-    -e DEMYX_YML_MODE="$DEMYX_CHROOT_MODE" \
-    -e DEMYX_YML_HOST="$DEMYX_CHROOT_HOST" \
-    -e DEMYX_YML_SSH="$DEMYX_CHROOT_SSH" \
+    -e DEMYX_CPU="$DEMYX_CHROOT_CPU" \
+    -e DEMYX_MEM="$DEMYX_CHROOT_MEM" \
+    -e DEMYX_BRANCH="$DEMYX_CHROOT_BRANCH" \
+    -e DEMYX_MODE="$DEMYX_CHROOT_MODE" \
+    -e DEMYX_HOST="$DEMYX_CHROOT_HOST" \
+    -e DEMYX_SSH="$DEMYX_CHROOT_SSH" \
     demyx/demyx
 
     demyx_compose up -d --force-recreate --remove-orphans
