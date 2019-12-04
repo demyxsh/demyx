@@ -89,6 +89,9 @@ demyx_stack() {
             --monitor=false)
                 DEMYX_STACK_MONITOR=false
                 ;;
+            --revert)
+                DEMYX_STACK_REVERT=1
+                ;;
             --telemetry|--telemetry=true)
                 DEMYX_STACK_TELEMETRY=true
                 ;;
