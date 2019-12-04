@@ -954,8 +954,7 @@ demyx_config() {
                     demyx_echo "Restarting NGINX"
                     demyx_execute docker exec -t "$DEMYX_APP_NX_CONTAINER" sh -c "rm -rf /tmp/nginx-cache; sudo nginx -c /demyx/wp.conf -s reload"
                 elif [ "$DEMYX_CONFIG_RESTART" = php ]; then
-                    demyx_echo "Restarting php-fpm"
-                    demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "pkill php-fpm"
+                    demyx compose "$DEMYX_APP_DOMAIN" up -d --force-recreate wp_"$DEMYX_APP_ID"
                 fi
             fi
             if [[ "$DEMYX_CONFIG_SFTP" = true ]]; then
