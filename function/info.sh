@@ -158,11 +158,13 @@ demyx_info() {
         DEMYX_INFO_HOST="$(hostname)"
         DEMYX_INFO_MODE="$(demyx_get_mode)"
         DEMYX_INFO_WP_COUNT="$(find "$DEMYX_WP" -mindepth 1 -maxdepth 1 -type d | wc -l)"
-        DEMYX_INFO_DISK_USED="$(df -h /demyx | sed '1d' | awk '{print $3}')"
-        DEMYX_INFO_DISK_TOTAL="$(df -h /demyx | sed '1d' | awk '{print $2}')"
-        DEMYX_INFO_DISK_PERCENTAGE="$(df -h /demyx | sed '1d' | awk '{print $5}')"
-        DEMYX_INFO_MEMORY_USED="$(free -m | sed '1d' | sed '2d' | awk '{print $3}')"
-        DEMYX_INFO_MEMORY_TOTAL="$(free -m | sed '1d' | sed '2d' | awk '{print $2}')"
+        DEMYX_INFO_DF="$(df -h /demyx)"
+        DEMYX_INFO_DISK_USED="$(echo "$DEMYX_INFO_DF" | sed '1d' | awk '{print $3}')"
+        DEMYX_INFO_DISK_TOTAL="$(echo "$DEMYX_INFO_DF" | sed '1d' | awk '{print $2}')"
+        DEMYX_INFO_DISK_PERCENTAGE="$(echo "$DEMYX_INFO_DF" | sed '1d' | awk '{print $5}')"
+        DEMYX_INFO_MEMORY="$(free -m)"
+        DEMYX_INFO_MEMORY_USED="$(echo "$DEMYX_INFO_MEMORY" | sed '1d' | sed '2d' | awk '{print $3}')"
+        DEMYX_INFO_MEMORY_TOTAL="$(echo "$DEMYX_INFO_MEMORY" | sed '1d' | sed '2d' | awk '{print $2}')"
         DEMYX_INFO_UPTIME="$(uptime | awk -F '[,]' '{print $1}' | awk -F '[up]' '{print $3}' | sed 's|^.||')"
         DEMYX_INFO_LOAD_AVERAGE="$(cat /proc/loadavg | awk '{print $1 " " $2 " " $3}')"
 
@@ -170,7 +172,7 @@ demyx_info() {
             DEMYX_INFO_CONTAINER_RUNNING="$(/usr/local/bin/docker ps -q | wc -l)"
             DEMYX_INFO_CONTAINER_DEAD="$(/usr/local/bin/docker ps -q --filter "status=exited" | wc -l)"
         fi
-
+        
         if [[ -n "$DEMYX_INFO_JSON" ]]; then 
             DEMYX_INFO_SYSTEM_JSON='{'
             DEMYX_INFO_SYSTEM_JSON+='"hostname": "'$DEMYX_INFO_HOST'",'
