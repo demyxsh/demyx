@@ -145,6 +145,20 @@ demyx_stack() {
             demyx stack refresh
         fi
     elif [[ "$DEMYX_STACK_SELECT" = refresh ]]; then
+        until [[ "$(docker inspect demyx_socket | jq -r '.[].State.Running')" = true ]]
+        do
+            if [[ "$(docker inspect demyx_socket | jq -r '.[].State.Running')" = false ]]; then 
+                demyx_echo 'Stopping socket container'
+                demyx_execute docker stop demyx_socket; \
+                    docker rm -f demyx_socket
+            fi
+
+            demyx_echo 'Starting socket container'
+            demyx_execute demyx_socket
+            
+            sleep 1
+        done
+
         demyx_echo 'Backing up stack directory as /demyx/backup/stack.tgz'
         demyx_execute tar -czf /demyx/backup/stack.tgz -C /demyx/app stack
 
@@ -153,6 +167,10 @@ demyx_stack() {
 
         demyx_echo 'Refreshing stack env and yml'
         demyx_execute demyx_stack_env; demyx_stack_yml
+
+        # Will remove this in January 1st, 2020
+        demyx_echo 'Setting proper permission for acme.json'
+        demyx_execute docker run --user=root -it --rm -v demyx_traefik:/demyx demyx/utilities "chmod 600 /demyx/acme.json; chown -R demyx:demyx /demyx"
 
         demyx compose stack up -d --remove-orphans
     elif [[ "$DEMYX_STACK_SELECT" = upgrade ]]; then
