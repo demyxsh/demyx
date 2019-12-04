@@ -213,6 +213,23 @@ demyx_get_mode() {
         echo production
     fi
 }
+demyx_socket() {
+    docker run -d \
+    --privileged \
+    --name=demyx_socket \
+    --network=demyx_socket \
+    --cpus="$DEMYX_CPU" \
+    --memory="$DEMYX_MEM" \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    -e CONTAINERS=1 \
+    -e EXEC=1 \
+    -e IMAGES=1 \
+    -e INFO=1 \
+    -e NETWORKS=1 \
+    -e POST=1 \
+    -e VOLUMES=1 \
+    demyx/docker-socket-proxy 2>/dev/null
+}
 
 if [[ "$(demyx_check_docker_sock)" = true ]]; then
     # Global environment variables
