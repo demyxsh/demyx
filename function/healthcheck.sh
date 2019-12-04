@@ -38,8 +38,12 @@ demyx_healthcheck() {
                         fi
                     fi
                 else
-                    [[ -f "$DEMYX_WP"/"$i"/.healthcheck ]] && demyx_execute -v rm "$DEMYX_WP"/"$i"/.healthcheck
-                    [[ -f "$DEMYX_WP"/"$i"/.healthcheck-lock ]] && demyx_execute -v rm "$DEMYX_WP"/"$i"/.healthcheck-lock
+                    if [[ -f "$DEMYX_WP"/"$i"/.healthcheck ]]; then
+                        demyx_execute -v rm "$DEMYX_WP"/"$i"/.healthcheck
+                    fi
+                    if [[ -f "$DEMYX_WP"/"$i"/.healthcheck-lock ]]; then
+                        demyx_execute -v rm "$DEMYX_WP"/"$i"/.healthcheck-lock
+                    fi
                 fi
             fi
         done
