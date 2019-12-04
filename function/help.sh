@@ -206,6 +206,7 @@ demyx_help() {
         echo "            --monitor         Turns on/off auto scaling globally"
         echo "            --false           Passes off flag"
         echo "            --telemetry       Pings to demyx.sh server to count active Demyx install"
+        echo "            --revert          This flag is only used with refresh, it reverts the yml file back to using docker.sock directly"
         echo "            --true            Passes on flag"
         echo
     elif [[ "$DEMYX_HELP" = update ]]; then
