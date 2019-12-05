@@ -194,6 +194,7 @@ elif [[ "$DEMYX_CHROOT" = update ]]; then
         docker pull demyx/utilities
         docker pull demyx/wordpress
         docker pull demyx/wordpress:cli
+        docker pull phpmyadmin/phpmyadmin
     fi
 
     docker run -t --user=root --privileged --rm -v /usr/local/bin:/usr/local/bin demyx/utilities demyx-chroot

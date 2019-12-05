@@ -35,21 +35,21 @@ while :; do
 done
 
 if [[ -z "$DEMYX_INSTALL_SKIP_CHECKS" ]]; then
+    docker pull demyx/browsersync
+    docker pull demyx/code-server:wp
     docker pull demyx/demyx
+    docker pull demyx/docker-compose
+    docker pull demyx/docker-socket-proxy
+    docker pull demyx/logrotate
+    docker pull demyx/mariadb:edge
     docker pull demyx/nginx
+    docker pull demyx/ouroboros
+    docker pull demyx/ssh
+    docker pull demyx/traefik
+    docker pull demyx/utilities
     docker pull demyx/wordpress
     docker pull demyx/wordpress:cli
-    docker pull demyx/wordpress:bedrock
-    docker pull demyx/code-server:wp
-    docker pull demyx/docker-compose
-    docker pull demyx/logrotate
-    docker pull demyx/mariadb
-    docker pull demyx/ssh
-    docker pull demyx/utilities
     docker pull phpmyadmin/phpmyadmin
-    docker pull pyouroboros/ouroboros
-    docker pull traefik
-    docker network create demyx
 fi
 
 echo -e "\e[34m[INFO]\e[39m Enter top level domain for Traefik dashboard"
