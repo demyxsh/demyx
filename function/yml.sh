@@ -204,6 +204,7 @@ demyx_stack_yml() {
         DEMYX_YML_TRAEFIK_ENVIRONMENT="- TRAEFIK_ENTRYPOINTS_HTTP_ADDRESS=:80
                     - TRAEFIK_ENTRYPOINTS_HTTPS_ADDRESS=:443"
         DEMYX_YML_TRAEFIK_SOCKET="- /var/run/docker.sock:/var/run/docker.sock:ro"
+        DEMYX_YML_OUROBOROS_IMAGE=pyouroboros/ouroboros
         DEMYX_YML_OUROBOROS_VOLUME="volumes:
                     - /var/run/docker.sock:/var/run/docker.sock:ro"
     else
@@ -212,6 +213,7 @@ demyx_stack_yml() {
                     - 80:8081
                     - 443:8082"
         DEMYX_YML_TRAEFIK_ENVIRONMENT="- TRAEFIK_PROVIDERS_DOCKER_ENDPOINT=tcp://demyx_socket:2375"
+        DEMYX_YML_OUROBOROS_IMAGE=demyx/ouroboros
         DEMYX_YML_OUROBOROS_SOCKET="- DOCKER_SOCKETS=tcp://demyx_socket:2375"
         DEMYX_YML_SOCKET_NETWORK="- demyx_socket"
         DEMYX_YML_SOCKET_NETWORK_NAME="demyx_socket:
@@ -221,7 +223,7 @@ demyx_stack_yml() {
     if [[ "$DEMYX_STACK_OUROBOROS" = true ]]; then
         DEMYX_YML_OUROBOROS="ouroboros:
                 container_name: demyx_ouroboros
-                image: pyouroboros/ouroboros
+                image: $DEMYX_YML_OUROBOROS_IMAGE
                 cpus: \${DEMYX_STACK_CPU}
                 mem_limit: \${DEMYX_STACK_MEM}
                 restart: unless-stopped
