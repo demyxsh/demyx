@@ -117,8 +117,14 @@ demyx_compose() {
 }
 demyx_rm() {
     if [[ -n "$DEMYX_CHROOT_DEMYX_CHECK" ]]; then
-        demyx_compose stop
-        demyx_compose rm -f
+        DEMYX_CHROOT_COMPOSE_UP_CHECK="$(docker inspect demyx | grep com.docker.compose)"
+        if [[ -n "$DEMYX_CHROOT_COMPOSE_UP_CHECK" ]]; then
+            demyx_compose stop
+            demyx_compose rm -f
+        else
+            docker stop demyx
+            docker rm -f demyx
+        fi
     fi
 }
 demyx_run() {
