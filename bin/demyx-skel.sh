@@ -5,7 +5,7 @@
 source /etc/demyx/.config
 
 # Initialize files/directories
-if [[ -z "$(ls -A "$DEMYX_APP")" ]]; then
+if [[ ! -d "$DEMYX_APP" ]]; then
     echo "[demyx] initialize files/directories..."
     mkdir -p "$DEMYX_APP"/html
     mkdir -p "$DEMYX_APP"/php
