@@ -93,6 +93,14 @@ done
 DEMYX_CHROOT_DEMYX_CHECK="$(echo "$DEMYX_CHROOT_DOCKER_PS" | awk '{print $NF}' | grep -w demyx)"
 DEMYX_CHROOT_SOCKET_CHECK="$(echo "$DEMYX_CHROOT_DOCKER_PS" | awk '{print $NF}' | grep -w demyx_socket)"
 
+demyx_until() {
+    if [[ "$DEMYX_CHROOT_MODE" = development ]]; then
+        until docker exec -t demyx stat /demyx | grep -q 111
+        do
+            sleep 1
+        done
+    fi
+}
 demyx_mode() {
     if [[ "$DEMYX_CHROOT_MODE" = development ]]; then
         docker exec -t --user=root demyx demyx-dev
@@ -129,6 +137,8 @@ demyx_run() {
     demyx/demyx
 
     demyx_compose up -d --force-recreate --remove-orphans
+
+    demyx_until
 }
 
 if [[ "$DEMYX_CHROOT" = command ]]; then
