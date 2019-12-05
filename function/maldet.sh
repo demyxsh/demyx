@@ -11,10 +11,12 @@ demyx_maldet() {
         echo -e "\e[34m[INFO]\e[39m Scanning has initiated, this may take a while ... "
         if [[ "$3" = db ]]; then
             demyx_execute -v docker run -it --rm \
+            --user=root \
             --volumes-from "$DEMYX_APP_DB_CONTAINER" \
             demyx/utilities demyx-maldet db
         else
             demyx_execute -v docker run -it --rm \
+            --user=root \
             --volumes-from "$DEMYX_APP_WP_CONTAINER" \
             demyx/utilities demyx-maldet wp
         fi
