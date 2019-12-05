@@ -148,8 +148,10 @@ demyx_stack() {
             demyx stack refresh
         fi
     elif [[ "$DEMYX_STACK_SELECT" = refresh ]]; then
-        demyx_echo 'Backing up stack directory as /demyx/backup/stack.tgz'
-        demyx_execute tar -czf /demyx/backup/stack.tgz -C /demyx/app stack
+        if [[ -d "$DEMYX_STACK" ]]; then
+            demyx_echo 'Backing up stack directory as /demyx/backup/stack.tgz'
+            demyx_execute tar -czf /demyx/backup/stack.tgz -C /demyx/app stack
+        fi
 
         source "$DEMYX_FUNCTION"/env.sh
         source "$DEMYX_FUNCTION"/yml.sh
