@@ -419,8 +419,6 @@ demyx_config() {
                     sed -i "s|DEMYX_APP_CDN=.*|DEMYX_APP_CDN=false|g" "$DEMYX_APP_PATH"/.env
             fi
             if [[ -n "$DEMYX_CONFIG_CLEAN" ]]; then
-                demyx_app_is_up
-
                 if [[ -z "$DEMYX_CONFIG_NO_BACKUP" ]]; then
                     demyx backup "$DEMYX_APP_DOMAIN"
                 fi
