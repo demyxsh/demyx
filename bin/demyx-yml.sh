@@ -23,7 +23,7 @@ if [[ -n "$DEMYX_YML_GET_STACK_ENV" ]]; then
     if [[ "$DEMYX_YML_DOMAIN" ]]; then
         DEMYX_YML_LABELS="labels:
       - \"traefik.enable=true\"
-      - \"traefik.http.routers.demyx.rule=Host(\`\$DEMYX_YML_DOMAIN\`)\"
+      - \"traefik.http.routers.demyx.rule=Host(\`\${DEMYX_YML_DOMAIN}\`)\"
       - \"traefik.http.routers.demyx.entrypoints=https\"
       - \"traefik.http.routers.demyx.tls.certresolver=demyx\"
       - \"traefik.http.routers.demyx.service=demyx\"
