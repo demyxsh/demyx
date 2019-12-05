@@ -43,7 +43,7 @@ Demyx is a Docker image that automates and manages WordPress installations. Trae
 
 ### Install
 ```
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/demyxco/demyx/master/install.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/demyxco/demyx/master/install.sh)"
 ```
 
 ### Getting Started
