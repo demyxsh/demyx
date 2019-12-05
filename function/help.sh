@@ -201,7 +201,7 @@ demyx_help() {
         echo "            --cf-api-key      Required Cloudflare api key for --cloudflare"
         echo "            --cpu             Set the stack's container CPU usage, --cpu=null to remove cap"
         echo "            --healthcheck     Turns on/off healthcheck globally"
-        echo "            --ignore          Used by Ouroboros to ignore updating images, enter container name or off to disable"
+        echo "            --ignore          Used by Ouroboros to ignore updating images, enter container name(s) or false to disable"
         echo "            --mem             Set the stack's container MEM usage, --mem=null to remove cap"
         echo "            --monitor         Turns on/off auto scaling globally"
         echo "            --false           Passes off flag"
