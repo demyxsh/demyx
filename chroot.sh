@@ -3,7 +3,6 @@
 # https://demyx.sh
 #
 
-DEMYX_CHROOT_DOCKER_PS="$(docker ps)"
 DEMYX_CHROOT_HOST="$(hostname)"
 DEMYX_CHROOT_BRANCH=stable
 DEMYX_CHROOT_MODE=production
@@ -90,6 +89,7 @@ while :; do
     shift
 done
 
+DEMYX_CHROOT_DOCKER_PS="$(docker ps)"
 DEMYX_CHROOT_DEMYX_CHECK="$(echo "$DEMYX_CHROOT_DOCKER_PS" | awk '{print $NF}' | grep -w demyx)"
 DEMYX_CHROOT_SOCKET_CHECK="$(echo "$DEMYX_CHROOT_DOCKER_PS" | awk '{print $NF}' | grep -w demyx_socket)"
 
