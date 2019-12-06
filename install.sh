@@ -1,7 +1,10 @@
-#!/bin/bash
+#!/bin/sh
 # Demyx
 # https://demyx.sh
+set -euo pipefail
 
+# Set default variables
+DEMYX_INSTALL_SKIP_CHECKS=
 DEMYX_DOCKER_CHECK="$(which docker)"
 DEMYX_SUDO_CHECK="$(id -u)"
 
@@ -16,7 +19,7 @@ if [[ ! -f "$DEMYX_DOCKER_CHECK" ]]; then
 fi
 
 while :; do
-    case "$1" in
+    case "${1:-}" in
         --skip-checks)
             DEMYX_INSTALL_SKIP_CHECKS=1
             ;;
