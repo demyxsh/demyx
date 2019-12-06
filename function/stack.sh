@@ -163,7 +163,7 @@ demyx_stack() {
         demyx_echo 'Setting proper permission for acme.json'
         demyx_execute docker run --user=root -it --rm -v demyx_traefik:/demyx demyx/utilities "chmod 600 /demyx/acme.json; chown -R demyx:demyx /demyx"
 
-        demyx compose stack fr
+        demyx compose stack up -d --remove-orphans
     elif [[ "$DEMYX_STACK_SELECT" = upgrade ]]; then
         if [[ "$DEMYX_CHECK_TRAEFIK" = 1 ]]; then
             echo -en "\e[33m"
