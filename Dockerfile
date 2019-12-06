@@ -87,10 +87,21 @@ RUN set -ex; \
     \
     # Symlink demyx command history with root
     ln -s /home/demyx/.zsh_history /root; \
-    # Empty out Alpine Linux's MOTD and configure ours
+    \
+    # Empty out Alpine Linux's MOTD and use demyx motd
     echo "" > /etc/motd; \
-    echo 'cd /demyx && demyx motd' >> /root/.zshrc; \
-    echo 'cd /demyx && demyx motd' >> /home/demyx/.zshrc
+    echo 'demyx motd' >> /root/.zshrc; \
+    echo 'demyx motd' >> /home/demyx/.zshrc; \
+    \
+    # Lockdown zshrc
+    mv /home/demyx/.zshrc /etc/demyx; \
+    echo "alias /bin/busybox=\"/bin/busybox \"" >> /etc/demyx/.zshrc; \
+    echo "alias busybox=\"busybox \"" >> /etc/demyx/.zshrc; \
+    echo "alias wget=\"echo 'zsh: permission denied: wget'\"" >> /etc/demyx/.zshrc; \
+    \
+    chown root:root /etc/demyx/.zshrc; \
+    chown -R root:root /home/demyx/.oh-my-zsh; \
+    ln -sf /etc/demyx/.zshrc /home/demyx/.zshrc
 
 # Allow demyx user to execute only one script and allow usage of environment variables
 RUN set -ex; \
