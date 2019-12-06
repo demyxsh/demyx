@@ -51,7 +51,6 @@ services:
     container_name: demyx_socket
     restart: unless-stopped
     networks:
-      - demyx
       - demyx_socket
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
