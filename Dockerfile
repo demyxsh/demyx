@@ -122,7 +122,7 @@ RUN set -ex; \
     echo "0 */6 * * * /usr/local/bin/demyx cron six-hour" >> /etc/crontabs/demyx; \
     echo "0 0 * * * /usr/local/bin/demyx cron daily" >> /etc/crontabs/demyx; \
     echo "0 0 * * 0 /usr/local/bin/demyx cron weekly" >> /etc/crontabs/demyx; \
-    mkdir -p /var/log/demyx; \
+    install -d -m 0755 -o demyx -g demyx /var/log/demyx; \
     touch /var/log/demyx/demyx.log; \
     chown -R demyx:demyx /var/log/demyx
 
