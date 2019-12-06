@@ -23,7 +23,6 @@ RUN set -ex; \
     curl \
     dumb-init \
     git \
-    gnupg \
     htop \
     jq \
     nano \
