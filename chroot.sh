@@ -212,7 +212,7 @@ elif [ "$DEMYX_CHROOT" = update ]; then
 
     docker run -t --user=root --privileged --rm -v /usr/local/bin:/usr/local/bin demyx/utilities demyx-chroot
 
-    echo -e "\e[32m[SUCCESS]\e[39m Successfully updated"
+    printf "\e[32m[SUCCESS]\e[39m Successfully updated\n"
 else
     if [ -n "$DEMYX_CHROOT_DEMYX_CHECK" ]; then
         DEMYX_MODE_CHECK="$(docker exec -t demyx zsh -c "[ -f /tmp/demyx-dev ] && echo 'development'")"
