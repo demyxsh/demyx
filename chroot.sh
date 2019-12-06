@@ -142,8 +142,7 @@ demyx_run() {
     -e DEMYX_SSH="$DEMYX_CHROOT_SSH" \
     demyx/demyx
 
-    demyx_compose up -d --force-recreate --remove-orphans
-
+    demyx_compose up -d
     #demyx_until
 }
 
