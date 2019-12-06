@@ -13,4 +13,8 @@ find /var/log/demyx -type f -print0 | xargs -0 chmod 0644
 chown -R demyx:demyx /demyx
 chown -R demyx:demyx /home/demyx
 chown -R demyx:demyx /var/log/demyx
+
+# Lockdown
+ln -sf /etc/demyx/.zshrc /home/demyx/.zshrc
+chown -R root:root /home/demyx/.oh-my-zsh
 chmod -R a=X /demyx
