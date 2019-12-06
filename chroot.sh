@@ -3,6 +3,7 @@
 # https://demyx.sh
 set -euo pipefail
 
+# Set default variables
 DEMYX_CHROOT_HOST="$(hostname)"
 DEMYX_CHROOT_BRANCH=stable
 DEMYX_CHROOT_MODE=production
@@ -11,9 +12,13 @@ DEMYX_CHROOT_SSH=2222
 DEMYX_CHROOT_API=false
 DEMYX_CHROOT_CPU=.50
 DEMYX_CHROOT_MEM=512m
+DEMYX_CHROOT=
+DEMYX_CHROOT_NC=
+DEMYX_CHROOT_ALL=
+DEMYX_CHROOT_MODE=
 
 while :; do
-    case "$1" in
+    case "${1:-}" in
         cmd)
             DEMYX_CHROOT=command
             shift
