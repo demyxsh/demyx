@@ -37,7 +37,7 @@ demyx_cron() {
     if [[ "$DEMYX_CRON" = daily ]]; then
         if [[ "$DEMYX_STACK_TELEMETRY" = true ]]; then
             echo "[$(date +%F-%T)] CROND: TELEMETRY"
-            demyx_execute -v curl -s "https://demyx.sh/?action=active&token=V1VpdGNPcWNDVlZSUDFQdFBaR0Zhdz09OjrnA1h6ZbDFJ2T6MHOwg3p4" > /dev/null
+            demyx_execute -v curl -s "https://demyx.sh/?action=active&token=V1VpdGNPcWNDVlZSUDFQdFBaR0Zhdz09OjrnA1h6ZbDFJ2T6MHOwg3p4" -o /dev/null
         fi
 
         # Ouroboros is known to crash, so stop/rm it and have the updater bring it back up 
