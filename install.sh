@@ -1,7 +1,7 @@
 #!/bin/sh
 # Demyx
 # https://demyx.sh
-set -euo pipefail
+set -eu pipefail
 
 # Set default variables
 DEMYX_INSTALL_SKIP_CHECKS=
@@ -56,28 +56,28 @@ if [[ -z "$DEMYX_INSTALL_SKIP_CHECKS" ]]; then
 fi
 
 echo -e "\e[34m[INFO]\e[39m Enter top level domain for Traefik dashboard"
-read -rep "Domain: " DEMYX_INSTALL_DOMAIN
+read -rp "Domain: " DEMYX_INSTALL_DOMAIN
 if [[ -z "$DEMYX_INSTALL_DOMAIN" ]]; then
     echo -e "\e[31m[CRITICAL]\e[39m Domain cannot be empty"
     exit 1
 fi
 
 echo -e "\e[34m[INFO\e[39m] Lets Encrypt SSL notifications"
-read -rep "Email: " DEMYX_INSTALL_EMAIL
+read -rp "Email: " DEMYX_INSTALL_EMAIL
 if [[ -z "$DEMYX_INSTALL_EMAIL" ]]; then
     echo -e "\e[31m[CRITICAL]\e[39m Email cannot be empty"
     exit 1
 fi
 
 echo -e "\e[34m[INFO]\e[39m Enter username for basic auth"
-read -rep "Username: " DEMYX_INSTALL_USER
+read -rp "Username: " DEMYX_INSTALL_USER
 if [[ -z "$DEMYX_INSTALL_USER" ]]; then
     echo -e "\e[31m[CRITICAL]\e[39m Username cannot be empty"
     exit 1
 fi
 
 echo -e "\e[34m[INFO]\e[39m Enter password for basic auth"
-read -rep "Password: " DEMYX_INSTALL_PASS
+read -rp "Password: " DEMYX_INSTALL_PASS
 if [[ -z "$DEMYX_INSTALL_PASS" ]]; then
     echo -e "\e[31m[CRITICAL]\e[39m Password cannot be empty"
     exit 1

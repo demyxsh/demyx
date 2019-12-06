@@ -1,7 +1,7 @@
 #!/bin/sh
 # Demyx
 # https://demyx.sh
-set -euo pipefail
+set -eu pipefail
 
 # Set default variables
 DEMYX_CHROOT=
