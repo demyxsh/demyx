@@ -144,7 +144,7 @@ demyx_run() {
 
     demyx_compose up -d --force-recreate --remove-orphans
 
-    demyx_until
+    #demyx_until
 }
 
 if [[ "$DEMYX_CHROOT" = command ]]; then
