@@ -170,6 +170,7 @@ elif [[ "$DEMYX_CHROOT" = help ]]; then
 elif [[ "$DEMYX_CHROOT" = remove ]]; then
     demyx_rm
 elif [[ "$DEMYX_CHROOT" = restart ]]; then
+    demyx_rm
     demyx_run
     demyx_mode
     if [[ -z "$DEMYX_CHROOT_NC" ]]; then
