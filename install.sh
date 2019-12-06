@@ -89,5 +89,8 @@ echo -e "\e[34m[INFO\e[39m] Waiting for demyx container to initialize"
 sleep 5
 demyx cmd install --domain="$DEMYX_INSTALL_DOMAIN" --email="$DEMYX_INSTALL_EMAIL" --user="$DEMYX_INSTALL_USER" --pass="$DEMYX_INSTALL_PASS"
 
+echo -e "\e[34m[INFO\e[39m] Pinging active server to demyx"
+docker run -t --rm demyx/utilities curl -s https://demyx.sh/?action=active&token=V1VpdGNPcWNDVlZSUDFQdFBaR0Zhdz09OjrnA1h6ZbDFJ2T6MHOwg3p4 > /dev/null
+
 echo -e "\e[34m[INFO\e[39m] To SSH into the demyx container, paste your keys in /home/demyx/.ssh/authorized_keys inside the demyx container. Then run on the host OS: demyx restart"
 demyx restart
