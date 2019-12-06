@@ -102,7 +102,7 @@ DEMYX_CHROOT_DEMYX_CHECK="$(echo "$DEMYX_CHROOT_DOCKER_PS" | awk '{print $NF}' |
 DEMYX_CHROOT_SOCKET_CHECK="$(echo "$DEMYX_CHROOT_DOCKER_PS" | awk '{print $NF}' | grep -w demyx_socket || true)"
 
 demyx_until() {
-    if [[ "$DEMYX_CHROOT_MODE" = development ]]; then
+    if [ "$DEMYX_CHROOT_MODE" = development ]; then
         until docker exec -t demyx stat /demyx | grep -q 111
         do
             sleep 1
@@ -110,7 +110,7 @@ demyx_until() {
     fi
 }
 demyx_mode() {
-    if [[ "$DEMYX_CHROOT_MODE" = development ]]; then
+    if [ "$DEMYX_CHROOT_MODE" = development ]; then
         docker exec -t --user=root demyx demyx-dev
     else
         docker exec -t demyx demyx-prod
@@ -126,8 +126,8 @@ demyx_compose() {
 demyx_rm() {
     DEMYX_CHROOT_COMPOSE_UP_CHECK="$(docker inspect demyx | grep com.docker.compose)"
     DEMYX_CHROOT_COMPOSE_UP_SOCKET_CHECK="$(docker inspect demyx_socket | grep com.docker.compose)"
-    if [[ -n "$DEMYX_CHROOT_COMPOSE_UP_CHECK" || -n "$DEMYX_CHROOT_COMPOSE_UP_SOCKET_CHECK" ]]; then
-        if [[ -n "$DEMYX_CHROOT_ALL" ]]; then
+    if [ -n "$DEMYX_CHROOT_COMPOSE_UP_CHECK" || -n "$DEMYX_CHROOT_COMPOSE_UP_SOCKET_CHECK" ]; then
+        if [ -n "$DEMYX_CHROOT_ALL" ]; then
             demyx_compose stop
             demyx_compose rm -f
         else
@@ -158,9 +158,9 @@ demyx_run() {
     #demyx_until
 }
 
-if [[ "$DEMYX_CHROOT" = command ]]; then
+if [ "$DEMYX_CHROOT" = command ]; then
     docker exec -it demyx demyx "$@"
-elif [[ "$DEMYX_CHROOT" = help ]]; then
+elif [ "$DEMYX_CHROOT" = help ]; then
     echo
     echo "demyx <args>          Chroot into the demyx container"
     echo "      cmd             Send demyx commands from host"
@@ -180,19 +180,19 @@ elif [[ "$DEMYX_CHROOT" = help ]]; then
     echo "      --ssh           Override ssh port"
     echo "      --stack         Pulls all demyx images when running demyx update"
     echo
-elif [[ "$DEMYX_CHROOT" = remove ]]; then
+elif [ "$DEMYX_CHROOT" = remove ]; then
     demyx_rm
-elif [[ "$DEMYX_CHROOT" = restart ]]; then
+elif [ "$DEMYX_CHROOT" = restart ]; then
     demyx_rm
     demyx_run
     demyx_mode
-    if [[ -z "$DEMYX_CHROOT_NC" ]]; then
+    if [ -z "$DEMYX_CHROOT_NC" ]; then
         docker exec -it --user="$DEMYX_CHROOT_USER" demyx zsh
     fi
-elif [[ "$DEMYX_CHROOT" = shell ]]; then
+elif [ "$DEMYX_CHROOT" = shell ]; then
     docker exec -it --user="$DEMYX_CHROOT_USER" demyx "$@"
-elif [[ "$DEMYX_CHROOT" = update ]]; then
-    if [[ -n "$DEMYX_CHROOT_STACK" ]]; then
+elif [ "$DEMYX_CHROOT" = update ]; then
+    if [ -n "$DEMYX_CHROOT_STACK" ]; then
         docker pull demyx/browsersync
         docker pull demyx/code-server:wp
         docker pull demyx/demyx
@@ -214,18 +214,18 @@ elif [[ "$DEMYX_CHROOT" = update ]]; then
 
     echo -e "\e[32m[SUCCESS]\e[39m Successfully updated"
 else
-    if [[ -n "$DEMYX_CHROOT_DEMYX_CHECK" ]]; then
-        DEMYX_MODE_CHECK="$(docker exec -t demyx zsh -c "[[ -f /tmp/demyx-dev ]] && echo 'development'")"
-        if [[ -z "$DEMYX_CHROOT_MODE" ]]; then
+    if [ -n "$DEMYX_CHROOT_DEMYX_CHECK" ]; then
+        DEMYX_MODE_CHECK="$(docker exec -t demyx zsh -c "[ -f /tmp/demyx-dev ] && echo 'development'")"
+        if [ -z "$DEMYX_CHROOT_MODE" ]; then
             DEMYX_CHROOT_MODE="$DEMYX_MODE_CHECK"
         fi
         demyx_mode
-        if [[ -z "$DEMYX_CHROOT_NC" ]]; then
+        if [ -z "$DEMYX_CHROOT_NC" ]; then
             docker exec -it --user="$DEMYX_CHROOT_USER" demyx zsh
         fi
     else
         demyx_run
-        if [[ -z "$DEMYX_CHROOT_NC" ]]; then
+        if [ -z "$DEMYX_CHROOT_NC" ]; then
             docker exec -it --user="$DEMYX_CHROOT_USER" demyx zsh
         fi
     fi
