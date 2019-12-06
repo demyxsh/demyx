@@ -158,6 +158,7 @@ demyx_info() {
         DEMYX_INFO_HOST="$(hostname)"
         DEMYX_INFO_MODE="$(demyx_get_mode)"
         DEMYX_INFO_WP_COUNT="$(find "$DEMYX_WP" -mindepth 1 -maxdepth 1 -type d | wc -l)"
+        DEMYX_INFO_WP_BACKUPS="$([[ -d "$DEMYX_BACKUP_WP" ]] && du -sh "$DEMYX_BACKUP_WP" | awk '{print $1}' || echo 0)"
         DEMYX_INFO_DF="$(df -h /demyx)"
         DEMYX_INFO_DISK_USED="$(echo "$DEMYX_INFO_DF" | sed '1d' | awk '{print $3}')"
         DEMYX_INFO_DISK_TOTAL="$(echo "$DEMYX_INFO_DF" | sed '1d' | awk '{print $2}')"
@@ -181,6 +182,7 @@ demyx_info() {
             DEMYX_INFO_SYSTEM_JSON+='"hostname": "'$DEMYX_INFO_HOST'",'
             DEMYX_INFO_SYSTEM_JSON+='"mode": "'$DEMYX_INFO_MODE'",'
             DEMYX_INFO_SYSTEM_JSON+='"wp_count": "'$DEMYX_INFO_WP_COUNT'",'
+            DEMYX_INFO_SYSTEM_JSON+='"wp_backups": "'$DEMYX_INFO_WP_BACKUPS'",'
             DEMYX_INFO_SYSTEM_JSON+='"disk_used": "'$DEMYX_INFO_DISK_USED'",'
             DEMYX_INFO_SYSTEM_JSON+='"disk_total": "'$DEMYX_INFO_DISK_TOTAL'",'
             DEMYX_INFO_SYSTEM_JSON+='"disk_total_percentage": "'$DEMYX_INFO_DISK_PERCENTAGE'",'
@@ -198,6 +200,7 @@ demyx_info() {
             PRINT_TABLE+="HOSTNAME^ $DEMYX_INFO_HOST\n"
             PRINT_TABLE+="MODE^ $DEMYX_INFO_MODE\n"
             PRINT_TABLE+="WORDPRESS APPS^ $DEMYX_INFO_WP_COUNT\n"
+            PRINT_TABLE+="WORDPRESS BACKUPS^ $DEMYX_INFO_WP_BACKUPS\n"
             PRINT_TABLE+="DISK USED^ $DEMYX_INFO_DISK_USED\n"
             PRINT_TABLE+="DISK TOTAL^ $DEMYX_INFO_DISK_TOTAL\n"
             PRINT_TABLE+="DISK TOTAL PERCENTAGE^ $DEMYX_INFO_DISK_PERCENTAGE\n"
