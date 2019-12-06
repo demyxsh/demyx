@@ -113,13 +113,8 @@ RUN set -ex; \
     echo 'Defaults env_keep +="DOCKER_HOST"' >> /etc/sudoers.d/demyx; \
     echo 'Defaults env_keep +="TZ"' >> /etc/sudoers.d/demyx; \
     \
-    mkdir /demyx; \
-    ln -s /demyx /home/demyx; \
-    \
-    echo 'export GPG_TTY=$(tty)' >> /root/.zshrc; \
-    echo 'export GPG_TTY=$(tty)' >> /home/demyx/.zshrc; \
-    \
-    chown -R demyx:demyx /demyx
+    install -d -m 0755 -o demyx -g demyx /demyx; \
+    ln -s /demyx /home/demyx
 
 # Set cron and log
 RUN set -ex; \
