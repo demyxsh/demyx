@@ -161,7 +161,7 @@ demyx_stack() {
 
         # Will remove this in January 1st, 2020
         demyx_echo 'Setting proper permission for acme.json'
-        demyx_execute docker run --user=root -it --rm -v demyx_traefik:/demyx demyx/utilities "chmod 600 /demyx/acme.json; chown -R demyx:demyx /demyx"
+        demyx_execute docker run --user=root -it --rm -v demyx_traefik:/demyx demyx/utilities sh -c "chmod 600 /demyx/acme.json; chown -R demyx:demyx /demyx"
 
         demyx compose stack up -d --remove-orphans
     elif [[ "$DEMYX_STACK_SELECT" = upgrade ]]; then
