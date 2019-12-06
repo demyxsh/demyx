@@ -146,7 +146,9 @@ RUN set -ex; \
 # Finalize
 RUN set -ex; \
     # Lockdown these binaries
-    rm -f /usr/bin/wget; \
+    rm -f /bin/sh; \
+    rm -f /bin/ash; \
+    chmod o-x /bin/bash; \
     chmod o-x /usr/bin/curl; \
     chmod o-x /usr/local/bin/docker; \
     chown root:root /usr/local/bin/docker; \
