@@ -1,8 +1,13 @@
-#!/bin/bash
+#!/bin/sh
 # Demyx
 # https://demyx.sh
-#
+set -euo pipefail
 
+# Set default variables
+DEMYX_CHROOT=
+DEMYX_CHROOT_NC=
+DEMYX_CHROOT_ALL=
+DEMYX_CHROOT_STACK=
 DEMYX_CHROOT_HOST="$(hostname)"
 DEMYX_CHROOT_BRANCH=stable
 DEMYX_CHROOT_MODE=production
@@ -13,7 +18,7 @@ DEMYX_CHROOT_CPU=.50
 DEMYX_CHROOT_MEM=512m
 
 while :; do
-    case "$1" in
+    case "${1:-}" in
         cmd)
             DEMYX_CHROOT=command
             shift
@@ -93,8 +98,8 @@ while :; do
 done
 
 DEMYX_CHROOT_DOCKER_PS="$(docker ps)"
-DEMYX_CHROOT_DEMYX_CHECK="$(echo "$DEMYX_CHROOT_DOCKER_PS" | awk '{print $NF}' | grep -w demyx)"
-DEMYX_CHROOT_SOCKET_CHECK="$(echo "$DEMYX_CHROOT_DOCKER_PS" | awk '{print $NF}' | grep -w demyx_socket)"
+DEMYX_CHROOT_DEMYX_CHECK="$(echo "$DEMYX_CHROOT_DOCKER_PS" | awk '{print $NF}' | grep -w demyx || true)"
+DEMYX_CHROOT_SOCKET_CHECK="$(echo "$DEMYX_CHROOT_DOCKER_PS" | awk '{print $NF}' | grep -w demyx_socket || true)"
 
 demyx_until() {
     if [[ "$DEMYX_CHROOT_MODE" = development ]]; then
@@ -210,7 +215,7 @@ elif [[ "$DEMYX_CHROOT" = update ]]; then
     echo -e "\e[32m[SUCCESS]\e[39m Successfully updated"
 else
     if [[ -n "$DEMYX_CHROOT_DEMYX_CHECK" ]]; then
-        DEMYX_MODE_CHECK="$(docker exec -t demyx sh -c "[[ -f /tmp/demyx-dev ]] && echo 'development'")"
+        DEMYX_MODE_CHECK="$(docker exec -t demyx zsh -c "[[ -f /tmp/demyx-dev ]] && echo 'development'")"
         if [[ -z "$DEMYX_CHROOT_MODE" ]]; then
             DEMYX_CHROOT_MODE="$DEMYX_MODE_CHECK"
         fi
