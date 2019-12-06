@@ -70,6 +70,12 @@ demyx_stack() {
             --healthcheck=false)
                 DEMYX_STACK_HEALTHCHECK=false
                 ;;
+            --healthcheck-timeout=?*)
+                DEMYX_STACK_HEALTHCHECK_TIMEOUT="${2#*=}"
+                ;;
+            --healthcheck-timeout=)
+                demyx_die '"--healthcheck-timeout" cannot be empty'
+                ;;
             --ignore=?*)
                 DEMYX_STACK_IGNORE="${2#*=}"
                 ;;
@@ -247,6 +253,10 @@ demyx_stack() {
         elif [[ "$DEMYX_STACK_HEALTHCHECK" = false ]]; then
             demyx_echo 'Turning off stack healthcheck'
             demyx_execute sed -i 's/DEMYX_STACK_HEALTHCHECK=.*/DEMYX_STACK_HEALTHCHECK=false/g' "$DEMYX_STACK"/.env
+        fi
+        if [[ -n "$DEMYX_STACK_HEALTHCHECK_TIMEOUT" ]]; then
+            demyx_echo 'Updating healthcheck timeout'
+            demyx_execute sed -i "s|DEMYX_STACK_HEALTHCHECK_TIMEOUT=.*|DEMYX_STACK_HEALTHCHECK_TIMEOUT=$DEMYX_STACK_HEALTHCHECK_TIMEOUT|g" "$DEMYX_STACK"/.env
         fi
         if [[ "$DEMYX_STACK_MONITOR" = true ]]; then
             demyx_echo 'Turning on stack monitor'

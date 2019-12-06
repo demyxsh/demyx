@@ -17,7 +17,7 @@ demyx_healthcheck() {
                 [[ -n "$DEMYX_APP_NX_CONTAINER" ]] && DEMYX_HEALTHCHECK_CONTAINER="$DEMYX_APP_NX_CONTAINER"
                 [[ "$DEMYX_APP_HEALTHCHECK" = false ]] && continue
 
-                DEMYX_HEALTHCHECK_STATUS="$(curl -sSLf -m 5 "$DEMYX_HEALTHCHECK_CONTAINER" > /dev/null; echo "$?")"
+                DEMYX_HEALTHCHECK_STATUS="$(curl -sSLf -m "$DEMYX_STACK_HEALTHCHECK_TIMEOUT" "$DEMYX_HEALTHCHECK_CONTAINER" > /dev/null; echo "$?")"
 
                 if [[ "$DEMYX_HEALTHCHECK_STATUS" != 0 ]]; then
                     if [[ ! -f "$DEMYX_WP"/"$i"/.healthcheck ]]; then
