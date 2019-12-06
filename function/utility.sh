@@ -119,6 +119,6 @@ demyx_utility() {
         shift
         DEMYX_UTILITY_EXEC="$@"
         [[ -z "$DEMYX_UTILITY_EXEC" ]] && demyx_die 'demyx util needs a command'
-        docker run -it --rm demyx/utilities "$DEMYX_UTILITY_EXEC"
+        docker run -it --rm demyx/utilities sh -c "$DEMYX_UTILITY_EXEC"
     fi
 }
