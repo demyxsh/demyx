@@ -33,6 +33,23 @@ RUN set -ex; \
     util-linux \
     zsh
 
+# Copy files
+COPY . /etc/demyx
+# demyx api
+COPY --from=demyx_api /app/shell2http /usr/local/bin
+# ctop
+COPY --from=demyx_ctop /ctop /usr/local/bin/ctop
+
+# Download latest Docker client binary
+RUN set -ex; \
+    export DEMYX_DOCKER_BINARY=$(curl -sL https://api.github.com/repos/docker/docker-ce/releases/latest | grep '"name":' | awk -F '[:]' '{print $2}' | sed -e 's/"//g' | sed -e 's/,//g' | sed -e 's/ //g' | sed -e 's/\r//g'); \
+    # Set fixed version as a fallback if curling fails
+    if [ -z "$DEMYX_DOCKER_BINARY" ]; then export DEMYX_DOCKER_BINARY=18.09.9; fi; \
+    wget https://download.docker.com/linux/static/stable/x86_64/docker-"$DEMYX_DOCKER_BINARY".tgz -qO /tmp/docker-"$DEMYX_DOCKER_BINARY".tgz; \
+    tar -xzf /tmp/docker-"$DEMYX_DOCKER_BINARY".tgz -C /tmp; \
+    mv /tmp/docker/docker /usr/local/bin; \
+    rm -rf /tmp/*
+
 # Create demyx user and configure ssh
 RUN set -ex; \
     addgroup -g 1000 -S demyx; \
@@ -98,23 +115,6 @@ RUN set -ex; \
     mkdir -p /var/log/demyx; \
     touch /var/log/demyx/demyx.log; \
     chown -R demyx:demyx /var/log/demyx
-
-# Copy files
-COPY . /etc/demyx
-# demyx api
-COPY --from=demyx_api /app/shell2http /usr/local/bin
-# ctop
-COPY --from=demyx_ctop /ctop /usr/local/bin/ctop
-
-# Download latest Docker client binary
-RUN set -ex; \
-    export DEMYX_DOCKER_BINARY=$(curl -sL https://api.github.com/repos/docker/docker-ce/releases/latest | grep '"name":' | awk -F '[:]' '{print $2}' | sed -e 's/"//g' | sed -e 's/,//g' | sed -e 's/ //g' | sed -e 's/\r//g'); \
-    # Set fixed version as a fallback if curling fails
-    if [ -z "$DEMYX_DOCKER_BINARY" ]; then export DEMYX_DOCKER_BINARY=18.09.9; fi; \
-    wget https://download.docker.com/linux/static/stable/x86_64/docker-"$DEMYX_DOCKER_BINARY".tgz -qO /tmp/docker-"$DEMYX_DOCKER_BINARY".tgz; \
-    tar -xzf /tmp/docker-"$DEMYX_DOCKER_BINARY".tgz -C /tmp; \
-    mv /tmp/docker/docker /usr/local/bin; \
-    rm -rf /tmp/*
 
 # Sudo wrappers
 RUN set -ex; \
