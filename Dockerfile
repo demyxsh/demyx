@@ -128,17 +128,17 @@ RUN set -ex; \
 
 # Sudo wrappers
 RUN set -ex; \
-    echo '#!/bin/bash' >> /usr/local/bin/demyx; \
+    echo '#!/bin/zsh' >> /usr/local/bin/demyx; \
     echo 'sudo /etc/demyx/demyx.sh "$@"' >> /usr/local/bin/demyx; \
     chmod +x /etc/demyx/demyx.sh; \
     chmod +x /usr/local/bin/demyx; \
     \
-    echo '#!/bin/bash' >> /usr/local/bin/demyx-prod; \
+    echo '#!/bin/zsh' >> /usr/local/bin/demyx-prod; \
     echo 'sudo /etc/demyx/bin/demyx-prod.sh' >> /usr/local/bin/demyx-prod; \
     chmod +x /etc/demyx/bin/demyx-prod.sh; \
     chmod +x /usr/local/bin/demyx-prod; \
     \
-    echo '#!/bin/bash' >> /usr/local/bin/demyx-skel; \
+    echo '#!/bin/zsh' >> /usr/local/bin/demyx-skel; \
     echo 'sudo /etc/demyx/bin/demyx-skel.sh' >> /usr/local/bin/demyx-skel; \
     chmod +x /etc/demyx/bin/demyx-skel.sh; \
     chmod +x /usr/local/bin/demyx-skel
