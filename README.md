@@ -40,6 +40,12 @@ Demyx is a Docker image that automates and manages WordPress installations. Trae
 * Port 80 and 443 must be open
 * CentOS/Fedora/RHEL requires [selinux-dockersock](https://github.com/dpw/selinux-dockersock) or similar fix
 
+### Tested Distros
+- Alpine 3.10 x64
+- Debian 10 x64
+- Ubuntu 19.10 x64
+- CentOS 7.6 x64 (Probably works on Fedora and RHEL)
+
 ### Install
 ```
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/demyxco/demyx/master/install.sh)"
