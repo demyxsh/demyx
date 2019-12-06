@@ -51,7 +51,7 @@ while :; do
             printf '\e[31m[CRITICAL]\e[39m "--cpu" cannot be empty\n'
             exit 1
             ;;
-        --dev)
+        -d|--dev)
             DEMYX_CHROOT_MODE=development
             ;;
         --edge)
@@ -67,7 +67,7 @@ while :; do
         --nc)
             DEMYX_CHROOT_NC=1
             ;;
-        --prod)
+        -p|--prod)
             DEMYX_CHROOT_MODE=production
             ;;
         -r|--root)
@@ -171,11 +171,11 @@ elif [[ "$DEMYX_CHROOT" = help ]]; then
     echo "      update          Update chroot.sh from GitHub"
     echo "      -a, --all       Targets both demyx and demyx_socket container"
     echo "      --cpu           Set container CPU usage, --cpu=null to remove cap"
-    echo "      --dev           Puts demyx container into development mode"
+    echo "      -d|--dev           Puts demyx container into development mode"
     echo "      --edge          Use latest code updates from git repo"
     echo "      --mem           Set container MEM usage, --mem=null to remove cap"
     echo "      --nc            Starts demyx containr but prevent chrooting into container"
-    echo "      --prod          Puts demyx container into production mode"
+    echo "      -p|--prod          Puts demyx container into production mode"
     echo "      -r, --root      Execute as root user"
     echo "      --ssh           Override ssh port"
     echo "      --stack         Pulls all demyx images when running demyx update"
