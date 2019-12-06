@@ -126,7 +126,6 @@ demyx_table() {
     printTable '^' "$@"
 }
 demyx_permission() {
-    [[ -f "$DEMYX"/.env ]] && source "$DEMYX"/.env
     chown -R demyx:demyx "$DEMYX"
     chown -R demyx:demyx "$DEMYX_LOG"
 }
