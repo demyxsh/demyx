@@ -39,7 +39,6 @@ Demyx is a Docker image that automates and manages WordPress installations. Trae
 * Dedicated/KVM server with Linux
 * Port 80 and 443 must be open
 * CentOS/Fedora/RHEL requires [selinux-dockersock](https://github.com/dpw/selinux-dockersock) or similar fix
-* Primary domain must be pointed to server's IP and must have a wildcard CNAME subdomain
 
 ### Install
 ```
