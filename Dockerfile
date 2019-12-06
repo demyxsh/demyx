@@ -95,6 +95,8 @@ RUN set -ex; \
     \
     # Lockdown zshrc
     mv /home/demyx/.zshrc /etc/demyx; \
+    echo "alias /bin/ash=\"echo 'zsh: permission denied: ash'\"" >> /etc/demyx/.zshrc; \
+    echo "alias ash=\"echo 'zsh: permission denied: ash'\"" >> /etc/demyx/.zshrc; \
     echo "alias /bin/busybox=\"/bin/busybox \"" >> /etc/demyx/.zshrc; \
     echo "alias busybox=\"busybox \"" >> /etc/demyx/.zshrc; \
     echo "alias wget=\"echo 'zsh: permission denied: wget'\"" >> /etc/demyx/.zshrc; \
@@ -147,7 +149,6 @@ RUN set -ex; \
 RUN set -ex; \
     # Lockdown these binaries
     rm -f /bin/sh; \
-    rm -f /bin/ash; \
     chmod o-x /bin/bash; \
     chmod o-x /usr/bin/curl; \
     chmod o-x /usr/local/bin/docker; \
