@@ -36,6 +36,9 @@ while :; do
         update)
             DEMYX_CHROOT=update
             ;;
+        -a|--all)
+            DEMYX_CHROOT_ALL=1
+            ;;
         --cpu=null|--cpu=?*)
             DEMYX_CHROOT_CPU=${1#*=}
             ;;
@@ -116,15 +119,19 @@ demyx_compose() {
     demyx/docker-compose "$@"
 }
 demyx_rm() {
-    if [[ -n "$DEMYX_CHROOT_DEMYX_CHECK" ]]; then
-        DEMYX_CHROOT_COMPOSE_UP_CHECK="$(docker inspect demyx | grep com.docker.compose)"
-        if [[ -n "$DEMYX_CHROOT_COMPOSE_UP_CHECK" ]]; then
+    DEMYX_CHROOT_COMPOSE_UP_CHECK="$(docker inspect demyx | grep com.docker.compose)"
+    DEMYX_CHROOT_COMPOSE_UP_SOCKET_CHECK="$(docker inspect demyx_socket | grep com.docker.compose)"
+    if [[ -n "$DEMYX_CHROOT_COMPOSE_UP_CHECK" || -n "$DEMYX_CHROOT_COMPOSE_UP_SOCKET_CHECK" ]]; then
+        if [[ -n "$DEMYX_CHROOT_ALL" ]]; then
             demyx_compose stop
             demyx_compose rm -f
         else
-            docker stop demyx
-            docker rm -f demyx
+            demyx_compose stop demyx
+            demyx_compose rm -f demyx
         fi
+    else
+        docker stop demyx
+        docker rm -f demyx
     fi
 }
 demyx_run() {
@@ -157,6 +164,7 @@ elif [[ "$DEMYX_CHROOT" = help ]]; then
     echo "      restart         Stops, removes, and starts demyx container"
     echo "      sh              Execute root commands to demyx container from host"
     echo "      update          Update chroot.sh from GitHub"
+    echo "      -a, --all       Targets both demyx and demyx_socket container"
     echo "      --cpu           Set container CPU usage, --cpu=null to remove cap"
     echo "      --dev           Puts demyx container into development mode"
     echo "      --edge          Use latest code updates from git repo"
