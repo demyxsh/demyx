@@ -268,8 +268,8 @@ demyx_config() {
     else
         demyx_app_config
         if [[ "$DEMYX_APP_TYPE" = wp ]]; then
-            source "$DEMYX_FUNCTION"/env.sh
-            source "$DEMYX_FUNCTION"/yml.sh
+            demyx_source env
+            demyx_source yml
             
             cd "$DEMYX_APP_PATH" || exit
 
@@ -511,7 +511,7 @@ demyx_config() {
                 demyx config "$DEMYX_APP_DOMAIN" --opcache=false
 
                 if [[ "$DEMYX_APP_WP_IMAGE" = demyx/wordpress ]]; then
-                    source "$DEMYX_STACK"/.env
+                    demyx_source stack
 
                     if [ "$DEMYX_CONFIG_FILES" = themes ]; then
                         DEMYX_BS_FILES="\"/var/www/html/wp-content/themes/**/*\""
@@ -1066,7 +1066,7 @@ demyx_config() {
                 DEMYX_CHECK_APP_DB_IMAGE="$(grep demyx/mariadb:edge "$DEMYX_APP_PATH"/docker-compose.yml)"
                 [[ -n "$DEMYX_CHECK_APP_DB_IMAGE" ]] && demyx_die "$DEMYX_APP_DOMAIN is already upgraded"
 
-                source "$DEMYX_FUNCTION"/yml.sh
+                demyx_source yml
 
                 demyx backup "$DEMYX_APP_DOMAIN"
                 demyx config "$DEMYX_APP_DOMAIN" --healthcheck=false

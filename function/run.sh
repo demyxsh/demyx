@@ -129,8 +129,8 @@ demyx_run() {
         DEMYX_RUN_PROTO="https://$DEMYX_TARGET"
     fi
 
-    source "$DEMYX_FUNCTION"/env.sh
-    source "$DEMYX_FUNCTION"/yml.sh
+    demyx_source env
+    demyx_source yml
 
     if [[ "$DEMYX_RUN_TYPE" = wp ]]; then
         demyx_echo 'Creating directory'

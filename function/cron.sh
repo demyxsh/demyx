@@ -32,7 +32,7 @@ demyx_cron() {
         shift
     done
 
-    source "$DEMYX_STACK"/.env
+    demyx_source stack
 
     if [[ "$DEMYX_CRON" = daily ]]; then
         if [[ "$DEMYX_STACK_TELEMETRY" = true ]]; then

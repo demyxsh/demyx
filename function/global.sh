@@ -122,7 +122,7 @@ demyx_execute() {
     echo -e "$DEMYX_COMMON_LOG" >> /var/log/demyx/demyx.log
 }
 demyx_table() {
-    source "$DEMYX_FUNCTION"/table.sh
+    demyx_source table
     printTable '^' "$@"
 }
 demyx_permission() {

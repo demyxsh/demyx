@@ -41,7 +41,7 @@ demyx_yml() {
         DEMYX_YML_AUTH_CHECK="$(demyx info "$DEMYX_APP_DOMAIN" --filter=DEMYX_APP_AUTH)"
 
         if [[ "$DEMYX_YML_AUTH_CHECK" = true && -f "$DEMYX_STACK"/.env ]]; then
-            source "$DEMYX_STACK"/.env
+            demyx_source stack
             DEMYX_PARSE_BASIC_AUTH="$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}' | sed 's/\$/$$/g')"
             DEMYX_BASIC_AUTH="
                         - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-https.middlewares=\${DEMYX_APP_COMPOSE_PROJECT}-auth\"
@@ -179,7 +179,7 @@ EOF
 demyx_stack_yml() {
     if [[ -f "$DEMYX_STACK"/.env ]]; then
         DEMYX_PARSE_BASIC_AUTH="$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}')"
-        source "$DEMYX_STACK"/.env
+        demyx_source stack
         DEMYX_STACK_AUTH="$DEMYX_PARSE_BASIC_AUTH"
     fi
 

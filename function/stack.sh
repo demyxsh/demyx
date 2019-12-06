@@ -153,8 +153,8 @@ demyx_stack() {
             demyx_execute tar -czf /demyx/backup/stack.tgz -C /demyx/app stack
         fi
 
-        source "$DEMYX_FUNCTION"/env.sh
-        source "$DEMYX_FUNCTION"/yml.sh
+        demyx_source env
+        demyx_source yml
 
         demyx_echo 'Refreshing stack env and yml'
         demyx_execute demyx_stack_env; demyx_stack_yml
@@ -224,8 +224,8 @@ demyx_stack() {
             [[ -z "$DEMYX_STACK_CLOUDFLARE_API_EMAIL" ]] && demyx_die '--cf-api-email is missing'
             [[ -z "$DEMYX_STACK_CLOUDFLARE_API_KEY" ]] && demyx_die '--cf-api-key is missing'
 
-            source "$DEMYX_FUNCTION"/env.sh
-            source "$DEMYX_FUNCTION"/yml.sh
+            demyx_source env
+            demyx_source yml
 
             demyx_echo 'Enabling Cloudflare as the certificate resolver'
             demyx_execute demyx_stack_env; \

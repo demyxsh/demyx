@@ -5,7 +5,7 @@
 #
 demyx_monitor() {
     demyx_wp_check_empty
-    source "$DEMYX_STACK"/.env
+    demyx_source stack
     if [[ "$DEMYX_STACK_MONITOR" = true ]]; then
         DEMYX_APP_MONITOR_STATS="$(docker stats --no-stream)"
         cd "$DEMYX_WP" || exit

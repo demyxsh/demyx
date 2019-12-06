@@ -130,7 +130,7 @@ demyx_info() {
                 [[ -z "$DEMYX_INFO_QUIET" ]] && demyx_die 'Filter not found'
             fi
         else
-            source "$DEMYX_STACK"/.env
+            demyx_source stack
             DEMYX_INFO_STACK_GET_NGINX="$(curl -s https://raw.githubusercontent.com/demyxco/nginx/master/README.md)"
             DEMYX_INFO_STACK_GET_WORDPRESS="$(curl -s https://raw.githubusercontent.com/demyxco/wordpress/master/README.md)"
             DEMYX_INFO_TRAEFIK_CHECK="$(echo "$DEMYX_DOCKER_PS" | grep demyx_traefik)"

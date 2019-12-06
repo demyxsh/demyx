@@ -98,7 +98,7 @@ demyx_utility() {
             demyx_execute -v demyx_table "$PRINT_TABLE"
         fi
     elif [[ -n "$DEMYX_UTILITY_USER" ]]; then
-        source "$DEMYX_FUNCTION"/name.sh
+        demyx_source name
         DEMYX_UTILITY_USER="$(demyx_name)"
         PRINT_TABLE="DEMYX^ UTILITY\n"
         PRINT_TABLE+="USERNAME^ $DEMYX_UTILITY_USER"

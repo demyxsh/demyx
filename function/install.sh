@@ -56,8 +56,8 @@ demyx_install() {
         [[ -z "$DEMYX_INSTALL_FORCE" ]] && demyx_die 'Demyx is already installed'
     fi
     
-    source "$DEMYX_FUNCTION"/env.sh
-    source "$DEMYX_FUNCTION"/yml.sh
+    demyx_source env
+    demyx_source yml
 
     DEMYX_STACK_AUTH="$(demyx util --user="$DEMYX_INSTALL_USER" --htpasswd="$DEMYX_INSTALL_PASS" --raw)"
     DEMYX_STACK_SERVER_IP="$(curl -m 10 -s https://ipecho.net/plain)"

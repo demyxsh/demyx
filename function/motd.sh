@@ -49,7 +49,7 @@ demyx_motd_mariadb_check() {
 }
 demyx_motd_stack_check() {
     if [[ -f "$DEMYX_STACK"/.env ]]; then
-        source "$DEMYX_STACK"/.env
+        demyx_source stack
         if [[ "$DEMYX_STACK_AUTO_UPDATE" = false ]]; then
             demyx_execute -v echo -e "\e[33m[WARNING]\e[39m Auto updates are disabled, demyx stack --auto-update to enable"
         fi

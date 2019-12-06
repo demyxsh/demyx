@@ -4,7 +4,7 @@
 # demyx healthcheck
 #
 demyx_healthcheck() {
-    source "$DEMYX_STACK"/.env
+    demyx_source stack
     DEMYX_HEALTHCHECK_CONTAINER="$DEMYX_APP_WP_CONTAINER"
 
     if [[ "$DEMYX_STACK_HEALTHCHECK" = true ]]; then
