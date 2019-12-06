@@ -98,8 +98,8 @@ while :; do
 done
 
 DEMYX_CHROOT_DOCKER_PS="$(docker ps)"
-DEMYX_CHROOT_DEMYX_CHECK="$(echo "$DEMYX_CHROOT_DOCKER_PS" | awk '{print $NF}' | grep -w demyx)"
-DEMYX_CHROOT_SOCKET_CHECK="$(echo "$DEMYX_CHROOT_DOCKER_PS" | awk '{print $NF}' | grep -w demyx_socket)"
+DEMYX_CHROOT_DEMYX_CHECK="$(echo "$DEMYX_CHROOT_DOCKER_PS" | awk '{print $NF}' | grep -w demyx || true)"
+DEMYX_CHROOT_SOCKET_CHECK="$(echo "$DEMYX_CHROOT_DOCKER_PS" | awk '{print $NF}' | grep -w demyx_socket || true)"
 
 demyx_until() {
     if [[ "$DEMYX_CHROOT_MODE" = development ]]; then
