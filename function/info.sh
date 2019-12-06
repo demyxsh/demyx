@@ -170,6 +170,8 @@ demyx_info() {
         DEMYX_INFO_LOAD_AVERAGE="$(cat /proc/loadavg | awk '{print $1 " " $2 " " $3}')"
         DEMYX_INFO_RECENT_MODIFIED="$(find "$DEMYX_ETC" -type f -mtime -1 | xargs ls -lt 2>/dev/null | head -1 | awk '{print $NF}')"
         DEMYX_INFO_RECENT_MODIFIED_STAT="$(stat -c '%y' "$DEMYX_INFO_RECENT_MODIFIED" | awk -F '[.]' '{print $1}')"
+        DEMYX_INFO_CONTAINER_RUNNING=0
+        DEMYX_INFO_CONTAINER_DEAD=0
 
         if [[ -n "$(demyx_check_docker_sock)" ]]; then
             DEMYX_INFO_CONTAINER_RUNNING="$(/usr/local/bin/docker ps -q | wc -l)"
