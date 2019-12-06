@@ -102,10 +102,15 @@ DEMYX_CHROOT_DEMYX_CHECK="$(echo "$DEMYX_CHROOT_DOCKER_PS" | awk '{print $NF}' |
 DEMYX_CHROOT_SOCKET_CHECK="$(echo "$DEMYX_CHROOT_DOCKER_PS" | awk '{print $NF}' | grep -w demyx_socket || true)"
 
 demyx_mode() {
-    if [[ "$DEMYX_CHROOT_MODE" = development ]]; then
+    DEMYX_MODE_CHECK="$(docker exec -t demyx zsh -c "[[ -f /tmp/demyx-dev ]] && echo development || true")"
+    if [[ -n "$DEMYX_MODE_CHECK" && "$DEMYX_CHROOT_MODE" != production ]]; then
         docker exec -t --user=root demyx demyx-dev
     else
-        docker exec -t demyx demyx-prod
+        if [[ "$DEMYX_CHROOT_MODE" = development ]]; then
+            docker exec -t --user=root demyx demyx-dev
+        else
+            docker exec -t demyx demyx-prod
+        fi
     fi
 }
 demyx_compose() {
@@ -206,16 +211,13 @@ elif [[ "$DEMYX_CHROOT" = update ]]; then
     echo -e "\e[32m[SUCCESS]\e[39m Successfully updated"
 else
     if [[ -n "$DEMYX_CHROOT_DEMYX_CHECK" ]]; then
-        DEMYX_MODE_CHECK="$(docker exec -t demyx sh -c "[[ -f /tmp/demyx-dev ]] && echo 'development'")"
-        if [[ -z "$DEMYX_CHROOT_MODE" ]]; then
-            DEMYX_CHROOT_MODE="$DEMYX_MODE_CHECK"
-        fi
         demyx_mode
         if [[ -z "$DEMYX_CHROOT_NC" ]]; then
             docker exec -it --user="$DEMYX_CHROOT_USER" demyx zsh
         fi
     else
         demyx_run
+        demyx_mode
         if [[ -z "$DEMYX_CHROOT_NC" ]]; then
             docker exec -it --user="$DEMYX_CHROOT_USER" demyx zsh
         fi
