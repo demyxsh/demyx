@@ -1,7 +1,7 @@
 #!/bin/bash
 # Demyx
 # https://demyx.sh
-#
+set -euo pipefail
 
 DEMYX_CHROOT_HOST="$(hostname)"
 DEMYX_CHROOT_BRANCH=stable
