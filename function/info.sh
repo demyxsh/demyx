@@ -169,7 +169,7 @@ demyx_info() {
         DEMYX_INFO_MEMORY_TOTAL="$(echo "$DEMYX_INFO_MEMORY" | sed '1d' | sed '2d' | awk '{print $2}')"
         DEMYX_INFO_UPTIME="$(uptime | awk -F '[,]' '{print $1}' | awk -F '[up]' '{print $3}' | sed 's|^.||')"
         DEMYX_INFO_LOAD_AVERAGE="$(cat /proc/loadavg | awk '{print $1 " " $2 " " $3}')"
-        DEMYX_INFO_RECENT_MODIFIED="$(find "$DEMYX_ETC" -type f -mtime -1 | xargs ls -lt 2>/dev/null | head -1 | awk '{print $NF}')"
+        DEMYX_INFO_RECENT_MODIFIED="$(find "${DEMYX_ETC:-/etc/demyx}" -type f -mtime -1 | xargs ls -lt 2>/dev/null | head -1 | awk '{print $NF}')"
         DEMYX_INFO_RECENT_MODIFIED_STAT="$(stat -c '%y' "$DEMYX_INFO_RECENT_MODIFIED" | awk -F '[.]' '{print $1}')"
         DEMYX_INFO_CONTAINER_RUNNING=0
         DEMYX_INFO_CONTAINER_DEAD=0
