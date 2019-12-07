@@ -169,8 +169,6 @@ demyx_info() {
         DEMYX_INFO_MEMORY_TOTAL="$(echo "$DEMYX_INFO_MEMORY" | sed '1d' | sed '2d' | awk '{print $2}')"
         DEMYX_INFO_UPTIME="$(uptime | awk -F '[,]' '{print $1}' | awk -F '[up]' '{print $3}' | sed 's|^.||')"
         DEMYX_INFO_LOAD_AVERAGE="$(cat /proc/loadavg | awk '{print $1 " " $2 " " $3}')"
-        DEMYX_INFO_RECENT_MODIFIED="$(find "${DEMYX_ETC:-/etc/demyx}" -type f -mtime -1 | xargs ls -lt 2>/dev/null | head -1 | awk '{print $NF}')"
-        DEMYX_INFO_RECENT_MODIFIED_STAT="$(stat -c '%y' "$DEMYX_INFO_RECENT_MODIFIED" | awk -F '[.]' '{print $1}')"
         DEMYX_INFO_CONTAINER_RUNNING=0
         DEMYX_INFO_CONTAINER_DEAD=0
 
@@ -181,7 +179,7 @@ demyx_info() {
         
         if [[ -n "$DEMYX_INFO_JSON" ]]; then 
             DEMYX_INFO_SYSTEM_JSON='{'
-            DEMYX_INFO_SYSTEM_JSON+='"updated": "'$DEMYX_INFO_RECENT_MODIFIED_STAT'",'
+            DEMYX_INFO_SYSTEM_JSON+='"build": "'$DEMYX_INFO_RECENT_MODIFIED_STAT'",'
             DEMYX_INFO_SYSTEM_JSON+='"hostname": "'$DEMYX_INFO_HOST'",'
             DEMYX_INFO_SYSTEM_JSON+='"mode": "'$DEMYX_INFO_MODE'",'
             DEMYX_INFO_SYSTEM_JSON+='"wp_count": "'$DEMYX_INFO_WP_COUNT'",'
@@ -199,7 +197,7 @@ demyx_info() {
             echo "$DEMYX_INFO_SYSTEM_JSON"
         else
             PRINT_TABLE="DEMYX^ SYSTEM INFO\n"
-            PRINT_TABLE+="UPDATED^ $DEMYX_INFO_RECENT_MODIFIED_STAT\n"
+            PRINT_TABLE+="BUILD^ $DEMYX_BUILD\n"
             PRINT_TABLE+="HOSTNAME^ $DEMYX_INFO_HOST\n"
             PRINT_TABLE+="MODE^ $DEMYX_INFO_MODE\n"
             PRINT_TABLE+="WORDPRESS APPS^ $DEMYX_INFO_WP_COUNT\n"

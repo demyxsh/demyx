@@ -2,17 +2,22 @@ FROM msoap/shell2http as demyx_api
 FROM quay.io/vektorlab/ctop:0.7.1 as demyx_ctop
 FROM alpine
 
+# Build date
+ARG DEMYX_BUILD
+
 LABEL sh.demyx.image demyx/demyx
 LABEL sh.demyx.maintainer Demyx <info@demyx.sh>
 LABEL sh.demyx.url https://demyx.sh
 LABEL sh.demyx.github https://github.com/demyxco
 LABEL sh.demyx.registry https://hub.docker.com/u/demyx
+LABEL sh.demyx.build $DEMYX_BUILD
 
 # Set default environment variables
 ENV DEMYX_BRANCH=stable
 ENV DEMYX_HOST=demyx
 ENV DEMYX_MODE=production
 ENV DEMYX_SSH=2222
+ENV DEMYX_BUILD="$DEMYX_BUILD"
 ENV TZ=America/Los_Angeles
 
 # Install custom packages
@@ -108,6 +113,7 @@ RUN set -ex; \
 # Allow demyx user to execute only one script and allow usage of environment variables
 RUN set -ex; \
     echo "demyx ALL=(ALL) NOPASSWD: /etc/demyx/demyx.sh, /etc/demyx/bin/demyx-prod.sh, /etc/demyx/bin/demyx-skel.sh, /usr/sbin/crond" > /etc/sudoers.d/demyx; \
+    echo 'Defaults env_keep +="DEMYX_BUILD"' >> /etc/sudoers.d/demyx; \
     echo 'Defaults env_keep +="DEMYX_BRANCH"' >> /etc/sudoers.d/demyx; \
     echo 'Defaults env_keep +="DEMYX_MODE"' >> /etc/sudoers.d/demyx; \
     echo 'Defaults env_keep +="DEMYX_HOST"' >> /etc/sudoers.d/demyx; \
