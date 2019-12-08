@@ -114,6 +114,11 @@ demyx_mode() {
         fi
     fi
 }
+demyx_chroot() {
+    if [[ -z "$DEMYX_CHROOT_NC" ]]; then
+        docker exec -it --user="$DEMYX_CHROOT_USER" demyx zsh
+    fi
+}
 demyx_compose() {
     docker run -t --rm \
     -v /var/run/docker.sock:/var/run/docker.sock:ro \
@@ -184,9 +189,7 @@ elif [[ "$DEMYX_CHROOT" = restart ]]; then
     demyx_run
     [[ "$DEMYX_CHROOT_MODE" = development ]] && sleep 5
     demyx_mode
-    if [[ -z "$DEMYX_CHROOT_NC" ]]; then
-        docker exec -it --user="$DEMYX_CHROOT_USER" demyx zsh
-    fi
+    demyx_chroot
 elif [[ "$DEMYX_CHROOT" = shell ]]; then
     docker exec -it --user="$DEMYX_CHROOT_USER" demyx "$@"
 elif [[ "$DEMYX_CHROOT" = update ]]; then
@@ -214,14 +217,10 @@ elif [[ "$DEMYX_CHROOT" = update ]]; then
 else
     if [[ -n "$DEMYX_CHROOT_DEMYX_CHECK" ]]; then
         demyx_mode
-        if [[ -z "$DEMYX_CHROOT_NC" ]]; then
-            docker exec -it --user="$DEMYX_CHROOT_USER" demyx zsh
-        fi
+        demyx_chroot
     else
         demyx_run
         demyx_mode
-        if [[ -z "$DEMYX_CHROOT_NC" ]]; then
-            docker exec -it --user="$DEMYX_CHROOT_USER" demyx zsh
-        fi
+        demyx_chroot
     fi
 fi
