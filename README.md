@@ -22,7 +22,7 @@ Demyx is a Docker image that automates and manages WordPress installations. Trae
 * Rolling release updates
 * For support: [#demyx](https://webchat.freenode.net/?channel=#demyx)
 
-### WordPress Features
+### Features
 * SSL turned on by default
 * Basic auth site-wide or wp-login.php
 * Secure NGINX/PHP configurations
@@ -53,6 +53,7 @@ bash -c "$(curl -fsSL https://demyx.sh/install)"
 
 ### Getting Started
 - [Step-by-Step Guide](https://demyx.sh/docker/how-to-easily-manage-multiple-wordpress-sites-in-docker-using-demyx/)
+
 ```
 # Create a WordPress site on the host OS
 demyx cmd run domain.tld --cdn --cache
