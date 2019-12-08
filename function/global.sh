@@ -169,10 +169,10 @@ demyx_wordpress_ready() {
     done
 }
 demyx_generate_password() {
-    DEMYX_PASSWORD_1="$(tr -dc [:xdigit:] < /dev/urandom | head -c $(( ( RANDOM % 10 )  + 4 )) | sed -e 's/\r//g')"
-    DEMYX_PASSWORD_2="$(tr -dc [:xdigit:] < /dev/urandom | head -c $(( ( RANDOM % 10 )  + 4 )) | sed -e 's/\r//g')"
-    DEMYX_PASSWORD_3="$(tr -dc [:xdigit:] < /dev/urandom | head -c $(( ( RANDOM % 10 )  + 4 )) | sed -e 's/\r//g')"
-    DEMYX_PASSWORD_4="$(tr -dc [:xdigit:] < /dev/urandom | head -c $(( ( RANDOM % 10 )  + 4 )) | sed -e 's/\r//g')"
+    DEMYX_PASSWORD_1="$(uuidgen | awk -F '[-]' '{print $5}' | head -c $(( ( RANDOM % 10 )  + 4 )) | sed -e 's/\r//g')"
+    DEMYX_PASSWORD_2="$(uuidgen | awk -F '[-]' '{print $5}' | head -c $(( ( RANDOM % 10 )  + 4 )) | sed -e 's/\r//g')"
+    DEMYX_PASSWORD_3="$(uuidgen | awk -F '[-]' '{print $5}' | head -c $(( ( RANDOM % 10 )  + 4 )) | sed -e 's/\r//g')"
+    DEMYX_PASSWORD_4="$(uuidgen | awk -F '[-]' '{print $5}' | head -c $(( ( RANDOM % 10 )  + 4 )) | sed -e 's/\r//g')"
     
     echo "${DEMYX_PASSWORD_1}-${DEMYX_PASSWORD_2}-${DEMYX_PASSWORD_3}-${DEMYX_PASSWORD_4}"
 }
