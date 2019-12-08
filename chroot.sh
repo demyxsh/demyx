@@ -182,6 +182,7 @@ elif [[ "$DEMYX_CHROOT" = remove ]]; then
 elif [[ "$DEMYX_CHROOT" = restart ]]; then
     demyx_rm
     demyx_run
+    [[ "$DEMYX_CHROOT_MODE" = development ]] && sleep 5
     demyx_mode
     if [[ -z "$DEMYX_CHROOT_NC" ]]; then
         docker exec -it --user="$DEMYX_CHROOT_USER" demyx zsh
