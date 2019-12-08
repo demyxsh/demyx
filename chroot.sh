@@ -3,6 +3,15 @@
 # https://demyx.sh
 set -euo pipefail
 
+# Check if user is in docker group first
+if [[ -z "$(id | grep docker)" ]]; then
+    # Fallback check for root/sudo
+    if [[ "$(id -u)" != 0 ]]; then
+        echo -e "\e[31m[CRITICAL]\e[39m Must be ran as root/sudo or add user to the docker group"
+        exit 1
+    fi
+fi
+
 # Set default variables
 DEMYX_CHROOT_HOST="$(hostname)"
 DEMYX_CHROOT_BRANCH=stable
