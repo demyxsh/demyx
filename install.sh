@@ -3,16 +3,14 @@
 # https://demyx.sh
 set -euo pipefail
 
-DEMYX_DOCKER_CHECK="$(which docker)"
-DEMYX_SUDO_CHECK="$(id -u)"
 DEMYX_INSTALL_SKIP_CHECKS=
 
-if [[ "$DEMYX_SUDO_CHECK" != 0 ]]; then
+if [[ "$(id -u)" != 0 ]]; then
     echo -e "\e[31m[CRITICAL]\e[39m Must be ran as root or sudo"
     exit 1
 fi
 
-if [[ ! -f "$DEMYX_DOCKER_CHECK" ]]; then
+if [[ ! -f "$(which docker)" ]]; then
     echo -e "\e[31m[CRITICAL]\e[39m Docker must be installed"
     exit 1
 fi
