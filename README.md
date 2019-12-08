@@ -52,6 +52,7 @@ bash -c "$(curl -fsSL https://demyx.sh/install)"
 ```
 
 ### Getting Started
+- [Step-by-Step Guide](https://demyx.sh/docker/how-to-easily-manage-multiple-wordpress-sites-in-docker-using-demyx/)
 ```
 # Create a WordPress site on the host OS
 demyx cmd run domain.tld --cdn --cache
