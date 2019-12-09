@@ -24,7 +24,7 @@ before_install:
 script:
   - export DEMYX_BUILD_DATE="$(date +%Y.%m.%d.%H%M%S)"
   - docker build --no-cache --build-arg DEMYX_BUILD="$DEMYX_BUILD_DATE" -t demyx/"$DEMYX_REPOSITORY" .
-  - sudo mv chroot.sh /usr/local/bin/demyx
+  - sudo cp chroot.sh /usr/local/bin/demyx
   - sudo chmod +x /usr/local/bin/demyx
   - sudo demyx --nc
   - sleep 5
