@@ -10,21 +10,29 @@ env:
   - DEMYX_USERNAME=demyx DEMYX_REPOSITORY=demyx
 
 before_install:
-  - docker pull alpine
   - docker pull demyx/docker-compose
-  - docker pull demyx/mariadb
+  - docker pull demyx/docker-socket-proxy
+  - docker pull demyx/mariadb:edge
   - docker pull demyx/nginx
+  - docker pull demyx/ouroboros
+  - docker pull demyx/traefik
   - docker pull demyx/utilities
   - docker pull demyx/wordpress
   - docker pull demyx/wordpress:cli
+  - docker pull alpine
 
 script:
-  - docker build --no-cache -t demyx/"$DEMYX_REPOSITORY" .
-  - docker run -dit --name=demyx --rm --hostname=travis-ci -e DEMYX_MODE=production -e DEMYX_HOST=travis-ci -e DEMYX_SSH=2222 -e TZ=America/Los_Angeles -v demyx:/demyx -v demyx_user:/home/demyx -v demyx_log:/var/log/demyx -v /var/run/docker.sock:/var/run/docker.sock:ro -p 2222:2222 demyx/"$DEMYX_REPOSITORY"
+  - export DEMYX_BUILD_DATE="$(date +%Y.%m.%d.%H%M%S)"
+  - docker build --no-cache --build-arg DEMYX_BUILD="$DEMYX_BUILD_DATE" -t demyx/"$DEMYX_REPOSITORY" .
+  - sudo mv chroot.sh /usr/local/bin/demyx
+  - sudo chmod +x /usr/local/bin/demyx
+  - sudo demyx --nc
   - sleep 5
-  - docker exec -it demyx demyx motd
-  - docker exec -it demyx demyx run domain.tld --auth --cdn --cache
-  - docker exec -it demyx demyx wp domain.tld core is-installed
+  - sudo demyx cmd install --domain=domain.tld --email=info@domain.tld --user="$DEMYX_REPOSITORY" --pass="$DEMYX_REPOSITORY"
+  - sudo demyx cmd stack ouroboros --false
+  - sudo demyx cmd motd
+  - sudo demyx cmd run domain.tld
+  - sudo demyx cmd wp domain.tld core is-installed
 
 after_success:
   - echo "$DEMYX_PASSWORD" | docker login -u "$DEMYX_USERNAME" --password-stdin
