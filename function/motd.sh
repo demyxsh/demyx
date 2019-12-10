@@ -25,11 +25,13 @@ demyx_motd_getting_started() {
         demyx_execute -v echo -e "\e[34m[INFO]\e[39m Looks like the stack isn't installed, run this command to install:\n\n- demyx stack install --domain=your-domain --email=info@your-domain --user=your-user --pass=your-pass\n"
         demyx_execute -v echo -e "\e[34m[INFO]\e[39m To create a WordPress site: demyx run ${DEMYX_MOTD_GETTING_STARTED_DOMAIN:-domain.tld}"
         demyx_execute -v echo -e "\e[34m[INFO]\e[39m To create a Bedrock site: demyx run ${DEMYX_MOTD_GETTING_STARTED_DOMAIN:-domain.tld} --bedrock"
+        demyx_execute -v echo -e "\e[34m[INFO]\e[39m To see more run options: demyx help run"
     else
         if [[ -z "$DEMYX_MOTD_CHECK_WP" ]]; then
             DEMYX_MOTD_GETTING_STARTED_DOMAIN="$(demyx info stack --filter=DEMYX_STACK_DOMAIN)"
             demyx_execute -v echo -e "\e[34m[INFO]\e[39m To create a WordPress site: demyx run ${DEMYX_MOTD_GETTING_STARTED_DOMAIN:-domain.tld}"
             demyx_execute -v echo -e "\e[34m[INFO]\e[39m To create a Bedrock site: demyx run ${DEMYX_MOTD_GETTING_STARTED_DOMAIN:-domain.tld} --bedrock"
+            demyx_execute -v echo -e "\e[34m[INFO]\e[39m To see more run options: demyx help run"
         fi
     fi
 }
