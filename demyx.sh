@@ -8,8 +8,8 @@ trap 'exit' ERR
 source /etc/demyx/.config
 DEMYX_COMMAND="$1"
 DEMYX_TARGET="$2"
-source "$DEMYX_FUNCTION"/init.sh
 source "$DEMYX_FUNCTION"/global.sh
+source "$DEMYX_FUNCTION"/init.sh
 source "$DEMYX_FUNCTION"/help.sh
 
 if [[ "$DEMYX_COMMAND" = backup ]]; then
