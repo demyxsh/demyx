@@ -102,11 +102,8 @@ demyx_restore() {
                 docker cp demyx "$DEMYX_APP_ID":/var/log
 
             demyx_echo 'Restoring database'
-            demyx_execute docker run -it --rm \
-                --volumes-from "$DEMYX_APP_ID" \
-                --network container:"$DEMYX_APP_ID" \
-                demyx/wordpress:cli db import "$DEMYX_APP_CONTAINER".sql
-
+            demyx_execute demyx wp "$DEMYX_APP_DOMAIN" db import "$DEMYX_APP_CONTAINER".sql
+            
             demyx_echo 'Removing backup database'
             demyx_execute docker exec -t "$DEMYX_APP_ID" rm /var/www/html/"$DEMYX_APP_CONTAINER".sql
 
