@@ -76,7 +76,7 @@ demyx_yml() {
                     networks:
                         - demyx
                     volumes:
-                        - wp_${DEMYX_APP_ID}_db:/var/lib/mysql
+                        - wp_${DEMYX_APP_ID}_db:/demyx
                         - wp_${DEMYX_APP_ID}_log:/var/log/demyx
                     environment:
                         - MARIADB_DOMAIN=\${DEMYX_APP_DOMAIN}
@@ -127,7 +127,7 @@ demyx_yml() {
                         - NGINX_XMLRPC=\${DEMYX_APP_XMLRPC}
                         - NGINX_BASIC_AUTH=\${DEMYX_APP_AUTH_WP}${DEMYX_YML_NX_EXTRAS}
                     volumes:
-                        - wp_${DEMYX_APP_ID}:/var/www/html
+                        - wp_${DEMYX_APP_ID}:/demyx
                         - wp_${DEMYX_APP_ID}_log:/var/log/demyx
                     labels:
                         - "traefik.enable=true"
@@ -154,7 +154,7 @@ demyx_yml() {
                         - WORDPRESS_PHP_PM_PROCESS_IDLE_TIMEOUT=\${DEMYX_APP_PHP_PM_PROCESS_IDLE_TIMEOUT}
                         - WORDPRESS_PHP_PM_MAX_REQUESTS=\${DEMYX_APP_PHP_PM_MAX_REQUESTS}${DEMYX_YML_WP_EXTRAS}
                     volumes:
-                        - wp_${DEMYX_APP_ID}:/var/www/html
+                        - wp_${DEMYX_APP_ID}:/demyx
                         - wp_${DEMYX_APP_ID}_log:/var/log/demyx
             volumes:
                 wp_${DEMYX_APP_ID}:
