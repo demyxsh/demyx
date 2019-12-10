@@ -89,12 +89,13 @@ demyx_restore() {
             demyx_execute demyx_mariadb_ready
 
             demyx_echo 'Creating temporary container'
-            demyx_execute docker run -dt --rm \
-                --name "$DEMYX_APP_ID" \
-                --network demyx \
-                -v wp_"$DEMYX_APP_ID":/var/www/html \
+            demyx_execute docker run -dit --rm \
+                --name "$DEMYX_APP_WP_CONTAINER" \
+                --network=demyx \
+                --entrypoint=sh \
+                -v wp_"$DEMYX_APP_ID":"$DEMYX_GLOBAL_WP_VOLUME" \
                 -v wp_"$DEMYX_APP_ID"_log:/var/log/demyx \
-                demyx/utilities sh
+                demyx/wordpress
 
             demyx_echo 'Restoring files'
             demyx_execute docker cp html "$DEMYX_APP_ID":/var/www; \
