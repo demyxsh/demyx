@@ -117,8 +117,8 @@ demyx_restore() {
             demyx config "$DEMYX_APP_DOMAIN" --healthcheck
 
             demyx_echo 'Cleaning up'
-            demyx_execute rm -rf "$DEMYX_APP_PATH"/html; \
-                rm -rf "$DEMYX_APP_PATH"/demyx
+            demyx_execute rm -rf "$DEMYX_APP_PATH"/demyx-wp; \
+                rm -rf "$DEMYX_APP_PATH"/demyx-log
 
             demyx info "$DEMYX_APP_DOMAIN"
         fi
