@@ -1,12 +1,8 @@
 # Demyx
 # https://demyx.sh
-
-DEMYX_CHECK_SUDO="$(id -u)"
-
-if [ "$DEMYX_CHECK_SUDO" != 0 ]; then
-    echo -e "\e[31m[CRITICAL]\e[39m Demyx must be ran as sudo"
-    exit 1
-fi
+#
+# Not sure what else to put here, will leave it for review.
+#
 
 if [[ ! -d "$DEMYX"/custom/cron ]]; then
     demyx_execute -v cp -r "$DEMYX_ETC"/example/example-cron "$DEMYX"/custom
