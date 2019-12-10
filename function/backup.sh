@@ -62,10 +62,10 @@ demyx_backup() {
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" db export "$DEMYX_APP_CONTAINER".sql
 
                 demyx_echo 'Exporting WordPress'
-                demyx_execute docker cp "$DEMYX_APP_WP_CONTAINER":/var/www/html "$DEMYX_APP_PATH"
+                demyx_execute docker cp "$DEMYX_APP_WP_CONTAINER":"$DEMYX_GLOBAL_WP_VOLUME" "$DEMYX_APP_PATH"/demyx-wp
 
                 demyx_echo 'Exporting logs'
-                demyx_execute docker cp "$DEMYX_APP_WP_CONTAINER":/var/log/demyx "$DEMYX_APP_PATH"
+                demyx_execute docker cp "$DEMYX_APP_WP_CONTAINER":/var/log/demyx "$DEMYX_APP_PATH"/demyx-log
 
                 demyx_echo 'Archiving directory'
                 demyx_execute tar -czf "$DEMYX_BACKUP_WP"/"$DEMYX_APP_DOMAIN"/"$DEMYX_BACKUP_TODAYS_DATE"-"$DEMYX_APP_DOMAIN".tgz -C "$DEMYX_WP" "$DEMYX_APP_DOMAIN"
@@ -74,8 +74,8 @@ demyx_backup() {
                 
                 demyx_echo 'Cleaning up'
                 demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" rm "$DEMYX_APP_CONTAINER".sql; \
-                    rm -rf "$DEMYX_APP_PATH"/html; \
-                    rm -rf "$DEMYX_APP_PATH"/demyx
+                    rm -rf "$DEMYX_APP_PATH"/demyx-wp; \
+                    rm -rf "$DEMYX_APP_PATH"/demyx-log
             fi
         else
             demyx_die --not-found
