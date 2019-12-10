@@ -1085,7 +1085,7 @@ demyx_config() {
                 demyx_execute docker stop "$DEMYX_APP_DB_CONTAINER"; \
                     docker rm -f "$DEMYX_APP_DB_CONTAINER"; \
                     docker run -t --rm \
-                    -v wp_"$DEMYX_APP_ID"_db:/var/lib/mysql \
+                    -v wp_"$DEMYX_APP_ID"_db:"$DEMYX_GLOBAL_WP_VOLUME" \
                     -e MARIADB_ROOT_PASSWORD="$MARIADB_ROOT_PASSWORD" \
                     -e MARIADB_DATABASE="$WORDPRESS_DB_NAME" \
                     -e MARIADB_USERNAME="$WORDPRESS_DB_USER" \
