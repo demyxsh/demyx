@@ -244,11 +244,13 @@ demyx_config() {
     if [[ "$DEMYX_TARGET" = all ]]; then
         cd "$DEMYX_WP" || exit
         for i in *
-        do
+        do  
             if [[ -n "$DEMYX_CONFIG_RESOURCE" ]]; then
+                echo -e "\e[34m[INFO]\e[39m Setting resources for $i"
                 demyx config "$i" "$@"
             fi
             if [[ -n "$DEMYX_CONFIG_REFRESH" ]]; then
+                echo -e "\e[34m[INFO]\e[39m Refreshing $i"
                 demyx config "$i" --refresh "$@"
             fi
             if [[ -n "$DEMYX_CONFIG_RESTART" ]]; then
@@ -260,6 +262,7 @@ demyx_config() {
                 demyx_execute sleep "$DEMYX_CONFIG_SLEEP"
             fi
             if [[ -n "$DEMYX_CONFIG_UPGRADE_DB" ]]; then
+                echo -e "\e[34m[INFO]\e[39m Upgrading db for $i"
                 DEMYX_CHECK_APP_DB_IMAGE="$(grep demyx/mariadb:edge "$DEMYX_WP"/"$i"/docker-compose.yml)"
                 [[ -n "$DEMYX_CHECK_APP_DB_IMAGE" ]] && continue
                 demyx config "$i" --upgrade-db
