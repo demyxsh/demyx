@@ -14,6 +14,7 @@ demyx_wp() {
         # Will remove this backwards compability in January 1st, 2020
         DEMYX_WP_CLI=demyx/wordpress:cli
         [[ "$DEMYX_APP_WP_IMAGE" = demyx/nginx-php-wordpress ]] && DEMYX_WP_CLI=wordpress:cli
+        [[ "$DEMYX_APP_WP_IMAGE" = demyx/wordpress:bedrock ]] && DEMYX_GLOBAL_WP_VOLUME=/demyx/web
 
         demyx_execute -v docker run -t --rm \
             --volumes-from="$DEMYX_APP_WP_CONTAINER" \
