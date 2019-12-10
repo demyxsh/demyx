@@ -108,9 +108,9 @@ demyx_restore() {
             demyx_execute docker exec -t "$DEMYX_APP_ID" rm /var/www/html/"$DEMYX_APP_CONTAINER".sql
 
             demyx_echo 'Stopping temporary container'
-            demyx_execute docker stop "$DEMYX_APP_ID"
+            demyx_execute docker stop "$DEMYX_APP_WP_CONTAINER"
 
-            demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans            
+            demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
             demyx config "$DEMYX_APP_DOMAIN" --healthcheck
 
             demyx_echo 'Cleaning up'
