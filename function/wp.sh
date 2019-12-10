@@ -17,8 +17,9 @@ demyx_wp() {
         [[ "$DEMYX_APP_WP_IMAGE" = demyx/wordpress:bedrock ]] && DEMYX_GLOBAL_WP_VOLUME=/demyx/web
 
         demyx_execute -v docker run -t --rm \
+            --network=demyx \
             --volumes-from="$DEMYX_APP_WP_CONTAINER" \
-            --network=container:"$DEMYX_APP_WP_CONTAINER" \
+            --workdir="$DEMYX_GLOBAL_WP_VOLUME" \
             "$DEMYX_WP_CLI" "$@"
     else
         demyx_die --not-found

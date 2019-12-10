@@ -338,7 +338,7 @@ demyx_config() {
                 fi
 
                 demyx_echo 'Setting Bedrock config to production'
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c 'sed -i "s|WP_ENV=.*|WP_ENV=production|g" /var/www/html/.env' && \
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "sed -i 's|WP_ENV=.*|WP_ENV=production|g' ${DEMYX_GLOBAL_WP_VOLUME}/.env" && \
                     sed -i "s|DEMYX_APP_BEDROCK_MODE=.*|DEMYX_APP_BEDROCK_MODE=production|g" "$DEMYX_APP_PATH"/.env
             elif [[ "$DEMYX_CONFIG_BEDROCK" = development ]]; then
                 demyx_app_is_up
@@ -348,7 +348,7 @@ demyx_config() {
                 fi
 
                 demyx_echo 'Setting Bedrock config to development'
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c 'sed -i "s|WP_ENV=.*|WP_ENV=development|g" /var/www/html/.env' && \
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "sed -i 's|WP_ENV=.*|WP_ENV=development|g' ${DEMYX_GLOBAL_WP_VOLUME}/.env" && \
                     sed -i "s|DEMYX_APP_BEDROCK_MODE=.*|DEMYX_APP_BEDROCK_MODE=development|g" "$DEMYX_APP_PATH"/.env
             fi
             if [[ "$DEMYX_CONFIG_CACHE" = true ]]; then
@@ -434,7 +434,7 @@ demyx_config() {
                 DEMYX_CONFIG_CLEAN_MARIADB_ROOT_PASSWORD="$(demyx util --pass --raw)"
 
                 demyx_echo 'Genearting new MariaDB credentials'
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "sed -i 's|$WORDPRESS_DB_PASSWORD|$DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD|g' /var/www/html/wp-config.php"; \
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "sed -i 's|$WORDPRESS_DB_PASSWORD|$DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD|g' ${DEMYX_GLOBAL_WP_VOLUME}/wp-config.php"; \
                     sed -i "s|$WORDPRESS_DB_PASSWORD|$DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD|g" "$DEMYX_APP_PATH"/.env; \
                     sed -i "s|$MARIADB_ROOT_PASSWORD|$DEMYX_CONFIG_CLEAN_MARIADB_ROOT_PASSWORD|g" "$DEMYX_APP_PATH"/.env
                 
@@ -523,13 +523,13 @@ demyx_config() {
                     demyx_source stack
 
                     if [ "$DEMYX_CONFIG_FILES" = themes ]; then
-                        DEMYX_BS_FILES="\"/var/www/html/wp-content/themes/**/*\""
+                        DEMYX_BS_FILES="\"${DEMYX_GLOBAL_WP_VOLUME}/wp-content/themes/**/*\""
                     elif [ "$DEMYX_CONFIG_FILES" = plugins ]; then
-                        DEMYX_BS_FILES="\"/var/www/html/wp-content/plugins/**/*\""
+                        DEMYX_BS_FILES="\"${DEMYX_GLOBAL_WP_VOLUME}/wp-content/plugins/**/*\""
                     elif [ "$DEMYX_CONFIG_FILES" = false ]; then
                         DEMYX_BS_FILES=
                     else
-                        DEMYX_BS_FILES="[\"/var/www/html/wp-content/themes/**/*\", \"/var/www/html/wp-content/plugins/**/*\"]"
+                        DEMYX_BS_FILES="[\"${DEMYX_GLOBAL_WP_VOLUME}/wp-content/themes/**/*\", \"${DEMYX_GLOBAL_WP_VOLUME}/wp-content/plugins/**/*\"]"
                     fi
 
                     if [[ -n "$DEMYX_CONFIG_EXPOSE" || -n "$(demyx_validate_ip)" ]]; then
@@ -710,7 +710,7 @@ demyx_config() {
                     demyx_execute docker stop "$DEMYX_APP_COMPOSE_PROJECT"_cs
 
                     demyx_echo 'Removing demyx helper plugin'
-                    demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" rm -f /var/www/html/web/app/mu-plugins/bs.php
+                    demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" rm -f "$DEMYX_GLOBAL_WP_VOLUME"/web/app/mu-plugins/bs.php
                 else
                     demyx_echo 'Stopping browser-sync'
                     demyx_execute docker stop "$DEMYX_APP_COMPOSE_PROJECT"_bs
@@ -719,7 +719,7 @@ demyx_config() {
                     demyx_execute docker stop "$DEMYX_APP_COMPOSE_PROJECT"_cs
 
                     demyx_echo 'Removing demyx helper plugin'
-                    demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" rm -f /var/www/html/wp-content/mu-plugins/bs.php
+                    demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" rm -f "$DEMYX_GLOBAL_WP_VOLUME"/wp-content/mu-plugins/bs.php
                 fi
 
                 demyx config "$DEMYX_APP_DOMAIN" --opcache
@@ -993,7 +993,7 @@ demyx_config() {
                     --name="$DEMYX_APP_COMPOSE_PROJECT"_sftp \
                     --cpus="$DEMYX_CPU" \
                     --memory="$DEMYX_MEM" \
-                    --workdir=/var/www/html \
+                    --workdir="$DEMYX_GLOBAL_WP_VOLUME" \
                     --volumes-from="$DEMYX_APP_WP_CONTAINER" \
                     -v demyx_sftp:/home/demyx/.ssh \
                     -p "$DEMYX_SFTP_PORT":2222 \
@@ -1055,10 +1055,10 @@ demyx_config() {
                 demyx_echo "Upgrading $DEMYX_APP_DOMAIN"
                 if [[ "$DEMYX_CHECK_APP_IMAGE" = demyx/nginx-php-wordpress ]]; then
                     demyx_execute sed -i "s|DEMYX_APP_WP_IMAGE=.*|DEMYX_APP_WP_IMAGE=demyx/wordpress|g" "$DEMYX_APP_PATH"/.env; \
-                        docker run --rm --user=root --volumes-from="$DEMYX_APP_WP_CONTAINER" demyx/utilities "chown -R demyx:demyx /var/www/html; chown -R demyx:demyx /var/log/demyx"                    
+                        docker run --rm --user=root --volumes-from="$DEMYX_APP_WP_CONTAINER" demyx/utilities "chown -R demyx:demyx ${DEMYX_GLOBAL_WP_VOLUME}; chown -R demyx:demyx /var/log/demyx"                    
                 elif [[ "$DEMYX_CHECK_APP_IMAGE" = demyx/nginx-php-wordpress:bedrock ]]; then
                     demyx_execute sed -i "s|DEMYX_APP_WP_IMAGE=.*|DEMYX_APP_WP_IMAGE=demyx/wordpress:bedrock|g" "$DEMYX_APP_PATH"/.env; \
-                        docker run --rm --user=root --volumes-from="$DEMYX_APP_WP_CONTAINER" demyx/utilities "chown -R demyx:demyx /var/www/html; chown -R demyx:demyx /var/log/demyx"                    
+                        docker run --rm --user=root --volumes-from="$DEMYX_APP_WP_CONTAINER" demyx/utilities "chown -R demyx:demyx ${DEMYX_GLOBAL_WP_VOLUME}; chown -R demyx:demyx /var/log/demyx"                    
                 fi
 
                 demyx config "$DEMYX_APP_DOMAIN" --refresh

@@ -69,7 +69,7 @@ demyx_info() {
                 source "$DEMYX_WP"/"$i"/.env
 
                 if [[ -z "$DEMYX_INFO_NO_VOLUME" ]]; then
-                    DEMYX_INFO_DATA_VOLUME="$(docker exec -t "$DEMYX_APP_WP_CONTAINER" du -sh /var/www/html | cut -f1)"
+                    DEMYX_INFO_DATA_VOLUME="$(docker exec -t "$DEMYX_APP_WP_CONTAINER" du -sh "$DEMYX_GLOBAL_WP_VOLUME" | cut -f1)"
                     DEMYX_INFO_DB_VOLUME="$(docker exec -t "$DEMYX_APP_DB_CONTAINER" du -sh /var/lib/mysql/"$WORDPRESS_DB_NAME" | cut -f1)"
                 fi
 
@@ -247,7 +247,7 @@ demyx_info() {
             fi
         else
             if [[ -z "$DEMYX_INFO_NO_VOLUME" ]]; then
-                DEMYX_INFO_DATA_VOLUME="$(docker exec -t "$DEMYX_APP_WP_CONTAINER" du -sh /var/www/html | cut -f1)"
+                DEMYX_INFO_DATA_VOLUME="$(docker exec -t "$DEMYX_APP_WP_CONTAINER" du -sh "$DEMYX_GLOBAL_WP_VOLUME" | cut -f1)"
                 DEMYX_INFO_DB_VOLUME="$(docker exec -t "$DEMYX_APP_DB_CONTAINER" du -sh /var/lib/mysql/"$WORDPRESS_DB_NAME" | cut -f1)"
             fi
 
