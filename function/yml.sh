@@ -64,7 +64,7 @@ demyx_yml() {
                         - WORDPRESS_DB_PASSWORD=${WORDPRESS_DB_PASSWORD}'
         fi
 
-        cat > "$DEMYX_WP"/"$DEMYX_APP_DOMAIN"/docker-compose.yml <<-EOF
+        cat > "$DEMYX_APP_PATH"/docker-compose.yml <<-EOF
             # AUTO GENERATED
             version: "$DEMYX_DOCKER_COMPOSE"
             services:
