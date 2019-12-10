@@ -40,7 +40,7 @@ while :; do
         rm)
             DEMYX_CHROOT=remove
             ;;
-        restart)
+        rs|restart)
             DEMYX_CHROOT=restart
             ;;
         sh)
@@ -177,16 +177,16 @@ elif [[ "$DEMYX_CHROOT" = help ]]; then
     echo "      cmd             Send demyx commands from host"
     echo "      help            Demyx help"
     echo "      rm              Stops and removes demyx container"
-    echo "      restart         Stops, removes, and starts demyx container"
+    echo "      rs|restart      Stops, removes, and starts demyx container"
     echo "      sh              Execute root commands to demyx container from host"
     echo "      update          Update chroot.sh from GitHub"
     echo "      -a, --all       Targets both demyx and demyx_socket container"
     echo "      --cpu           Set container CPU usage, --cpu=null to remove cap"
-    echo "      -d|--dev           Puts demyx container into development mode"
+    echo "      -d|--dev        Puts demyx container into development mode"
     echo "      --edge          Use latest code updates from git repo"
     echo "      --mem           Set container MEM usage, --mem=null to remove cap"
     echo "      --nc            Starts demyx containr but prevent chrooting into container"
-    echo "      -p|--prod          Puts demyx container into production mode"
+    echo "      -p|--prod       Puts demyx container into production mode"
     echo "      -r, --root      Execute as root user"
     echo "      --ssh           Override ssh port"
     echo "      --stack         Pulls all demyx images when running demyx update"
