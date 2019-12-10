@@ -893,6 +893,14 @@ demyx_config() {
                     demyx backup "$DEMYX_APP_DOMAIN" --config
                 fi
 
+                # Will remove this in January 1st, 2020
+                DEMYX_CONFIG_VOLUME_CHECK="$(grep /var/www/html "$DEMYX_APP_PATH"/docker-compose.yml || true)"
+                if [[ -n "$DEMYX_CONFIG_VOLUME_CHECK" ]]; then
+                    demyx backup "$DEMYX_APP_DOMAIN"
+                    demyx wp "$DEMYX_APP_DOMAIN" search-replace /var/www/html /demyx
+                    docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "find /var/www/html/. -type f -print0 | xargs -0 sed -i 's|/var/www/html|/demyx|g'"
+                fi
+
                 demyx_echo 'Refreshing .env'
                 demyx_execute demyx_env
 
