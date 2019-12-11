@@ -5,17 +5,18 @@ DEMYX_MOTD_CHECK_WP="$(ls -A "$DEMYX_WP")"
 
 # Will remove this in January 1st, 2020
 demyx_motd_volume_check() {
-    demyx_wp_check_empty
-    cd "$DEMYX_WP"
-    for i in *
-    do
-        DEMYX_MOTD_VOLUME_CHECK="$(cat "$DEMYX_WP"/"$i"/docker-compose.yml)"
-        DEMYX_MOTD_WP_VOLUME_CHECK="$(echo "$DEMYX_MOTD_VOLUME_CHECK" | grep /var/www/html || true)"
-        DEMYX_MOTD_DB_VOLUME_CHECK="$(echo "$DEMYX_MOTD_VOLUME_CHECK" | grep /var/lib/mysql || true)"
-    done
+    if [[ -n "$DEMYX_MOTD_CHECK_WP" ]]; then
+        cd "$DEMYX_WP"
+        for i in *
+        do
+            DEMYX_MOTD_VOLUME_CHECK="$(cat "$DEMYX_WP"/"$i"/docker-compose.yml)"
+            DEMYX_MOTD_WP_VOLUME_CHECK="$(echo "$DEMYX_MOTD_VOLUME_CHECK" | grep /var/www/html || true)"
+            DEMYX_MOTD_DB_VOLUME_CHECK="$(echo "$DEMYX_MOTD_VOLUME_CHECK" | grep /var/lib/mysql || true)"
+        done
 
-    if [[ -n "$DEMYX_MOTD_WP_VOLUME_CHECK" || -n "$DEMYX_MOTD_DB_VOLUME_CHECK" ]]; then
-        demyx_execute -v echo -e "\e[33m[WARNING]\e[39m One or more WordPress apps have outdated configs, please update: demyx config all --refresh"
+        if [[ -n "$DEMYX_MOTD_WP_VOLUME_CHECK" || -n "$DEMYX_MOTD_DB_VOLUME_CHECK" ]]; then
+            demyx_execute -v echo -e "\e[33m[WARNING]\e[39m One or more WordPress apps have outdated configs, please update: demyx config all --refresh"
+        fi
     fi
 }
 demyx_motd_yml_check() {
