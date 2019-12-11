@@ -64,6 +64,11 @@ demyx_yml() {
                         - WORDPRESS_DB_PASSWORD=${WORDPRESS_DB_PASSWORD}'
         fi
 
+        if [[ "$DEMYX_APP_DEV" = false ]]; then
+            DEMYX_YML_DEV="cpus: \${DEMYX_APP_WP_CPU}
+                    mem_limit: \${DEMYX_APP_WP_MEM}"
+        fi
+
         cat > "$DEMYX_APP_PATH"/docker-compose.yml <<-EOF
             # AUTO GENERATED
             version: "$DEMYX_DOCKER_COMPOSE"
@@ -134,8 +139,7 @@ demyx_yml() {
                         $DEMYX_PROTOCOL $DEMYX_BASIC_AUTH
                 wp_${DEMYX_APP_ID}:
                     image: \${DEMYX_APP_WP_IMAGE}
-                    cpus: \${DEMYX_APP_WP_CPU}
-                    mem_limit: \${DEMYX_APP_WP_MEM}
+                    $DEMYX_YML_DEV
                     restart: unless-stopped
                     networks:
                         - demyx

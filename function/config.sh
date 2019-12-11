@@ -520,6 +520,10 @@ demyx_config() {
                 DEMYX_CONFIG_DEV_CS_URI="${DEMYX_CONFIG_DEV_PROTO}${DEMYX_CONFIG_DEV_BASE_PATH}/cs/"
                 DEMYX_CONFIG_DEV_BS_URI="${DEMYX_CONFIG_DEV_PROTO}${DEMYX_CONFIG_DEV_BASE_PATH}/bs/"
 
+                demyx_execute -v sed -i "s|DEMYX_APP_DEV=.*|DEMYX_APP_DEV=true|g" "$DEMYX_APP_PATH"/.env; \
+                    demyx_source yml; \
+                    demyx_yml
+                
                 demyx config "$DEMYX_APP_DOMAIN" --opcache=false
 
                 if [[ "$DEMYX_APP_WP_IMAGE" = demyx/wordpress ]]; then
@@ -692,8 +696,6 @@ demyx_config() {
                     demyx/code-server:sage 2>/dev/null
                 fi
 
-                demyx_execute -v sed -i "s|DEMYX_APP_DEV=.*|DEMYX_APP_DEV=true|g" "$DEMYX_APP_PATH"/.env
-
                 PRINT_TABLE="DEMYX^ DEVELOPMENT\n"
                 PRINT_TABLE+="CODE-SERVER^ $DEMYX_CONFIG_DEV_CS_URI\n"
                 PRINT_TABLE+="BROWSERSYNC^ $DEMYX_CONFIG_DEV_BS_URI\n"
@@ -725,8 +727,11 @@ demyx_config() {
                     demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" rm -f "$DEMYX_GLOBAL_WP_VOLUME"/wp-content/mu-plugins/bs.php
                 fi
 
+                demyx_execute -v sed -i "s|DEMYX_APP_DEV=.*|DEMYX_APP_DEV=false|g" "$DEMYX_APP_PATH"/.env; \
+                    demyx_source yml; \
+                    demyx_yml
+
                 demyx config "$DEMYX_APP_DOMAIN" --opcache
-                demyx_execute -v sed -i "s|DEMYX_APP_DEV=.*|DEMYX_APP_DEV=false|g" "$DEMYX_APP_PATH"/.env
             fi
             if [[ "$DEMYX_CONFIG_HEALTHCHECK" = true ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
