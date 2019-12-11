@@ -553,13 +553,13 @@ demyx_config() {
                             $DEMYX_CONFIG_DEV_RESOURCES \
                             --volumes-from="$DEMYX_APP_WP_CONTAINER" \
                             -p "$DEMYX_CONFIG_DEV_BS_PORT":3000 \
-                            -e BS_DOMAIN_MATCH="${DEMYX_CONFIG_DEV_PROTO}" \
-                            -e BS_DOMAIN_RETURN="$DEMYX_CONFIG_DEV_BS_URI" \
-                            -e BS_DOMAIN_SOCKET="$DEMYX_CONFIG_DEV_BS_URI" \
-                            -e BS_PROXY="$DEMYX_APP_NX_CONTAINER" \
-                            -e BS_FILES="$DEMYX_BS_FILES" \
-                            -e BS_PATH=false \
-                            -e BS_PREFIX=false \
+                            -e BROWSERSYNC_DOMAIN_MATCH="${DEMYX_CONFIG_DEV_PROTO}" \
+                            -e BROWSERSYNC_DOMAIN_RETURN="$DEMYX_CONFIG_DEV_BS_URI" \
+                            -e BROWSERSYNC_DOMAIN_SOCKET="$DEMYX_CONFIG_DEV_BS_URI" \
+                            -e BROWSERSYNC_PROXY="$DEMYX_APP_NX_CONTAINER" \
+                            -e BROWSERSYNC_FILES="$DEMYX_BS_FILES" \
+                            -e BROWSERSYNC_PATH=false \
+                            -e BROWSERSYNC_PREFIX=false \
                             demyx/browsersync 2>/dev/null
 
                         demyx_echo 'Creating code-server'
@@ -582,12 +582,12 @@ demyx_config() {
                             --network=demyx \
                             $DEMYX_CONFIG_DEV_RESOURCES \
                             --volumes-from="$DEMYX_APP_WP_CONTAINER" \
-                            -e BS_DOMAIN_MATCH="$DEMYX_APP_DOMAIN" \
-                            -e BS_DOMAIN_RETURN="${DEMYX_APP_DOMAIN}" \
-                            -e BS_DOMAIN_SOCKET="${DEMYX_APP_DOMAIN}" \
-                            -e BS_PROXY="$DEMYX_APP_NX_CONTAINER" \
-                            -e BS_FILES="$DEMYX_BS_FILES" \
-                            -e BS_PATH="$DEMYX_CONFIG_DEV_BASE_PATH" \
+                            -e BROWSERSYNC_DOMAIN_MATCH="$DEMYX_APP_DOMAIN" \
+                            -e BROWSERSYNC_DOMAIN_RETURN="${DEMYX_APP_DOMAIN}" \
+                            -e BROWSERSYNC_DOMAIN_SOCKET="${DEMYX_APP_DOMAIN}" \
+                            -e BROWSERSYNC_PROXY="$DEMYX_APP_NX_CONTAINER" \
+                            -e BROWSERSYNC_FILES="$DEMYX_BS_FILES" \
+                            -e BROWSERSYNC_PATH="$DEMYX_CONFIG_DEV_BASE_PATH" \
                             -l "traefik.enable=true" \
                             -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-bs.rule=(Host(\`${DEMYX_APP_DOMAIN}\`) && PathPrefix(\`${DEMYX_CONFIG_DEV_BASE_PATH}/bs/\`))" \
                             -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-bs.middlewares=${DEMYX_APP_COMPOSE_PROJECT}-bs-prefix" \
