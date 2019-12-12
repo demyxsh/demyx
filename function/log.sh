@@ -45,7 +45,7 @@ demyx_log() {
     elif [[ "$DEMYX_TARGET" = main ]]; then
         if [[ -n "$DEMYX_LOG_ROTATE" ]]; then
             demyx_echo 'Rotating demyx log'
-            demyx_execute docker run -t --rm --volumes-from=demyx demyx/logrotate
+            demyx_execute docker run -t --rm --user=root --volumes-from=demyx demyx/logrotate
         else
             if [[ -n "$DEMYX_LOG_CONTAINER" ]]; then
                 docker logs $DEMYX_LOG_FOLLOW demyx
@@ -64,7 +64,7 @@ demyx_log() {
     elif [[ "$DEMYX_APP_TYPE" = wp ]]; then
         if [[ -n "$DEMYX_LOG_ROTATE" ]]; then
             demyx_echo "Rotating $DEMYX_APP_DOMAIN log"
-            demyx_execute docker run -t --rm --volumes-from="$DEMYX_APP_WP_CONTAINER" demyx/logrotate
+            demyx_execute docker run -t --rm --user=root --volumes-from="$DEMYX_APP_WP_CONTAINER" demyx/logrotate
         else
             DEMYX_LOG_WP=access
             if [[ -n "$DEMYX_LOG_DATABASE" ]]; then
