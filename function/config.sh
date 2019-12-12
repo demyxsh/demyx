@@ -964,8 +964,8 @@ demyx_config() {
                 elif [ "$DEMYX_CONFIG_RESTART" = nginx ]; then
                     demyx_app_is_up
 
-                    demyx_echo "Restarting NGINX"
-                    demyx_execute docker exec -t "$DEMYX_APP_NX_CONTAINER" sh -c 'rm -rf /tmp/nginx-cache; sudo nginx -c "$NGINX_CONFIG"/wp.conf -s reload'
+                    demyx_echo "Reloading NGINX"
+                    demyx_execute docker exec -t "$DEMYX_APP_NX_CONTAINER" sh -c 'rm -rf /tmp/nginx-cache; demyx-reload'
                 elif [ "$DEMYX_CONFIG_RESTART" = php ]; then
                     demyx compose "$DEMYX_APP_DOMAIN" up -d --force-recreate wp_"$DEMYX_APP_ID"
                 fi
@@ -1129,7 +1129,7 @@ demyx_config() {
                 fi
 
                 demyx_echo 'Turning on WordPress xmlrpc'
-                demyx_execute docker exec -t "$DEMYX_APP_NX_CONTAINER" sh -c 'mv "$NGINX_CONFIG"/common/xmlrpc.conf "$NGINX_CONFIG"/common/xmlrpc.on; sudo nginx -c "$NGINX_CONFIG"/wp.conf -s reload'; \
+                demyx_execute docker exec -t "$DEMYX_APP_NX_CONTAINER" sh -c 'mv "$NGINX_CONFIG"/common/xmlrpc.conf "$NGINX_CONFIG"/common/xmlrpc.on; demyx-reload'; \
                     sed -i "s|DEMYX_APP_XMLRPC=.*|DEMYX_APP_XMLRPC=true|g" "$DEMYX_APP_PATH"/.env
 
                 demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
@@ -1141,7 +1141,7 @@ demyx_config() {
                 fi
 
                 demyx_echo 'Turning off WordPress xmlrpc'
-                demyx_execute docker exec -t "$DEMYX_APP_NX_CONTAINER" sh -c 'mv "$NGINX_CONFIG"/common/xmlrpc.on "$NGINX_CONFIG"/common/xmlrpc.conf; sudo nginx -c "$NGINX_CONFIG"/wp.conf -s reload'; \
+                demyx_execute docker exec -t "$DEMYX_APP_NX_CONTAINER" sh -c 'mv "$NGINX_CONFIG"/common/xmlrpc.on "$NGINX_CONFIG"/common/xmlrpc.conf; demyx-reload'; \
                     sed -i "s|DEMYX_APP_XMLRPC=.*|DEMYX_APP_XMLRPC=false|g" "$DEMYX_APP_PATH"/.env
             fi
         else
