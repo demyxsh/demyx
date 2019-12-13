@@ -130,7 +130,6 @@ demyx_chroot() {
 }
 demyx_compose() {
     docker run -t --rm \
-    --user=root \
     --workdir=/demyx \
     -v /var/run/docker.sock:/var/run/docker.sock:ro \
     -v demyx:/demyx \
