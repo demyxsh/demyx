@@ -51,6 +51,9 @@ demyx_run() {
             --rate-limit=false)
                 DEMYX_RUN_RATE_LIMIT=false
                 ;;
+            --skip-init)
+                DEMYX_RUN_SKIP_INIT=true
+                ;;
             --ssl|--ssl=true)
                 DEMYX_RUN_SSL=true
                 ;;
@@ -172,8 +175,10 @@ demyx_run() {
         
         demyx compose "$DEMYX_APP_DOMAIN" up -d db_"$DEMYX_APP_ID"
 
-        demyx_echo 'Initializing MariaDB'
-        demyx_execute demyx_mariadb_ready
+        if [[ -z "$DEMYX_RUN_SKIP_INIT" ]]; then
+            demyx_echo 'Initializing MariaDB'
+            demyx_execute demyx_mariadb_ready
+        fi
 
         if [[ -n "$DEMYX_RUN_CLONE" ]]; then
             demyx_echo 'Creating temporary container'
@@ -216,12 +221,14 @@ demyx_run() {
 
         demyx compose "$DEMYX_APP_DOMAIN" up -d wp_"$DEMYX_APP_ID" nx_"$DEMYX_APP_ID"
 
-        if [[ -n "$DEMYX_RUN_BEDROCK" ]]; then
-            demyx_echo 'Initializing Bedrock'
-            demyx_execute demyx_bedrock_ready
-        else
-            demyx_echo 'Initializing WordPress'
-            demyx_execute demyx_wordpress_ready
+        if [[ -z "$DEMYX_RUN_SKIP_INIT" ]]; then
+            if [[ -n "$DEMYX_RUN_BEDROCK" ]]; then
+                demyx_echo 'Initializing Bedrock'
+                demyx_execute demyx_bedrock_ready
+            else
+                demyx_echo 'Initializing WordPress'
+                demyx_execute demyx_wordpress_ready
+            fi
         fi
 
         if [[ -n "$DEMYX_RUN_CLONE" ]]; then

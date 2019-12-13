@@ -180,6 +180,7 @@ demyx_help() {
         echo "                --force         Force delete if exists"
         echo "                --pass          Override password generation"
         echo "                --rate-limit    Run with rate limit on/off"
+        echo "                --skip-init     Skip the initializing checks, useful if the run command hangs"
         echo "                --ssl           Run with ssl on/off"
         echo "                --type          Run app type as wp/php/html"
         echo "                --user          Override user generation"
