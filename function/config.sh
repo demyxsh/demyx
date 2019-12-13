@@ -504,7 +504,7 @@ demyx_config() {
 
                 if [[ "$DEMYX_APP_WP_IMAGE" = demyx/wordpress ]]; then
                     DEMYX_CONFIG_DEV_IMAGE=demyx/code-server:wp
-                    [[ -n demyx_alpine_check ]] && DEMYX_CONFIG_DEV_IMAGE=demyx/code-server:wp-alpine
+                    [[ -n "$(demyx_alpine_check)" ]] && DEMYX_CONFIG_DEV_IMAGE=demyx/code-server:wp-alpine
                     
                     if [[ -n "$DEMYX_CONFIG_EXPOSE" || -n "$(demyx_validate_ip)" ]]; then
                         DEMYX_IP_DOMAIN="$(demyx info stack --filter=DEMYX_STACK_SERVER_IP)"
@@ -515,7 +515,7 @@ demyx_config() {
                     fi
                 else
                     DEMYX_CONFIG_DEV_IMAGE=demyx/code-server:sage
-                    [[ -n demyx_alpine_check ]] && DEMYX_CONFIG_DEV_IMAGE=demyx/code-server:sage-alpine
+                    [[ -n "$(demyx_alpine_check)" ]] && DEMYX_CONFIG_DEV_IMAGE=demyx/code-server:sage-alpine
                 fi
 
                 demyx_echo 'Updating configs'
