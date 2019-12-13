@@ -4,10 +4,10 @@
 demyx_env() {
     demyx_app_config
 
-    [[ -z "$DEMYX_APP_CONTAINER" ]] && DEMYX_APP_CONTAINER="${DEMYX_TARGET//[\.\"\-]/_}"
+    [[ -z "$DEMYX_APP_CONTAINER" ]] && DEMYX_APP_CONTAINER="$(echo "$DEMYX_TARGET" | sed 's/[^a-z  A-Z]/_/g')"
 
     if [[ "$DEMYX_RUN_TYPE" = wp || "$DEMYX_APP_TYPE" = wp ]]; then
-        [[ -z "$DEMYX_APP_COMPOSE_PROJECT" ]] && DEMYX_APP_COMPOSE_PROJECT="${DEMYX_TARGET//[\.\"\-]/}"
+        [[ -z "$DEMYX_APP_COMPOSE_PROJECT" ]] && DEMYX_APP_COMPOSE_PROJECT="$(echo "$DEMYX_TARGET" | sed 's/[^a-z  A-Z]//g')"
         [[ -z "$DEMYX_APP_ID" ]] && DEMYX_APP_ID="$(demyx util --id --raw)"
         [[ -z "$DEMYX_APP_WP_IMAGE" ]] && DEMYX_APP_WP_IMAGE=demyx/wordpress
         [[ -z "$DEMYX_APP_BEDROCK_MODE" ]] && DEMYX_APP_BEDROCK_MODE=production
@@ -24,7 +24,7 @@ demyx_env() {
         [[ -z "$WORDPRESS_USER_EMAIL" ]] && WORDPRESS_USER_EMAIL="info@$DEMYX_TARGET"
         [[ -z "$WORDPRESS_DB_HOST" ]] && WORDPRESS_DB_HOST="$DEMYX_APP_DB_CONTAINER"
         [[ -z "$WORDPRESS_DB_NAME" ]] && WORDPRESS_DB_NAME="$DEMYX_APP_CONTAINER"
-        [[ -z "$WORDPRESS_DB_USER" ]] && WORDPRESS_DB_USER="$DEMYX_APP_CONTAINER"
+        [[ -z "$WORDPRESS_DB_USER" ]] && WORDPRESS_DB_USER="$(demyx util --user --raw)"
         [[ -z "$WORDPRESS_DB_PASSWORD" ]] && WORDPRESS_DB_PASSWORD="$(demyx util --pass --raw)"
         [[ -z "$MARIADB_ROOT_PASSWORD" ]] && MARIADB_ROOT_PASSWORD="$(demyx util --pass --raw)"
         [[ -n "$DEMYX_RUN_SSL" ]] && DEMYX_APP_SSL="$DEMYX_RUN_SSL"
