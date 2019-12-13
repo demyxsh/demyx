@@ -4,10 +4,10 @@
 demyx_env() {
     demyx_app_config
 
-    [[ -z "$DEMYX_APP_CONTAINER" ]] && DEMYX_APP_CONTAINER=${DEMYX_TARGET//./_}
+    [[ -z "$DEMYX_APP_CONTAINER" ]] && DEMYX_APP_CONTAINER="${DEMYX_TARGET//[\.\"\-]/_}"
 
     if [[ "$DEMYX_RUN_TYPE" = wp || "$DEMYX_APP_TYPE" = wp ]]; then
-        [[ -z "$DEMYX_APP_COMPOSE_PROJECT" ]] && DEMYX_APP_COMPOSE_PROJECT="${DEMYX_TARGET//./}"
+        [[ -z "$DEMYX_APP_COMPOSE_PROJECT" ]] && DEMYX_APP_COMPOSE_PROJECT="${DEMYX_TARGET//[\.\"\-]/}"
         [[ -z "$DEMYX_APP_ID" ]] && DEMYX_APP_ID="$(demyx util --id --raw)"
         [[ -z "$DEMYX_APP_WP_IMAGE" ]] && DEMYX_APP_WP_IMAGE=demyx/wordpress
         [[ -z "$DEMYX_APP_BEDROCK_MODE" ]] && DEMYX_APP_BEDROCK_MODE=production
