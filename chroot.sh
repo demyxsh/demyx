@@ -204,7 +204,14 @@ elif [[ "$DEMYX_CHROOT" = shell ]]; then
 elif [[ "$DEMYX_CHROOT" = update ]]; then
     if [[ -n "$DEMYX_CHROOT_STACK" ]]; then
         docker pull demyx/browsersync
-        docker pull demyx/code-server:wp
+
+        # Pull the Alpine tag if host is Alpine Linux
+        if [[ -n "$(uname -a | grep Alpine || true)" ]]; then
+            docker pull demyx/code-server:wp-alpine
+        else
+            docker pull demyx/code-server:wp
+        fi
+        
         docker pull demyx/demyx
         docker pull demyx/docker-compose
         docker pull demyx/docker-socket-proxy
