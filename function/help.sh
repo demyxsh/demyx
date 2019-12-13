@@ -36,8 +36,6 @@ demyx_help() {
         echo "                   --db-mem                   Set the app's DB container MEM usage, --db-mem=null to remove cap"
         echo "                   --dev                      Turns on/off development mode"
         echo "                   --dev-base-path            Change code-server base path"
-        echo "                   --dev-cpu                  Set the dev app's container CPU usage, --dev-cpu=null to remove cap"
-        echo "                   --dev-mem                  Set the dev app's container MEM usage, --dev-mem=null to remove cap"
         echo "                   --expose                   Export ports to access web endpoint, works only with --dev and --pma"
         echo "                   --files                    BrowserSync arg: themes, plugins, or custom path"
         echo "                   --force                    Force config"
