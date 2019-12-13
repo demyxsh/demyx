@@ -37,7 +37,7 @@ demyx_run() {
                 demyx_die '"--email" cannot be empty'
                 ;;
             -f|--force)
-                DEMYX_RUN_FORCE=1
+                DEMYX_RUN_FORCE=true
                 ;;
             --pass=?*)
                 DEMYX_RUN_PASSWORD="${3#*=}"
