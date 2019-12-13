@@ -243,6 +243,9 @@ demyx_source() {
         source "$DEMYX_FUNCTION"/yml.sh
     fi
 }
+demyx_alpine_check() {
+    [[ -n "$(uname -a | grep Alpine || true)" ]] && echo true
+}
 
 if [[ -n "$(demyx_check_docker_sock)" ]]; then
     # Global environment variables
