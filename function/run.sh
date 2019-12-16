@@ -87,10 +87,10 @@ demyx_run() {
     done
 
     DEMYX_RUN_CHECK="$(find "$DEMYX_APP" -name "$DEMYX_TARGET" || true)"
-    DEMYX_RUN_TODAYS_DATE="$(date +%Y/%m/%d)"
+    DEMYX_RUN_TODAYS_DATE="$(date +%Y-%m-%d)"
     
-    if [[ ! -f "$DEMYX_BACKUP"/"$DEMYX_RUN_TODAYS_DATE"/wp/"$DEMYX_RUN_ARCHIVE".tgz && -n "$DEMYX_RUN_ARCHIVE" ]]; then
-        demyx_die "${DEMYX_BACKUP}/${DEMYX_RUN_TODAYS_DATE}/${DEMYX_RUN_ARCHIVE}.tgz doesn't exist"
+    if [[ ! -f "$DEMYX_BACKUP_WP"/"$DEMYX_TARGET"/"$DEMYX_RUN_TODAYS_DATE"-"$DEMYX_RUN_ARCHIVE".tgz && -n "$DEMYX_RUN_ARCHIVE" ]]; then
+        demyx_die "${DEMYX_BACKUP_WP}/${DEMYX_TARGET}/${DEMYX_RUN_TODAYS_DATE}-${DEMYX_RUN_ARCHIVE}.tgz doesn't exist"
     fi
 
     if [[ -n "$DEMYX_RUN_CLONE" ]]; then
@@ -200,20 +200,22 @@ demyx_run() {
 
         if [[ -n "$DEMYX_RUN_ARCHIVE" ]]; then
             demyx_echo 'Extracting archive'
-            demyx_execute tar -xzf "$DEMYX_BACKUP"/"$DEMYX_RUN_TODAYS_DATE"/wp/"$DEMYX_RUN_ARCHIVE".tgz -C "$DEMYX_BACKUP"/"$DEMYX_RUN_TODAYS_DATE"/wp
+            demyx_execute tar -xzf "$DEMYX_BACKUP_WP"/"$DEMYX_TARGET"/"$DEMYX_RUN_TODAYS_DATE"-"$DEMYX_RUN_ARCHIVE".tgz -C "$DEMYX_BACKUP_WP"/"$DEMYX_APP_DOMAIN"
             
             demyx_echo 'Creating temporary container'
             demyx_execute docker run -dt --rm \
                 --name "$DEMYX_APP_ID" \
                 --network demyx \
                 -v wp_"$DEMYX_APP_ID":"$DEMYX_GLOBAL_WP_VOLUME" \
+                -v wp_"$DEMYX_APP_ID"_log:/var/log/demyx \
                 demyx/utilities sh
 
             demyx_echo 'Copying files' 
-            demyx_execute docker cp "$DEMYX_BACKUP"/"$DEMYX_RUN_TODAYS_DATE"/wp/"$DEMYX_RUN_ARCHIVE"/html "$DEMYX_APP_ID":/var/www
+            demyx_execute docker cp "$DEMYX_BACKUP_WP"/"$DEMYX_APP_DOMAIN"/"$DEMYX_RUN_ARCHIVE"/demyx-wp/. "$DEMYX_APP_ID":"$DEMYX_GLOBAL_WP_VOLUME"; \
+                docker cp "$DEMYX_BACKUP_WP"/"$DEMYX_APP_DOMAIN"/"$DEMYX_RUN_ARCHIVE"/demyx-log/. "$DEMYX_APP_ID":/var/log/demyx
 
-            demyx_echo 'Removing old wp-config.php'
-            demyx_execute docker exec -t "$DEMYX_APP_ID" rm "$DEMYX_GLOBAL_WP_VOLUME"/wp-config.php
+            demyx_echo 'Finalizing extraction'
+            demyx_execute docker exec -t --user=root "$DEMYX_APP_ID" sh -c "rm ${DEMYX_GLOBAL_WP_VOLUME}/wp-config.php; chown -R demyx:demyx $DEMYX_GLOBAL_WP_VOLUME"
 
             demyx_echo 'Stopping temporary container'
             demyx_execute docker stop "$DEMYX_APP_ID"
@@ -284,7 +286,7 @@ demyx_run() {
 
             demyx_echo 'Configuring wp-config.php for reverse proxy'
             demyx_execute docker run -t --rm \
-                --volumes-from "$DEMYX_APP_WP_CONTAINER" \
+                --volumes-from="$DEMYX_APP_WP_CONTAINER" \
                 demyx/utilities demyx-proxy
 
             demyx_echo 'Installing WordPress' 
@@ -317,7 +319,7 @@ demyx_run() {
             demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" rm "${DEMYX_RUN_ARCHIVE//./_}".sql
 
             demyx_echo 'Cleaning up'
-            demyx_execute rm -rf "$DEMYX_BACKUP"/"$DEMYX_RUN_TODAYS_DATE"/wp/"$DEMYX_RUN_ARCHIVE"
+            demyx_execute rm -rf "$DEMYX_BACKUP_WP"/"$DEMYX_APP_DOMAIN"/"$DEMYX_RUN_ARCHIVE"
 
             demyx config "$DEMYX_APP_DOMAIN" --refresh --no-backup
         else
