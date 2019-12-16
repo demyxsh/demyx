@@ -21,7 +21,7 @@ demyx_motd_volume_check() {
 }
 demyx_motd_yml_check() {
     if [[ ! -f "$DEMYX"/docker-compose.yml ]]; then
-        demyx_execute -v echo -e "\e[31m[CRITICAL]\e[39m The demyx stack needs to be updated on the host, please run these commands on the host:\n\n- demyx update\n- demyx update --stack (needs to be ran again with this flag)\n- demyx rm\n- demyx\n"
+        demyx_execute -v echo -e "\e[31m[CRITICAL]\e[39m The demyx stack needs to be updated on the host, please run these commands on the host:\n\n- demyx update\n- demyx update --system (needs to be ran again with this flag)\n- demyx rm\n- demyx\n"
     fi
 }
 demyx_motd_dev_warning() {

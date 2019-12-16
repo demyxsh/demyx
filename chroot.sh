@@ -90,8 +90,8 @@ while :; do
             printf '\e[31m[CRITICAL]\e[39m "--ssh" cannot be empty\n'
             exit 1
             ;;
-        --stack)
-            DEMYX_CHROOT_STACK=1
+        --system)
+            DEMYX_CHROOT_SYSTEM=1
             ;;
         --)
             shift
@@ -189,7 +189,7 @@ elif [[ "$DEMYX_CHROOT" = help ]]; then
     echo "      -p|--prod       Puts demyx container into production mode"
     echo "      -r, --root      Execute as root user"
     echo "      --ssh           Override ssh port"
-    echo "      --stack         Pulls all demyx images when running demyx update"
+    echo "      --system        Pulls all demyx images, updates demyx helper script, and force recreates the demyx_socket and demyx containers when using demyx update --system"
     echo
 elif [[ "$DEMYX_CHROOT" = remove ]]; then
     demyx_rm
@@ -202,7 +202,7 @@ elif [[ "$DEMYX_CHROOT" = restart ]]; then
 elif [[ "$DEMYX_CHROOT" = shell ]]; then
     docker exec -it --user="$DEMYX_CHROOT_USER" demyx "$@"
 elif [[ "$DEMYX_CHROOT" = update ]]; then
-    if [[ -n "$DEMYX_CHROOT_STACK" ]]; then
+    if [[ -n "$DEMYX_CHROOT_SYSTEM" ]]; then
         docker pull demyx/browsersync
 
         # Pull the Alpine tag if host is Alpine Linux
@@ -225,6 +225,8 @@ elif [[ "$DEMYX_CHROOT" = update ]]; then
         docker pull demyx/wordpress
         docker pull demyx/wordpress:cli
         docker pull phpmyadmin/phpmyadmin
+
+        demyx_compose up -d --remove-orphans --force-recreate
     fi
 
     docker run -t --user=root --privileged --rm -v /usr/local/bin:/usr/local/bin demyx/utilities demyx-chroot
