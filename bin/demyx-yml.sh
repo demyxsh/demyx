@@ -16,27 +16,27 @@ done
 DEMYX_YML_GET_STACK_ENV="$([[ -f /demyx/app/stack/.env ]] && cat /demyx/app/stack/.env)"
 
 if [[ -n "$DEMYX_YML_GET_STACK_ENV" ]]; then
-  DEMYX_YML_DOMAIN="$(echo "$DEMYX_YML_GET_STACK_ENV" | grep DEMYX_STACK_SERVER_API | awk -F '[=]' '{print $2}')"
-  DEMYX_YML_AUTH="$(echo "$DEMYX_YML_GET_STACK_ENV" | grep DEMYX_STACK_AUTH | awk -F '[=]' '{print $2}')"
+    DEMYX_YML_DOMAIN="$(echo "$DEMYX_YML_GET_STACK_ENV" | grep DEMYX_STACK_SERVER_API | awk -F '[=]' '{print $2}')"
+    DEMYX_YML_AUTH="$(echo "$DEMYX_YML_GET_STACK_ENV" | grep DEMYX_STACK_AUTH | awk -F '[=]' '{print $2}')"
 
-  # Only generate labels when DEMYX_YML_DOMAIN is not false
-  if [[ "$DEMYX_YML_DOMAIN" != false ]]; then
-      DEMYX_YML_LABELS="labels:
-    - \"traefik.enable=true\"
-    - \"traefik.http.routers.demyx.rule=Host(\`\${DEMYX_YML_DOMAIN}\`)\"
-    - \"traefik.http.routers.demyx.entrypoints=https\"
-    - \"traefik.http.routers.demyx.tls.certresolver=demyx\"
-    - \"traefik.http.routers.demyx.service=demyx\"
-    - \"traefik.http.services.demyx.loadbalancer.server.port=8080\"
-    - \"traefik.http.routers.demyx.middlewares=demyx-auth\"
-    - \"traefik.http.middlewares.demyx-auth.basicauth.users=\${DEMYX_YML_AUTH}\""
+    # Only generate labels when DEMYX_YML_DOMAIN is not false
+    if [[ "$DEMYX_YML_DOMAIN" != false ]]; then
+        DEMYX_YML_LABELS="labels:
+      - \"traefik.enable=true\"
+      - \"traefik.http.routers.demyx.rule=Host(\`\${DEMYX_YML_DOMAIN}\`)\"
+      - \"traefik.http.routers.demyx.entrypoints=https\"
+      - \"traefik.http.routers.demyx.tls.certresolver=demyx\"
+      - \"traefik.http.routers.demyx.service=demyx\"
+      - \"traefik.http.services.demyx.loadbalancer.server.port=8080\"
+      - \"traefik.http.routers.demyx.middlewares=demyx-auth\"
+      - \"traefik.http.middlewares.demyx-auth.basicauth.users=\${DEMYX_YML_AUTH}\""
 
-      # Generate /demyx/.env
-      echo "# AUTO GENERATED
-      DEMYX_YML_DOMAIN="$DEMYX_YML_DOMAIN"
-      DEMYX_YML_AUTH="$DEMYX_YML_AUTH"
-      " | sed "s|      ||g" > /demyx/.env
-  fi
+        # Generate /demyx/.env
+        echo "# AUTO GENERATED
+            DEMYX_YML_DOMAIN="$DEMYX_YML_DOMAIN"
+            DEMYX_YML_AUTH="$DEMYX_YML_AUTH"
+        " | sed "s|            ||g" > /demyx/.env
+    fi
 fi
 
 # Check for CentOS/Fedora/RHEL strings in the kernel
