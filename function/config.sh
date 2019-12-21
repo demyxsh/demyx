@@ -272,9 +272,15 @@ demyx_config() {
                 [[ -z "$DEMYX_APP_AUTH_HTPASSWD" ]] && demyx config "$DEMYX_APP_DOMAIN" --refresh
 
                 demyx_echo 'Turning on basic auth'
-                demyx_execute sed -i "s|DEMYX_APP_AUTH=.*|DEMYX_APP_AUTH=true|g" "$DEMYX_APP_PATH"/.env && demyx_yml
+                demyx_execute sed -i "s|DEMYX_APP_AUTH=.*|DEMYX_APP_AUTH=true|g" "$DEMYX_APP_PATH"/.env; \
+                    demyx_yml
 
-                demyx compose "$DEMYX_APP_DOMAIN" nx up -d --remove-orphans
+                demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
+
+                PRINT_TABLE="DEMYX^ BASIC AUTH\n"
+                PRINT_TABLE+="USERNAME^ $DEMYX_APP_AUTH_USERNAME\n"
+                PRINT_TABLE+="PASSWORD^ $DEMYX_APP_AUTH_PASSWORD"
+                demyx_execute -v demyx_table "$PRINT_TABLE"
             elif [[ "$DEMYX_CONFIG_AUTH" = false ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ "$DEMYX_APP_AUTH" = false ]] && demyx_die 'Basic Auth is already turned on'
@@ -283,7 +289,7 @@ demyx_config() {
                 demyx_echo 'Turning off basic auth'
                 demyx_execute sed -i "s|DEMYX_APP_AUTH=.*|DEMYX_APP_AUTH=false|g" "$DEMYX_APP_PATH"/.env && demyx_yml
 
-                demyx compose "$DEMYX_APP_DOMAIN" nx up -d --remove-orphans
+                demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
             fi
             if [[ "$DEMYX_CONFIG_AUTH_WP" = true ]]; then
                 demyx_app_is_up
