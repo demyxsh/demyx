@@ -269,6 +269,8 @@ demyx_config() {
                     [[ "$DEMYX_APP_AUTH" = true ]] && demyx_die 'Basic Auth is already turned on'
                 fi
 
+                [[ -z "$DEMYX_APP_AUTH_HTPASSWD" ]] && demyx config "$DEMYX_APP_DOMAIN" --refresh
+
                 demyx_echo 'Turning on basic auth'
                 demyx_execute sed -i "s|DEMYX_APP_AUTH=.*|DEMYX_APP_AUTH=true|g" "$DEMYX_APP_PATH"/.env && demyx_yml
 
@@ -290,7 +292,7 @@ demyx_config() {
                     [[ "$DEMYX_APP_AUTH_WP" != false ]] && demyx_die 'Basic WP Auth is already turned on'
                 fi
 
-                DEMYX_PARSE_BASIC_AUTH="$(grep -s DEMYX_STACK_AUTH "$DEMYX_STACK"/.env | awk -F '[=]' '{print $2}' || true)"
+                [[ -z "$DEMYX_APP_AUTH_HTPASSWD" ]] && demyx config "$DEMYX_APP_DOMAIN" --refresh
 
                 if [[ ! -f "$DEMYX_APP_PATH"/.htpasswd ]]; then
                     demyx_echo 'Generating htpasswd'
