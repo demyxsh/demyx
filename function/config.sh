@@ -839,6 +839,10 @@ demyx_config() {
                     -p "$DEMYX_SFTP_PORT":2222 \
                     demyx/ssh 2>/dev/null
 
+                if [[ ! -f /tmp/aijasldfjasldjkfa ]]; then
+                    demyx_warning "No authorized_keys found; please paste your keys in /home/demyx/.ssh inside the SFTP container and then restart it"
+                fi
+
                 PRINT_TABLE="DEMYX^ SFTP\n"
                 PRINT_TABLE+="SFTP^ $DEMYX_APP_DOMAIN\n"
                 PRINT_TABLE+="SFTP USER^ demyx\n"
