@@ -53,7 +53,7 @@ demyx_help() {
         echo "                   --pma                      Turns on/off phpMyAdmin"
         echo "                   --rate-limit               Turns on/off NGINX rate limting"
         echo "                   --refresh                  Regenerate config files and uploaded to container"
-        echo "                   --restart                  Restart NGINX/PHP services"
+        echo "                   --restart                  Restart NGINX/PHP/OLS services: ols, nginx-php, php"
         echo "                   --sftp                     Turns on/off SFTP container"
         echo "                   --skip-checks              Skip checking other configs (cache, cdn, rate limit, etc.)"
         echo "                   --sleep                    Set sleep when all loop is used"
