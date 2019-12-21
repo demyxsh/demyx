@@ -39,12 +39,17 @@ if [[ -n "$DEMYX_YML_GET_STACK_ENV" ]]; then
   fi
 fi
 
+# Check for CentOS/Fedora/RHEL strings in the kernel
+DEMYX_YML_UNAME="$(uname -a)"
+if [[ -n "$(echo "$DEMYX_YML_UNAME" | grep -i centos || true)" || -n "$(echo "$DEMYX_YML_UNAME" | grep -i fedora || true)" || -n "$(echo "$DEMYX_YML_UNAME" | grep -i rhel || true)" ]]; then
+    DEMYX_YML_PRIVILEGED="privileged: true"
+fi
+
 # Generate /demyx/docker-compose.yml
 echo "# AUTO GENERATED
 version: \"2.4\"
 services:
   socket:
-    privileged: true
     image: demyx/docker-socket-proxy
     cpus: ${DEMYX_CPU:-.5}
     mem_limit: ${DEMYX_MEM:-512m}
