@@ -62,6 +62,9 @@ services:
       - NETWORKS=1
       - POST=1
       - VOLUMES=1
+    labels:
+      - com.ouroboros.enable=false
+    $DEMYX_YML_PRIVILEGED
   demyx:
     image: demyx/demyx
     cpus: ${DEMYX_CPU:-.5}
