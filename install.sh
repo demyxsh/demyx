@@ -35,8 +35,14 @@ while :; do
 done
 
 if [[ -z "$DEMYX_INSTALL_SKIP_CHECKS" ]]; then
+    # Pull the Alpine tag if host is Alpine Linux
+    if [[ -n "$(cat /etc/os-release | grep Alpine || true)" ]]; then
+        docker pull demyx/code-server:wp-alpine
+    else
+        docker pull demyx/code-server:wp
+    fi
+
     docker pull demyx/browsersync
-    docker pull demyx/code-server:wp
     docker pull demyx/demyx
     docker pull demyx/docker-compose
     docker pull demyx/docker-socket-proxy
