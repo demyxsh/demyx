@@ -5,8 +5,7 @@
 # https://github.com/moby/moby/blob/master/pkg/namesgenerator/names-generator.go
 #
 demyx_name_adjectives() {
-    IFS=$'\r\n' GLOBIGNORE='*' command eval 'DEMYX_NAME_ADJECTIVES=(
-        admiring
+    IFS=$'\r\n' GLOBIGNORE='*' command eval 'DEMYX_NAME_ADJECTIVES=(admiring
         adoring
         affectionate
         agitated
@@ -113,16 +112,14 @@ demyx_name_adjectives() {
         xenodochial
         youthful
         zealous
-        zen
-    )'
+        zen)'
     DEMYX_NAME_ADJECTIVES_COUNT="${#DEMYX_NAME_ADJECTIVES[@]}"
     DEMYX_NAME_ADJECTIVES_RANDOM="$(((RANDOM % "$DEMYX_NAME_ADJECTIVES_COUNT")+1))"
     echo "${DEMYX_NAME_ADJECTIVES[$DEMYX_NAME_ADJECTIVES_RANDOM]}"
 }
 
 demyx_name_sur() {
-    IFS=$'\r\n' GLOBIGNORE='*' command eval 'DEMYX_NAME_SUR=(
-        albattani
+    IFS=$'\r\n' GLOBIGNORE='*' command eval 'DEMYX_NAME_SUR=(albattani
 		allen
 		almeida
 		antonelli
@@ -357,8 +354,7 @@ demyx_name_sur() {
 		wu
 		yalow
 		yonath
-		zhukovsky
-    )'
+		zhukovsky)'
     DEMYX_NAME_SUR_COUNT="${#DEMYX_NAME_SUR[@]}"
     DEMYX_NAME_SUR_RANDOM="$(((RANDOM % "$DEMYX_NAME_SUR_COUNT")+1))"
     echo "${DEMYX_NAME_SUR[$DEMYX_NAME_SUR_RANDOM]}"
