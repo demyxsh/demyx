@@ -92,18 +92,20 @@ demyx <args>          Chroot into the demyx container
       cmd             Send demyx commands from host
       help            Demyx help
       rm              Stops and removes demyx container
-      restart         Stops, removes, and starts demyx container
+      rs|restart      Stops, removes, and starts demyx container
       sh              Execute root commands to demyx container from host
       update          Update chroot.sh from GitHub
+      -a, --all       Targets both demyx and demyx_socket container
       --cpu           Set container CPU usage, --cpu=null to remove cap
-      --dev           Puts demyx container into development mode
+      -d|--dev        Puts demyx container into development mode
       --edge          Use latest code updates from git repo
       --mem           Set container MEM usage, --mem=null to remove cap
       --nc            Starts demyx containr but prevent chrooting into container
-      --prod          Puts demyx container into production mode
+      -p|--prod       Puts demyx container into production mode
       -r, --root      Execute as root user
       --ssh           Override ssh port
-      --stack         Pulls all demyx images when running demyx update
+      --system        Pulls all demyx images, updates demyx helper script, and force recreates the demyx_socket and demyx containers when using demyx update --system
+      --tz            Set timezone
 ```
 
 ### Commands

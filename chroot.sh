@@ -13,19 +13,26 @@ if [[ -z "$(id | grep docker)" ]]; then
 fi
 
 # Set default variables
+if [[ -f ~/.demyx ]]; then
+    source ~/.demyx
+else
+    DEMYX_CHROOT_BRANCH=stable
+    DEMYX_CHROOT_SSH=2222
+    DEMYX_CHROOT_CPU=.50
+    DEMYX_CHROOT_MEM=512m
+    DEMYX_CHROOT_TZ=America/Los_Angeles
+fi
+
 DEMYX_CHROOT_HOST="$(hostname)"
-DEMYX_CHROOT_BRANCH=stable
 DEMYX_CHROOT_MODE=production
 DEMYX_CHROOT_USER=demyx
-DEMYX_CHROOT_SSH=2222
 DEMYX_CHROOT_API=false
-DEMYX_CHROOT_CPU=.50
-DEMYX_CHROOT_MEM=512m
 DEMYX_CHROOT=
 DEMYX_CHROOT_NC=
 DEMYX_CHROOT_ALL=
 DEMYX_CHROOT_MODE=
 DEMYX_CHROOT_SYSTEM=
+DEMYX_CHROOT_SETTING=
 
 while :; do
     case "${1:-}" in
@@ -55,7 +62,8 @@ while :; do
             DEMYX_CHROOT_ALL=1
             ;;
         --cpu=null|--cpu=?*)
-            DEMYX_CHROOT_CPU=${1#*=}
+            DEMYX_CHROOT_CPU="${1#*=}"
+            DEMYX_CHROOT_SETTING=1
             ;;
         --cpu=)
             printf '\e[31m[CRITICAL]\e[39m "--cpu" cannot be empty\n'
@@ -66,9 +74,11 @@ while :; do
             ;;
         --edge)
             DEMYX_CHROOT_BRANCH=edge
+            DEMYX_CHROOT_SETTING=1
             ;;
         --mem=null|--mem=?*)
-            DEMYX_CHROOT_MEM=${1#*=}
+            DEMYX_CHROOT_MEM="${1#*=}"
+            DEMYX_CHROOT_SETTING=1
             ;;
         --mem=)
             printf '\e[31m[CRITICAL]\e[39m "--mem" cannot be empty\n'
@@ -84,7 +94,8 @@ while :; do
             DEMYX_CHROOT_USER=root
             ;;
         --ssh=?*)
-            DEMYX_CHROOT_SSH=${1#*=}
+            DEMYX_CHROOT_SSH="${1#*=}"
+            DEMYX_CHROOT_SETTING=1
             ;;
         --ssh=)
             printf '\e[31m[CRITICAL]\e[39m "--ssh" cannot be empty\n'
@@ -92,6 +103,14 @@ while :; do
             ;;
         --system)
             DEMYX_CHROOT_SYSTEM=1
+            ;;
+        --tz=?*)
+            DEMYX_CHROOT_TZ="${1#*=}"
+            DEMYX_CHROOT_SETTING=1
+            ;;
+        --tz=)
+            printf '\e[31m[CRITICAL]\e[39m "--tz" cannot be empty\n'
+            exit 1
             ;;
         --)
             shift
@@ -110,6 +129,15 @@ done
 DEMYX_CHROOT_DOCKER_PS="$(docker ps)"
 DEMYX_CHROOT_DEMYX_CHECK="$(echo "$DEMYX_CHROOT_DOCKER_PS" | awk '{print $NF}' | grep -w demyx || true)"
 DEMYX_CHROOT_SOCKET_CHECK="$(echo "$DEMYX_CHROOT_DOCKER_PS" | awk '{print $NF}' | grep -w demyx_socket || true)"
+
+# Save settings to user's home directory
+if [[ ! -f ~/.demyx || -n "$DEMYX_CHROOT_SETTING" ]]; then
+    echo "DEMYX_CHROOT_BRANCH=$DEMYX_CHROOT_BRANCH
+        DEMYX_CHROOT_SSH=$DEMYX_CHROOT_SSH
+        DEMYX_CHROOT_CPU=$DEMYX_CHROOT_CPU
+        DEMYX_CHROOT_MEM=$DEMYX_CHROOT_MEM
+        DEMYX_CHROOT_TZ=$DEMYX_CHROOT_TZ" | sed "s|        ||" > ~/.demyx
+fi
 
 demyx_mode() {
     DEMYX_MODE_CHECK="$(docker exec -t demyx zsh -c "[[ -f /tmp/demyx-dev ]] && echo development || true")"
@@ -164,6 +192,7 @@ demyx_run() {
     -e DEMYX_MODE="$DEMYX_CHROOT_MODE" \
     -e DEMYX_HOST="$DEMYX_CHROOT_HOST" \
     -e DEMYX_SSH="$DEMYX_CHROOT_SSH" \
+    -e TZ="$DEMYX_CHROOT_TZ" \
     demyx/demyx
 
     demyx_compose up -d
@@ -190,6 +219,7 @@ elif [[ "$DEMYX_CHROOT" = help ]]; then
     echo "      -r, --root      Execute as root user"
     echo "      --ssh           Override ssh port"
     echo "      --system        Pulls all demyx images, updates demyx helper script, and force recreates the demyx_socket and demyx containers when using demyx update --system"
+    echo "      --tz            Set timezone"
     echo
 elif [[ "$DEMYX_CHROOT" = remove ]]; then
     demyx_rm
