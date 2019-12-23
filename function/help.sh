@@ -58,6 +58,7 @@ demyx_help() {
         echo "                   --skip-checks              Skip checking other configs (cache, cdn, rate limit, etc.)"
         echo "                   --sleep                    Set sleep when all loop is used"
         echo "                   --ssl                      Turns on/off SSL"
+        echo "                   --stack                    Switch the WordPress stack: bedrock, nginx-php, ols, ols-bedrock"
         echo "                   --upgrade                  Upgrade the app"
         echo "                   --upgrade-db               Upgrade MariaDB"
         echo "                   --wp-cpu                   Set the app's container CPU usage, --wp-cpu=null to remove cap"

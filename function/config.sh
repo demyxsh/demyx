@@ -183,6 +183,12 @@ demyx_config() {
             --ssl=false)
                 DEMYX_CONFIG_SSL=false
                 ;;
+            --stack=bedrock|--stack=nginx-php|--stack=ols|--stack=ols-bedrock)
+                DEMYX_CONFIG_STACK="${3#*=}"
+                ;;
+            --stack=)
+                demyx_die '"--stack" cannot be empty'
+                ;;
             --upgrade)
                 DEMYX_CONFIG_UPGRADE=1
                 ;;
@@ -895,6 +901,33 @@ demyx_config() {
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" search-replace https://"$DEMYX_APP_DOMAIN" http://"$DEMYX_APP_DOMAIN"
 
                 demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
+            fi
+            if [[ -n "$DEMYX_CONFIG_STACK" ]]; then
+                [[ "$DEMYX_APP_STACK" = "$DEMYX_CONFIG_STACK" ]] && demyx_die "$DEMYX_APP_DOMAIN is already using the $DEMYX_CONFIG_STACK stack"
+                [[ "$DEMYX_APP_CACHE" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --cache=false
+
+                demyx_echo "Converting $DEMYX_APP_DOMAIN to the $DEMYX_CONFIG_STACK stack"
+
+                if [[ "$DEMYX_CONFIG_STACK" = bedrock ]]; then
+                    [[ "$DEMYX_APP_STACK" = nginx-php || "$DEMYX_APP_STACK" = ols ]] && demyx_die "Can't convert the stack of this app"
+                    demyx_execute sed -i "s|DEMYX_APP_WP_IMAGE=.*|DEMYX_APP_WP_IMAGE=demyx/wordpress:bedrock|g" "$DEMYX_APP_PATH"/.env; \
+                        sed -i "s|DEMYX_APP_STACK=.*|DEMYX_APP_STACK=bedrock|g" "$DEMYX_APP_PATH"/.env
+                elif [[ "$DEMYX_CONFIG_STACK" = nginx-php ]]; then
+                    [[ "$DEMYX_APP_STACK" = bedrock || "$DEMYX_APP_STACK" = ols-bedrock ]] && demyx_die "Can't convert the stack of this app"
+                    demyx_execute sed -i "s|DEMYX_APP_WP_IMAGE=.*|DEMYX_APP_WP_IMAGE=demyx/wordpress|g" "$DEMYX_APP_PATH"/.env; \
+                        sed -i "s|DEMYX_APP_STACK=.*|DEMYX_APP_STACK=nginx-php|g" "$DEMYX_APP_PATH"/.env
+                elif [[ "$DEMYX_CONFIG_STACK" = ols ]]; then
+                    [[ "$DEMYX_APP_STACK" = bedrock || "$DEMYX_APP_STACK" = ols-bedrock ]] && demyx_die "Can't convert the stack of this app"
+                    demyx_execute sed -i "s|DEMYX_APP_WP_IMAGE=.*|DEMYX_APP_WP_IMAGE=demyx/openlitespeed|g" "$DEMYX_APP_PATH"/.env; \
+                        sed -i "s|DEMYX_APP_STACK=.*|DEMYX_APP_STACK=ols|g" "$DEMYX_APP_PATH"/.env
+                elif [[ "$DEMYX_CONFIG_STACK" = ols-bedrock ]]; then
+                    [[ "$DEMYX_APP_STACK" = nginx-php || "$DEMYX_APP_STACK" = ols ]] && demyx_die "Can't convert the stack of this app"
+                    demyx_execute sed -i "s|DEMYX_APP_WP_IMAGE=.*|DEMYX_APP_WP_IMAGE=demyx/openlitespeed:bedrock|g" "$DEMYX_APP_PATH"/.env; \
+                        sed -i "s|DEMYX_APP_STACK=.*|DEMYX_APP_STACK=ols-bedrock|g" "$DEMYX_APP_PATH"/.env
+                fi
+
+                demyx config "$DEMYX_APP_DOMAIN" --refresh
+                [[ "$DEMYX_APP_CACHE" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --cache
             fi
             if [[ -n "$DEMYX_CONFIG_UPGRADE" ]]; then
                 demyx_app_is_up
