@@ -137,10 +137,10 @@ demyx_stack() {
             
             if [[ "$DEMYX_STACK_IGNORE" = false ]]; then
                 demyx_echo 'Updating Ouroboros'
-                demyx_execute sed -i "s|DEMYX_STACK_OUROBOROS_IGNORE=.*|DEMYX_STACK_OUROBOROS_IGNORE=demyx_socket|g" "$DEMYX_STACK"/.env
+                demyx_execute sed -i "s|DEMYX_STACK_OUROBOROS_IGNORE=.*|DEMYX_STACK_OUROBOROS_IGNORE=|g" "$DEMYX_STACK"/.env
             else
                 demyx_echo 'Updating Ouroboros'
-                demyx_execute sed -i "s|DEMYX_STACK_OUROBOROS_IGNORE=.*|DEMYX_STACK_OUROBOROS_IGNORE=\"demyx_socket $DEMYX_STACK_IGNORE\"|g" "$DEMYX_STACK"/.env
+                demyx_execute sed -i "s|DEMYX_STACK_OUROBOROS_IGNORE=.*|DEMYX_STACK_OUROBOROS_IGNORE=\"$DEMYX_STACK_IGNORE\"|g" "$DEMYX_STACK"/.env
             fi
 
             demyx compose stack up -d
