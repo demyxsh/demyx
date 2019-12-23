@@ -233,15 +233,6 @@ elif [[ "$DEMYX_CHROOT" = shell ]]; then
     docker exec -it --user="$DEMYX_CHROOT_USER" demyx "$@"
 elif [[ "$DEMYX_CHROOT" = update ]]; then
     if [[ -n "$DEMYX_CHROOT_SYSTEM" ]]; then
-        docker pull demyx/browsersync
-
-        # Pull the Alpine tag if host is Alpine Linux
-        if [[ -n "$(uname -a | grep Alpine || true)" ]]; then
-            docker pull demyx/code-server:wp-alpine
-        else
-            docker pull demyx/code-server:wp
-        fi
-        
         docker pull demyx/demyx
         docker pull demyx/docker-compose
         docker pull demyx/docker-socket-proxy
@@ -250,12 +241,10 @@ elif [[ "$DEMYX_CHROOT" = update ]]; then
         docker pull demyx/nginx
         docker pull demyx/openlitespeed
         docker pull demyx/ouroboros
-        docker pull demyx/ssh
         docker pull demyx/traefik
         docker pull demyx/utilities
         docker pull demyx/wordpress
         docker pull demyx/wordpress:cli
-        docker pull phpmyadmin/phpmyadmin
 
         demyx_compose up -d --remove-orphans --force-recreate
     fi

@@ -35,14 +35,6 @@ while :; do
 done
 
 if [[ -z "$DEMYX_INSTALL_SKIP_CHECKS" ]]; then
-    # Pull the Alpine tag if host is Alpine Linux
-    if [[ -n "$(cat /etc/os-release | grep Alpine || true)" ]]; then
-        docker pull demyx/code-server:wp-alpine
-    else
-        docker pull demyx/code-server:wp
-    fi
-
-    docker pull demyx/browsersync
     docker pull demyx/demyx
     docker pull demyx/docker-compose
     docker pull demyx/docker-socket-proxy
@@ -51,12 +43,10 @@ if [[ -z "$DEMYX_INSTALL_SKIP_CHECKS" ]]; then
     docker pull demyx/nginx
     docker pull demyx/openlitespeed
     docker pull demyx/ouroboros
-    docker pull demyx/ssh
     docker pull demyx/traefik
     docker pull demyx/utilities
     docker pull demyx/wordpress
     docker pull demyx/wordpress:cli
-    docker pull phpmyadmin/phpmyadmin
 fi
 
 echo -e "\e[34m[INFO]\e[39m Enter top level domain for Traefik dashboard"
