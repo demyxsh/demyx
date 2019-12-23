@@ -5,7 +5,6 @@
 #
 demyx_healthcheck() {
     demyx_source stack
-    DEMYX_HEALTHCHECK_CONTAINER="$DEMYX_APP_WP_CONTAINER"
 
     if [[ "$DEMYX_STACK_HEALTHCHECK" = true ]]; then
         cd "$DEMYX_WP" || exit
@@ -14,8 +13,13 @@ demyx_healthcheck() {
         do
             if [[ -d "$i" ]]; then
                 source "$DEMYX_WP"/"$i"/.env
-                [[ -n "$DEMYX_APP_NX_CONTAINER" ]] && DEMYX_HEALTHCHECK_CONTAINER="$DEMYX_APP_NX_CONTAINER"
                 [[ "$DEMYX_APP_HEALTHCHECK" = false ]] && continue
+
+                if [[ "$DEMYX_APP_STACK" = ols || "$DEMYX_APP_STACK" = ols-bedrock ]]; then
+                    DEMYX_HEALTHCHECK_CONTAINER="$DEMYX_APP_WP_CONTAINER"
+                else
+                    DEMYX_HEALTHCHECK_CONTAINER="$DEMYX_APP_NX_CONTAINER"
+                fi
 
                 DEMYX_HEALTHCHECK_STATUS="$(curl -sSLf -m "$DEMYX_STACK_HEALTHCHECK_TIMEOUT" "$DEMYX_HEALTHCHECK_CONTAINER" > /dev/null; echo "$?")"
 
