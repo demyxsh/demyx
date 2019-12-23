@@ -609,6 +609,8 @@ demyx_config() {
                 demyx config "$DEMYX_APP_DOMAIN" --restart=php
             fi
             if [[ -n "$DEMYX_CONFIG_PHP" ]]; then
+                demyx_ols_not_supported
+
                 if [[ -n "$DEMYX_CONFIG_PHP_MAX_CHILDREN" ]]; then
                     demyx_echo "Updating pm.max_children $DEMYX_CONFIG_PHP_MAX_CHILDREN"
                     demyx_execute sed -i "s|DEMYX_APP_PHP_PM_MAX_CHILDREN=.*|DEMYX_APP_PHP_PM_MAX_CHILDREN=$DEMYX_CONFIG_PHP_MAX_CHILDREN|g" "$DEMYX_APP_PATH"/.env
@@ -709,6 +711,7 @@ demyx_config() {
             fi
             if [[ "$DEMYX_CONFIG_RATE_LIMIT" = true ]]; then
                 demyx_app_is_up
+                demyx_ols_not_supported
 
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ "$DEMYX_APP_RATE_LIMIT" = true ]] && demyx_die 'Rate limit is already turned on'
@@ -721,6 +724,7 @@ demyx_config() {
                 demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
             elif [[ "$DEMYX_CONFIG_RATE_LIMIT" = false ]]; then
                 demyx_app_is_up
+                demyx_ols_not_supported
 
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ "$DEMYX_APP_RATE_LIMIT" = false ]] && demyx_die 'Rate limit is already turned off'
