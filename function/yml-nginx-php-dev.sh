@@ -53,8 +53,6 @@ if [[ "$DEMYX_APP_AUTH" = true || -n "$DEMYX_RUN_AUTH" ]]; then
       - \"traefik.http.middlewares.\${DEMYX_APP_COMPOSE_PROJECT}-bs-auth.basicauth.users=\${DEMYX_APP_AUTH_HTPASSWD}\""
 fi
 
-[[ -n "$(demyx_alpine_check)" ]] && DEMYX_YML_NGINX_PHP_DEV_IMAGE=demyx/code-server:wp-alpine
-
 echo "# AUTO GENERATED
 version: \"$DEMYX_DOCKER_COMPOSE\"
 services:
@@ -124,7 +122,7 @@ services:
 
       ${DEMYX_YML_NGINX_PHP_LABEL_AUTH_BS:-}
   wp_${DEMYX_APP_ID}:
-    image: ${DEMYX_YML_NGINX_PHP_DEV_IMAGE:-demyx/code-server:wp}
+    image: demyx/code-server:wp
     cpus: \${DEMYX_APP_WP_CPU}
     mem_limit: \${DEMYX_APP_WP_MEM}
     restart: unless-stopped
