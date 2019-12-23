@@ -183,6 +183,7 @@ demyx_help() {
         echo "                --rate-limit    Run with rate limit on/off"
         echo "                --skip-init     Skip the initializing checks, useful if the run command hangs"
         echo "                --ssl           Run with ssl on/off"
+        echo "                --stack         Create a WordPress app using preferred stack: bedrock, nginx-php, ols (default), ols-bedrock"
         echo "                --type          Run app type as wp/php/html"
         echo "                --user          Override user generation"
         echo

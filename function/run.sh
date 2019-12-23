@@ -15,9 +15,6 @@ demyx_run() {
             --auth)
                 DEMYX_RUN_AUTH=true
                 ;;
-            --bedrock)
-                DEMYX_RUN_BEDROCK=true
-                ;;
             --cache)
                 DEMYX_RUN_CACHE=true
                 ;;
@@ -59,6 +56,12 @@ demyx_run() {
                 ;;
             --ssl=false)
                 DEMYX_RUN_SSL=false
+                ;;
+            --stack=bedrock|--stack=nginx-php|--stack=ols|--stack=ols-bedrock)
+                DEMYX_RUN_STACK="${3#*=}"
+                ;;
+            --stack=)
+                demyx_die '"--stack" cannot be empty'
                 ;;
             --type=wp|--type=php|--type=html)
                 DEMYX_RUN_TYPE="${3#*=}"
@@ -113,13 +116,22 @@ demyx_run() {
         fi
     fi
 
-    [[ -z "$DEMYX_RUN_TYPE" ]] && DEMYX_RUN_TYPE=wp
-    [[ -z "$DEMYX_RUN_RATE_LIMIT" ]] && DEMYX_RUN_RATE_LIMIT=false
-    [[ -z "$DEMYX_RUN_CDN" ]] && DEMYX_RUN_CDN=false
-    [[ -z "$DEMYX_RUN_CACHE" ]] && DEMYX_RUN_CACHE=false
-    [[ -z "$DEMYX_RUN_AUTH" ]] && DEMYX_RUN_AUTH=false
+    DEMYX_RUN_TYPE="${DEMYX_RUN_TYPE:-wp}"
+    DEMYX_RUN_RATE_LIMIT="${DEMYX_RUN_RATE_LIMIT:-false}"
+    DEMYX_RUN_CDN="${DEMYX_RUN_CDN:-false}"
+    DEMYX_RUN_CACHE="${DEMYX_RUN_CACHE:-false}"
+    DEMYX_RUN_AUTH="${DEMYX_RUN_AUTH:-false}"
     [[ -n "$DEMYX_RUN_CLONE" ]] && DEMYX_RUN_CLONE_APP="$(demyx info "$DEMYX_RUN_CLONE" --filter=DEMYX_APP_WP_CONTAINER)"
-    [[ -n "$DEMYX_RUN_BEDROCK" ]] && DEMYX_APP_WP_IMAGE=demyx/wordpress:bedrock
+
+    if [[ "$DEMYX_RUN_STACK" = bedrock ]]; then
+        DEMYX_APP_WP_IMAGE=demyx/wordpress:bedrock
+    elif [[ "$DEMYX_RUN_STACK" = nginx-php ]]; then
+        DEMYX_APP_WP_IMAGE=demyx/wordpress
+    elif [[ "$DEMYX_RUN_STACK" = ols-bedrock ]]; then
+        DEMYX_APP_WP_IMAGE=demyx/openlitespeed:bedrock
+    else
+        DEMYX_APP_WP_IMAGE=demyx/openlitespeed
+    fi
 
     if [[ "$DEMYX_RUN_SSL" = true ]]; then 
         DEMYX_RUN_SSL=true
@@ -221,10 +233,10 @@ demyx_run() {
             demyx_execute docker stop "$DEMYX_APP_ID"
         fi
 
-        demyx compose "$DEMYX_APP_DOMAIN" up -d wp_"$DEMYX_APP_ID" nx_"$DEMYX_APP_ID"
+        demyx compose "$DEMYX_APP_DOMAIN" up -d
 
         if [[ -z "$DEMYX_RUN_SKIP_INIT" ]]; then
-            if [[ -n "$DEMYX_RUN_BEDROCK" ]]; then
+            if [[ "$DEMYX_RUN_STACK" = bedrock || "$DEMYX_RUN_STACK" = ols-bedrock ]]; then
                 demyx_echo 'Initializing Bedrock'
                 demyx_execute demyx_bedrock_ready
             else
@@ -352,18 +364,35 @@ demyx_run() {
 
         demyx config "$DEMYX_APP_DOMAIN" --refresh --healthcheck
 
-        PRINT_TABLE="DEMYX^ $DEMYX_RUN_PROTO/wp-admin\n"
-        PRINT_TABLE+="WORDPRESS USER^ $WORDPRESS_USER\n"
+        if [[ "$DEMYX_RUN_TYPE" = html ]]; then
+            DEMYX_RUN_TABLE_TITLE=HTML
+        elif [[ "$DEMYX_RUN_TYPE" = php ]]; then
+            DEMYX_RUN_TABLE_TITLE=PHP
+        else
+            DEMYX_RUN_TABLE_TITLE=WORDPRESS
+        fi
+
+        PRINT_TABLE="DEMYX^ ${DEMYX_RUN_TABLE_TITLE}\n"
+
+        if [[ "$DEMYX_RUN_STACK" = ols || "$DEMYX_RUN_STACK" = ols-bedrock ]]; then
+            PRINT_TABLE+="OPENLITESPEED URL^ ${DEMYX_RUN_PROTO}/demyx/ols/\n"
+            PRINT_TABLE+="OPENLITESPEED USERNAME^ $DEMYX_APP_OLS_ADMIN_USERNAME\n"
+            PRINT_TABLE+="OPENLITESPEED PASSWORD^ $DEMYX_APP_OLS_ADMIN_PASSWORD\n"
+            PRINT_TABLE+="^\n"
+        fi
+
+        PRINT_TABLE+="WORDPRESS URL^ ${DEMYX_RUN_PROTO}\n"
+        PRINT_TABLE+="WORDPRESS USERNAME^ $WORDPRESS_USER\n"
         PRINT_TABLE+="WORDPRESS PASSWORD^ $WORDPRESS_USER_PASSWORD\n"
         PRINT_TABLE+="WORDPRESS EMAIL^ $WORDPRESS_USER_EMAIL\n"
-        PRINT_TABLE+="NX CONTAINER^ $DEMYX_APP_NX_CONTAINER\n"
+        PRINT_TABLE+="^\n"
+        
+        if [[ "$DEMYX_RUN_STACK" = nginx-php || "$DEMYX_RUN_STACK" = bedrock ]]; then
+            PRINT_TABLE+="NX CONTAINER^ $DEMYX_APP_NX_CONTAINER\n"
+        fi
+
         PRINT_TABLE+="WP CONTAINER^ $DEMYX_APP_WP_CONTAINER\n"
         PRINT_TABLE+="DB CONTAINER^ $DEMYX_APP_DB_CONTAINER\n"
-        PRINT_TABLE+="SSL^ $DEMYX_RUN_SSL\n"
-        PRINT_TABLE+="RATE LIMIT^ $DEMYX_RUN_RATE_LIMIT\n"
-        PRINT_TABLE+="BASIC AUTH^ $DEMYX_RUN_AUTH\n"
-        PRINT_TABLE+="CACHE^ $DEMYX_RUN_CACHE\n"
-        PRINT_TABLE+="CDN^ $DEMYX_RUN_CDN\n"
         demyx_execute -v demyx_table "$PRINT_TABLE"
     fi
 }
