@@ -39,11 +39,13 @@ if [[ -n "$DEMYX_YML_GET_STACK_ENV" ]]; then
     fi
 fi
 
-# Check for CentOS/Fedora/RHEL strings in the kernel
+# Use privilege flag if host OS isn't Alpine/Debian/Ubuntu
 DEMYX_YML_UNAME="$(uname -a)"
-if [[ -n "$(echo "$DEMYX_YML_UNAME" | grep -i centos || true)" || -n "$(echo "$DEMYX_YML_UNAME" | grep -i fedora || true)" || -n "$(echo "$DEMYX_YML_UNAME" | grep -i rhel || true)" ]]; then
-    DEMYX_YML_PRIVILEGED="privileged: true"
-fi
+DEMYX_YML_UNAME_ALPINE="$(echo "$DEMYX_YML_UNAME" | grep Alpine || true)"
+DEMYX_YML_UNAME_DEBIAN="$(echo "$DEMYX_YML_UNAME" | grep Debian || true)"
+DEMYX_YML_UNAME_UBUNTU="$(echo "$DEMYX_YML_UNAME" | grep Ubuntu || true)"
+DEMYX_YML_PRIVILEGED="privileged: true"
+[[ -n "$DEMYX_YML_UNAME_ALPINE" || -n "$DEMYX_YML_UNAME_DEBIAN" || -n "$DEMYX_YML_UNAME_UBUNTU" ]] && DEMYX_YML_PRIVILEGED=
 
 # Generate /demyx/docker-compose.yml
 echo "# AUTO GENERATED
@@ -92,7 +94,7 @@ services:
       - DEMYX_MODE="$DEMYX_MODE"
       - DEMYX_HOST="$DEMYX_HOST"
       - DEMYX_SSH="$DEMYX_SSH"
-      - TZ=America/Los_Angeles
+      - TZ="$TZ"
     ports:
       - ${DEMYX_SSH}:2222
     $DEMYX_YML_LABELS
