@@ -239,6 +239,12 @@ demyx_source() {
 demyx_alpine_check() {
     [[ -n "$(uname -a | grep Alpine || true)" ]] && echo true
 }
+demyx_ols_not_supported() {
+    [[ "$DEMYX_APP_STACK" = ols ]] && demyx_die "OpenLiteSpeed doesn't support feature"
+}
+demyx_warning() {
+    demyx_execute -v echo -e "\e[33m[WARNING]\e[39m $1"
+}
 
 if [[ -n "$(demyx_check_docker_sock)" ]]; then
     # Global environment variables
