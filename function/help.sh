@@ -147,13 +147,25 @@ demyx_help() {
     elif [[ "$DEMYX_HELP" = pull ]]; then
         echo
         echo "demyx pull <args>     Enter specific image or blank to pull all"
-        echo "           demyx"
-        echo "           code-server:wp"
-        echo "           docker-compose"
-        echo "           logrotate"
-        echo "           mariadb"
-        echo "           nginx-rephp-wordpress"
-        echo "           ssh"
+        echo "           demyx/browsersync"
+        echo "           demyx/code-server:openlitespeed"
+        echo "           demyx/code-server:openlitespeed-sage"
+        echo "           demyx/code-server:sage"
+        echo "           demyx/code-server:wp"
+        echo "           demyx/demyx"
+        echo "           demyx/docker-compose"
+        echo "           demyx/docker-socket-proxy"
+        echo "           demyx/logrotate"
+        echo "           demyx/mariadb:edge"
+        echo "           demyx/nginx"
+        echo "           demyx/openlitespeed:bedrock"
+        echo "           demyx/ouroboros"
+        echo "           demyx/ssh"
+        echo "           demyx/traefik"
+        echo "           demyx/utilities"
+        echo "           demyx/wordpress"
+        echo "           demyx/wordpress:bedrock"
+        echo "           demyx/wordpress:cli"
         echo
     elif [[ "$DEMYX_HELP" = restore ]]; then
         echo
