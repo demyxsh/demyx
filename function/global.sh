@@ -232,14 +232,8 @@ demyx_socket() {
 demyx_source() {
     if [[ "$1" = stack && -f "$DEMYX_STACK"/.env ]]; then
         source "$DEMYX_STACK"/.env
-    elif [[ "$1" = env && -f "$DEMYX_FUNCTION"/env.sh ]]; then
-        source "$DEMYX_FUNCTION"/env.sh
-    elif [[ "$1" = name && -f "$DEMYX_FUNCTION"/name.sh ]]; then
-        source "$DEMYX_FUNCTION"/name.sh
-    elif [[ "$1" = table && -f "$DEMYX_FUNCTION"/table.sh ]]; then
-        source "$DEMYX_FUNCTION"/table.sh
-    elif [[ "$1" = yml && -f "$DEMYX_FUNCTION"/yml.sh ]]; then
-        source "$DEMYX_FUNCTION"/yml.sh
+    else
+        source "$DEMYX_FUNCTION"/"$1".sh
     fi
 }
 demyx_alpine_check() {
