@@ -32,7 +32,6 @@ elif [[ "$DEMYX_COMMAND" = cron ]]; then
     demyx_cron "$@"
 elif [[ "$DEMYX_COMMAND" = edit ]]; then
     source "$DEMYX_FUNCTION"/edit.sh
-    shift 2
     demyx_edit "$@"
 elif [[ "$DEMYX_COMMAND" = exec ]]; then
     source "$DEMYX_FUNCTION"/exec.sh

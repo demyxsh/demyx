@@ -5,19 +5,19 @@
 #
 demyx_edit() {
     while :; do
-        case "$1" in
+        case "$2" in
+            stack)
+                DEMYX_EDIT=stack
+                ;;
             --up)
                 DEMYX_EDIT_UP=1
-                ;;
-            --yml)
-                DEMYX_EDIT=yml
                 ;;
             --)
                 shift
                 break
                 ;;
             -?*)
-                printf '\e[31m[CRITICAL]\e[39m Unknown option: %s\n' "$1" >&2
+                printf '\e[31m[CRITICAL]\e[39m Unknown option: %s\n' "$2" >&2
                 exit 1
                 ;;
             *)
@@ -26,13 +26,13 @@ demyx_edit() {
         shift
     done
 
-    demyx_app_config
-
-    if [[ "$DEMYX_EDIT" = yml ]]; then
-        nano "$DEMYX_APP_PATH"/docker-compose.yml
+    if [[ "$DEMYX_EDIT" = stack ]]; then
+        nano "$DEMYX_STACK"/.env
+        echo "$DEMYX_STACK"
+        [[ -n "$DEMYX_EDIT_UP" ]] && demyx compose stack up -d
     else
+        demyx_app_config
         nano "$DEMYX_APP_PATH"/.env
+        [[ -n "$DEMYX_EDIT_UP" ]] && demyx compose "$DEMYX_APP_DOMAIN" up -d
     fi
-
-    [[ -n "$DEMYX_EDIT_UP" ]] && demyx compose "$DEMYX_APP_DOMAIN" up -d
 }

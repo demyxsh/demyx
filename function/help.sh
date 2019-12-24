@@ -81,9 +81,9 @@ demyx_help() {
         echo
     elif [[ "$DEMYX_HELP" = edit ]]; then
         echo
-        echo "demyx edit <app> <args>       Opens nano to edit .env and docker-compose.yml files"
+        echo "demyx edit <app> <args>       Opens nano to edit .env files"
+        echo "                 stack        Edit the stack's .env"
         echo "                 --up         Executes demyx compose <app> up -d after exiting nano"
-        echo "                 --yml        Edit the docker-compose.yml file"
         echo
     elif [[ "$DEMYX_HELP" = exec ]]; then
         echo
@@ -255,7 +255,7 @@ demyx_help() {
         echo "      config          Modifies an app's configuration"
         echo "      cp              Wrapper for docker cp"
         echo "      cron            Execute demyx cron"
-        echo "      edit            Opens nano to edit .env and docker-compose.yml files"
+        echo "      edit            Opens nano to edit .env files"
         echo "      exec            Accepts all docker exec arguments"
         echo "      healthcheck     Checks if WordPress apps are up"
         echo "      info            Shows an app's .env and filter output"
