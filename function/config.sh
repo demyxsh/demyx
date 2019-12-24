@@ -255,6 +255,14 @@ demyx_config() {
                 demyx_echo "Sleep for $DEMYX_CONFIG_SLEEP"
                 demyx_execute sleep "$DEMYX_CONFIG_SLEEP"
             fi
+            if [[ -n "$DEMYX_CONFIG_STACK" ]]; then
+                if [[ "$(demyx info "$i" --filter=DEMYX_APP_STACK)" = "$DEMYX_CONFIG_STACK" ]]; then
+                    demyx_warning "$i is already using the $DEMYX_CONFIG_STACK stack"
+                    continue
+                else
+                    demyx config "$i" --stack="$DEMYX_CONFIG_STACK"
+                fi
+            fi
             if [[ -n "$DEMYX_CONFIG_UPGRADE_DB" ]]; then
                 echo -e "\e[34m[INFO]\e[39m Upgrading db for $i"
                 DEMYX_CHECK_APP_DB_IMAGE="$(grep demyx/mariadb:edge "$DEMYX_WP"/"$i"/docker-compose.yml)"
