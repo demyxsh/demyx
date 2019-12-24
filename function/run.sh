@@ -131,6 +131,7 @@ demyx_run() {
         DEMYX_APP_WP_IMAGE=demyx/openlitespeed:bedrock
     else
         DEMYX_APP_WP_IMAGE=demyx/openlitespeed
+        DEMYX_RUN_STACK=ols
     fi
 
     if [[ "$DEMYX_RUN_SSL" = true ]]; then 
