@@ -79,6 +79,12 @@ demyx_help() {
         echo "           six-hour   Execute every six hour cron"
         echo "           weekly     Execute every week cron"
         echo
+    elif [[ "$DEMYX_HELP" = edit ]]; then
+        echo
+        echo "demyx edit <app> <args>       Opens nano to edit .env and docker-compose.yml files"
+        echo "                 --up         Executes demyx compose <app> up -d after exiting nano"
+        echo "                 --yml        Edit the docker-compose.yml file"
+        echo
     elif [[ "$DEMYX_HELP" = exec ]]; then
         echo
         echo "demyx exec <app> <args>       Accepts all docker exec arguments (default flags: -it)"
@@ -249,6 +255,7 @@ demyx_help() {
         echo "      config          Modifies an app's configuration"
         echo "      cp              Wrapper for docker cp"
         echo "      cron            Execute demyx cron"
+        echo "      edit            Opens nano to edit .env and docker-compose.yml files"
         echo "      exec            Accepts all docker exec arguments"
         echo "      healthcheck     Checks if WordPress apps are up"
         echo "      info            Shows an app's .env and filter output"

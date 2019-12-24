@@ -116,6 +116,7 @@ demyx <arg>           Main demyx command
       config          Modifies an app's configuration
       cp              Wrapper for docker cp
       cron            Execute demyx cron
+      edit            Opens nano to edit .env and docker-compose.yml files
       exec            Accepts all docker exec arguments
       healthcheck     Checks if WordPress apps are up
       info            Shows an app's .env and filter output
