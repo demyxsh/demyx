@@ -569,14 +569,15 @@ demyx_config() {
                     [[ "$DEMYX_APP_DEV" = false ]] && demyx_die 'Dev mode is already turned off'
                 fi
 
-                if [[ "$DEMYX_APP_WP_IMAGE" = demyx/wordpress:bedrock ]]; then
-                    demyx_echo 'Cleaning up'
-                    demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "rm -f \${CODE_SERVER_ROOT}/web/app/mu-plugins/bs.php"
+                demyx_echo 'Cleaning up'
 
+                if [[ "$DEMYX_APP_STACK" = bedrock || "$DEMYX_APP_STACK" = ols-bedrock ]]; then
+                    demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "rm -f \${CODE_SERVER_ROOT}/web/app/mu-plugins/bs.php"
                     demyx config "$DEMYX_APP_DOMAIN" --bedrock=production -f
-                else
-                    demyx_echo 'Cleaning up'
+                elif [[ "$DEMYX_APP_STACK" = nginx-php ]]; then
                     demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "rm -f \${CODE_SERVER_ROOT}/wp-content/mu-plugins/bs.php; sed -i \"s|'WP_DEBUG', true|'WP_DEBUG', false|g\" \${CODE_SERVER_ROOT}/wp-config.php"
+                else
+                    demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "rm -f \${OPENLITESPEED_ROOT}/wp-content/mu-plugins/bs.php; sed -i \"s|'WP_DEBUG', true|'WP_DEBUG', false|g\" \${OPENLITESPEED_ROOT}/wp-config.php"
                 fi
 
                 demyx_echo 'Updating configs'
