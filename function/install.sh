@@ -83,7 +83,8 @@ demyx_install() {
         DEMYX_STACK_CLOUDFLARE_KEY=
         DEMYX_STACK_LOG_LEVEL=INFO
         DEMYX_STACK_LOG_ACCESS=${DEMYX_LOG}/traefik.access.log
-        DEMYX_STACK_LOG_ERROR=${DEMYX_LOG}/traefik.error.log" | sed 's|        ||g' > "$DEMYX_STACK"/.env
+        DEMYX_STACK_LOG_ERROR=${DEMYX_LOG}/traefik.error.log
+        DEMYX_STACK_TRUSTED_IPS=$DEMYX_TRUSTED_IPS" | sed 's|        ||g' > "$DEMYX_STACK"/.env
 
     demyx_echo 'Creating stack .yml'
     demyx_execute demyx_stack_yml
