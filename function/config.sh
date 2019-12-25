@@ -380,7 +380,7 @@ demyx_config() {
                     [[ "$DEMYX_APP_CACHE" = true ]] && demyx_die 'Cache is already turned on'
                 fi
 
-                if [[ "$DEMYX_APP_WP_IMAGE" = demyx/openlitespeed ]]; then
+                if [[ "$DEMYX_APP_STACK" = ols ]]; then
                     DEMYX_CONFIG_LSCACHE_CHECK="$(demyx exec "$DEMYX_APP_DOMAIN" ls wp-content/plugins | grep litespeed-cache || true)"
 
                     if [[ -n "$DEMYX_CONFIG_LSCACHE_CHECK" ]]; then
@@ -394,6 +394,37 @@ demyx_config() {
                     demyx_echo 'Configuring lsws' 
                     demyx_execute docker exec -t -e OPENLITESPEED_CACHE=true "$DEMYX_APP_WP_CONTAINER" sh -c 'demyx-config'; \
                         demyx config "$DEMYX_APP_DOMAIN" --restart=ols
+                elif [[ "$DEMYX_APP_STACK" = ols-bedrock  ]]; then
+                    DEMYX_CONFIG_LSCACHE_CHECK="$(demyx exec "$DEMYX_APP_DOMAIN" ls web/app/plugins | grep litespeed-cache || true)"
+
+                    if [[ -n "$DEMYX_CONFIG_LSCACHE_CHECK" ]]; then
+                        demyx_echo 'Activating litespeed-cache'
+                        demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin activate litespeed-cache
+                    else
+                        demyx_echo 'Installing litespeed-cache'
+                        demyx_execute demyx exec "$DEMYX_APP_DOMAIN" composer require wpackagist-plugin/litespeed-cache; \
+                            demyx wp "$DEMYX_APP_DOMAIN" plugin activate litespeed-cache
+                    fi
+
+                    demyx_echo 'Configuring lsws' 
+                    demyx_execute docker exec -t -e OPENLITESPEED_CACHE=true "$DEMYX_APP_WP_CONTAINER" sh -c 'demyx-config'; \
+                        demyx config "$DEMYX_APP_DOMAIN" --restart=ols
+                elif [[ "$DEMYX_APP_STACK" = bedrock ]]; then
+                    DEMYX_CONFIG_NGINX_HELPER_CHECK="$(demyx exec "$DEMYX_APP_DOMAIN" ls web/app/plugins | grep nginx-helper || true)"
+
+                    if [[ -n "$DEMYX_CONFIG_NGINX_HELPER_CHECK" ]]; then
+                        demyx_echo 'Activating nginx-helper'
+                        demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin activate nginx-helper
+                    else
+                        demyx_echo 'Installing nginx-helper'
+                        demyx_execute demyx exec "$DEMYX_APP_DOMAIN" composer require wpackagist-plugin/nginx-helper; \
+                            demyx wp "$DEMYX_APP_DOMAIN" plugin activate nginx-helper
+                    fi
+
+                    demyx_echo 'Configuring nginx-helper' 
+                    demyx_execute demyx wp "$DEMYX_APP_DOMAIN" option update rt_wp_nginx_helper_options '{"enable_purge":"1","cache_method":"enable_fastcgi","purge_method":"get_request","enable_map":null,"enable_log":null,"log_level":"INFO","log_filesize":"5","enable_stamp":null,"purge_homepage_on_edit":"1","purge_homepage_on_del":"1","purge_archive_on_edit":"1","purge_archive_on_del":"1","purge_archive_on_new_comment":"1","purge_archive_on_deleted_comment":"1","purge_page_on_mod":"1","purge_page_on_new_comment":"1","purge_page_on_deleted_comment":"1","redis_hostname":"127.0.0.1","redis_port":"6379","redis_prefix":"nginx-cache:","purge_url":"","redis_enabled_by_constant":0}' --format=json; \
+                        docker exec -t -e NGINX_CACHE=true "$DEMYX_APP_NX_CONTAINER" demyx-wp; \
+                        demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
                 else
                     DEMYX_CONFIG_NGINX_HELPER_CHECK="$(demyx exec "$DEMYX_APP_DOMAIN" ls wp-content/plugins | grep nginx-helper || true)"
 
@@ -405,8 +436,6 @@ demyx_config() {
                         demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin install nginx-helper --activate
                     fi
                     
-                    demyx_echo 'Configuring nginx-helper' 
-                demyx_echo 'Configuring nginx-helper' 
                     demyx_echo 'Configuring nginx-helper' 
                     demyx_execute demyx wp "$DEMYX_APP_DOMAIN" option update rt_wp_nginx_helper_options '{"enable_purge":"1","cache_method":"enable_fastcgi","purge_method":"get_request","enable_map":null,"enable_log":null,"log_level":"INFO","log_filesize":"5","enable_stamp":null,"purge_homepage_on_edit":"1","purge_homepage_on_del":"1","purge_archive_on_edit":"1","purge_archive_on_del":"1","purge_archive_on_new_comment":"1","purge_archive_on_deleted_comment":"1","purge_page_on_mod":"1","purge_page_on_new_comment":"1","purge_page_on_deleted_comment":"1","redis_hostname":"127.0.0.1","redis_port":"6379","redis_prefix":"nginx-cache:","purge_url":"","redis_enabled_by_constant":0}' --format=json; \
                         docker exec -t -e NGINX_CACHE=true "$DEMYX_APP_NX_CONTAINER" demyx-wp; \
@@ -422,7 +451,7 @@ demyx_config() {
                     [[ "$DEMYX_APP_CACHE" = false ]] && demyx_die 'Cache is already turned off'
                 fi
 
-                if [[ "$DEMYX_APP_WP_IMAGE" = demyx/openlitespeed ]]; then
+                if [[ "$DEMYX_APP_STACK" = ols || "$DEMYX_APP_STACK" = ols-bedrock ]]; then
                     demyx_echo 'Deactivating litespeed-cache'
                     demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin deactivate litespeed-cache
 
@@ -430,8 +459,6 @@ demyx_config() {
                     demyx_execute docker exec -t -e OPENLITESPEED_CACHE=false "$DEMYX_APP_WP_CONTAINER" sh -c 'demyx-config'; \
                         demyx config "$DEMYX_APP_DOMAIN" --restart=ols
                 else
-                    demyx_echo 'Deactivating nginx-helper'
-                demyx_echo 'Deactivating nginx-helper' 
                     demyx_echo 'Deactivating nginx-helper'
                     demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin deactivate nginx-helper
                     
