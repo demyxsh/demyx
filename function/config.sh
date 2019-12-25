@@ -936,7 +936,11 @@ demyx_config() {
             fi
             if [[ -n "$DEMYX_CONFIG_STACK" ]]; then
                 [[ "$DEMYX_APP_STACK" = "$DEMYX_CONFIG_STACK" ]] && demyx_die "$DEMYX_APP_DOMAIN is already using the $DEMYX_CONFIG_STACK stack"
-                [[ "$DEMYX_APP_CACHE" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --cache=false
+                
+                if [[ "$DEMYX_APP_CACHE" = true ]]; then
+                    DEMYX_CONFIG_STACK_CACHE=true
+                    demyx config "$DEMYX_APP_DOMAIN" --cache=false
+                fi
 
                 demyx_echo "Converting $DEMYX_APP_DOMAIN to the $DEMYX_CONFIG_STACK stack"
 
@@ -959,7 +963,7 @@ demyx_config() {
                 fi
 
                 demyx config "$DEMYX_APP_DOMAIN" --refresh
-                [[ "$DEMYX_APP_CACHE" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --cache
+                [[ "$DEMYX_CONFIG_STACK_CACHE" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --cache
             fi
             if [[ -n "$DEMYX_CONFIG_UPGRADE" ]]; then
                 demyx_app_is_up
