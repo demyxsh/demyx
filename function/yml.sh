@@ -107,7 +107,7 @@ demyx_stack_yml() {
                       - LABEL_ENABLE=true
                       - LATEST=true
                       - SELF_UPDATE=true
-                      - TZ=America/Los_Angeles
+                      - TZ=$TZ
                       $DEMYX_YML_OUROBOROS_SOCKET
                     $DEMYX_YML_OUROBOROS_VOLUME"
     fi
@@ -144,7 +144,7 @@ demyx_stack_yml() {
               - TRAEFIK_LOG_FILEPATH=/var/log/demyx/traefik.error.log
               - TRAEFIK_ACCESSLOG=true
               - TRAEFIK_ACCESSLOG_FILEPATH=/var/log/demyx/traefik.access.log
-              - TZ=America/Los_Angeles
+              - TZ=$TZ
             $DEMYX_YML_LABEL_TRAEFIK
           $DEMYX_YML_OUROBOROS
         volumes:
