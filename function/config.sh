@@ -192,9 +192,6 @@ demyx_config() {
             --upgrade)
                 DEMYX_CONFIG_UPGRADE=1
                 ;;
-            --upgrade-db)
-                DEMYX_CONFIG_UPGRADE_DB=1
-                ;;
             --wp-cpu=null|--wp-cpu=?*)
                 DEMYX_CONFIG_WP_CPU="${3#*=}"
                 DEMYX_CONFIG_RESOURCE=1
@@ -262,12 +259,6 @@ demyx_config() {
                 else
                     demyx config "$i" --stack="$DEMYX_CONFIG_STACK"
                 fi
-            fi
-            if [[ -n "$DEMYX_CONFIG_UPGRADE_DB" ]]; then
-                echo -e "\e[34m[INFO]\e[39m Upgrading db for $i"
-                DEMYX_CHECK_APP_DB_IMAGE="$(grep demyx/mariadb:edge "$DEMYX_WP"/"$i"/docker-compose.yml)"
-                [[ -n "$DEMYX_CHECK_APP_DB_IMAGE" ]] && continue
-                demyx config "$i" --upgrade-db
             fi
         done
     else
@@ -808,13 +799,6 @@ demyx_config() {
                 demyx_source env
                 demyx_source yml
 
-                # Will remove this in January 1st, 2020
-                if [[ -n "$(grep /var/www/html "$DEMYX_APP_PATH"/docker-compose.yml || true)" ]]; then
-                    demyx backup "$DEMYX_APP_DOMAIN"
-                    demyx wp "$DEMYX_APP_DOMAIN" search-replace /var/www/html /demyx
-                    docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "find /var/www/html/. -type f -print0 | xargs -0 sed -i 's|/var/www/html|/demyx|g'"
-                fi
-
                 demyx_echo 'Refreshing .env'
                 demyx_execute demyx_env
 
@@ -1016,35 +1000,6 @@ demyx_config() {
                     demyx_execute -v echo -e '\n\e[33m[WARNING]\e[39m These sites needs upgrading:'; \
                         demyx_upgrade_apps
                 fi
-            fi
-            if [[ -n "$DEMYX_CONFIG_UPGRADE_DB" ]]; then
-                DEMYX_CHECK_APP_DB_IMAGE="$(grep demyx/mariadb:edge "$DEMYX_APP_PATH"/docker-compose.yml)"
-                [[ -n "$DEMYX_CHECK_APP_DB_IMAGE" ]] && demyx_die "$DEMYX_APP_DOMAIN is already upgraded"
-
-                demyx_source yml
-
-                demyx backup "$DEMYX_APP_DOMAIN"
-                demyx config "$DEMYX_APP_DOMAIN" --healthcheck=false
-                
-                demyx_echo 'Putting WordPress into maintenance mode'
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "echo '<?php \$upgrading = time(); ?>' > .maintenance"
-
-                demyx_echo "Upgrading $DEMYX_APP_DOMAIN database"
-                demyx_execute docker stop "$DEMYX_APP_DB_CONTAINER"; \
-                    docker rm -f "$DEMYX_APP_DB_CONTAINER"; \
-                    docker run -t --rm \
-                    -v wp_"$DEMYX_APP_ID"_db:"$DEMYX_GLOBAL_WP_VOLUME" \
-                    -e MARIADB_ROOT_PASSWORD="$MARIADB_ROOT_PASSWORD" \
-                    -e MARIADB_DATABASE="$WORDPRESS_DB_NAME" \
-                    -e MARIADB_USERNAME="$WORDPRESS_DB_USER" \
-                    -e MARIADB_PASSWORD="$WORDPRESS_DB_PASSWORD" \
-                    --entrypoint=demyx-upgrade \
-                    demyx/mariadb:edge; \
-                    demyx_yml; \
-                    docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "rm -f .maintenance"
-
-                demyx config "$DEMYX_APP_DOMAIN" --healthcheck
-                demyx compose "$DEMYX_APP_DOMAIN" fr
             fi
             if [[ "$DEMYX_CONFIG_WP_UPDATE" = true ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then

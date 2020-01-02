@@ -193,7 +193,7 @@ services:
 
       $DEMYX_YML_OLS_BEDROCK_LABEL_AUTH
   db_${DEMYX_APP_ID}:
-    image: demyx/mariadb:edge
+    image: demyx/mariadb
     cpus: \${DEMYX_APP_DB_CPU}
     mem_limit: \${DEMYX_APP_DB_MEM}
     restart: unless-stopped

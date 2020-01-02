@@ -237,7 +237,7 @@ elif [[ "$DEMYX_CHROOT" = update ]]; then
         docker pull demyx/docker-compose
         docker pull demyx/docker-socket-proxy
         docker pull demyx/logrotate
-        docker pull demyx/mariadb:edge
+        docker pull demyx/mariadb
         docker pull demyx/nginx
         docker pull demyx/openlitespeed
         docker pull demyx/ouroboros

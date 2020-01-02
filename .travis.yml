@@ -12,7 +12,7 @@ env:
 before_install:
   - docker pull demyx/docker-compose
   - docker pull demyx/docker-socket-proxy
-  - docker pull demyx/mariadb:edge
+  - docker pull demyx/mariadb
   - docker pull demyx/nginx
   - docker pull demyx/ouroboros
   - docker pull demyx/traefik

@@ -176,7 +176,7 @@ services:
       $DEMYX_YML_BEDROCK_LABEL_HOTUPDATE_JSON
       - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-json.priority=99\"
   db_${DEMYX_APP_ID}:
-    image: demyx/mariadb:edge
+    image: demyx/mariadb
     cpus: \${DEMYX_APP_DB_CPU}
     mem_limit: \${DEMYX_APP_DB_MEM}
     restart: unless-stopped
