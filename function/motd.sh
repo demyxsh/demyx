@@ -65,9 +65,10 @@ demyx_motd_update_wp_yml() {
         for i in *
         do
             if [[ -n "$([[ -f "$DEMYX_WP"/"$i"/docker-compose.yml ]] && cat "$DEMYX_WP"/"$i"/docker-compose.yml | grep mariadb:edge || true)" ]]; then
-                demyx_execute -v demyx_warning "One or more WordPress apps have outdated configs, please update: demyx config all --refresh"
+                DEMYX_MOTD_UPDATE_WP_YML=true
             fi
         done
+        [[ "$DEMYX_MOTD_UPDATE_WP_YML" = true ]] && demyx_execute -v demyx_warning "One or more WordPress apps have outdated configs, please update: demyx config all --refresh"
     fi
 }
 
