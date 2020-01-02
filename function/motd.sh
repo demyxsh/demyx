@@ -68,7 +68,7 @@ demyx_motd_update_wp_yml() {
                 DEMYX_MOTD_UPDATE_WP_YML=true
             fi
         done
-        [[ "$DEMYX_MOTD_UPDATE_WP_YML" = true ]] && demyx_execute -v demyx_warning "One or more WordPress apps have outdated configs, please update: demyx config all --refresh"
+        [[ "$DEMYX_MOTD_UPDATE_WP_YML" = true ]] && demyx_execute -v demyx_warning "One or more WordPress apps have outdated configs, please run these commands:\n\n- demyx pull mariadb\n- demyx config all --refresh\n"
     fi
 }
 
