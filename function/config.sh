@@ -351,7 +351,7 @@ demyx_config() {
                 fi
 
                 demyx_echo 'Setting Bedrock config to production'
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "sed -i 's|WP_ENV=.*|WP_ENV=production|g' ${DEMYX_GLOBAL_WP_VOLUME}/.env" && \
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "sed -i 's|WP_ENV=.*|WP_ENV=production|g' /demyx/.env" && \
                     sed -i "s|DEMYX_APP_BEDROCK_MODE=.*|DEMYX_APP_BEDROCK_MODE=production|g" "$DEMYX_APP_PATH"/.env
             elif [[ "$DEMYX_CONFIG_BEDROCK" = development ]]; then
                 demyx_app_is_up
@@ -361,7 +361,7 @@ demyx_config() {
                 fi
 
                 demyx_echo 'Setting Bedrock config to development'
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "sed -i 's|WP_ENV=.*|WP_ENV=development|g' ${DEMYX_GLOBAL_WP_VOLUME}/.env" && \
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "sed -i 's|WP_ENV=.*|WP_ENV=development|g' /demyx/.env" && \
                     sed -i "s|DEMYX_APP_BEDROCK_MODE=.*|DEMYX_APP_BEDROCK_MODE=development|g" "$DEMYX_APP_PATH"/.env
             fi
             if [[ "$DEMYX_CONFIG_CACHE" = true ]]; then
@@ -504,7 +504,7 @@ demyx_config() {
                 DEMYX_CONFIG_CLEAN_MARIADB_ROOT_PASSWORD="$(demyx util --pass --raw)"
 
                 demyx_echo 'Genearting new MariaDB credentials'
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "sed -i 's|$WORDPRESS_DB_USER|$DEMYX_CONFIG_CLEAN_WORDPRESS_DB_USER|g' ${DEMYX_GLOBAL_WP_VOLUME}/wp-config.php; sed -i 's|$WORDPRESS_DB_PASSWORD|$DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD|g' ${DEMYX_GLOBAL_WP_VOLUME}/wp-config.php"; \
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "sed -i 's|$WORDPRESS_DB_USER|$DEMYX_CONFIG_CLEAN_WORDPRESS_DB_USER|g' /demyx/wp-config.php; sed -i 's|$WORDPRESS_DB_PASSWORD|$DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD|g' /demyx/wp-config.php"; \
                     sed -i "s|$WORDPRESS_DB_USER|$DEMYX_CONFIG_CLEAN_WORDPRESS_DB_USER|g" "$DEMYX_APP_PATH"/.env; \
                     sed -i "s|$WORDPRESS_DB_PASSWORD|$DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD|g" "$DEMYX_APP_PATH"/.env; \
                     sed -i "s|$MARIADB_ROOT_PASSWORD|$DEMYX_CONFIG_CLEAN_MARIADB_ROOT_PASSWORD|g" "$DEMYX_APP_PATH"/.env
@@ -566,13 +566,13 @@ demyx_config() {
                 DEMYX_CONFIG_DEV_BS_URI="${DEMYX_CONFIG_DEV_PROTO}${DEMYX_CONFIG_DEV_BASE_PATH}/bs/"
 
                 if [ "$DEMYX_CONFIG_FILES" = themes ]; then
-                    DEMYX_BS_FILES="\"${DEMYX_GLOBAL_WP_VOLUME}/wp-content/themes/**/*\""
+                    DEMYX_BS_FILES="\"/demyx/wp-content/themes/**/*\""
                 elif [ "$DEMYX_CONFIG_FILES" = plugins ]; then
-                    DEMYX_BS_FILES="\"${DEMYX_GLOBAL_WP_VOLUME}/wp-content/plugins/**/*\""
+                    DEMYX_BS_FILES="\"/demyx/wp-content/plugins/**/*\""
                 elif [ "$DEMYX_CONFIG_FILES" = false ]; then
                     DEMYX_BS_FILES=
                 else
-                    DEMYX_BS_FILES="[\"${DEMYX_GLOBAL_WP_VOLUME}/wp-content/themes/**/*\", \"${DEMYX_GLOBAL_WP_VOLUME}/wp-content/plugins/**/*\"]"
+                    DEMYX_BS_FILES="[\"/demyx/wp-content/themes/**/*\", \"/demyx/wp-content/plugins/**/*\"]"
                 fi
 
                 demyx_echo 'Updating configs'
@@ -886,7 +886,7 @@ demyx_config() {
                     --name="$DEMYX_APP_COMPOSE_PROJECT"_sftp \
                     --cpus="$DEMYX_CPU" \
                     --memory="$DEMYX_MEM" \
-                    --workdir="$DEMYX_GLOBAL_WP_VOLUME" \
+                    --workdir="/demyx" \
                     --volumes-from="$DEMYX_APP_WP_CONTAINER" \
                     -v demyx_sftp:/home/demyx/.ssh \
                     -p "$DEMYX_SFTP_PORT":2222 \
@@ -987,10 +987,10 @@ demyx_config() {
                 demyx_echo "Upgrading $DEMYX_APP_DOMAIN"
                 if [[ "$DEMYX_CHECK_APP_IMAGE" = demyx/nginx-php-wordpress ]]; then
                     demyx_execute sed -i "s|DEMYX_APP_WP_IMAGE=.*|DEMYX_APP_WP_IMAGE=demyx/wordpress|g" "$DEMYX_APP_PATH"/.env; \
-                        docker run --rm --user=root --volumes-from="$DEMYX_APP_WP_CONTAINER" demyx/utilities "chown -R demyx:demyx ${DEMYX_GLOBAL_WP_VOLUME}; chown -R demyx:demyx /var/log/demyx"                    
+                        docker run --rm --user=root --volumes-from="$DEMYX_APP_WP_CONTAINER" demyx/utilities "chown -R demyx:demyx /demyx; chown -R demyx:demyx /var/log/demyx"                    
                 elif [[ "$DEMYX_CHECK_APP_IMAGE" = demyx/nginx-php-wordpress:bedrock ]]; then
                     demyx_execute sed -i "s|DEMYX_APP_WP_IMAGE=.*|DEMYX_APP_WP_IMAGE=demyx/wordpress:bedrock|g" "$DEMYX_APP_PATH"/.env; \
-                        docker run --rm --user=root --volumes-from="$DEMYX_APP_WP_CONTAINER" demyx/utilities "chown -R demyx:demyx ${DEMYX_GLOBAL_WP_VOLUME}; chown -R demyx:demyx /var/log/demyx"                    
+                        docker run --rm --user=root --volumes-from="$DEMYX_APP_WP_CONTAINER" demyx/utilities "chown -R demyx:demyx /demyx; chown -R demyx:demyx /var/log/demyx"                    
                 fi
 
                 demyx config "$DEMYX_APP_DOMAIN" --refresh

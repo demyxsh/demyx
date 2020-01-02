@@ -12,12 +12,16 @@ demyx_wp() {
         done
     elif [[ "$DEMYX_APP_TYPE" = wp ]]; then
         
-        [[ "$DEMYX_APP_STACK" = bedrock || "$DEMYX_APP_STACK" = ols-bedrock ]] && DEMYX_GLOBAL_WP_VOLUME=/demyx/web
+        if [[ "$DEMYX_APP_STACK" = bedrock || "$DEMYX_APP_STACK" = ols-bedrock ]]; then
+            DEMYX_WP_WORKDIR=/demyx/web
+        else
+            DEMYX_WP_WORKDIR=/demyx
+        fi
 
         demyx_execute -v docker run -t --rm \
             --network=demyx \
             --volumes-from="$DEMYX_APP_WP_CONTAINER" \
-            --workdir="$DEMYX_GLOBAL_WP_VOLUME" \
+            --workdir="$DEMYX_WP_WORKDIR" \
             demyx/wordpress:cli "$@"
     else
         demyx_die --not-found

@@ -171,7 +171,7 @@ demyx_run() {
             demyx_execute demyx wp "$DEMYX_RUN_CLONE" db export clone.sql
             
             demyx_echo 'Cloning files'
-            demyx_execute docker cp "$DEMYX_RUN_CLONE_APP":"$DEMYX_GLOBAL_WP_VOLUME" "$DEMYX_APP_PATH"
+            demyx_execute docker cp "$DEMYX_RUN_CLONE_APP":/demyx "$DEMYX_APP_PATH"
 
             demyx_echo 'Removing exported clone database'
             demyx_execute docker exec -t "$DEMYX_RUN_CLONE_APP" rm clone.sql
@@ -198,7 +198,7 @@ demyx_run() {
             demyx_execute docker run -dt --rm \
                 --name "$DEMYX_APP_ID" \
                 --network demyx \
-                -v wp_"$DEMYX_APP_ID":"$DEMYX_GLOBAL_WP_VOLUME" \
+                -v wp_"$DEMYX_APP_ID":/demyx \
                 demyx/utilities sh
                 
             demyx_echo 'Removing old wp-config.php'
@@ -219,16 +219,16 @@ demyx_run() {
             demyx_execute docker run -dt --rm \
                 --name "$DEMYX_APP_ID" \
                 --network demyx \
-                -v wp_"$DEMYX_APP_ID":"$DEMYX_GLOBAL_WP_VOLUME" \
+                -v wp_"$DEMYX_APP_ID":/demyx \
                 -v wp_"$DEMYX_APP_ID"_log:/var/log/demyx \
                 demyx/utilities sh
 
             demyx_echo 'Copying files' 
-            demyx_execute docker cp "$DEMYX_BACKUP_WP"/"$DEMYX_APP_DOMAIN"/"$DEMYX_RUN_ARCHIVE"/demyx-wp/. "$DEMYX_APP_ID":"$DEMYX_GLOBAL_WP_VOLUME"; \
+            demyx_execute docker cp "$DEMYX_BACKUP_WP"/"$DEMYX_APP_DOMAIN"/"$DEMYX_RUN_ARCHIVE"/demyx-wp/. "$DEMYX_APP_ID":/demyx; \
                 docker cp "$DEMYX_BACKUP_WP"/"$DEMYX_APP_DOMAIN"/"$DEMYX_RUN_ARCHIVE"/demyx-log/. "$DEMYX_APP_ID":/var/log/demyx
 
             demyx_echo 'Finalizing extraction'
-            demyx_execute docker exec -t --user=root "$DEMYX_APP_ID" sh -c "rm ${DEMYX_GLOBAL_WP_VOLUME}/wp-config.php; chown -R demyx:demyx $DEMYX_GLOBAL_WP_VOLUME"
+            demyx_execute docker exec -t --user=root "$DEMYX_APP_ID" sh -c "rm /demyx/wp-config.php; chown -R demyx:demyx /demyx"
 
             demyx_echo 'Stopping temporary container'
             demyx_execute docker stop "$DEMYX_APP_ID"

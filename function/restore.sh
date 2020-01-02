@@ -93,19 +93,19 @@ demyx_restore() {
                 --name "$DEMYX_APP_WP_CONTAINER" \
                 --network=demyx \
                 --entrypoint=sh \
-                -v wp_"$DEMYX_APP_ID":"$DEMYX_GLOBAL_WP_VOLUME" \
+                -v wp_"$DEMYX_APP_ID":/demyx \
                 -v wp_"$DEMYX_APP_ID"_log:/var/log/demyx \
                 demyx/wordpress
 
             demyx_echo 'Restoring files'
-            demyx_execute docker cp demyx-wp/. "$DEMYX_APP_WP_CONTAINER":"$DEMYX_GLOBAL_WP_VOLUME"; \
+            demyx_execute docker cp demyx-wp/. "$DEMYX_APP_WP_CONTAINER":/demyx; \
                 docker cp demyx-log/. "$DEMYX_APP_WP_CONTAINER":/var/log/demyx
 
             demyx_echo 'Restoring database'
             demyx_execute demyx wp "$DEMYX_APP_DOMAIN" db import "$DEMYX_APP_CONTAINER".sql
             
             demyx_echo 'Removing backup database'
-            demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" rm "$DEMYX_GLOBAL_WP_VOLUME"/"$DEMYX_APP_CONTAINER".sql
+            demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" rm /demyx/"$DEMYX_APP_CONTAINER".sql
 
             demyx_echo 'Stopping temporary container'
             demyx_execute docker stop "$DEMYX_APP_WP_CONTAINER"

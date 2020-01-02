@@ -13,13 +13,13 @@ demyx_maldet() {
             demyx_execute -v docker run -it --rm \
             --user=root \
             --volumes-from="$DEMYX_APP_DB_CONTAINER" \
-            -e UTILITIES_ROOT="$DEMYX_GLOBAL_DB_VOLUME" \
+            -e UTILITIES_ROOT=/demyx \
             demyx/utilities demyx-maldet db
         else
             demyx_execute -v docker run -it --rm \
             --user=root \
             --volumes-from="$DEMYX_APP_WP_CONTAINER" \
-            -e UTILITIES_ROOT="$DEMYX_GLOBAL_WP_VOLUME" \
+            -e UTILITIES_ROOT=/demyx \
             demyx/utilities demyx-maldet wp
         fi
     else
