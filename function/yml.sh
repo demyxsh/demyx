@@ -66,71 +66,46 @@ demyx_stack_yml() {
                       - TRAEFIK_CERTIFICATESRESOLVERS_DEMYX_ACME_HTTPCHALLENGE_ENTRYPOINT=http"
     fi
 
-    # Will remove this backwards compability in January 1st, 2020
-    if [[ "$(demyx_check_docker_sock)" = volume ]]; then
-        DEMYX_YML_TRAEFIK=traefik
-        DEMYX_YML_TRAEFIK_PORTS="ports:
-                      - 80:80
-                      - 443:443"
-        DEMYX_YML_TRAEFIK_ENVIRONMENT="- TRAEFIK_ENTRYPOINTS_HTTP_ADDRESS=:80
-                      - TRAEFIK_ENTRYPOINTS_HTTPS_ADDRESS=:443"
-        DEMYX_YML_TRAEFIK_SOCKET="- /var/run/docker.sock:/var/run/docker.sock:ro"
-        DEMYX_YML_OUROBOROS_IMAGE=pyouroboros/ouroboros
-        DEMYX_YML_OUROBOROS_VOLUME="volumes:
-                      - /var/run/docker.sock:/var/run/docker.sock:ro"
-    else
-        DEMYX_YML_TRAEFIK=demyx/traefik
-        DEMYX_YML_TRAEFIK_PORTS="ports:
-                      - 80:8081
-                      - 443:8082"
-        DEMYX_YML_TRAEFIK_ENVIRONMENT="- TRAEFIK_PROVIDERS_DOCKER_ENDPOINT=tcp://demyx_socket:2375"
-        DEMYX_YML_OUROBOROS_IMAGE=demyx/ouroboros
-        DEMYX_YML_OUROBOROS_SOCKET="- DOCKER_SOCKETS=tcp://demyx_socket:2375"
-        DEMYX_YML_SOCKET_NETWORK="- demyx_socket"
-        DEMYX_YML_SOCKET_NETWORK_NAME="demyx_socket:
-                    name: demyx_socket"
-    fi
-
     if [[ "$DEMYX_STACK_OUROBOROS" = true ]]; then
         DEMYX_YML_OUROBOROS="ouroboros:
                     container_name: demyx_ouroboros
-                    image: $DEMYX_YML_OUROBOROS_IMAGE
+                    image: demyx/ouroboros
                     cpus: \${DEMYX_STACK_CPU}
                     mem_limit: \${DEMYX_STACK_MEM}
                     restart: unless-stopped
                     networks:
                       - demyx
-                      $DEMYX_YML_SOCKET_NETWORK
+                      - demyx_socket
                     environment:
                       - CLEANUP=true
+                      - DOCKER_SOCKETS=tcp://demyx_socket:2375
                       - IGNORE=\${DEMYX_STACK_OUROBOROS_IGNORE}
                       - LABEL_ENABLE=true
                       - LATEST=true
                       - SELF_UPDATE=true
-                      - TZ=$TZ
-                      $DEMYX_YML_OUROBOROS_SOCKET
-                    $DEMYX_YML_OUROBOROS_VOLUME"
+                      - TZ=$TZ"
     fi
 
     echo "# AUTO GENERATED
         version: \"$DEMYX_DOCKER_COMPOSE\"
         services:
           traefik:
-            image: ${DEMYX_YML_TRAEFIK}
+            image: demyx/traefik
             cpus: \${DEMYX_STACK_CPU}
             mem_limit: \${DEMYX_STACK_MEM}
             container_name: demyx_traefik
             restart: unless-stopped
             networks:
               - demyx
-              $DEMYX_YML_SOCKET_NETWORK
-            $DEMYX_YML_TRAEFIK_PORTS
+              - demyx_socket
+            ports:
+              - 80:8081
+              - 443:8082
             volumes:
               - demyx_traefik:/demyx
               - demyx_log:/var/log/demyx
-              $DEMYX_YML_TRAEFIK_SOCKET
             environment:
-              $DEMYX_YML_TRAEFIK_ENVIRONMENT
+              - TRAEFIK_PROVIDERS_DOCKER_ENDPOINT=tcp://demyx_socket:2375
               - TRAEFIK_API=$DEMYX_STACK_API
               - TRAEFIK_PROVIDERS_DOCKER=true
               - TRAEFIK_PROVIDERS_DOCKER_EXPOSEDBYDEFAULT=false
@@ -155,5 +130,6 @@ demyx_stack_yml() {
         networks:
           demyx:
             name: demyx
-          $DEMYX_YML_SOCKET_NETWORK_NAME" | sed "s|        ||g" > "$DEMYX_STACK"/docker-compose.yml
+          demyx_socket:
+            name: demyx_socket" | sed "s|        ||g" > "$DEMYX_STACK"/docker-compose.yml
 }

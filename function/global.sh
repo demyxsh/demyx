@@ -250,17 +250,3 @@ if [[ -n "$(demyx_check_docker_sock)" ]]; then
     # Global environment variables
     DEMYX_DOCKER_PS="$(docker ps)"
 fi
-
-# Set volumes for compatibility
-# Will remove this backwards compability in January 1st, 2020
-DEMYX_GLOBAL_WP_VOLUME=/demyx
-DEMYX_GLOBAL_DB_VOLUME=/demyx
-DEMYX_GLOBAL_APP_YML="${DEMYX_WP}/${2}/docker-compose.yml"
-if [[ -f "$DEMYX_GLOBAL_APP_YML" ]]; then
-    if [[ -n "$(grep /var/www/html "$DEMYX_GLOBAL_APP_YML" || true)" ]]; then
-        DEMYX_GLOBAL_WP_VOLUME=/var/www/html
-    fi
-    if [[ -n "$(grep /var/lib/mysql "$DEMYX_GLOBAL_APP_YML" || true)" ]]; then
-        DEMYX_GLOBAL_DB_VOLUME=/var/lib/mysql
-    fi
-fi

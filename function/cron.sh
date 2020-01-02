@@ -71,12 +71,6 @@ demyx_cron() {
             demyx_execute -v bash /demyx/custom/cron/daily.sh
         fi
 
-        # Will remove this backwards compability in January 1st, 2020
-        if [[ -f /demyx/custom/cron/every-day.sh ]]; then
-            echo "[$(date +%F-%T)] CROND: CUSTOM EVERY DAY"
-            demyx_execute -v bash /demyx/custom/cron/every-day.sh
-        fi
-
         if [[ "$DEMYX_STACK_BACKUP" = true ]]; then
             # Backup WordPress sites at midnight
             echo "[$(date +%F-%T)] CROND: WORDPRESS BACKUP"
@@ -117,12 +111,6 @@ demyx_cron() {
             echo "[$(date +%F-%T)] CROND: CUSTOM"
             demyx_execute -v bash /demyx/custom/cron/minute.sh
         fi
-
-        # Will remove this backwards compability in January 1st, 2020
-        if [[ -f /demyx/custom/cron/every-minute.sh ]]; then
-            echo "[$(date +%F-%T)] CROND: CUSTOM"
-            demyx_execute -v bash /demyx/custom/cron/every-minute.sh
-        fi
     elif [[ "$DEMYX_CRON" = six-hour ]]; then
         # Check for Demyx updates
         #cd "$DEMYX_ETC"
@@ -139,12 +127,6 @@ demyx_cron() {
         if [[ -f /demyx/custom/cron/six-hour.sh ]]; then
             echo "[$(date +%F-%T)] CROND: CUSTOM"
             demyx_execute -v -v bash /demyx/custom/cron/six-hour.sh
-        fi
-
-        # Will remove this backwards compability in January 1st, 2020
-        if [[ -f /demyx/custom/cron/every-6-hour.sh ]]; then
-            echo "[$(date +%F-%T)] CROND: CUSTOM"
-            demyx_execute -v -v bash /demyx/custom/cron/every-6-hour.sh
         fi
     elif [[ "$DEMYX_CRON" = weekly ]]; then
         # Rotate demyx log
@@ -163,12 +145,6 @@ demyx_cron() {
         if [[ -f /demyx/custom/cron/weekly.sh ]]; then
             echo "[$(date +%F-%T)] CROND: CUSTOM EVERY WEEK"
             demyx_execute -v bash /demyx/custom/cron/weekly.sh
-        fi
-
-        # Will remove this backwards compability in January 1st, 2020
-        if [[ -f /demyx/custom/cron/every-week.sh ]]; then
-            echo "[$(date +%F-%T)] CROND: CUSTOM EVERY WEEK"
-            demyx_execute -v bash /demyx/custom/cron/every-week.sh
         fi
     else
         if [[ -z "$1" ]]; then

@@ -48,9 +48,6 @@ demyx_exec() {
         DEMYX_EXEC_AS="--user=root"
     else
         DEMYX_EXEC_AS="--user=demyx"
-        
-        # Will remove this backwards compability in January 1st, 2020
-        [[ "$DEMYX_APP_WP_IMAGE" = demyx/nginx-php-wordpress ]] && DEMYX_EXEC_AS="--user=root"
     fi
 
     if [[ "$DEMYX_TARGET" = all ]]; then

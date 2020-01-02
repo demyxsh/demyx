@@ -3,22 +3,6 @@
 
 DEMYX_MOTD_CHECK_WP="$(ls -A "$DEMYX_WP")"
 
-# Will remove this in January 1st, 2020
-demyx_motd_volume_check() {
-    if [[ -n "$DEMYX_MOTD_CHECK_WP" ]]; then
-        cd "$DEMYX_WP"
-        for i in *
-        do
-            DEMYX_MOTD_VOLUME_CHECK="$(cat "$DEMYX_WP"/"$i"/docker-compose.yml)"
-            DEMYX_MOTD_WP_VOLUME_CHECK="$(echo "$DEMYX_MOTD_VOLUME_CHECK" | grep /var/www/html || true)"
-            DEMYX_MOTD_DB_VOLUME_CHECK="$(echo "$DEMYX_MOTD_VOLUME_CHECK" | grep /var/lib/mysql || true)"
-        done
-
-        if [[ -n "$DEMYX_MOTD_WP_VOLUME_CHECK" || -n "$DEMYX_MOTD_DB_VOLUME_CHECK" ]]; then
-            demyx_execute -v echo -e "\e[33m[WARNING]\e[39m One or more WordPress apps have outdated configs, please update: demyx config all --refresh"
-        fi
-    fi
-}
 demyx_motd_yml_check() {
     if [[ ! -f "$DEMYX"/docker-compose.yml ]]; then
         demyx_execute -v echo -e "\e[31m[CRITICAL]\e[39m The demyx stack needs to be updated on the host, please run these commands on the host:\n\n- demyx update\n- demyx update --system (needs to be ran again with this flag)\n- demyx rm\n- demyx\n"
@@ -96,6 +80,5 @@ demyx_motd() {
     demyx_motd_yml_check
     demyx_motd_getting_started
     demyx_motd_stack_check
-    demyx_motd_volume_check
     demyx_motd_dev_warning
 }

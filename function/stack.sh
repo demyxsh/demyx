@@ -165,10 +165,6 @@ demyx_stack() {
         demyx_echo 'Refreshing stack env and yml'
         demyx_execute demyx_stack_env; demyx_stack_yml
 
-        # Will remove this in January 1st, 2020
-        demyx_echo 'Setting proper permission for acme.json'
-        demyx_execute docker run --user=root -it --rm -v demyx_traefik:/demyx demyx/utilities sh -c "chmod 600 /demyx/acme.json; chown -R demyx:demyx /demyx"
-
         demyx compose stack up -d --remove-orphans
     elif [[ "$DEMYX_STACK_SELECT" = upgrade ]]; then
         if [[ "$DEMYX_CHECK_TRAEFIK" = 1 ]]; then
