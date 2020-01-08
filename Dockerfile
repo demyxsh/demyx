@@ -1,5 +1,6 @@
 FROM msoap/shell2http as demyx_api
 FROM quay.io/vektorlab/ctop:0.7.1 as demyx_ctop
+FROM docker as demyx_docker
 FROM alpine
 
 # Build date
@@ -43,17 +44,9 @@ COPY . /etc/demyx
 # demyx api
 COPY --from=demyx_api /app/shell2http /usr/local/bin
 # ctop
-COPY --from=demyx_ctop /ctop /usr/local/bin/ctop
-
-# Download latest Docker client binary
-RUN set -ex; \
-    export DEMYX_DOCKER_BINARY=$(curl -sL https://api.github.com/repos/docker/docker-ce/releases/latest | grep '"name":' | awk -F '[:]' '{print $2}' | sed -e 's/"//g' | sed -e 's/,//g' | sed -e 's/ //g' | sed -e 's/\r//g'); \
-    # Set fixed version as a fallback if curling fails
-    if [ -z "$DEMYX_DOCKER_BINARY" ]; then export DEMYX_DOCKER_BINARY=18.09.9; fi; \
-    wget https://download.docker.com/linux/static/stable/x86_64/docker-"$DEMYX_DOCKER_BINARY".tgz -qO /tmp/docker-"$DEMYX_DOCKER_BINARY".tgz; \
-    tar -xzf /tmp/docker-"$DEMYX_DOCKER_BINARY".tgz -C /tmp; \
-    mv /tmp/docker/docker /usr/local/bin; \
-    rm -rf /tmp/*
+COPY --from=demyx_ctop /ctop /usr/local/bin
+# docker
+COPY --from=demyx_docker /usr/local/bin/docker /usr/local/bin
 
 # Create demyx user and configure ssh
 RUN set -ex; \
@@ -159,7 +152,6 @@ RUN set -ex; \
     chmod o-x /bin/bash; \
     chmod o-x /usr/bin/curl; \
     chmod o-x /usr/local/bin/docker; \
-    chown root:root /usr/local/bin/docker; \
     \
     chmod +x /etc/demyx/bin/demyx-api.sh; \
     ln -s /etc/demyx/bin/demyx-api.sh /usr/local/bin/demyx-api; \
