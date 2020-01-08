@@ -115,7 +115,9 @@ RUN set -ex; \
     echo 'Defaults env_keep +="TZ"' >> /etc/sudoers.d/demyx; \
     \
     install -d -m 0755 -o demyx -g demyx /demyx; \
-    ln -s /demyx /home/demyx
+    ln -s /demyx /home/demyx; \
+    # Supresses the sudo warning for now
+    echo "Set disable_coredump false" > /etc/sudo.conf
 
 # Set cron and log
 RUN set -ex; \
