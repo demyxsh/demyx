@@ -40,6 +40,14 @@ demyx_cron() {
             demyx_execute -v curl -s "https://demyx.sh/?action=active&token=V1VpdGNPcWNDVlZSUDFQdFBaR0Zhdz09OjrnA1h6ZbDFJ2T6MHOwg3p4" -o /dev/null
         fi
 
+        # Backup demyx system and configs
+        echo "[$(date +%F-%T)] CROND: BACKING UP DEMYX"
+        demyx_execute -v mkdir -p "$DEMYX_BACKUP"/"$DEMYX_HOST"; \
+            cp -r "$DEMYX_APP" "$DEMYX_BACKUP"/"$DEMYX_HOST"; \
+            docker cp demyx_traefik:/demyx "$DEMYX_BACKUP"/"$DEMYX_HOST"/traefik; \
+            tar -czf "$DEMYX_BACKUP"/"$DEMYX_HOST"-system.tgz -C "$DEMYX_BACKUP" "$DEMYX_HOST"
+            rm -rf "$DEMYX_BACKUP"/"$DEMYX_HOST"
+
         # Ouroboros is known to crash, so stop/rm it and have the updater bring it back up 
         echo "[$(date +%F-%T)] CROND: RESTARTING OUROBOROS"
         demyx_execute -v docker stop demyx_ouroboros; \
