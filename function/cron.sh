@@ -42,11 +42,10 @@ demyx_cron() {
 
         # Backup demyx system and configs
         echo "[$(date +%F-%T)] CROND: BACKING UP DEMYX"
-        demyx_execute -v mkdir -p "$DEMYX_BACKUP"/"$DEMYX_HOST"; \
-            cp -r "$DEMYX_APP" "$DEMYX_BACKUP"/"$DEMYX_HOST"; \
-            docker cp demyx_traefik:/demyx "$DEMYX_BACKUP"/"$DEMYX_HOST"/traefik; \
-            tar -czf "$DEMYX_BACKUP"/"$DEMYX_HOST"-system.tgz -C "$DEMYX_BACKUP" "$DEMYX_HOST"
-            rm -rf "$DEMYX_BACKUP"/"$DEMYX_HOST"
+        demyx_execute -v mkdir -p "$DEMYX_BACKUP"/system; \
+            cp -r "$DEMYX_APP" "$DEMYX_BACKUP"/system; \
+            docker cp demyx_traefik:/demyx "$DEMYX_BACKUP"/system/traefik; \
+            tar -czf "$DEMYX_BACKUP"/system-"$DEMYX_HOST".tgz -C "$DEMYX_BACKUP" system
 
         # Ouroboros is known to crash, so stop/rm it and have the updater bring it back up 
         echo "[$(date +%F-%T)] CROND: RESTARTING OUROBOROS"
