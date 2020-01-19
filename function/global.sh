@@ -162,7 +162,7 @@ demyx_bedrock_ready() {
     done
 }
 demyx_wordpress_ready() {
-    until docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "ls | grep wp-admin"
+    until docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "ls | grep xmlrpc.php"
     do
         sleep 1
     done
