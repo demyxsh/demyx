@@ -46,23 +46,8 @@ demyx_cron() {
             cp -r "$DEMYX_APP" "$DEMYX_BACKUP"/system; \
             docker cp demyx_traefik:/demyx "$DEMYX_BACKUP"/system/traefik; \
             tar -czf "$DEMYX_BACKUP"/system-"$DEMYX_HOST".tgz -C "$DEMYX_BACKUP" system
-
-        # Ouroboros is known to crash, so stop/rm it and have the updater bring it back up 
-        echo "[$(date +%F-%T)] CROND: RESTARTING OUROBOROS"
-        demyx_execute -v docker stop demyx_ouroboros; \
-            docker rm -f demyx_ouroboros
         
-        # Auto update
-        if [[ "$DEMYX_STACK_AUTO_UPDATE" = true ]]; then
-            # Auto update demyx images incase Ouroboros crashes
-            echo "[$(date +%F-%T)] CROND: PULL DEMYX IMAGES"
-            demyx_execute -v demyx pull
-
-            echo "[$(date +%F-%T)] CROND: UPDATE DEMYX CORE"
-            demyx_execute -v demyx update
-        fi
-        
-        # Update Oh My Zsh and its plugin
+        # Update Oh My Zsh
         cd /home/demyx/.oh-my-zsh
         echo "[$(date +%F-%T)] CROND: UPDATE OH-MY-ZSH"
         demyx_execute -v git pull

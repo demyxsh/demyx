@@ -163,7 +163,6 @@ demyx_help() {
         echo "           demyx/mariadb"
         echo "           demyx/nginx"
         echo "           demyx/openlitespeed:bedrock"
-        echo "           demyx/ouroboros"
         echo "           demyx/ssh"
         echo "           demyx/traefik"
         echo "           demyx/utilities"

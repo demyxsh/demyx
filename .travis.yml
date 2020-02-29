@@ -14,7 +14,6 @@ before_install:
   - docker pull demyx/docker-socket-proxy
   - docker pull demyx/mariadb
   - docker pull demyx/nginx
-  - docker pull demyx/ouroboros
   - docker pull demyx/traefik
   - docker pull demyx/utilities
   - docker pull demyx/wordpress
@@ -29,7 +28,6 @@ script:
   - sudo demyx --nc
   - sleep 5
   - sudo demyx cmd install --domain=domain.tld --email=info@domain.tld --user="$DEMYX_REPOSITORY" --pass="$DEMYX_REPOSITORY"
-  - sudo demyx cmd stack ouroboros --false
   - sudo demyx cmd motd
   - sudo demyx cmd run domain.tld
   - sudo demyx cmd wp domain.tld core is-installed

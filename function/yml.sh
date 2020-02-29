@@ -66,26 +66,6 @@ demyx_stack_yml() {
                       - TRAEFIK_CERTIFICATESRESOLVERS_DEMYX_ACME_HTTPCHALLENGE_ENTRYPOINT=http"
     fi
 
-    if [[ "$DEMYX_STACK_OUROBOROS" = true ]]; then
-        DEMYX_YML_OUROBOROS="ouroboros:
-                    container_name: demyx_ouroboros
-                    image: demyx/ouroboros
-                    cpus: \${DEMYX_STACK_CPU}
-                    mem_limit: \${DEMYX_STACK_MEM}
-                    restart: unless-stopped
-                    networks:
-                      - demyx
-                      - demyx_socket
-                    environment:
-                      - CLEANUP=true
-                      - DOCKER_SOCKETS=tcp://demyx_socket:2375
-                      - IGNORE=\${DEMYX_STACK_OUROBOROS_IGNORE}
-                      - LABEL_ENABLE=true
-                      - LATEST=true
-                      - SELF_UPDATE=true
-                      - TZ=$TZ"
-    fi
-
     echo "# AUTO GENERATED
         version: \"$DEMYX_DOCKER_COMPOSE\"
         services:
@@ -121,7 +101,6 @@ demyx_stack_yml() {
               - TRAEFIK_ACCESSLOG_FILEPATH=/var/log/demyx/traefik.access.log
               - TZ=$TZ
             $DEMYX_YML_LABEL_TRAEFIK
-          $DEMYX_YML_OUROBOROS
         volumes:
           demyx_traefik:
             name: demyx_traefik

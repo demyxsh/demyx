@@ -42,7 +42,6 @@ if [[ -z "$DEMYX_INSTALL_SKIP_CHECKS" ]]; then
     docker pull demyx/mariadb
     docker pull demyx/nginx
     docker pull demyx/openlitespeed
-    docker pull demyx/ouroboros
     docker pull demyx/traefik
     docker pull demyx/utilities
     docker pull demyx/wordpress

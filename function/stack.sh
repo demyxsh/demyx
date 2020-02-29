@@ -9,20 +9,11 @@ demyx_stack() {
             api)
                 DEMYX_STACK_SELECT=api
                 ;;
-            ouroboros)
-                DEMYX_STACK_SELECT=ouroboros
-                ;;
             refresh)
                 DEMYX_STACK_SELECT=refresh
                 ;;
             upgrade)
                 DEMYX_STACK_SELECT=upgrade
-                ;;
-            --auto-update|--auto-update=true)
-                DEMYX_STACK_AUTO_UPDATE=true
-                ;;
-            --auto-update=false)
-                DEMYX_STACK_AUTO_UPDATE=false
                 ;;
             --backup|--backup=true)
                 DEMYX_STACK_BACKUP=true
@@ -76,12 +67,6 @@ demyx_stack() {
             --healthcheck-timeout=)
                 demyx_die '"--healthcheck-timeout" cannot be empty'
                 ;;
-            --ignore=?*)
-                DEMYX_STACK_IGNORE="${2#*=}"
-                ;;
-            --ignore=)
-                demyx_die '"--ignore" cannot be empty'
-                ;;
             --mem=null|--mem=?*)
                 DEMYX_STACK_MEM="${2#*=}"
                 DEMYX_STACK_RESOURCE=1
@@ -129,28 +114,6 @@ demyx_stack() {
         elif [[ -n "$DEMYX_STACK_TRUE" ]]; then
             demyx_echo 'Enabling api'
             demyx_execute sed -i "s|DEMYX_STACK_API=.*|DEMYX_STACK_API=true|g" "$DEMYX_STACK"/.env
-            demyx stack refresh
-        fi
-    elif [[ "$DEMYX_STACK_SELECT" = ouroboros ]]; then
-        if [[ -n "$DEMYX_STACK_IGNORE" ]]; then
-            DEMYX_STACK_OUROBOROS_IGNORE_CHECK="$(demyx info stack --filter=DEMYX_STACK_OUROBOROS_IGNORE)"
-            
-            if [[ "$DEMYX_STACK_IGNORE" = false ]]; then
-                demyx_echo 'Updating Ouroboros'
-                demyx_execute sed -i "s|DEMYX_STACK_OUROBOROS_IGNORE=.*|DEMYX_STACK_OUROBOROS_IGNORE=|g" "$DEMYX_STACK"/.env
-            else
-                demyx_echo 'Updating Ouroboros'
-                demyx_execute sed -i "s|DEMYX_STACK_OUROBOROS_IGNORE=.*|DEMYX_STACK_OUROBOROS_IGNORE=\"$DEMYX_STACK_IGNORE\"|g" "$DEMYX_STACK"/.env
-            fi
-
-            demyx compose stack up -d
-        elif [[ -n "$DEMYX_STACK_FALSE" ]]; then
-            demyx_echo 'Disabling Ouroboros'
-            demyx_execute sed -i "s|DEMYX_STACK_OUROBOROS=.*|DEMYX_STACK_OUROBOROS=false|g" "$DEMYX_STACK"/.env
-            demyx stack refresh
-        elif [[ -n "$DEMYX_STACK_TRUE" ]]; then
-            demyx_echo 'Enabling Ouroboros'
-            demyx_execute sed -i "s|DEMYX_STACK_OUROBOROS=.*|DEMYX_STACK_OUROBOROS=true|g" "$DEMYX_STACK"/.env
             demyx stack refresh
         fi
     elif [[ "$DEMYX_STACK_SELECT" = refresh ]]; then
@@ -204,13 +167,6 @@ demyx_stack() {
             demyx_die 'The stack is already updated.'
         fi
     else
-        if [[ "$DEMYX_STACK_AUTO_UPDATE" = true ]]; then
-            demyx_echo 'Turn on stack auto update'
-            demyx_execute sed -i 's/DEMYX_STACK_AUTO_UPDATE=.*/DEMYX_STACK_AUTO_UPDATE=true/g' "$DEMYX_STACK"/.env
-        elif [[ "$DEMYX_STACK_AUTO_UPDATE" = false ]]; then
-            demyx_echo 'Turn off stack auto update'
-            demyx_execute sed -i 's/DEMYX_STACK_AUTO_UPDATE=.*/DEMYX_STACK_AUTO_UPDATE=false/g' "$DEMYX_STACK"/.env
-        fi
         if [[ "$DEMYX_STACK_BACKUP" = true ]]; then
             demyx_echo 'Turning on stack backup'
             demyx_execute sed -i 's/DEMYX_STACK_BACKUP=.*/DEMYX_STACK_BACKUP=true/g' "$DEMYX_STACK"/.env

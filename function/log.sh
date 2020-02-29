@@ -53,8 +53,6 @@ demyx_log() {
                 tail -200 $DEMYX_LOG_FOLLOW /var/log/demyx/demyx.log
             fi
         fi
-    elif [[ "$DEMYX_TARGET" = ouroboros ]]; then
-        docker logs demyx_ouroboros "$DEMYX_LOG_FOLLOW"
     elif [[ "$DEMYX_TARGET" = traefik ]]; then
         if [[ -n "$DEMYX_LOG_ERROR" ]]; then
             tail -200 $DEMYX_LOG_FOLLOW /var/log/demyx/traefik.error.log

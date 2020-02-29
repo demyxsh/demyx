@@ -154,7 +154,6 @@ demyx stack --telemetry=false
 ### Resources
 *  [Demyx](https://github.com/demyxco/demyx) - Demyx GitHub
 *  [Traefik](https://hub.docker.com/_/traefik) - Reverse Proxy with Lets Encrypt SSL
-*  [ouroboros](https://hub.docker.com/r/pyouroboros/ouroboros) - Auto pull new images from Docker Hub
 *  [WordPress](https://hub.docker.com/_/wordpress) - Using their `wordpress:cli` image
 *  [phpMyAdmin](https://hub.docker.com/r/phpmyadmin/phpmyadmin) - Web GUI used with Demyx stack
 *  [ctop](https://ctop.sh) - htop but for containers!
