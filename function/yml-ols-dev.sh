@@ -92,6 +92,7 @@ services:
       - OPENLITESPEED_CLIENT_THROTTLE_BLOCK_BAD_REQUEST=\${DEMYX_APP_OLS_CLIENT_THROTTLE_BLOCK_BAD_REQUEST}
       - OPENLITESPEED_CLIENT_THROTTLE_GRACE_PERIOD=\${DEMYX_APP_OLS_CLIENT_THROTTLE_GRACE_PERIOD}
       - OPENLITESPEED_CLIENT_THROTTLE_BAN_PERIOD=\${DEMYX_APP_OLS_CLIENT_THROTTLE_BAN_PERIOD}
+      - OPENLITESPEED_DOMAIN=\${DEMYX_APP_DOMAIN}
       - OPENLITESPEED_TUNING_MAX_CONNECTIONS=\${DEMYX_APP_OLS_TUNING_MAX_CONNECTIONS}
       - OPENLITESPEED_TUNING_CONNECTION_TIMEOUT=\${DEMYX_APP_OLS_TUNING_CONNECTION_TIMEOUT}
       - OPENLITESPEED_TUNING_MAX_KEEP_ALIVE=\${DEMYX_APP_OLS_TUNING_MAX_KEEP_ALIVE}
@@ -108,7 +109,7 @@ services:
       - OPENLITESPEED_XMLRPC=\${DEMYX_APP_XMLRPC}
       - TZ=$TZ
     volumes:
-      - demyx_cs:/home/demyx
+      - wp_${DEMYX_APP_ID}_cs_ols:/home/demyx
       - wp_${DEMYX_APP_ID}:/demyx
       - wp_${DEMYX_APP_ID}_log:/var/log/demyx
     labels:
@@ -217,14 +218,14 @@ services:
       - MARIADB_MAX_CONNECTIONS=\${MARIADB_MAX_CONNECTIONS}
       - TZ=$TZ
 volumes:
-  demyx_cs:
-    name: demyx_cs
   wp_${DEMYX_APP_ID}:
     name: wp_${DEMYX_APP_ID}
   wp_${DEMYX_APP_ID}_db:
     name: wp_${DEMYX_APP_ID}_db
   wp_${DEMYX_APP_ID}_log:
     name: wp_${DEMYX_APP_ID}_log
+  wp_${DEMYX_APP_ID}_cs_ols:
+    name: wp_${DEMYX_APP_ID}_cs_ols
 networks:
   demyx:
     name: demyx" > "$DEMYX_APP_PATH"/docker-compose.yml

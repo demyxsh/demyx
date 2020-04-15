@@ -76,6 +76,7 @@ services:
     cpus: \${DEMYX_APP_WP_CPU}
     mem_limit: \${DEMYX_APP_WP_MEM}
     restart: unless-stopped
+    hostname: \${DEMYX_APP_COMPOSE_PROJECT}
     networks:
       - demyx
     depends_on:
@@ -118,7 +119,7 @@ services:
       - TZ=$TZ
       $DEMYX_YML_RUN_CREDENTIALS
     volumes:
-      - demyx_cs:/home/demyx
+      - wp_${DEMYX_APP_ID}_cs_ols_bedrock:/home/demyx
       - wp_${DEMYX_APP_ID}:/demyx
       - wp_${DEMYX_APP_ID}_log:/var/log/demyx
     labels:
@@ -231,14 +232,14 @@ services:
       - MARIADB_MAX_CONNECTIONS=\${MARIADB_MAX_CONNECTIONS}
       - TZ=$TZ
 volumes:
-  demyx_cs:
-    name: demyx_cs
   wp_${DEMYX_APP_ID}:
     name: wp_${DEMYX_APP_ID}
   wp_${DEMYX_APP_ID}_db:
     name: wp_${DEMYX_APP_ID}_db
   wp_${DEMYX_APP_ID}_log:
     name: wp_${DEMYX_APP_ID}_log
+  wp_${DEMYX_APP_ID}_cs_ols_bedrock:
+    name: wp_${DEMYX_APP_ID}_cs_ols_bedrock
 networks:
   demyx:
     name: demyx" > "$DEMYX_APP_PATH"/docker-compose.yml
