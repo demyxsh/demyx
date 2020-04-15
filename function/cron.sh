@@ -80,7 +80,7 @@ demyx_cron() {
         do
             source "$DEMYX_WP"/"$i"/.env
             if [[ "$DEMYX_APP_WP_UPDATE" = true ]]; then
-                if [[ "$DEMYX_APP_WP_IMAGE" = demyx/wordpress ]]; then
+                if [[ "$DEMYX_APP_STACK" = ols || "$DEMYX_APP_STACK" = nginx-php ]]; then
                     demyx_execute -v demyx wp "$i" core update; \
                         demyx wp "$i" theme update --all; \
                         demyx wp "$i" plugin update --all
