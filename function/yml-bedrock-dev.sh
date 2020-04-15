@@ -104,7 +104,7 @@ services:
     depends_on:
       - db_${DEMYX_APP_ID}
     environment:
-      - PASSWORD=$DEMYX_CONFIG_DEV_PASSWORD
+      - PASSWORD=$(demyx_dev_password)
       - CODE_SERVER_BASE_PATH=$DEMYX_CONFIG_DEV_BASE_PATH
       - BROWSERSYNC_PROXY=\${DEMYX_APP_NX_CONTAINER}
       - WORDPRESS_DOMAIN=\${DEMYX_APP_DOMAIN}

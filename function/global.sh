@@ -245,6 +245,13 @@ demyx_ols_not_supported() {
 demyx_warning() {
     demyx_execute -v echo -e "\e[33m[WARNING]\e[39m $1"
 }
+demyx_dev_password() {
+    if [[ -n "$DEMYX_APP_DEV_PASSWORD" ]]; then
+        echo "$DEMYX_APP_DEV_PASSWORD"
+    else
+        echo "$(demyx util --pass --raw)"
+    fi
+}
 
 if [[ -n "$(demyx_check_docker_sock)" ]]; then
     # Global environment variables

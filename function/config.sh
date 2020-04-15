@@ -560,7 +560,6 @@ demyx_config() {
                     DEMYX_CONFIG_DEV_PROTO="https://$DEMYX_APP_DOMAIN"
                 fi
 
-                DEMYX_CONFIG_DEV_PASSWORD="$(demyx util --pass --raw)"
                 DEMYX_CONFIG_DEV_BASE_PATH="${DEMYX_CONFIG_DEV_BASE_PATH:-/demyx}"
                 DEMYX_CONFIG_DEV_CS_URI="${DEMYX_CONFIG_DEV_PROTO}${DEMYX_CONFIG_DEV_BASE_PATH}/cs/"
                 DEMYX_CONFIG_DEV_BS_URI="${DEMYX_CONFIG_DEV_PROTO}${DEMYX_CONFIG_DEV_BASE_PATH}/bs/"
@@ -583,7 +582,7 @@ demyx_config() {
                 PRINT_TABLE="DEMYX^ DEVELOPMENT\n"
                 PRINT_TABLE+="CODE-SERVER^ $DEMYX_CONFIG_DEV_CS_URI\n"
                 PRINT_TABLE+="BROWSERSYNC^ $DEMYX_CONFIG_DEV_BS_URI\n"
-                PRINT_TABLE+="PASSWORD^ $DEMYX_CONFIG_DEV_PASSWORD"
+                PRINT_TABLE+="PASSWORD^ $(demyx_dev_password)"
                 demyx_execute -v demyx_table "$PRINT_TABLE"
             elif [[ "$DEMYX_CONFIG_DEV" = false ]]; then
                 demyx_app_is_up

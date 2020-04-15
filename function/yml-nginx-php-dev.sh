@@ -131,8 +131,7 @@ services:
     depends_on:
       - db_${DEMYX_APP_ID}
     environment:
-      - PASSWORD=$DEMYX_CONFIG_DEV_PASSWORD
-      - CODE_SERVER_BASE_PATH=$DEMYX_CONFIG_DEV_BASE_PATH
+      - PASSWORD=$(demyx_dev_password)
       - WORDPRESS_DOMAIN=\${DEMYX_APP_DOMAIN}
       - WORDPRESS_UPLOAD_LIMIT=\${DEMYX_APP_UPLOAD_LIMIT}
       - WORDPRESS_PHP_MEMORY=\${DEMYX_APP_PHP_MEMORY}
