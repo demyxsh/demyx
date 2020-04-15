@@ -565,14 +565,12 @@ demyx_config() {
                 DEMYX_CONFIG_DEV_CS_URI="${DEMYX_CONFIG_DEV_PROTO}${DEMYX_CONFIG_DEV_BASE_PATH}/cs/"
                 DEMYX_CONFIG_DEV_BS_URI="${DEMYX_CONFIG_DEV_PROTO}${DEMYX_CONFIG_DEV_BASE_PATH}/bs/"
 
-                if [ "$DEMYX_CONFIG_FILES" = themes ]; then
-                    DEMYX_BS_FILES="\"/demyx/wp-content/themes/**/*\""
-                elif [ "$DEMYX_CONFIG_FILES" = plugins ]; then
+                if [ "$DEMYX_CONFIG_FILES" = plugins ]; then
                     DEMYX_BS_FILES="\"/demyx/wp-content/plugins/**/*\""
                 elif [ "$DEMYX_CONFIG_FILES" = false ]; then
                     DEMYX_BS_FILES=
                 else
-                    DEMYX_BS_FILES="[\"/demyx/wp-content/themes/**/*\", \"/demyx/wp-content/plugins/**/*\"]"
+                    DEMYX_BS_FILES="\"/demyx/wp-content/themes/**/*\""
                 fi
 
                 demyx_echo 'Updating configs'
