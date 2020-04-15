@@ -125,13 +125,13 @@ demyx_run() {
 
     if [[ "$DEMYX_RUN_STACK" = bedrock ]]; then
         DEMYX_APP_WP_IMAGE=demyx/wordpress:bedrock
-    elif [[ "$DEMYX_RUN_STACK" = nginx-php ]]; then
-        DEMYX_APP_WP_IMAGE=demyx/wordpress
+    elif [[ "$DEMYX_RUN_STACK" = ols ]]; then
+        DEMYX_APP_WP_IMAGE=demyx/openlitespeed
     elif [[ "$DEMYX_RUN_STACK" = ols-bedrock ]]; then
         DEMYX_APP_WP_IMAGE=demyx/openlitespeed:bedrock
     else
-        DEMYX_APP_WP_IMAGE=demyx/openlitespeed
-        DEMYX_RUN_STACK=ols
+        DEMYX_APP_WP_IMAGE=demyx/wordpress
+        DEMYX_RUN_STACK=nginx-php
     fi
 
     if [[ "$DEMYX_RUN_SSL" = true ]]; then 
