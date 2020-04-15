@@ -37,6 +37,7 @@ demyx_env() {
             DEMYX_APP_CACHE=${DEMYX_APP_CACHE:-false}
             DEMYX_APP_CDN=${DEMYX_APP_CDN:-false}
             DEMYX_APP_DEV=${DEMYX_APP_DEV:-false}
+            DEMYX_APP_DEV_PASSWORD=${DEMYX_APP_DEV_PASSWORD:-$(demyx util --pass --raw)}
             DEMYX_APP_HEALTHCHECK=${DEMYX_APP_HEALTHCHECK:-true}
             DEMYX_APP_WP_UPDATE=${DEMYX_APP_WP_UPDATE:-false}
             DEMYX_APP_UPLOAD_LIMIT=${DEMYX_APP_UPLOAD_LIMIT:-128M}
