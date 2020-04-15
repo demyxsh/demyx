@@ -85,7 +85,7 @@ demyx_cron() {
                         demyx wp "$i" theme update --all; \
                         demyx wp "$i" plugin update --all
                 else
-                    demyx_execute -v docker exec -t "$DEMYX_APP_WP_CONTAINER" composer update
+                    demyx_execute -v docker exec -t "$DEMYX_APP_WP_CONTAINER" /usr/local/bin/composer update
                 fi
             fi
         done
