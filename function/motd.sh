@@ -64,10 +64,13 @@ demyx_motd_update_check() {
         #echo -e "\e[32m[UPDATE]\e[39m $DEMYX_MOTD_UPDATE_COUNT updates available! View updates: demyx list update"
     fi
 
-    echo 
-    echo -e "\e[32m[UPDATE]\e[39m $DEMYX_MOTD_UPDATE_COUNT $DEMYX_MOTD_UPDATE_PLURAL available!"
-    echo -e "\e[32m[UPDATE]\e[39m - To view ${DEMYX_MOTD_UPDATE_PLURAL}: demyx list update"
-    echo -e "\e[32m[UPDATE]\e[39m - Run command on the host: demyx upgrade"
+    # Only output when count is > 0
+    if [[ "$DEMYX_MOTD_UPDATE_COUNT" > 0 ]]; then
+        echo 
+        echo -e "\e[32m[UPDATE]\e[39m $DEMYX_MOTD_UPDATE_COUNT $DEMYX_MOTD_UPDATE_PLURAL available!"
+        echo -e "\e[32m[UPDATE]\e[39m - To view ${DEMYX_MOTD_UPDATE_PLURAL}: demyx list update"
+        echo -e "\e[32m[UPDATE]\e[39m - Run command on the host: demyx upgrade"
+    fi
 }
 #demyx_motd_git_latest() {
 #    cd "$DEMYX_ETC" || exit
