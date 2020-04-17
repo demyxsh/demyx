@@ -36,12 +36,15 @@ done
 
 if [[ -z "$DEMYX_INSTALL_SKIP_CHECKS" ]]; then
     docker pull demyx/demyx
+    docker pull demyx/browsersync
+    docker pull demyx/code-server:wp
     docker pull demyx/docker-compose
     docker pull demyx/docker-socket-proxy
     docker pull demyx/logrotate
     docker pull demyx/mariadb
     docker pull demyx/nginx
     docker pull demyx/openlitespeed
+    docker pull demyx/ssh
     docker pull demyx/traefik
     docker pull demyx/utilities
     docker pull demyx/wordpress

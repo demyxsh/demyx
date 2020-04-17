@@ -18,6 +18,7 @@
 - Suppress update message when update count is 0
 - Fix symlink error message
 - Fix broken healthcheck
+- Update install images
 - chroot.sh
     - demyx update now shows updates if available
     - Show an update notice if available
