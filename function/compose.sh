@@ -19,7 +19,7 @@ demyx_compose() {
         cd "$DEMYX_WP" || exit
         for i in *
         do
-            [[ ! -d "$DEMYX_WP"/"$i" ]] && continue
+            [[ ! -d "$DEMYX_WP"/"$i" || -z "$(echo "$DEMYX_DOCKER_PS" | grep "$(demyx info "$i" --filter=DEMYX_APP_WP_CONTAINER)" || true)" ]] && continue
             demyx compose "$i" "$@"
         done
     elif [[ "$DEMYX_APP_TYPE" = wp ]]; then
