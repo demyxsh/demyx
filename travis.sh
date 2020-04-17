@@ -11,11 +11,21 @@ DEMYX_DOCKER_VERSION=$(curl -sL https://api.github.com/repos/docker/docker-ce/re
 sed -i "s|alpine-.*.-informational|alpine-${DEMYX_ALPINE_VERSION}-informational|g" README.md
 sed -i "s|docker_client-.*.-informational|docker_client-${DEMYX_DOCKER_VERSION}-informational|g" README.md
 
+# Echo version to file
+echo "DEMYX_VERSION=$(date +%Y.%m.%d)" > VERSION
+
 # Push back to GitHub
 git config --global user.email "travis@travis-ci.org"
 git config --global user.name "Travis CI"
 git remote set-url origin https://${DEMYX_GITHUB_TOKEN}@github.com/demyxco/"$DEMYX_REPOSITORY".git
-git add .; git commit -m "Travis Build $TRAVIS_BUILD_NUMBER"; git push origin HEAD:master
+# Push VERSION file first
+git add VERSION
+git commit -m "ALPINE $DEMYX_ALPINE_VERSION, DOCKER $DEMYX_DOCKER_VERSION"
+git push origin HEAD:master
+# Add and commit the rest
+git add .
+git commit -m "Travis Build $TRAVIS_BUILD_NUMBER"
+git push origin HEAD:master
 
 # Set the default path to README.md
 README_FILEPATH="./README.md"
