@@ -254,7 +254,7 @@ elif [[ "$DEMYX_CHROOT" = upgrade ]]; then
     do
         # Set variable to true if there's an update for the following images: mariadb, nginx, and wordpress/wordpress:bedrock
         [[ "$i" = mariadb || "$i" = nginx || "$i" = wordpress || "$i" = wordpress:bedrock ]] && DEMYX_CHROOT_IMAGE_WP_UPDATE=true
-        docker pull "$i"
+        docker pull demyx/"$i"
     done
 
     demyx_compose up -d --remove-orphans
