@@ -31,6 +31,7 @@ script:
   - sudo demyx cmd motd
   - sudo demyx cmd run domain.tld
   - sudo demyx cmd wp domain.tld core is-installed
+  - echo "$DEMYX_BUILD_DATE" > build_date
 
 after_success:
   - echo "$DEMYX_PASSWORD" | docker login -u "$DEMYX_USERNAME" --password-stdin

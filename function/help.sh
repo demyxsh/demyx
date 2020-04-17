@@ -123,6 +123,8 @@ demyx_help() {
     elif [[ "$DEMYX_HELP" = list ]]; then
         echo
         echo "demyx list <args>         List all apps"
+        echo "           update         List updates if any"
+        echo "           --json         List all sites in json"
         echo "           --raw          Raw list with no tables"
         echo
     elif [[ "$DEMYX_HELP" = log ]]; then
