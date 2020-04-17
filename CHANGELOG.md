@@ -14,6 +14,7 @@
 - Moved global functions to the top
 - Rearrange environment variables from essentials to non-essentials
 - Disable auto rate limit for now
+- Prevent down containers from going up when doing loops
 - chroot.sh
     - demyx update now shows updates if available
     - Show an update notice if available
