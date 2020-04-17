@@ -18,6 +18,7 @@
     - Show an update notice if available
 ### Removed
 - demyx_motd_update_wp_yml
+- Code for demyx repository was skipped
 
 ## 2020-04-15
 ### Added
