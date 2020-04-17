@@ -35,7 +35,7 @@ demyx_monitor() {
                     if [[ "$DEMYX_APP_MONITOR_COUNT" = 3 ]]; then
                         if [[ ! -f "$DEMYX_WP"/"$i"/.monitor_lock ]]; then
                             demyx_execute -v touch "$DEMYX_WP"/"$i"/.monitor_lock
-                            [[ "$DEMYX_APP_STACK" = nginx-php || "$DEMYX_APP_STACK" = bedrock ]] && demyx config "$i" --rate-limit=true
+                            #[[ "$DEMYX_APP_STACK" = nginx-php || "$DEMYX_APP_STACK" = bedrock ]] && demyx config "$i" --rate-limit=true
                             [[ -f "$DEMYX"/custom/callback.sh ]] && demyx_execute -v /bin/bash "$DEMYX"/custom/callback.sh "monitor-on" "$i" "$DEMYX_APP_MONITOR_WP_CHECK" "$DEMYX_APP_MONITOR_DB_CHECK"
                         fi
                     fi
@@ -48,7 +48,7 @@ demyx_monitor() {
                     if [[ "$DEMYX_APP_MONITOR_COUNT" = 0 ]]; then
                         if [[ -f "$DEMYX_WP"/"$i"/.monitor_lock ]]; then
                             demyx_execute -v rm "$DEMYX_WP"/"$i"/.monitor_lock
-                            [[ "$DEMYX_APP_STACK" = nginx-php || "$DEMYX_APP_STACK" = bedrock ]] && demyx config "$i" --rate-limit=false
+                            #[[ "$DEMYX_APP_STACK" = nginx-php || "$DEMYX_APP_STACK" = bedrock ]] && demyx config "$i" --rate-limit=false
                             [[ -f "$DEMYX"/custom/callback.sh ]] && demyx_execute -v /bin/bash "$DEMYX"/custom/callback.sh "monitor-off" "$i" "$DEMYX_APP_MONITOR_WP_CHECK" "$DEMYX_APP_MONITOR_DB_CHECK"
                         fi
                     fi
