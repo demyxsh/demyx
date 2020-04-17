@@ -262,16 +262,18 @@ elif [[ "$DEMYX_CHROOT" = upgrade ]]; then
     # Update WordPress services if true
     [[ "$DEMYX_CHROOT_IMAGE_WP_UPDATE" = true ]] && docker exec demyx demyx compose all up -d
 
-    # Update demyx helper on the host
-    docker run -t --user=root --privileged --rm -v /usr/local/bin:/usr/local/bin demyx/utilities demyx-chroot
+    # Rebuild local update cache
+    echo -e "\e[34m[INFO]\e[39m Rebuilding update cache ... "
+    docker exec -t --user=root demyx zsh -c "rm /demyx/.update_image; rm /demyx/.update_count; rm /demyx/.update_local; demyx update"
 
-    # Remove update file
-    docker exec -t demyx rm /demyx/.update_image
+    # Update demyx helper on the host
+    echo -e "\e[34m[INFO]\e[39m Updating demyx helper ... "
+    docker run -t --user=root --privileged --rm -v /usr/local/bin:/usr/local/bin demyx/utilities demyx-chroot
 
     # Empty out this variable to suppress update message
     DEMYX_CHROOT_IMAGES=
 
-    echo -e "\e[32m[SUCCESS]\e[39m Successfully updated"
+    echo -e "\e[32m[SUCCESS]\e[39m Successfully updated!"
 else
     if [[ -n "$DEMYX_CHROOT_DEMYX_CHECK" ]]; then
         demyx_mode

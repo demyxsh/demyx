@@ -19,6 +19,7 @@
     - Show an update notice if available
     - Remove carriage return
     - Missing user when pulling images
+    - Output messages to user and update docker command
 ### Removed
 - demyx_motd_update_wp_yml
 - Code for demyx repository was skipped
