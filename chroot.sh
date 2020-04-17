@@ -27,6 +27,7 @@ DEMYX_CHROOT_HOST="$(hostname)"
 DEMYX_CHROOT_MODE=production
 DEMYX_CHROOT_USER=demyx
 DEMYX_CHROOT_API=false
+DEMYX_CHROOT_IMAGES=
 DEMYX_CHROOT=
 DEMYX_CHROOT_NC=
 DEMYX_CHROOT_ALL=
@@ -57,6 +58,9 @@ while :; do
             ;;
         update)
             DEMYX_CHROOT=update
+            ;;
+        upgrade)
+            DEMYX_CHROOT=upgrade
             ;;
         -a|--all)
             DEMYX_CHROOT_ALL=1
@@ -101,9 +105,6 @@ while :; do
             printf '\e[31m[CRITICAL]\e[39m "--ssh" cannot be empty\n'
             exit 1
             ;;
-        --system)
-            DEMYX_CHROOT_SYSTEM=1
-            ;;
         --tz=?*)
             DEMYX_CHROOT_TZ="${1#*=}"
             DEMYX_CHROOT_SETTING=1
@@ -129,6 +130,11 @@ done
 DEMYX_CHROOT_DOCKER_PS="$(docker ps)"
 DEMYX_CHROOT_DEMYX_CHECK="$(echo "$DEMYX_CHROOT_DOCKER_PS" | awk '{print $NF}' | grep -w demyx || true)"
 DEMYX_CHROOT_SOCKET_CHECK="$(echo "$DEMYX_CHROOT_DOCKER_PS" | awk '{print $NF}' | grep -w demyx_socket || true)"
+
+# Update check
+if [[ -n "$DEMYX_CHROOT_DEMYX_CHECK" ]]; then
+    DEMYX_CHROOT_IMAGES="$(docker exec -t demyx zsh -c "[[ -f /demyx/.update_image ]] && cat /demyx/.update_image || true")"
+fi
 
 # Save settings to user's home directory
 if [[ ! -f ~/.demyx || -n "$DEMYX_CHROOT_SETTING" ]]; then
@@ -208,7 +214,8 @@ elif [[ "$DEMYX_CHROOT" = help ]]; then
     echo "      rm              Stops and removes demyx container"
     echo "      rs|restart      Stops, removes, and starts demyx container"
     echo "      sh              Execute root commands to demyx container from host"
-    echo "      update          Update chroot.sh from GitHub"
+    echo "      update          List available updates"
+    echo "      upgrade         Upgrade the demyx stack"
     echo "      -a, --all       Targets both demyx and demyx_socket container"
     echo "      --cpu           Set container CPU usage, --cpu=null to remove cap"
     echo "      -d|--dev        Puts demyx container into development mode"
@@ -218,7 +225,6 @@ elif [[ "$DEMYX_CHROOT" = help ]]; then
     echo "      -p|--prod       Puts demyx container into production mode"
     echo "      -r, --root      Execute as root user"
     echo "      --ssh           Override ssh port"
-    echo "      --system        Pulls all demyx images, updates demyx helper script, and force recreates the demyx_socket and demyx containers when using demyx update --system"
     echo "      --tz            Set timezone"
     echo
 elif [[ "$DEMYX_CHROOT" = remove ]]; then
@@ -232,23 +238,38 @@ elif [[ "$DEMYX_CHROOT" = restart ]]; then
 elif [[ "$DEMYX_CHROOT" = shell ]]; then
     docker exec -it --user="$DEMYX_CHROOT_USER" demyx "$@"
 elif [[ "$DEMYX_CHROOT" = update ]]; then
-    if [[ -n "$DEMYX_CHROOT_SYSTEM" ]]; then
-        docker pull demyx/demyx
-        docker pull demyx/docker-compose
-        docker pull demyx/docker-socket-proxy
-        docker pull demyx/logrotate
-        docker pull demyx/mariadb
-        docker pull demyx/nginx
-        docker pull demyx/openlitespeed
-        docker pull demyx/traefik
-        docker pull demyx/utilities
-        docker pull demyx/wordpress
-        docker pull demyx/wordpress:cli
+    docker exec -t demyx demyx list update
+elif [[ "$DEMYX_CHROOT" = upgrade ]]; then
+    # Exit if no updates are available
+    [[ -z "$DEMYX_CHROOT_IMAGES" ]] && echo "No updates available." && exit
 
-        demyx_compose up -d --remove-orphans --force-recreate
-    fi
+    echo -en "\e[33m"
+    read -rep "[WARNING] Depending on the update, services may temporarily disrupt. Continue? [yY]: " DEMYX_CHROOT_CONFIRM
+    echo -en "\e[39m"
+    [[ "$DEMYX_CHROOT_CONFIRM" != [yY] ]] && echo 'Update cancelled!' && exit 1
 
+    DEMYX_CHROOT_IMAGE_WP_UPDATE=
+
+    for i in $DEMYX_CHROOT_IMAGES
+    do
+        # Set variable to true if there's an update for the following images: mariadb, nginx, and wordpress/wordpress:bedrock
+        [[ "$i" = mariadb || "$i" = nginx || "$i" = wordpress || "$i" = wordpress:bedrock ]] && DEMYX_CHROOT_IMAGE_WP_UPDATE=true
+        docker pull "$i"
+    done
+
+    demyx_compose up -d --remove-orphans
+
+    # Update WordPress services if true
+    [[ "$DEMYX_CHROOT_IMAGE_WP_UPDATE" = true ]] && docker exec demyx demyx compose all up -d
+
+    # Update demyx helper on the host
     docker run -t --user=root --privileged --rm -v /usr/local/bin:/usr/local/bin demyx/utilities demyx-chroot
+
+    # Remove update file
+    docker exec -t demyx rm /demyx/.update_image
+
+    # Empty out this variable to suppress update message
+    DEMYX_CHROOT_IMAGES=
 
     echo -e "\e[32m[SUCCESS]\e[39m Successfully updated"
 else
@@ -260,4 +281,11 @@ else
         demyx_mode
         demyx_chroot
     fi
+fi
+
+# Let users know there's an update
+if [[ -n "$DEMYX_CHROOT_IMAGES" ]]; then
+    echo -e "\e[32m[UPDATE]\e[39m An update is available!"
+    echo -e "\e[32m[UPDATE]\e[39m - View updates: demyx update"
+    echo -e "\e[32m[UPDATE]\e[39m - Upgrade: demyx upgrade"
 fi
