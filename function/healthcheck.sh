@@ -6,7 +6,7 @@
 demyx_healthcheck() {
     demyx_source stack
 
-    if [[ "$DEMYX_STACK_HEALTHCHECK" = true && -z "$(pgrep -f "demyx healthcheck" || true)" ]]; then
+    if [[ "$DEMYX_STACK_HEALTHCHECK" = true && "$(pgrep -f "demyx healthcheck" | wc -l)" < 2 ]]; then
         cd "$DEMYX_WP" || exit
 
         for i in *
