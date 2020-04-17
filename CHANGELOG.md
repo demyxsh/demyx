@@ -16,6 +16,8 @@
 - chroot.sh
     - demyx update now shows updates if available
     - Show an update notice if available
+    - Remove carriage return
+    - Missing user when pulling images
 ### Removed
 - demyx_motd_update_wp_yml
 - Code for demyx repository was skipped
