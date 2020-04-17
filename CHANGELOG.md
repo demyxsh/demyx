@@ -13,6 +13,7 @@
 - Prefix sudo when reloading nginx
 - Moved global functions to the top
 - Rearrange environment variables from essentials to non-essentials
+- Disable auto rate limit for now
 - chroot.sh
     - demyx update now shows updates if available
     - Show an update notice if available
