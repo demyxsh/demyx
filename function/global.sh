@@ -121,6 +121,17 @@ demyx_execute() {
     DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] ========================================")"
     echo -e "$DEMYX_COMMON_LOG" >> /var/log/demyx/demyx.log
 }
+demyx_check_docker_sock() {
+    DEMYX_GLOBAL_CHECK_DOCKER_SOCK="$(ls /run | grep docker.sock)"
+    [[ -n "$DEMYX_GLOBAL_CHECK_DOCKER_SOCK" ]] && echo volume
+    [[ -n "$DOCKER_HOST" ]] && echo proxy
+}
+# Global variables
+DEMYX_GLOBAL_UPDATE_LIST="demyx browsersync code-server docker-compose docker-socket-proxy logrotate mariadb nginx openlitespeed ssh traefik utilities wordpress"
+if [[ -n "$(demyx_check_docker_sock)" ]]; then
+    # Global environment variables
+    DEMYX_DOCKER_PS="$(docker ps)"
+fi
 demyx_table() {
     demyx_source table
     printTable '^' "$@"
@@ -200,11 +211,6 @@ demyx_upgrade_apps() {
 demyx_validate_ip() {
     echo "$DEMYX_APP_DOMAIN" | grep -E '(([0-9]{1,3})\.){3}([0-9]{1,3}){1}'  | grep -vE '25[6-9]|2[6-9][0-9]|[3-9][0-9][0-9]' | grep -Eo '(([0-9]{1,2}|1[0-9]{1,2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]{1,2}|1[0-9]{1,2}|2[0-4][0-9]|25[0-5]){1}'
 }
-demyx_check_docker_sock() {
-    DEMYX_GLOBAL_CHECK_DOCKER_SOCK="$(ls /run | grep docker.sock)"
-    [[ -n "$DEMYX_GLOBAL_CHECK_DOCKER_SOCK" ]] && echo volume
-    [[ -n "$DOCKER_HOST" ]] && echo proxy
-}
 demyx_get_mode() {
     if [[ -f /tmp/demyx-dev ]]; then
         echo development
@@ -252,8 +258,92 @@ demyx_dev_password() {
         echo "$(demyx util --pass --raw)"
     fi
 }
+demyx_update_local() {
+    demyx_execute -v docker run -dit --rm --name=DEMYX_LOCAL_OPENLITESPEED_VERSION --entrypoint=sh demyx/openlitespeed
+    demyx_execute -v docker run -dit --rm --name=DEMYX_LOCAL_WORDPRESS_VERSION --entrypoint=sh demyx/wordpress
 
-if [[ -n "$(demyx_check_docker_sock)" ]]; then
-    # Global environment variables
-    DEMYX_DOCKER_PS="$(docker ps)"
-fi
+    echo "DEMYX_LOCAL_VERSION=$DEMYX_BUILD
+    DEMYX_LOCAL_BROWSERSYNC_VERSION=$(docker run --rm --entrypoint=browser-sync demyx/browsersync --version | sed 's/\r//g')
+    DEMYX_LOCAL_CODE_VERSION=$(docker run --rm --entrypoint=code-server demyx/code-server --version | awk -F '[ ]' '{print $1}' | sed 's/\r//g')
+    DEMYX_LOCAL_DOCKER_COMPOSE_VERSION=$(docker run --rm --entrypoint=docker-compose demyx/docker-compose --version | awk -F '[ ]' '{print $3}' | cut -c -6 | sed 's/\r//g')
+    DEMYX_LOCAL_HAPROXY_VERSION=$(docker run --rm --user=root --entrypoint=haproxy demyx/docker-socket-proxy -v | awk '{print $3}' | sed 's/\r//g')
+    DEMYX_LOCAL_LOGROTATE_VERSION=$(docker run --rm --entrypoint=logrotate demyx/logrotate --version | head -n 1 | awk -F '[ ]' '{print $2}' | sed 's/\r//g')
+    DEMYX_LOCAL_MARIADB_VERSION=$(docker run --rm --entrypoint=mariadb demyx/mariadb --version | awk -F '[ ]' '{print $6}' | awk -F '[,]' '{print $1}' | sed 's/-MariaDB//g' | sed 's/\r//g')
+    DEMYX_LOCAL_NGINX_VERSION=$(docker run --rm --entrypoint=nginx demyx/nginx -V 2>&1 | head -n 1 | cut -c 22- | sed 's/\r//g')
+    DEMYX_LOCAL_OPENLITESPEED_VERSION=$(docker exec -t DEMYX_LOCAL_OPENLITESPEED_VERSION cat /usr/local/lsws/VERSION | sed 's/\r//g')
+    DEMYX_LOCAL_OPENLITESPEED_LSPHP_VERSION=$(docker exec -t DEMYX_LOCAL_OPENLITESPEED_VERSION sh -c '/usr/local/lsws/"$OPENLITESPEED_LSPHP_VERSION"/bin/lsphp -v' | head -1 | awk '{print $2}' | sed 's/\r//g')
+    DEMYX_LOCAL_OPENSSH_VERSION=$(docker run --rm --entrypoint=ssh demyx/ssh -V  2>&1 | cut -c -13 | awk -F '[_]' '{print $2}' | sed 's/\r//g')
+    DEMYX_LOCAL_TRAEFIK_VERSION=$(docker run --rm --user=root --entrypoint=traefik demyx/traefik version | sed -n 1p | awk '{print $2}' | sed 's/\r//g')
+    DEMYX_LOCAL_UTILITIES_VERSION=$(docker run --rm demyx/utilities cat /etc/debian_version | sed 's/\r//g')
+    DEMYX_LOCAL_WORDPRESS_VERSION=$(docker exec -t DEMYX_LOCAL_WORDPRESS_VERSION sh -c "grep '\$wp_version =' /etc/demyx/wordpress/wp-includes/version.php | cut -d\"'\" -f 2" | sed 's/\r//g')
+    DEMYX_LOCAL_WORDPRESS_CLI_VERSION=$(docker run --rm demyx/wordpress:cli --version | awk -F '[ ]' '{print $2}' | sed 's/\r//g')
+    DEMYX_LOCAL_WORDPRESS_PHP_VERSION=$(docker exec -t DEMYX_LOCAL_WORDPRESS_VERSION php -v | grep cli | awk -F '[ ]' '{print $2}' | sed 's/\r//g')
+    DEMYX_LOCAL_WORDPRESS_BEDROCK_VERSION=$(curl -sL https://api.github.com/repos/roots/bedrock/releases/latest | grep '"tag_name"' | head -n1 | awk -F '[:]' '{print $2}' | sed 's/"//g' | sed 's/,//g' | sed 's/ //g' | sed 's/\r//g')" | sed "s|    ||g" > "$DEMYX"/.update_local
+
+    demyx_execute -v docker stop DEMYX_LOCAL_OPENLITESPEED_VERSION
+    demyx_execute -v docker stop DEMYX_LOCAL_WORDPRESS_VERSION
+}
+demyx_update_remote() {
+    for i in $DEMYX_GLOBAL_UPDATE_LIST
+    do
+        [[ "$i" = demyx ]] && continue
+        curl -sL https://raw.githubusercontent.com/demyxco/"$i"/master/VERSION -o /tmp/"$i"
+        source /tmp/"$i"
+    done
+
+    echo "DEMYX_REMOTE_VERSION=$DEMYX_VERSION
+    DEMYX_REMOTE_BROWSERSYNC_VERSION=$DEMYX_BROWSERSYNC_VERSION
+    DEMYX_REMOTE_CODE_VERSION=$DEMYX_CODE_VERSION
+    DEMYX_REMOTE_DOCKER_COMPOSE_VERSION=$DEMYX_DOCKER_COMPOSE_VERSION
+    DEMYX_REMOTE_HAPROXY_VERSION=$DEMYX_DOCKER_SOCKET_PROXY_HAPROXY_VERSION
+    DEMYX_REMOTE_LOGROTATE_VERSION=$DEMYX_LOGROTATE_VERSION
+    DEMYX_REMOTE_MARIADB_VERSION=$DEMYX_MARIADB_VERSION
+    DEMYX_REMOTE_NGINX_VERSION=$DEMYX_NGINX_VERSION
+    DEMYX_REMOTE_OPENLITESPEED_VERSION=$DEMYX_OPENLITESPEED_VERSION
+    DEMYX_REMOTE_OPENLITESPEED_LSPHP_VERSION=$DEMYX_OPENLITESPEED_LSPHP_VERSION
+    DEMYX_REMOTE_OPENSSH_VERSION=$DEMYX_SSH_OPENSSH_VERSION
+    DEMYX_REMOTE_TRAEFIK_VERSION=$DEMYX_TRAEFIK_VERSION
+    DEMYX_REMOTE_UTILITIES_VERSION=$DEMYX_UTILITIES_DEBIAN_VERSION
+    DEMYX_REMOTE_WORDPRESS_VERSION=$DEMYX_WORDPRESS_VERSION
+    DEMYX_REMOTE_WORDPRESS_CLI_VERSION=$DEMYX_WORDPRESS_CLI_VERSION
+    DEMYX_REMOTE_WORDPRESS_PHP_VERSION=$DEMYX_WORDPRESS_PHP_VERSION
+    DEMYX_REMOTE_WORDPRESS_BEDROCK_VERSION=$DEMYX_WORDPRESS_BEDROCK_VERSION" | sed "s|    ||g" > "$DEMYX"/.update_remote
+}
+demyx_update_count() {
+    if [[ -f "$DEMYX"/.update_local && -f "$DEMYX"/.update_remote ]]; then
+        DEMYX_UPDATE_LOCAL="$(cat "$DEMYX"/.update_local | awk -F '[=]' '{print $2}')"
+        DEMYX_UPDATE_REMOTE="$(cat "$DEMYX"/.update_remote | awk -F '[=]' '{print $2}')"
+        DEMYX_UPDATE_COUNT="$(diff <(echo "$DEMYX_UPDATE_LOCAL") <(echo "$DEMYX_UPDATE_REMOTE") | grep ^+ | sed '1d' | wc -l)"
+
+        if [[ "$DEMYX_UPDATE_COUNT" > 0 ]]; then
+            echo "$DEMYX_UPDATE_COUNT" > "$DEMYX"/.update_count
+            demyx_update_image
+        else
+            echo 0 > "$DEMYX"/.update_count
+            [[ -f "$DEMYX"/.update_image ]] && rm "$DEMYX"/.update_image
+        fi
+    fi
+}
+demyx_update_image() {
+    source "$DEMYX"/.update_local
+    source "$DEMYX"/.update_remote
+    
+    # Delete iamge first
+    [[ -f "$DEMYX"/.update_image ]] && rm "$DEMYX"/.update_image
+
+    [[ "$DEMYX_LOCAL_VERSION" != "$DEMYX_REMOTE_VERSION" ]] && echo "demyx" >> "$DEMYX"/.update_image
+    [[ "$DEMYX_LOCAL_BROWSERSYNC_VERSION" != "$DEMYX_REMOTE_BROWSERSYNC_VERSION" ]] && echo "browsersync" >> "$DEMYX"/.update_image
+    [[ "$DEMYX_LOCAL_CODE_VERSION" != "$DEMYX_REMOTE_CODE_VERSION" ]] && echo "code-server" >> "$DEMYX"/.update_image
+    [[ "$DEMYX_LOCAL_DOCKER_COMPOSE_VERSION" != "$DEMYX_REMOTE_DOCKER_COMPOSE_VERSION" ]] && echo "docker-compose" >> "$DEMYX"/.update_image
+    [[ "$DEMYX_LOCAL_HAPROXY_VERSION" != "$DEMYX_REMOTE_HAPROXY_VERSION" ]] && echo "docker-socket-proxy" >> "$DEMYX"/.update_image
+    [[ "$DEMYX_LOCAL_LOGROTATE_VERSION" != "$DEMYX_REMOTE_LOGROTATE_VERSION" ]] && echo "logrotate" >> "$DEMYX"/.update_image
+    [[ "$DEMYX_LOCAL_MARIADB_VERSION" != "$DEMYX_REMOTE_MARIADB_VERSION" ]] && echo "mariadb" >> "$DEMYX"/.update_image
+    [[ "$DEMYX_LOCAL_NGINX_VERSION" != "$DEMYX_REMOTE_NGINX_VERSION" ]] && echo "nginx" >> "$DEMYX"/.update_image
+    [[ "$DEMYX_LOCAL_OPENLITESPEED_VERSION" != "$DEMYX_REMOTE_OPENLITESPEED_VERSION" || "$DEMYX_LOCAL_OPENLITESPEED_LSPHP_VERSION" != "$DEMYX_REMOTE_OPENLITESPEED_LSPHP_VERSION" ]] && echo "openlitespeed" >> "$DEMYX"/.update_image
+    [[ "$DEMYX_LOCAL_OPENSSH_VERSION" != "$DEMYX_REMOTE_OPENSSH_VERSION" ]] && echo "ssh" >> "$DEMYX"/.update_image
+    [[ "$DEMYX_LOCAL_TRAEFIK_VERSION" != "$DEMYX_REMOTE_TRAEFIK_VERSION" ]] && echo "traefik" >> "$DEMYX"/.update_image
+    [[ "$DEMYX_LOCAL_UTILITIES_VERSION" != "$DEMYX_REMOTE_UTILITIES_VERSION" ]] && echo "utilities" >> "$DEMYX"/.update_image
+    [[ "$DEMYX_LOCAL_WORDPRESS_VERSION" != "$DEMYX_REMOTE_WORDPRESS_VERSION" || "$DEMYX_LOCAL_WORDPRESS_PHP_VERSION" != "$DEMYX_REMOTE_WORDPRESS_PHP_VERSION" ]] && echo "wordpress" >> "$DEMYX"/.update_image
+    [[ "$DEMYX_LOCAL_WORDPRESS_CLI_VERSION" != "$DEMYX_REMOTE_WORDPRESS_CLI_VERSION" ]] && echo "wordpress:cli" >> "$DEMYX"/.update_image
+    [[ "$DEMYX_LOCAL_WORDPRESS_BEDROCK_VERSION" != "$DEMYX_REMOTE_WORDPRESS_BEDROCK_VERSION" ]] && echo "wordpress:bedrock" >> "$DEMYX"/.update_image
+}

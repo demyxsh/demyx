@@ -133,6 +133,15 @@ demyx_cron() {
             demyx_execute -v demyx log "$i" --rotate
         done
 
+        # Update remote versions
+        demyx_execute -v demyx_update_remote
+
+        # Update local versions
+        demyx_execute -v demyx_update_local
+
+        # Update versions counter
+        demyx_execute -v demyx_update_count
+
         # Execute custom cron
         if [[ -f /demyx/custom/cron/weekly.sh ]]; then
             echo "[$(date +%F-%T)] CROND: CUSTOM EVERY WEEK"

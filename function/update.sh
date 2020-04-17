@@ -20,14 +20,23 @@ demyx_update() {
         chmod +x /etc/demyx/bin/demyx-ssh.sh
     fi
 
+    # Refresh stack if .env exists
+    if [[ -f "$DEMYX_STACK"/.env ]]; then
+        demyx stack refresh
+    fi
+
     # Don't update chroot.sh when hostname is code - for internal use only
     if [[ "$DEMYX_HOST" != code ]]; then
         demyx_echo 'Updating chroot.sh'
         demyx_execute docker run -t --user=root --privileged --rm -v /usr/local/bin:/usr/local/bin demyx/utilities demyx-chroot
     fi
 
-    # Refresh stack if .env exists
-    if [[ -f "$DEMYX_STACK"/.env ]]; then
-        demyx stack refresh
-    fi
+    # Get remote versions
+    [[ ! -f "$DEMYX"/.update_remote ]] && demyx_execute -v demyx_update_remote
+
+    # Get local versions
+    [[ ! -f "$DEMYX"/.update_local ]] && demyx_execute -v demyx_update_local
+
+    # Update versions counter
+    demyx_execute -v demyx_update_count
 }

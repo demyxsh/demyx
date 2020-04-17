@@ -52,25 +52,28 @@ demyx_motd_stack_check() {
         fi
     fi
 }
+demyx_motd_update_check() {
+    demyx_update_count
+    
+    DEMYX_MOTD_UPDATE_COUNT="$(cat "$DEMYX"/.update_count)"
+    if [[ "$DEMYX_MOTD_UPDATE_COUNT" = 1 ]]; then
+        DEMYX_MOTD_UPDATE_PLURAL=update
+        #echo -e "\e[33m[UPDATE]\e[39m $DEMYX_MOTD_UPDATE_COUNT update available! View update: demyx list update"
+    elif [[ "$DEMYX_MOTD_UPDATE_COUNT" > 1 ]]; then
+        DEMYX_MOTD_UPDATE_PLURAL=updates
+        #echo -e "\e[32m[UPDATE]\e[39m $DEMYX_MOTD_UPDATE_COUNT updates available! View updates: demyx list update"
+    fi
+
+    echo 
+    echo -e "\e[32m[UPDATE]\e[39m $DEMYX_MOTD_UPDATE_COUNT $DEMYX_MOTD_UPDATE_PLURAL available!"
+    echo -e "\e[32m[UPDATE]\e[39m - To view ${DEMYX_MOTD_UPDATE_PLURAL}: demyx list update"
+    echo -e "\e[32m[UPDATE]\e[39m - Run command on the host: demyx upgrade"
+}
 #demyx_motd_git_latest() {
 #    cd "$DEMYX_ETC" || exit
 #    DEMYX_MOTD_GIT_LOG="$(git --no-pager log -5 --format=format:'- %s %C(white dim)(%ar)%C(reset)')"
 #    demyx_execute -v echo -e "Latest Updates\n----------------\n$DEMYX_MOTD_GIT_LOG\n"
 #}
-
-# Will remove this in February 1st, 2020
-demyx_motd_update_wp_yml() {
-    if [[ -n "$DEMYX_MOTD_CHECK_WP" ]]; then
-        cd "$DEMYX_WP"
-        for i in *
-        do
-            if [[ -n "$([[ -f "$DEMYX_WP"/"$i"/docker-compose.yml ]] && cat "$DEMYX_WP"/"$i"/docker-compose.yml | grep mariadb:edge || true)" ]]; then
-                DEMYX_MOTD_UPDATE_WP_YML=true
-            fi
-        done
-        [[ "$DEMYX_MOTD_UPDATE_WP_YML" = true ]] && demyx_execute -v demyx_warning "One or more WordPress apps have outdated configs, please run these commands:\n\n- demyx pull mariadb\n- demyx config all --refresh\n"
-    fi
-}
 
 demyx_motd() {
     echo "
@@ -93,8 +96,8 @@ demyx_motd() {
         echo
     fi
     demyx_motd_yml_check
-    demyx_motd_update_wp_yml
     demyx_motd_getting_started
     demyx_motd_stack_check
     demyx_motd_dev_warning
+    demyx_motd_update_check
 }
