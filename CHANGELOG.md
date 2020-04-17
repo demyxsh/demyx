@@ -16,6 +16,7 @@
 - Disable auto rate limit for now
 - Prevent down containers from going up when doing loops
 - Suppress update message when update count is 0
+- Fix symlink error message
 - chroot.sh
     - demyx update now shows updates if available
     - Show an update notice if available
