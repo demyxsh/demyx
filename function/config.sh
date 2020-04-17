@@ -798,6 +798,12 @@ demyx_config() {
 
                 demyx_echo 'Refreshing .env'
                 demyx_execute demyx_env
+                
+                if [[ -n "$DEMYX_CONFIG_FORCE" ]]; then
+                    demyx_execute -v echo "$(cat "$DEMYX_APP_PATH"/.env | head -n 45)" > "$DEMYX_APP_PATH"/.env
+                    demyx_echo 'Force refreshing the non-essential variables'
+                    demyx_execute demyx_env
+                fi
 
                 demyx_echo 'Refreshing .yml'
                 demyx_execute demyx_yml

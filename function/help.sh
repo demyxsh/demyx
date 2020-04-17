@@ -52,7 +52,7 @@ demyx_help() {
         echo "                   --php-start-servers            Update PHP's pm.start_servers"
         echo "                   --pma                          Turns on/off phpMyAdmin"
         echo "                   --rate-limit                   Turns on/off NGINX rate limting"
-        echo "                   --refresh                      Regenerate config files and uploaded to container"
+        echo "                   --refresh                      Regenerate config files and uploaded to container, use --force to reset non-essential variables"
         echo "                   --restart                      Restart NGINX/PHP/OLS services: nginx, nginx-php, ols, php"
         echo "                   --sftp                         Turns on/off SFTP container"
         echo "                   --skip-checks                  Skip checking other configs (cache, cdn, rate limit, etc.)"
