@@ -21,7 +21,7 @@ before_install:
   - docker pull alpine
 
 script:
-  - export DEMYX_BUILD_DATE="$(date +%Y.%m.%d.%H%M%S)"
+  - export DEMYX_BUILD_DATE="$(date +%Y.%m.%d)"
   - docker build --no-cache --build-arg DEMYX_BUILD="$DEMYX_BUILD_DATE" -t demyx/"$DEMYX_REPOSITORY" .
   - sudo cp chroot.sh /usr/local/bin/demyx
   - sudo chmod +x /usr/local/bin/demyx
@@ -31,7 +31,6 @@ script:
   - sudo demyx cmd motd
   - sudo demyx cmd run domain.tld
   - sudo demyx cmd wp domain.tld core is-installed
-  - echo "$DEMYX_BUILD_DATE" > build_date
 
 after_success:
   - echo "$DEMYX_PASSWORD" | docker login -u "$DEMYX_USERNAME" --password-stdin
