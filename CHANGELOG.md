@@ -3,6 +3,7 @@
 ## 2020-04-18
 ### Changed
 - Set shebang to dumb-init
+- Move commands to a different file when sourcing zsh symlink
 
 ## 2020-04-17
 ### Added

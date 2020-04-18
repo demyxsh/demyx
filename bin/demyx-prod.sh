@@ -11,7 +11,5 @@ chown -R demyx:demyx /home/demyx
 chown -R demyx:demyx /var/log/demyx
 
 # Lockdown
-rm -f /home/demyx/.zshrc
-ln -s /etc/demyx/.zshrc /home/demyx/.zshrc
 chown -R root:root /home/demyx/.oh-my-zsh
 chmod -R a=X /demyx

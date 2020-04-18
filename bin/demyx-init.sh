@@ -22,6 +22,10 @@ if [[ -n "$(ls /run | grep docker.sock)" || -n "$DOCKER_HOST" ]]; then
     fi
 fi
 
+# Remove .zshrc if it exists and then symlink
+[[ -f /home/demyx/.zshrc ]] && rm -f /home/demyx/.zshrc
+ln -s /etc/demyx/.zshrc /home/demyx/.zshrc
+
 # Run sshd
 demyx-ssh &
 
