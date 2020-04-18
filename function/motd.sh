@@ -55,7 +55,7 @@ demyx_motd_stack_check() {
 demyx_motd_update_check() {
     demyx_update_count
     
-    DEMYX_MOTD_UPDATE_COUNT="$(cat "$DEMYX"/.update_count)"
+    DEMYX_MOTD_UPDATE_COUNT="$([[ -f "$DEMYX"/.update_count ]] && cat "$DEMYX"/.update_count)"
     if [[ "$DEMYX_MOTD_UPDATE_COUNT" = 1 ]]; then
         DEMYX_MOTD_UPDATE_PLURAL=update
     elif [[ "$DEMYX_MOTD_UPDATE_COUNT" > 1 ]]; then
@@ -63,7 +63,7 @@ demyx_motd_update_check() {
     fi
 
     # Only output when count is > 0
-    if [[ "$DEMYX_MOTD_UPDATE_COUNT" > 0 ]]; then
+    if [[ -f "$DEMYX"/.update_image && "$DEMYX_MOTD_UPDATE_COUNT" > 0 ]]; then
         echo 
         echo -e "\e[32m[UPDATE]\e[39m $DEMYX_MOTD_UPDATE_COUNT $DEMYX_MOTD_UPDATE_PLURAL available!"
         echo -e "\e[32m[UPDATE]\e[39m - To view ${DEMYX_MOTD_UPDATE_PLURAL}: demyx list update"

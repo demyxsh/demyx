@@ -20,6 +20,7 @@
 - Fix broken healthcheck
 - Update install images
 - Echo out code-server:wp tag instead
+- Add conditionals to MOTD
 - chroot.sh
     - demyx update now shows updates if available
     - Show an update notice if available
