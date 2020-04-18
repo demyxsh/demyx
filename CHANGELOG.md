@@ -29,6 +29,7 @@
 ### Removed
 - demyx_motd_update_wp_yml
 - Code for demyx repository was skipped
+- Remove commented code
 
 ## 2020-04-15
 ### Added
