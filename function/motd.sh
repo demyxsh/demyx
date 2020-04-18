@@ -62,8 +62,8 @@ demyx_motd_update_check() {
         DEMYX_MOTD_UPDATE_PLURAL=updates
     fi
 
-    # Only output when count is > 0
-    if [[ -f "$DEMYX"/.update_image && "$DEMYX_MOTD_UPDATE_COUNT" > 0 ]]; then
+    # Only output when all conditions are met
+    if [[ -f "$DEMYX"/.update_count && -f "$DEMYX"/.update_image && -f "$DEMYX"/.update_local && -f "$DEMYX"/.update_remote && "$DEMYX_MOTD_UPDATE_COUNT" > 0 ]]; then
         echo 
         echo -e "\e[32m[UPDATE]\e[39m $DEMYX_MOTD_UPDATE_COUNT $DEMYX_MOTD_UPDATE_PLURAL available!"
         echo -e "\e[32m[UPDATE]\e[39m - To view ${DEMYX_MOTD_UPDATE_PLURAL}: demyx list update"
