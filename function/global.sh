@@ -275,7 +275,7 @@ demyx_update_local() {
     DEMYX_LOCAL_WORDPRESS_VERSION=$(docker run --rm --entrypoint=sh demyx/wordpress -c "grep '\$wp_version =' /etc/demyx/wordpress/wp-includes/version.php | cut -d\"'\" -f 2" | sed 's/\r//g')
     DEMYX_LOCAL_WORDPRESS_CLI_VERSION=$(docker run --rm demyx/wordpress:cli --version | awk -F '[ ]' '{print $2}' | sed 's/\r//g')
     DEMYX_LOCAL_WORDPRESS_PHP_VERSION=$(docker run --rm --entrypoint=php demyx/wordpress -v | grep cli | awk -F '[ ]' '{print $2}' | sed 's/\r//g')
-    DEMYX_LOCAL_WORDPRESS_BEDROCK_VERSION=$(curl -sL https://api.github.com/repos/roots/bedrock/releases/latest | grep '"tag_name"' | head -n1 | awk -F '[:]' '{print $2}' | sed 's/"//g' | sed 's/,//g' | sed 's/ //g' | sed 's/\r//g')" | sed "s|    ||g" > "$DEMYX"/.update_local
+    DEMYX_LOCAL_WORDPRESS_BEDROCK_VERSION=$(curl -sL https://api.github.com/repos/roots/bedrock/releases/latest | jq -r '.tag_name' | sed 's/\r//g')" | sed "s|    ||g" > "$DEMYX"/.update_local
 }
 demyx_update_remote() {
     for i in $DEMYX_GLOBAL_UPDATE_LIST
