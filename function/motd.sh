@@ -58,10 +58,8 @@ demyx_motd_update_check() {
     DEMYX_MOTD_UPDATE_COUNT="$(cat "$DEMYX"/.update_count)"
     if [[ "$DEMYX_MOTD_UPDATE_COUNT" = 1 ]]; then
         DEMYX_MOTD_UPDATE_PLURAL=update
-        #echo -e "\e[33m[UPDATE]\e[39m $DEMYX_MOTD_UPDATE_COUNT update available! View update: demyx list update"
     elif [[ "$DEMYX_MOTD_UPDATE_COUNT" > 1 ]]; then
         DEMYX_MOTD_UPDATE_PLURAL=updates
-        #echo -e "\e[32m[UPDATE]\e[39m $DEMYX_MOTD_UPDATE_COUNT updates available! View updates: demyx list update"
     fi
 
     # Only output when count is > 0
