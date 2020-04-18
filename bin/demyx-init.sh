@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/usr/bin/dumb-init /bin/zsh
 # Demyx
 # https://demyx.sh
 

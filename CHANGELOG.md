@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2020-04-18
+### Changed
+- Set shebang to dumb-init
+
 ## 2020-04-17
 ### Added
 - --refresh can now use --force to force refresh non-essential variables

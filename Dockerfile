@@ -177,4 +177,4 @@ RUN set -ex; \
 EXPOSE 2222 8080
 WORKDIR /demyx
 USER demyx
-ENTRYPOINT ["dumb-init", "demyx-init"]
+ENTRYPOINT ["demyx-init"]
