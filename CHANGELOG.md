@@ -24,6 +24,7 @@
 - Use docker run instead of exec when updating local update cache
 - Only output MOTD update message when all conditionals are met
 - Use jq to get Bedrock version
+- Use curly brackets for OLS variable
 - chroot.sh
     - demyx update now shows updates if available
     - Show an update notice if available
