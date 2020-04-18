@@ -29,6 +29,7 @@
 - Move stack refresh command to demyx-init.sh
 - Replace MOTD update check commands
 - Remove unused code and rearrange code
+- Use conditional when using cat
 - chroot.sh
     - demyx update now shows updates if available
     - Show an update notice if available
