@@ -21,6 +21,7 @@
 - Update install images
 - Echo out code-server:wp tag instead
 - Add conditionals to MOTD
+- Use docker run instead of exec when updating local update cache
 - chroot.sh
     - demyx update now shows updates if available
     - Show an update notice if available

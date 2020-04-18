@@ -259,9 +259,6 @@ demyx_dev_password() {
     fi
 }
 demyx_update_local() {
-    demyx_execute -v docker run -dit --rm --name=DEMYX_LOCAL_OPENLITESPEED_VERSION --entrypoint=sh demyx/openlitespeed
-    demyx_execute -v docker run -dit --rm --name=DEMYX_LOCAL_WORDPRESS_VERSION --entrypoint=sh demyx/wordpress
-
     echo "DEMYX_LOCAL_VERSION=$DEMYX_BUILD
     DEMYX_LOCAL_BROWSERSYNC_VERSION=$(docker run --rm --entrypoint=browser-sync demyx/browsersync --version | sed 's/\r//g')
     DEMYX_LOCAL_CODE_VERSION=$(docker run --rm --entrypoint=code-server demyx/code-server --version | awk -F '[ ]' '{print $1}' | sed 's/\r//g')
@@ -270,18 +267,15 @@ demyx_update_local() {
     DEMYX_LOCAL_LOGROTATE_VERSION=$(docker run --rm --entrypoint=logrotate demyx/logrotate --version | head -n 1 | awk -F '[ ]' '{print $2}' | sed 's/\r//g')
     DEMYX_LOCAL_MARIADB_VERSION=$(docker run --rm --entrypoint=mariadb demyx/mariadb --version | awk -F '[ ]' '{print $6}' | awk -F '[,]' '{print $1}' | sed 's/-MariaDB//g' | sed 's/\r//g')
     DEMYX_LOCAL_NGINX_VERSION=$(docker run --rm --entrypoint=nginx demyx/nginx -V 2>&1 | head -n 1 | cut -c 22- | sed 's/\r//g')
-    DEMYX_LOCAL_OPENLITESPEED_VERSION=$(docker exec -t DEMYX_LOCAL_OPENLITESPEED_VERSION cat /usr/local/lsws/VERSION | sed 's/\r//g')
-    DEMYX_LOCAL_OPENLITESPEED_LSPHP_VERSION=$(docker exec -t DEMYX_LOCAL_OPENLITESPEED_VERSION sh -c '/usr/local/lsws/"$OPENLITESPEED_LSPHP_VERSION"/bin/lsphp -v' | head -1 | awk '{print $2}' | sed 's/\r//g')
+    DEMYX_LOCAL_OPENLITESPEED_VERSION=$(docker run --rm --entrypoint=cat demyx/openlitespeed /usr/local/lsws/VERSION | sed 's/\r//g')
+    DEMYX_LOCAL_OPENLITESPEED_LSPHP_VERSION=$(docker run --rm --entrypoint=bash demyx/openlitespeed -c '/usr/local/lsws/"$OPENLITESPEED_LSPHP_VERSION"/bin/lsphp -v' | head -1 | awk '{print $2}' | sed 's/\r//g')
     DEMYX_LOCAL_OPENSSH_VERSION=$(docker run --rm --entrypoint=ssh demyx/ssh -V  2>&1 | cut -c -13 | awk -F '[_]' '{print $2}' | sed 's/\r//g')
     DEMYX_LOCAL_TRAEFIK_VERSION=$(docker run --rm --user=root --entrypoint=traefik demyx/traefik version | sed -n 1p | awk '{print $2}' | sed 's/\r//g')
     DEMYX_LOCAL_UTILITIES_VERSION=$(docker run --rm demyx/utilities cat /etc/debian_version | sed 's/\r//g')
-    DEMYX_LOCAL_WORDPRESS_VERSION=$(docker exec -t DEMYX_LOCAL_WORDPRESS_VERSION sh -c "grep '\$wp_version =' /etc/demyx/wordpress/wp-includes/version.php | cut -d\"'\" -f 2" | sed 's/\r//g')
+    DEMYX_LOCAL_WORDPRESS_VERSION=$(docker run --rm --entrypoint=sh demyx/wordpress -c "grep '\$wp_version =' /etc/demyx/wordpress/wp-includes/version.php | cut -d\"'\" -f 2" | sed 's/\r//g')
     DEMYX_LOCAL_WORDPRESS_CLI_VERSION=$(docker run --rm demyx/wordpress:cli --version | awk -F '[ ]' '{print $2}' | sed 's/\r//g')
-    DEMYX_LOCAL_WORDPRESS_PHP_VERSION=$(docker exec -t DEMYX_LOCAL_WORDPRESS_VERSION php -v | grep cli | awk -F '[ ]' '{print $2}' | sed 's/\r//g')
+    DEMYX_LOCAL_WORDPRESS_PHP_VERSION=$(docker run --rm --entrypoint=php demyx/wordpress -v | grep cli | awk -F '[ ]' '{print $2}' | sed 's/\r//g')
     DEMYX_LOCAL_WORDPRESS_BEDROCK_VERSION=$(curl -sL https://api.github.com/repos/roots/bedrock/releases/latest | grep '"tag_name"' | head -n1 | awk -F '[:]' '{print $2}' | sed 's/"//g' | sed 's/,//g' | sed 's/ //g' | sed 's/\r//g')" | sed "s|    ||g" > "$DEMYX"/.update_local
-
-    demyx_execute -v docker stop DEMYX_LOCAL_OPENLITESPEED_VERSION
-    demyx_execute -v docker stop DEMYX_LOCAL_WORDPRESS_VERSION
 }
 demyx_update_remote() {
     for i in $DEMYX_GLOBAL_UPDATE_LIST
