@@ -4,6 +4,7 @@
 ### Changed
 - Set shebang to dumb-init
 - Move commands to a different file when sourcing zsh symlink
+- Missing -v flag for update commands
 
 ## 2020-04-17
 ### Added
