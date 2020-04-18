@@ -42,6 +42,7 @@
 - Remove commented code
 - init.sh
 - Remove init.sh from main script
+- Extra flags in healthcheck curl
 
 
 ## 2020-04-15
