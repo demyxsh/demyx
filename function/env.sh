@@ -15,6 +15,7 @@ demyx_env() {
     [[ -n "$DEMYX_RUN_PASSWORD" ]] && WORDPRESS_USER_PASSWORD="$DEMYX_RUN_PASSWORD"
     [[ -n "$DEMYX_RUN_EMAIL" ]] && WORDPRESS_USER_EMAIL="$DEMYX_RUN_EMAIL"
     [[ -n "$DEMYX_RUN_STACK" ]] && DEMYX_APP_STACK="$DEMYX_RUN_STACK"
+    [[ -n "$DEMYX_RUN_CLOUDFLARE" ]] && DEMYX_APP_CLOUDFLARE=true
 
     if [[ "$DEMYX_RUN_TYPE" = wp || "$DEMYX_APP_TYPE" = wp ]]; then
         echo "# AUTO GENERATED
@@ -35,6 +36,7 @@ demyx_env() {
             DEMYX_APP_AUTH_USERNAME=$DEMYX_APP_AUTH_USERNAME
             DEMYX_APP_AUTH_PASSWORD=$DEMYX_APP_AUTH_PASSWORD
             DEMYX_APP_AUTH_HTPASSWD=$(demyx util --user="$DEMYX_APP_AUTH_USERNAME" --htpasswd="$DEMYX_APP_AUTH_PASSWORD" --raw)
+            DEMYX_APP_CLOUDFLARE=${DEMYX_APP_CLOUDFLARE:-false}
             DEMYX_APP_CACHE=${DEMYX_APP_CACHE:-false}
             DEMYX_APP_CDN=${DEMYX_APP_CDN:-false}
             DEMYX_APP_DEV=${DEMYX_APP_DEV:-false}

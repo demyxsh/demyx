@@ -4,6 +4,7 @@
 ### Added
 - Cloudflare as the second certificate resolver
 - New flag for demyx run: --cf and make sure to check for Cloudflare email and key
+- Add DEMYX_APP_CLOUDFLARE to env.sh
 
 ### Changed
 - Use wget instead of curl for healthchecks
