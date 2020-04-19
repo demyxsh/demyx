@@ -31,6 +31,7 @@ demyx_help() {
         echo "                   --bedrock                      Sets production/development mode for Bedrock"
         echo "                   --cache                        Turns on/off fastcgi cache"
         echo "                   --cdn                          Turns on/off CDN, powered by Staticaly"
+        echo "                   --cf                           Switch between HTTP or Cloudflare resolvers, accepts only true or false"
         echo "                   --clean                        Creates new MariaDB credentials and reinstalls WordPress core files"
         echo "                   --db-cpu                       Set the app's DB container CPU usage, --db-cpu=null to remove cap"
         echo "                   --db-mem                       Set the app's DB container MEM usage, --db-mem=null to remove cap"

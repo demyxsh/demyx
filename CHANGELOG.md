@@ -10,6 +10,7 @@
 - Add demyx_update_image to weekly cron
 - Pull additional code-server tags when code-server updates
 - Use Cloudflare if email and keys are present for main .yml file
+- Current sites can now switch between resolvers
 
 ### Removed
 - Remove tag for code-server when generating update image list

@@ -36,6 +36,12 @@ demyx_config() {
             --cdn=false)
                 DEMYX_CONFIG_CDN=false
                 ;;
+            --cf|--cf=true)
+                DEMYX_CONFIG_CLOUDFLARE=true
+                ;;
+            --cf=false)
+                DEMYX_CONFIG_CLOUDFLARE=false
+                ;;
             --clean)
                 DEMYX_CONFIG_CLEAN=1
                 ;;
@@ -486,6 +492,23 @@ demyx_config() {
                 demyx_echo 'Deactivating cdn-enabler' 
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin deactivate cdn-enabler && \
                     sed -i "s|DEMYX_APP_CDN=.*|DEMYX_APP_CDN=false|g" "$DEMYX_APP_PATH"/.env
+            fi
+            if [[ "$DEMYX_CONFIG_CLOUDFLARE" = true ]]; then
+                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
+                    [[ "$DEMYX_APP_CLOUDFLARE" = true ]] && demyx_die 'Cloudflare is already set'
+                fi
+                
+                demyx_echo 'Setting SSL/TLS resolver to Cloudflare' 
+                demyx_execute sed -i "s|DEMYX_APP_CLOUDFLARE=.*|DEMYX_APP_CLOUDFLARE=true|g" "$DEMYX_APP_PATH"/.env; \
+                    demyx config "$DEMYX_APP_DOMAIN" --refresh
+            elif [[ "$DEMYX_CONFIG_CLOUDFLARE" = false ]]; then
+                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
+                    [[ "$DEMYX_APP_CLOUDFLARE" = false ]] && demyx_die 'Cloudflare is already off'
+                fi
+                
+                demyx_echo 'Setting SSL/TLS resolver to HTTP' 
+                demyx_execute sed -i "s|DEMYX_APP_CLOUDFLARE=.*|DEMYX_APP_CLOUDFLARE=false|g" "$DEMYX_APP_PATH"/.env; \
+                    demyx config "$DEMYX_APP_DOMAIN" --refresh
             fi
             if [[ -n "$DEMYX_CONFIG_CLEAN" ]]; then
                 if [[ -z "$DEMYX_CONFIG_NO_BACKUP" ]]; then
