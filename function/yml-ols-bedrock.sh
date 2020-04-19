@@ -13,15 +13,15 @@ if [[ "$DEMYX_APP_SSL" = true ]]; then
         
       - "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-https.rule=Host(`${DEMYX_APP_DOMAIN}`) || Host(`www.${DEMYX_APP_DOMAIN}`)"
       - "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-https.entrypoints=https"
-      - "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-https.tls.certresolver=demyx"
+      - "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-https.tls.certresolver='$(demyx_certificate_challenge)'"
     
       - "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-https.service=${DEMYX_APP_COMPOSE_PROJECT}-https-port"
       - "traefik.http.services.${DEMYX_APP_COMPOSE_PROJECT}-https-port.loadbalancer.server.port=80"'
 
     DEMYX_YML_OLS_BEDROCK_LABEL_ADMIN='- "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-ols.entrypoints=https"
-      - "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-ols.tls.certresolver=demyx"'
+      - "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-ols.tls.certresolver='$(demyx_certificate_challenge)'"'
     DEMYX_YML_OLS_BEDROCK_LABEL_ASSETS='- "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-ols-assets.entrypoints=https"
-      - "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-ols-assets.tls.certresolver=demyx"'
+      - "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-ols-assets.tls.certresolver='$(demyx_certificate_challenge)'"'
     DEMYX_YML_OLS_BEDROCK_LABEL_AUTH_PROTO=https
 else
     DEMYX_YML_OLS_BEDROCK_LABEL_HTTP='- "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-http.rule=Host(`${DEMYX_APP_DOMAIN}`) || Host(`www.${DEMYX_APP_DOMAIN}`)"
@@ -35,7 +35,7 @@ else
 
       - "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-https.rule=Host(`${DEMYX_APP_DOMAIN}`) || Host(`www.${DEMYX_APP_DOMAIN}`)"
       - "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-https.entrypoints=https"
-      - "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-https.tls.certresolver=demyx"
+      - "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-https.tls.certresolver='$(demyx_certificate_challenge)'"
                 
       - "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-https.service=${DEMYX_APP_COMPOSE_PROJECT}-https-port"
       - "traefik.http.services.${DEMYX_APP_COMPOSE_PROJECT}-https-port.loadbalancer.server.port=80"'
