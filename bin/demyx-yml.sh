@@ -18,6 +18,15 @@ DEMYX_YML_GET_STACK_ENV="$([[ -f /demyx/app/stack/.env ]] && cat /demyx/app/stac
 if [[ -n "$DEMYX_YML_GET_STACK_ENV" ]]; then
     DEMYX_YML_DOMAIN="$(echo "$DEMYX_YML_GET_STACK_ENV" | grep DEMYX_STACK_SERVER_API | awk -F '[=]' '{print $2}')"
     DEMYX_YML_AUTH="$(echo "$DEMYX_YML_GET_STACK_ENV" | grep DEMYX_STACK_AUTH | awk -F '[=]' '{print $2}')"
+    DEMYX_YML_CLOUDFLARE_EMAIL="$(echo "$DEMYX_YML_GET_STACK_ENV" | grep DEMYX_STACK_CLOUDFLARE_EMAIL | awk -F '[=]' '{print $2}')"
+    DEMYX_YML_CLOUDFLARE_KEY="$(echo "$DEMYX_YML_GET_STACK_ENV" | grep DEMYX_STACK_CLOUDFLARE_KEY | awk -F '[=]' '{print $2}')"
+
+    # Set resolver
+    if [[ -n "$DEMYX_YML_CLOUDFLARE_EMAIL" && -n "$DEMYX_YML_CLOUDFLARE_KEY" ]]; then
+      DEMYX_YML_RESOLVER=demyx-cf
+    else
+      DEMYX_YML_RESOLVER=demyx
+    fi
 
     # Only generate labels when DEMYX_YML_DOMAIN is not false
     if [[ "$DEMYX_YML_DOMAIN" != false ]]; then
@@ -25,7 +34,7 @@ if [[ -n "$DEMYX_YML_GET_STACK_ENV" ]]; then
       - \"traefik.enable=true\"
       - \"traefik.http.routers.demyx.rule=Host(\`\${DEMYX_YML_DOMAIN}\`)\"
       - \"traefik.http.routers.demyx.entrypoints=https\"
-      - \"traefik.http.routers.demyx.tls.certresolver=demyx\"
+      - \"traefik.http.routers.demyx.tls.certresolver=${DEMYX_YML_RESOLVER}\"
       - \"traefik.http.routers.demyx.service=demyx\"
       - \"traefik.http.services.demyx.loadbalancer.server.port=8080\"
       - \"traefik.http.routers.demyx.middlewares=demyx-auth\"
