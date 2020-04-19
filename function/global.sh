@@ -326,7 +326,7 @@ demyx_update_image() {
 
     [[ "$DEMYX_LOCAL_VERSION" != "$DEMYX_REMOTE_VERSION" ]] && echo "demyx" >> "$DEMYX"/.update_image
     [[ "$DEMYX_LOCAL_BROWSERSYNC_VERSION" != "$DEMYX_REMOTE_BROWSERSYNC_VERSION" ]] && echo "browsersync" >> "$DEMYX"/.update_image
-    [[ "$DEMYX_LOCAL_CODE_VERSION" != "$DEMYX_REMOTE_CODE_VERSION" ]] && echo "code-server:wp" >> "$DEMYX"/.update_image
+    [[ "$DEMYX_LOCAL_CODE_VERSION" != "$DEMYX_REMOTE_CODE_VERSION" ]] && echo "code-server" >> "$DEMYX"/.update_image
     [[ "$DEMYX_LOCAL_DOCKER_COMPOSE_VERSION" != "$DEMYX_REMOTE_DOCKER_COMPOSE_VERSION" ]] && echo "docker-compose" >> "$DEMYX"/.update_image
     [[ "$DEMYX_LOCAL_HAPROXY_VERSION" != "$DEMYX_REMOTE_HAPROXY_VERSION" ]] && echo "docker-socket-proxy" >> "$DEMYX"/.update_image
     [[ "$DEMYX_LOCAL_LOGROTATE_VERSION" != "$DEMYX_REMOTE_LOGROTATE_VERSION" ]] && echo "logrotate" >> "$DEMYX"/.update_image

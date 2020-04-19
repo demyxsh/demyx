@@ -5,6 +5,9 @@
 - Use wget instead of curl for healthchecks
 - Add demyx_update_image to weekly cron
 
+### Removed
+- Remove tag for code-server when generating update image list
+
 ## 2020-04-18
 ### Changed
 - Set shebang to dumb-init
