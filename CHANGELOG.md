@@ -16,6 +16,7 @@
 - Merge HTTP and Cloudflare resolvers for Traefik yml
 - Update help menu for demyx run
 - WP apps utilize demyx_certificate_challenge in yml generation
+- Check if Cloudflare variables exists first when using demyx config
 
 ### Removed
 - Remove tag for code-server when generating update image list
