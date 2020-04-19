@@ -273,7 +273,7 @@ elif [[ "$DEMYX_CHROOT" = upgrade ]]; then
 
     # Rebuild local update cache
     echo -e "\e[34m[INFO]\e[39m Rebuilding update cache ... "
-    docker exec -t --user=root demyx zsh -c "rm /demyx/.update_image; rm /demyx/.update_count; rm /demyx/.update_local; demyx update"
+    docker exec -t --user=root demyx zsh -c "rm /demyx/.update*; demyx update"
 
     # Update demyx helper on the host
     echo -e "\e[34m[INFO]\e[39m Updating demyx helper ... "
@@ -282,7 +282,7 @@ elif [[ "$DEMYX_CHROOT" = upgrade ]]; then
     # Empty out this variable to suppress update message
     DEMYX_CHROOT_IMAGES=
 
-    echo -e "\e[32m[SUCCESS]\e[39m Successfully updated!"
+    echo -e "\e[32m[SUCCESS]\e[39m Successfully updated!"   
 else
     if [[ -n "$DEMYX_CHROOT_DEMYX_CHECK" ]]; then
         demyx_mode
