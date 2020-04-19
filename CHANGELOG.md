@@ -1,6 +1,10 @@
 # CHANGELOG
 
 ## 2020-04-19
+### Added
+- Cloudflare as the second certificate resolver
+- New flag for demyx run: --cf and make sure to check for Cloudflare email and key
+
 ### Changed
 - Use wget instead of curl for healthchecks
 - Add demyx_update_image to weekly cron

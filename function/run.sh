@@ -21,6 +21,9 @@ demyx_run() {
             --cdn)
                 DEMYX_RUN_CDN=true
                 ;;
+            --cf)
+                DEMYX_RUN_CLOUDFLARE=true
+                ;;
             --clone=?*)
                 DEMYX_RUN_CLONE="${3#*=}"
                 ;;
@@ -102,6 +105,7 @@ demyx_run() {
     fi
 
     if [[ -n "$DEMYX_RUN_CHECK" ]]; then
+        demyx_source stack
         if [[ -n "$DEMYX_RUN_FORCE" ]]; then
             DEMYX_RM_CONFIRM=y
         else
@@ -114,6 +118,9 @@ demyx_run() {
         else
             demyx rm "$DEMYX_TARGET" -f
         fi
+        if [[ -n "$DEMYX_RUN_CLOUDFLARE" && -z "$DEMYX_STACK_CLOUDFLARE_EMAIL" && -z "$DEMYX_STACK_CLOUDFLARE_KEY" ]]; then
+            demyx_die 'Missing Cloudflare key and/or email, please run demyx help stack'
+        fi
     fi
 
     DEMYX_RUN_TYPE="${DEMYX_RUN_TYPE:-wp}"
@@ -121,6 +128,8 @@ demyx_run() {
     DEMYX_RUN_CDN="${DEMYX_RUN_CDN:-false}"
     DEMYX_RUN_CACHE="${DEMYX_RUN_CACHE:-false}"
     DEMYX_RUN_AUTH="${DEMYX_RUN_AUTH:-false}"
+    DEMYX_RUN_CLOUDFLARE="${DEMYX_RUN_CLOUDFLARE:-false}"
+    
     [[ -n "$DEMYX_RUN_CLONE" ]] && DEMYX_RUN_CLONE_APP="$(demyx info "$DEMYX_RUN_CLONE" --filter=DEMYX_APP_WP_CONTAINER)"
 
     if [[ "$DEMYX_RUN_STACK" = bedrock ]]; then
