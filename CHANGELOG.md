@@ -4,6 +4,7 @@
 ### Changed
 - Use wget instead of curl for healthchecks
 - Add demyx_update_image to weekly cron
+- Pull additional code-server tags when code-server updates
 
 ### Removed
 - Remove tag for code-server when generating update image list
