@@ -340,3 +340,10 @@ demyx_update_image() {
     [[ "$DEMYX_LOCAL_WORDPRESS_CLI_VERSION" != "$DEMYX_REMOTE_WORDPRESS_CLI_VERSION" ]] && echo "wordpress:cli" >> "$DEMYX"/.update_image
     [[ "$DEMYX_LOCAL_WORDPRESS_BEDROCK_VERSION" != "$DEMYX_REMOTE_WORDPRESS_BEDROCK_VERSION" ]] && echo "wordpress:bedrock" >> "$DEMYX"/.update_image
 }
+demyx_certificate_challenge() {
+    if [[ "$DEMYX_APP_CLOUDFLARE" = true ]]; then
+      echo "demyx-cf"
+    else
+      echo "demyx"
+    fi
+}

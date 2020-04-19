@@ -5,6 +5,7 @@
 - Cloudflare as the second certificate resolver
 - New flag for demyx run: --cf and make sure to check for Cloudflare email and key
 - Add DEMYX_APP_CLOUDFLARE to env.sh
+- New function to output correct challenge for Traefik: demyx_certificate_challenge
 
 ### Changed
 - Use wget instead of curl for healthchecks
