@@ -194,6 +194,7 @@ demyx_help() {
         echo "                --auth          Run with basic auth on/off"
         echo "                --cache         Run with cache on/off"
         echo "                --cdn           Run with cdn on/off"
+        echo "                --cf            Use Cloudflare as the DNS challenge for SSL/TLS"
         echo "                --clone         Clone an already running app"
         echo "                --email         Override email generation"
         echo "                --force         Force delete if exists"

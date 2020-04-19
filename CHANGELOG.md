@@ -13,6 +13,7 @@
 - Use Cloudflare if email and keys are present for main .yml file
 - Current sites can now switch between resolvers
 - Merge HTTP and Cloudflare resolvers for Traefik yml
+- Update help menu for demyx run
 
 ### Removed
 - Remove tag for code-server when generating update image list
