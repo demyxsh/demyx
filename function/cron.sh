@@ -133,14 +133,17 @@ demyx_cron() {
             demyx_execute -v demyx log "$i" --rotate
         done
 
-        # Update remote versions
-        demyx_execute -v demyx_update_remote
-
         # Update local versions
         demyx_execute -v demyx_update_local
 
+        # Update remote versions
+        demyx_execute -v demyx_update_remote
+
         # Update versions counter
         demyx_execute -v demyx_update_count
+
+        # Update image list
+        demyx_execute -v demyx_update_image
 
         # Execute custom cron
         if [[ -f /demyx/custom/cron/weekly.sh ]]; then

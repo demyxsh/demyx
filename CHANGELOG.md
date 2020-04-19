@@ -3,6 +3,7 @@
 ## 2020-04-19
 ### Changed
 - Use wget instead of curl for healthchecks
+- Add demyx_update_image to weekly cron
 
 ## 2020-04-18
 ### Changed
