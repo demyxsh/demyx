@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2020-04-19
+### Changed
+- Use wget instead of curl for healthchecks
+
 ## 2020-04-18
 ### Changed
 - Set shebang to dumb-init

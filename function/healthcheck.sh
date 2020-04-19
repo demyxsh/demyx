@@ -21,7 +21,7 @@ demyx_healthcheck() {
                     DEMYX_HEALTHCHECK_CONTAINER="$DEMYX_APP_NX_CONTAINER"
                 fi
 
-                DEMYX_HEALTHCHECK_STATUS="$(curl -sL -m "$DEMYX_STACK_HEALTHCHECK_TIMEOUT" "$DEMYX_HEALTHCHECK_CONTAINER" > /dev/null; echo "$?")"
+                DEMYX_HEALTHCHECK_STATUS="$(wget --quiet --tries=1 --spider "$DEMYX_HEALTHCHECK_CONTAINER"; echo "$?")"
 
                 if [[ "$DEMYX_HEALTHCHECK_STATUS" != 0 ]]; then
                     if [[ ! -f "$DEMYX_WP"/"$i"/.healthcheck ]]; then
