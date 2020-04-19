@@ -18,6 +18,7 @@
 - WP apps utilize demyx_certificate_challenge in yml generation
 - Check if Cloudflare variables exists first when using demyx config
 - Make demyx helper remove all update files before rebuilding cache
+- Bump lsphp max connections to 20000 for OLS stack
 
 ### Removed
 - Remove tag for code-server when generating update image list
