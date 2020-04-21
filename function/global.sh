@@ -308,7 +308,7 @@ demyx_update_count() {
         DEMYX_UPDATE_REMOTE="$(cat "$DEMYX"/.update_remote | awk -F '[=]' '{print $2}')"
         DEMYX_UPDATE_COUNT="$(diff <(echo "$DEMYX_UPDATE_LOCAL") <(echo "$DEMYX_UPDATE_REMOTE") | grep ^+ | sed '1d' | wc -l)"
 
-        if [[ "$DEMYX_UPDATE_COUNT" > 0 ]]; then
+        if (( "$DEMYX_UPDATE_COUNT" > 0 )); then
             echo "$DEMYX_UPDATE_COUNT" > "$DEMYX"/.update_count
             demyx_update_image
         else

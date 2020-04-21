@@ -3,6 +3,8 @@
 ## 2020-04-20
 ### Added
 - demyx config --cf was missing stack environment variables
+### Changed
+- Replace brackets with parenthesis when doing arithmetics
 
 ## 2020-04-19
 ### Added
