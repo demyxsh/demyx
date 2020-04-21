@@ -9,6 +9,7 @@ demyx_yml() {
             DEMYX_YML_SERVER_IP="$(curl -m 10 -s https://ipecho.net/plain)"
             DEMYX_YML_SUBDOMAIN_CHECK="$(dig +short "$DEMYX_APP_DOMAIN" | sed -e '1d')"
             DEMYX_YML_CLOUDFLARE_CHECK="$(curl -m 10 -svo /dev/null "$DEMYX_APP_DOMAIN" 2>&1 | grep cloudflare || true)"
+            [[ "$(echo "$DEMYX_APP_DOMAIN" | grep -o "\." | wc -l)" = 1 ]] && DEMYX_YML_WWW="|| Host(\`www.\${DEMYX_APP_DOMAIN}\`)"
         
             if [[ -n "$DEMYX_YML_SUBDOMAIN_CHECK" ]]; then
                 DEMYX_DOMAIN_IP="$DEMYX_YML_SUBDOMAIN_CHECK"

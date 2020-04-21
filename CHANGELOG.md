@@ -5,6 +5,7 @@
 - demyx config --cf was missing stack environment variables
 ### Changed
 - Replace brackets with parenthesis when doing arithmetics
+- Only add www host rule when domain is a TLD
 
 ## 2020-04-19
 ### Added
