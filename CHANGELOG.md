@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2020-04-20
+### Added
+- demyx config --cf was missing stack environment variables
+
 ## 2020-04-19
 ### Added
 - Cloudflare as the second certificate resolver
