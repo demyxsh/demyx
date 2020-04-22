@@ -75,6 +75,7 @@ demyx_help() {
         echo
         echo "demyx cron <arg>      Execute demyx cron"
         echo "           daily      Execute every day cron"
+        echo "           hourly     Execute every day cron"
         echo "           minute     Execute every minute cron"
         echo "           six-hour   Execute every six hour cron"
         echo "           weekly     Execute every week cron"

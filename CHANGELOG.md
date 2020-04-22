@@ -1,6 +1,8 @@
 # CHANGELOG
 
 ## 2020-04-21
+### Added
+- Hourly cron
 ### Changed
 - Use a better conditial when detecting subdomains for Traefik labels
 

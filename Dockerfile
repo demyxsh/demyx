@@ -122,6 +122,7 @@ RUN set -ex; \
 # Set cron and log
 RUN set -ex; \
     echo "* * * * * /usr/local/bin/demyx cron minute" > /etc/crontabs/demyx; \
+    echo "0 * * * * /usr/local/bin/demyx cron hourly" > /etc/crontabs/demyx; \
     echo "0 */6 * * * /usr/local/bin/demyx cron six-hour" >> /etc/crontabs/demyx; \
     echo "0 0 * * * /usr/local/bin/demyx cron daily" >> /etc/crontabs/demyx; \
     echo "0 0 * * 0 /usr/local/bin/demyx cron weekly" >> /etc/crontabs/demyx; \

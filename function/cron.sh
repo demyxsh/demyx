@@ -9,6 +9,9 @@ demyx_cron() {
             daily)
                 DEMYX_CRON=daily
                 ;;
+            hourly)
+                DEMYX_CRON=hourly
+                ;;
             minute)
                 DEMYX_CRON=minute
                 ;;
@@ -89,6 +92,16 @@ demyx_cron() {
                 fi
             fi
         done
+    elif [[ "$DEMYX_CRON" = hourly ]]; then
+        # Run WP cron
+        echo "[$(date +%F-%T)] CROND HOURLY: WORDPRESS EVENT CRON"
+        demyx_execute -v demyx wp all cron event run --due-now
+
+        # Execute custom cron
+        if [[ -f /demyx/custom/cron/hourly.sh ]]; then
+            echo "[$(date +%F-%T)] CROND HOURLY: CUSTOM"
+            demyx_execute -v bash /demyx/custom/cron/hourly.sh
+        fi
     elif [[ "$DEMYX_CRON" = minute ]]; then
         # Monitor for auto scale
         echo "[$(date +%F-%T)] CROND: MONITOR"
