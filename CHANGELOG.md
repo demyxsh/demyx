@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2020-04-22
+### Changed
+- Make sure DEMYX_RUN_CLOUDFLARE env uses variable from run.sh
+
 ## 2020-04-21
 ### Added
 - Hourly cron for WP cron events
