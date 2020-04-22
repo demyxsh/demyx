@@ -2,7 +2,7 @@
 # https://demyx.sh
 
 if [[ "$DEMYX_APP_SSL" = true ]]; then
-    DEMYX_YML_BEDROCK_LABEL_HTTP='- "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-http.rule=Host(`${DEMYX_APP_DOMAIN}`) '"$DEMYX_YML_WWW"'"
+    DEMYX_YML_BEDROCK_LABEL_HTTP='- "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-http.rule='"$DEMYX_YML_WWW"'"
       - "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-http.entrypoints=http"
 
       - "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-http.service=${DEMYX_APP_COMPOSE_PROJECT}-http-port"
@@ -11,7 +11,7 @@ if [[ "$DEMYX_APP_SSL" = true ]]; then
       - "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-http.middlewares=${DEMYX_APP_COMPOSE_PROJECT}-redirect"
       - "traefik.http.middlewares.${DEMYX_APP_COMPOSE_PROJECT}-redirect.redirectscheme.scheme=https"
         
-      - "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-https.rule=Host(`${DEMYX_APP_DOMAIN}`) '"$DEMYX_YML_WWW"'"
+      - "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-https.rule='"$DEMYX_YML_WWW"'"
       - "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-https.entrypoints=https"
       - "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-https.tls.certresolver='$(demyx_certificate_challenge)'"
     
@@ -31,7 +31,7 @@ if [[ "$DEMYX_APP_SSL" = true ]]; then
       - "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-json.tls.certresolver='$(demyx_certificate_challenge)'"'
     DEMYX_YML_BEDROCK_LABEL_AUTH_PROTO=https
 else
-    DEMYX_YML_BEDROCK_LABEL_HTTP='- "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-http.rule=Host(`${DEMYX_APP_DOMAIN}`) '"$DEMYX_YML_WWW"'"
+    DEMYX_YML_BEDROCK_LABEL_HTTP='- "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-http.rule='"$DEMYX_YML_WWW"'"
       - "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-http.entrypoints=http"
 
       - "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-http.service=${DEMYX_APP_COMPOSE_PROJECT}-http-port"
@@ -40,7 +40,7 @@ else
       - "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-https.middlewares=${DEMYX_APP_COMPOSE_PROJECT}-redirect"
       - "traefik.http.middlewares.${DEMYX_APP_COMPOSE_PROJECT}-redirect.redirectscheme.scheme=http"
 
-      - "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-https.rule=Host(`${DEMYX_APP_DOMAIN}`) '"$DEMYX_YML_WWW"'"
+      - "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-https.rule='"$DEMYX_YML_WWW"'"
       - "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-https.entrypoints=https"
       - "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-https.tls.certresolver='$(demyx_certificate_challenge)'"
                 
@@ -106,7 +106,6 @@ services:
       - db_${DEMYX_APP_ID}
     environment:
       - PASSWORD=$(demyx_dev_password)
-      - CODE_SERVER_BASE_PATH=$DEMYX_CONFIG_DEV_BASE_PATH
       - BROWSERSYNC_PROXY=\${DEMYX_APP_NX_CONTAINER}
       - WORDPRESS_DOMAIN=\${DEMYX_APP_DOMAIN}
       - WORDPRESS_UPLOAD_LIMIT=\${DEMYX_APP_UPLOAD_LIMIT}

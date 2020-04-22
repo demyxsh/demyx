@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2020-04-21
+### Changed
+- Use a better conditial when detecting subdomains for Traefik labels
+
 ## 2020-04-20
 ### Added
 - demyx config --cf was missing stack environment variables
