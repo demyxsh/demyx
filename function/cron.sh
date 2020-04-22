@@ -39,12 +39,12 @@ demyx_cron() {
 
     if [[ "$DEMYX_CRON" = daily ]]; then
         if [[ "$DEMYX_STACK_TELEMETRY" = true ]]; then
-            echo "[$(date +%F-%T)] CROND: TELEMETRY"
+            echo "[$(date +%F-%T)] CROND DAILY: TELEMETRY"
             demyx_execute -v curl -s "https://demyx.sh/?action=active&token=V1VpdGNPcWNDVlZSUDFQdFBaR0Zhdz09OjrnA1h6ZbDFJ2T6MHOwg3p4" -o /dev/null
         fi
 
         # Backup demyx system and configs
-        echo "[$(date +%F-%T)] CROND: BACKING UP DEMYX"
+        echo "[$(date +%F-%T)] CROND DAILY: BACKING UP DEMYX"
         demyx_execute -v mkdir -p "$DEMYX_BACKUP"/system; \
             cp -r "$DEMYX_APP" "$DEMYX_BACKUP"/system; \
             docker cp demyx_traefik:/demyx "$DEMYX_BACKUP"/system/traefik; \
@@ -52,32 +52,26 @@ demyx_cron() {
         
         # Update Oh My Zsh
         cd /home/demyx/.oh-my-zsh
-        echo "[$(date +%F-%T)] CROND: UPDATE OH-MY-ZSH"
+        echo "[$(date +%F-%T)] CROND DAILY: UPDATE OH-MY-ZSH"
         demyx_execute -v git pull
 
         # Update Oh My Zsh plugin
         cd /home/demyx/.oh-my-zsh/plugins/zsh-autosuggestions
-        echo "[$(date +%F-%T)] CROND: UPDATE OH-MY-ZSH PLUGIN"
+        echo "[$(date +%F-%T)] CROND DAILY: UPDATE OH-MY-ZSH PLUGIN"
         demyx_execute -v git pull
-        
-        # Execute custom cron
-        if [[ -f /demyx/custom/cron/daily.sh ]]; then
-            echo "[$(date +%F-%T)] CROND: CUSTOM EVERY DAY"
-            demyx_execute -v bash /demyx/custom/cron/daily.sh
-        fi
 
         if [[ "$DEMYX_STACK_BACKUP" = true ]]; then
             # Backup WordPress sites at midnight
-            echo "[$(date +%F-%T)] CROND: WORDPRESS BACKUP"
+            echo "[$(date +%F-%T)] CROND DAILY: WORDPRESS BACKUP"
             demyx_execute -v demyx backup all
 
             # Delete backups older than X amounts of days
-            echo "[$(date +%F-%T)] CROND: DELETING BACKUPS OLDER THAN $DEMYX_STACK_BACKUP_LIMIT"
+            echo "[$(date +%F-%T)] CROND DAILY: DELETING BACKUPS OLDER THAN $DEMYX_STACK_BACKUP_LIMIT"
             demyx_execute -v find "$DEMYX_BACKUP_WP" -type f -mindepth 1 -mtime +"$DEMYX_STACK_BACKUP_LIMIT" -delete
         fi
 
         # WP auto update
-        echo "[$(date +%F-%T)] CROND: WORDPRESS UPDATE"
+        echo "[$(date +%F-%T)] CROND DAILY: WORDPRESS UPDATE"
         cd "$DEMYX_WP"
         for i in *
         do
@@ -92,6 +86,12 @@ demyx_cron() {
                 fi
             fi
         done
+        
+        # Execute custom cron
+        if [[ -f /demyx/custom/cron/daily.sh ]]; then
+            echo "[$(date +%F-%T)] CROND DAILY: CUSTOM"
+            demyx_execute -v bash /demyx/custom/cron/daily.sh
+        fi
     elif [[ "$DEMYX_CRON" = hourly ]]; then
         # Run WP cron
         echo "[$(date +%F-%T)] CROND HOURLY: WORDPRESS EVENT CRON"
@@ -104,16 +104,16 @@ demyx_cron() {
         fi
     elif [[ "$DEMYX_CRON" = minute ]]; then
         # Monitor for auto scale
-        echo "[$(date +%F-%T)] CROND: MONITOR"
+        echo "[$(date +%F-%T)] CROND MINUTE: MONITOR"
         demyx_execute -v demyx monitor
 
         # Healthchecks
-        echo "[$(date +%F-%T)] CROND: HEALTHCHECK"
+        echo "[$(date +%F-%T)] CROND MINUTE: HEALTHCHECK"
         demyx_execute -v demyx healthcheck
 
         # Execute custom cron
         if [[ -f /demyx/custom/cron/minute.sh ]]; then
-            echo "[$(date +%F-%T)] CROND: CUSTOM"
+            echo "[$(date +%F-%T)] CROND MINUTE: CUSTOM"
             demyx_execute -v bash /demyx/custom/cron/minute.sh
         fi
     elif [[ "$DEMYX_CRON" = six-hour ]]; then
@@ -124,22 +124,18 @@ demyx_cron() {
         #echo "[$(date +%F-%T)] CROND: CHECK DEMYX UPDATE"
         #demyx_execute -v sed -i "s|DEMYX_ENV_STATUS=.*|DEMYX_ENV_STATUS=$DEMYX_CRON_UPDATES|g" "$DEMYX"/.env
 
-        # Run WP cron
-        echo "[$(date +%F-%T)] CROND: WORDPRESS EVENT CRON"
-        demyx_execute -v -v demyx wp all cron event run --due-now
-
         # Execute custom cron
         if [[ -f /demyx/custom/cron/six-hour.sh ]]; then
-            echo "[$(date +%F-%T)] CROND: CUSTOM"
-            demyx_execute -v -v bash /demyx/custom/cron/six-hour.sh
+            echo "[$(date +%F-%T)] CROND SIX-HOUR: CUSTOM"
+            demyx_execute -v bash /demyx/custom/cron/six-hour.sh
         fi
     elif [[ "$DEMYX_CRON" = weekly ]]; then
         # Rotate demyx log
-        echo "[$(date +%F-%T)] CROND: LOGROTATE DEMYX"
+        echo "[$(date +%F-%T)] CROND WEEKLY: LOGROTATE DEMYX"
         demyx_execute -v demyx log main --rotate
 
         # Rotate WordPress log
-        echo "[$(date +%F-%T)] CROND: LOGROTATE WORDPRESS"
+        echo "[$(date +%F-%T)] CROND WEEKLY: LOGROTATE WORDPRESS"
         cd "$DEMYX_WP"
         for i in *
         do
@@ -160,7 +156,7 @@ demyx_cron() {
 
         # Execute custom cron
         if [[ -f /demyx/custom/cron/weekly.sh ]]; then
-            echo "[$(date +%F-%T)] CROND: CUSTOM EVERY WEEK"
+            echo "[$(date +%F-%T)] CROND WEEKLY: CUSTOM"
             demyx_execute -v bash /demyx/custom/cron/weekly.sh
         fi
     else

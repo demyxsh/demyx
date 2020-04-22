@@ -2,9 +2,10 @@
 
 ## 2020-04-21
 ### Added
-- Hourly cron
+- Hourly cron for WP cron events
 ### Changed
 - Use a better conditial when detecting subdomains for Traefik labels
+- Include cron event name in echos
 
 ## 2020-04-20
 ### Added
