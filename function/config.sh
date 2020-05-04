@@ -893,7 +893,7 @@ demyx_config() {
                     demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
                     demyx config "$DEMYX_APP_DOMAIN" --restart=php
                 elif [ "$DEMYX_CONFIG_RESTART" = nginx ]; then
-                    demyx_echo "Reloading NGINX"
+                    demyx_echo "Restarting NGINX"
                     demyx_execute docker exec -t "$DEMYX_APP_NX_CONTAINER" sh -c 'rm -rf /tmp/nginx-cache; sudo demyx-reload'
                 elif [ "$DEMYX_CONFIG_RESTART" = ols ]; then
                     demyx_echo "Restarting OpenLiteSpeed"

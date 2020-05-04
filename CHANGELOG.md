@@ -3,6 +3,7 @@
 ## 2020-05-03
 ### Changed
 - Echo out message when restarting PHP and use docker exec directly
+- Update message when restarting NGINX
 
 ## 2020-04-22
 ### Changed
