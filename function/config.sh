@@ -899,7 +899,8 @@ demyx_config() {
                     demyx_echo "Restarting OpenLiteSpeed"
                     demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c 'demyx-lsws restart'
                 elif [ "$DEMYX_CONFIG_RESTART" = php ]; then
-                    demyx exec "$DEMYX_APP_DOMAIN" sh -c "kill -USR2 9"
+                    demyx_echo "Restarting PHP"
+                    demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c 'kill -USR2 9'
                 fi
             fi
             if [[ "$DEMYX_CONFIG_SFTP" = true ]]; then

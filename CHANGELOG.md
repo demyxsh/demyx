@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2020-05-03
+### Changed
+- Echo out message when restarting PHP and use docker exec directly
+
 ## 2020-04-22
 ### Changed
 - Make sure DEMYX_RUN_CLOUDFLARE env uses variable from run.sh
