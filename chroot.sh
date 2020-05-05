@@ -26,7 +26,6 @@ fi
 DEMYX_CHROOT_HOST="$(hostname)"
 DEMYX_CHROOT_MODE=production
 DEMYX_CHROOT_USER=demyx
-DEMYX_CHROOT_API=false
 DEMYX_CHROOT_IMAGES=
 DEMYX_CHROOT=
 DEMYX_CHROOT_NC=
@@ -256,10 +255,11 @@ elif [[ "$DEMYX_CHROOT" = upgrade ]]; then
 
         # Pull relevant code-server tags
         if [[ "$i" = code-server ]]; then
+            DEMYX_CHROOT_CS_IMAGES="$(docker images demyx/code-server)"
             docker pull demyx/code-server:wp
-            docker pull demyx/code-server:sage
-            docker pull demyx/code-server:openlitespeed
-            docker pull demyx/code-server:openlitespeed-sage
+            [[ -n "$(echo "$DEMYX_CHROOT_CS_IMAGES" | grep " sage " || true )" ]] && docker pull demyx/code-server:sage
+            [[ -n "$(echo "$DEMYX_CHROOT_CS_IMAGES" | grep "openlitespeed " || true )" ]] && docker pull demyx/code-server:openlitespeed
+            [[ -n "$(echo "$DEMYX_CHROOT_CS_IMAGES" | grep openlitespeed-sage || true )" ]] &&  docker pull demyx/code-server:openlitespeed-sage
         fi
 
         # Set variable to true if there's an update for the following images: mariadb, nginx, and wordpress/wordpress:bedrock

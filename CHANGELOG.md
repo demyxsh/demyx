@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 2020-05-05
+- Demyx helper script now pulls other code-server images if it exists first
+
 ## 2020-05-03
 ### Changed
 - Echo out message when restarting PHP and use docker exec directly
