@@ -1,6 +1,11 @@
 # CHANGELOG
 
+## 2020-05-07
+### Changed
+- Set root as the owner of all executable scripts/binaries in /usr/local/bin
+
 ## 2020-05-05
+### Changed
 - Demyx helper script now pulls other code-server images if it exists first
 
 ## 2020-05-03

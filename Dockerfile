@@ -173,7 +173,10 @@ RUN set -ex; \
     ln -s /etc/demyx/bin/demyx-ssh.sh /usr/local/bin/demyx-ssh; \
     \
     chmod +x /etc/demyx/bin/demyx-yml.sh; \
-    ln -s /etc/demyx/bin/demyx-yml.sh /usr/local/bin/demyx-yml
+    ln -s /etc/demyx/bin/demyx-yml.sh /usr/local/bin/demyx-yml; \
+    \
+    # Set ownership
+    chown -R root:root /usr/local/bin
 
 EXPOSE 2222 8080
 WORKDIR /demyx
