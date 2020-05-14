@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2020-05-13
+### Changed
+- Fixed Traefik labels where host rules weren't being generated in the yml when creating a site without SSL
+
 ## 2020-05-07
 ### Changed
 - Set root as the owner of all executable scripts/binaries in /usr/local/bin

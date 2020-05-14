@@ -9,12 +9,6 @@ demyx_yml() {
             DEMYX_YML_SERVER_IP="$(curl -m 10 -s https://ipecho.net/plain)"
             DEMYX_YML_SUBDOMAIN_CHECK="$(dig +short "$DEMYX_APP_DOMAIN" | sed -e '1d')"
             DEMYX_YML_CLOUDFLARE_CHECK="$(curl -m 10 -svo /dev/null "$DEMYX_APP_DOMAIN" 2>&1 | grep cloudflare || true)"
-            
-            if (( "$(echo "$DEMYX_APP_DOMAIN" | grep -o "\." | wc -l)" < 2 )); then
-              DEMYX_YML_WWW='Host(`${DEMYX_APP_DOMAIN}`) || Host(`www.${DEMYX_APP_DOMAIN}`)'
-            else
-              DEMYX_YML_WWW='Host(`${DEMYX_APP_DOMAIN}`)'
-            fi
 
             if [[ -n "$DEMYX_YML_SUBDOMAIN_CHECK" ]]; then
                 DEMYX_DOMAIN_IP="$DEMYX_YML_SUBDOMAIN_CHECK"
@@ -36,6 +30,12 @@ demyx_yml() {
                 - WORDPRESS_DB_USER=${WORDPRESS_DB_USER}
                 - WORDPRESS_DB_PASSWORD=${WORDPRESS_DB_PASSWORD}'
             DEMYX_YML_RUN_CREDENTIALS="$(echo "$DEMYX_YML_RUN_CREDENTIALS" | sed "s|          ||")"
+        fi
+
+        if (( "$(echo "$DEMYX_APP_DOMAIN" | grep -o "\." | wc -l)" < 1 )); then
+            DEMYX_YML_WWW='Host(`${DEMYX_APP_DOMAIN}`) || Host(`www.${DEMYX_APP_DOMAIN}`)'
+        else
+            DEMYX_YML_WWW='Host(`${DEMYX_APP_DOMAIN}`)'
         fi
 
         if [[ "$DEMYX_APP_DEV" = true ]]; then
