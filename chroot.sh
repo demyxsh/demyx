@@ -132,7 +132,7 @@ DEMYX_CHROOT_SOCKET_CHECK="$(echo "$DEMYX_CHROOT_DOCKER_PS" | awk '{print $NF}' 
 
 # Update check
 if [[ -n "$DEMYX_CHROOT_DEMYX_CHECK" ]]; then
-    DEMYX_CHROOT_IMAGES="$(docker exec -t demyx zsh -c "[[ -f /demyx/.update_image ]] && cat /demyx/.update_image || true" | sed 's/\r//g')"
+    DEMYX_CHROOT_IMAGES="$(docker exec -t --user=root demyx zsh -c "[[ -f /demyx/.update_image ]] && cat /demyx/.update_image || true" | sed 's/\r//g')"
 fi
 
 # Save settings to user's home directory

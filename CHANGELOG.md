@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2020-05-14
+### Changed
+- docker exec needs to be run as root when checking for updated image cache in demyx helper script
+
 ## 2020-05-13
 ### Changed
 - Fixed Traefik labels where host rules weren't being generated in the yml when creating a site without SSL
