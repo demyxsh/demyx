@@ -30,12 +30,6 @@ demyx_config() {
             --cache=false)
                 DEMYX_CONFIG_CACHE=false
                 ;;
-            --cdn|--cdn=true)
-                DEMYX_CONFIG_CDN=true
-                ;;
-            --cdn=false)
-                DEMYX_CONFIG_CDN=false
-                ;;
             --cf|--cf=true)
                 DEMYX_CONFIG_CLOUDFLARE=true
                 ;;
@@ -88,9 +82,6 @@ demyx_config() {
                 ;;
             --healthcheck=false)
                 DEMYX_CONFIG_HEALTHCHECK=false
-                ;;
-            --no-backup)
-                DEMYX_CONFIG_NO_BACKUP=1
                 ;;
             --opcache|--opcache=true)
                 DEMYX_CONFIG_OPCACHE=true
@@ -158,9 +149,6 @@ demyx_config() {
                 ;;
             --rate-limit=false)
                 DEMYX_CONFIG_RATE_LIMIT=false
-                ;;
-            --refresh)
-                DEMYX_CONFIG_REFRESH=1
                 ;;
             --restart=?*)
                 DEMYX_CONFIG_RESTART="${3#*=}"
@@ -246,10 +234,6 @@ demyx_config() {
                 echo -e "\e[34m[INFO]\e[39m Setting resources for $i"
                 demyx config "$i" "$@"
             fi
-            if [[ -n "$DEMYX_CONFIG_REFRESH" ]]; then
-                echo -e "\e[34m[INFO]\e[39m Refreshing $i"
-                demyx config "$i" --refresh "$@"
-            fi
             if [[ -n "$DEMYX_CONFIG_RESTART" ]]; then
                 echo -e "\e[34m[INFO]\e[39m Restarting service for $i"
                 demyx config "$i" --restart="$DEMYX_CONFIG_RESTART"
@@ -279,7 +263,7 @@ demyx_config() {
                     [[ "$DEMYX_APP_AUTH" = true ]] && demyx_die 'Basic Auth is already turned on'
                 fi
 
-                [[ -z "$DEMYX_APP_AUTH_HTPASSWD" ]] && demyx config "$DEMYX_APP_DOMAIN" --refresh
+                [[ -z "$DEMYX_APP_AUTH_HTPASSWD" ]] && demyx refresh "$DEMYX_APP_DOMAIN"
 
                 demyx_source yml
 
@@ -312,7 +296,7 @@ demyx_config() {
                     [[ "$DEMYX_APP_AUTH_WP" != false ]] && demyx_die 'Basic WP Auth is already turned on'
                 fi
 
-                [[ -z "$DEMYX_APP_AUTH_HTPASSWD" ]] && demyx config "$DEMYX_APP_DOMAIN" --refresh
+                [[ -z "$DEMYX_APP_AUTH_HTPASSWD" ]] && demyx refresh "$DEMYX_APP_DOMAIN"
 
                 demyx_echo "Turning on wp-login.php basic auth"
 
@@ -467,36 +451,10 @@ demyx_config() {
                 demyx_echo 'Updating configs'
                 demyx_execute sed -i "s|DEMYX_APP_CACHE=.*|DEMYX_APP_CACHE=false|g" "$DEMYX_APP_PATH"/.env
             fi
-            if [[ "$DEMYX_CONFIG_CDN" = true ]]; then
-                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_CDN" = true ]] && demyx_die 'CDN is already turned on'
-                fi
-
-                DEMYX_CONFIG_CDN_ENABLER_CHECK="$(demyx exec "$DEMYX_APP_DOMAIN" ls wp-content/plugins | grep cdn-enabler || true)"
-
-                if [[ -n "$DEMYX_CONFIG_CDN_ENABLER_CHECK" ]]; then
-                    demyx_echo 'Activating cdn-enabler'
-                    demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin activate cdn-enabler
-                else
-                    demyx_echo 'Installing cdn-enabler'
-                    demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin install cdn-enabler --activate
-                fi
-                
-                demyx_echo 'Configuring cdn-enabler' 
-                demyx_execute demyx wp "$DEMYX_APP_DOMAIN" option update cdn_enabler "{\"url\":\"https:\/\/cdn.staticaly.com\/img\/$DEMYX_APP_DOMAIN\",\"dirs\":\"wp-content,wp-includes\",\"excludes\":\".3g2, .3gp, .aac, .aiff, .alac, .apk, .avi, .css, .doc, .docx, .flac, .flv, .h264, .js, .json, .m4v, .mkv, .mov, .mp3, .mp4, .mpeg, .mpg, .ogg, .pdf, .php, .rar, .rtf, .svg, .tex, .ttf, .txt, .wav, .wks, .wma, .wmv, .woff, .woff2, .wpd, .wps, .xml, .zip, wp-content\/plugins, wp-content\/themes\",\"relative\":1,\"https\":1,\"keycdn_api_key\":\"\",\"keycdn_zone_id\":0}" --format=json && \
-                    sed -i "s|DEMYX_APP_CDN=.*|DEMYX_APP_CDN=true|g" "$DEMYX_APP_PATH"/.env
-            elif [[ "$DEMYX_CONFIG_CDN" = false ]]; then
-                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_CDN" = false ]] && demyx_die 'CDN is already turned off'
-                fi
-                demyx_echo 'Deactivating cdn-enabler' 
-                demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin deactivate cdn-enabler && \
-                    sed -i "s|DEMYX_APP_CDN=.*|DEMYX_APP_CDN=false|g" "$DEMYX_APP_PATH"/.env
-            fi
             if [[ "$DEMYX_CONFIG_CLOUDFLARE" = true ]]; then
                 demyx_source stack
                     # Exit if these two variables are missing
-                [[ -z "$DEMYX_STACK_CLOUDFLARE_EMAIL" || -z "$DEMYX_STACK_CLOUDFLARE_KEY" ]] && demyx_die 'Missing Cloudflare key and/or email, please run demyx help stack'
+                [[ -z "$DEMYX_EMAIL" || -z "$DEMYX_CF_KEY" ]] && demyx_die 'Missing Cloudflare key and/or email, please run demyx help stack'
 
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ "$DEMYX_APP_CLOUDFLARE" = true ]] && demyx_die 'Cloudflare is already set'
@@ -504,7 +462,7 @@ demyx_config() {
                 
                 demyx_echo 'Setting SSL/TLS resolver to Cloudflare' 
                 demyx_execute sed -i "s|DEMYX_APP_CLOUDFLARE=.*|DEMYX_APP_CLOUDFLARE=true|g" "$DEMYX_APP_PATH"/.env; \
-                    demyx config "$DEMYX_APP_DOMAIN" --refresh
+                    demyx refresh "$DEMYX_APP_DOMAIN"
             elif [[ "$DEMYX_CONFIG_CLOUDFLARE" = false ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ "$DEMYX_APP_CLOUDFLARE" = false ]] && demyx_die 'Cloudflare is already off'
@@ -512,7 +470,7 @@ demyx_config() {
                 
                 demyx_echo 'Setting SSL/TLS resolver to HTTP' 
                 demyx_execute sed -i "s|DEMYX_APP_CLOUDFLARE=.*|DEMYX_APP_CLOUDFLARE=false|g" "$DEMYX_APP_PATH"/.env; \
-                    demyx config "$DEMYX_APP_DOMAIN" --refresh
+                    demyx refresh "$DEMYX_APP_DOMAIN"
             fi
             if [[ -n "$DEMYX_CONFIG_CLEAN" ]]; then
                 if [[ -z "$DEMYX_CONFIG_NO_BACKUP" ]]; then
@@ -728,7 +686,7 @@ demyx_config() {
                 [[ -n "$DEMYX_CONFIG_PMA_CONTAINER_CHECK" ]] && demyx_die 'phpMyAdmin container is already running'
 
                 if [[ -n "$DEMYX_CONFIG_EXPOSE" || "$DEMYX_APP_SSL" = false ]]; then
-                    [[ -n "$DEMYX_CONFIG_EXPOSE" ]] && DEMYX_APP_DOMAIN="$(demyx info stack --filter=DEMYX_STACK_SERVER_IP)"
+                    [[ -n "$DEMYX_CONFIG_EXPOSE" ]] && DEMYX_APP_DOMAIN="$DEMYX_SERVER_IP"
                     DEMYX_CONFIG_PMA_PROTO="http://$DEMYX_APP_DOMAIN"
                     DEMYX_CONFIG_PMA_LABELS="-l traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-pma.entrypoints=http"
                 else
@@ -814,37 +772,6 @@ demyx_config() {
                     sed -i "s|DEMYX_APP_RATE_LIMIT=.*|DEMYX_APP_RATE_LIMIT=false|g" "$DEMYX_APP_PATH"/.env
 
                 demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
-            fi
-            if [[ -n "$DEMYX_CONFIG_REFRESH" ]]; then
-                if [[ -z "$DEMYX_CONFIG_NO_BACKUP" ]]; then
-                    demyx backup "$DEMYX_APP_DOMAIN" --config
-                fi
-
-                demyx_source env
-                demyx_source yml
-
-                demyx_echo 'Refreshing .env'
-                demyx_execute demyx_env
-                
-                if [[ -n "$DEMYX_CONFIG_FORCE" ]]; then
-                    demyx_execute -v echo "$(cat "$DEMYX_APP_PATH"/.env | head -n 45)" > "$DEMYX_APP_PATH"/.env
-                    demyx_echo 'Force refreshing the non-essential variables'
-                    demyx_execute demyx_env
-                fi
-
-                demyx_echo 'Refreshing .yml'
-                demyx_execute demyx_yml
-
-                demyx compose "$DEMYX_APP_DOMAIN" fr
-
-                if [[ -z "$DEMYX_CONFIG_SKIP_CHECKS" ]]; then
-                    [[ "$DEMYX_APP_RATE_LIMIT" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --rate-limit -f
-                    [[ "$DEMYX_APP_CACHE" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --cache -f
-                    [[ "$DEMYX_APP_AUTH" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --auth -f
-                    [[ "$DEMYX_APP_AUTH_WP" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --auth-wp -f
-                    [[ "$DEMYX_APP_CDN" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --cdn -f
-                    [[ "$DEMYX_APP_HEALTHCHECK" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --healthcheck -f
-                fi
             fi
             if [[ -n "$DEMYX_CONFIG_RESOURCE" ]]; then
                 if [[ -n "$DEMYX_CONFIG_DB_CPU" ]]; then
@@ -1004,7 +931,7 @@ demyx_config() {
                         sed -i "s|DEMYX_APP_STACK=.*|DEMYX_APP_STACK=ols-bedrock|g" "$DEMYX_APP_PATH"/.env
                 fi
 
-                demyx config "$DEMYX_APP_DOMAIN" --refresh
+                demyx refresh "$DEMYX_APP_DOMAIN"
                 [[ "$DEMYX_CONFIG_STACK_CACHE" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --cache
             fi
             if [[ -n "$DEMYX_CONFIG_UPGRADE" ]]; then
@@ -1024,7 +951,7 @@ demyx_config() {
                         docker run --rm --user=root --volumes-from="$DEMYX_APP_WP_CONTAINER" demyx/utilities "chown -R demyx:demyx /demyx; chown -R demyx:demyx /var/log/demyx"                    
                 fi
 
-                demyx config "$DEMYX_APP_DOMAIN" --refresh
+                demyx refresh "$DEMYX_APP_DOMAIN"
                 demyx config "$DEMYX_APP_DOMAIN" --healthcheck
 
                 if [[ -n "$(demyx_upgrade_apps)" ]]; then
