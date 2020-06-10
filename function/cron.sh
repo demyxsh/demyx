@@ -35,10 +35,8 @@ demyx_cron() {
         shift
     done
 
-    demyx_source stack
-
     if [[ "$DEMYX_CRON" = daily ]]; then
-        if [[ "$DEMYX_STACK_TELEMETRY" = true ]]; then
+        if [[ "$DEMYX_TELEMETRY" = true ]]; then
             echo "[$(date +%F-%T)] CROND DAILY: TELEMETRY"
             demyx_execute -v curl -s "https://demyx.sh/?action=active&token=V1VpdGNPcWNDVlZSUDFQdFBaR0Zhdz09OjrnA1h6ZbDFJ2T6MHOwg3p4" -o /dev/null
         fi
@@ -49,25 +47,15 @@ demyx_cron() {
             cp -r "$DEMYX_APP" "$DEMYX_BACKUP"/system; \
             docker cp demyx_traefik:/demyx "$DEMYX_BACKUP"/system/traefik; \
             tar -czf "$DEMYX_BACKUP"/system-"$DEMYX_HOST".tgz -C "$DEMYX_BACKUP" system
-        
-        # Update Oh My Zsh
-        cd /home/demyx/.oh-my-zsh
-        echo "[$(date +%F-%T)] CROND DAILY: UPDATE OH-MY-ZSH"
-        demyx_execute -v git pull
 
-        # Update Oh My Zsh plugin
-        cd /home/demyx/.oh-my-zsh/plugins/zsh-autosuggestions
-        echo "[$(date +%F-%T)] CROND DAILY: UPDATE OH-MY-ZSH PLUGIN"
-        demyx_execute -v git pull
-
-        if [[ "$DEMYX_STACK_BACKUP" = true ]]; then
+        if [[ "$DEMYX_BACKUP_ENABLE" = true ]]; then
             # Backup WordPress sites at midnight
             echo "[$(date +%F-%T)] CROND DAILY: WORDPRESS BACKUP"
             demyx_execute -v demyx backup all
 
             # Delete backups older than X amounts of days
-            echo "[$(date +%F-%T)] CROND DAILY: DELETING BACKUPS OLDER THAN $DEMYX_STACK_BACKUP_LIMIT"
-            demyx_execute -v find "$DEMYX_BACKUP_WP" -type f -mindepth 1 -mtime +"$DEMYX_STACK_BACKUP_LIMIT" -delete
+            echo "[$(date +%F-%T)] CROND DAILY: DELETING BACKUPS OLDER THAN $DEMYX_APP_BACKUP_LIMIT"
+            demyx_execute -v find "$DEMYX_BACKUP_WP" -type f -mindepth 1 -mtime +"$DEMYX_APP_BACKUP_LIMIT" -delete
         fi
 
         # WP auto update
@@ -118,7 +106,7 @@ demyx_cron() {
         fi
     elif [[ "$DEMYX_CRON" = six-hour ]]; then
         # Check for Demyx updates
-        #cd "$DEMYX_ETC"
+        #cd "$DEMYX_CONFIG"
         #git remote update
         #DEMYX_CRON_UPDATES="$(git rev-list HEAD...origin/master --count)"
         #echo "[$(date +%F-%T)] CROND: CHECK DEMYX UPDATE"
@@ -147,9 +135,6 @@ demyx_cron() {
 
         # Update remote versions
         demyx_execute -v demyx_update_remote
-
-        # Update versions counter
-        demyx_execute -v demyx_update_count
 
         # Update image list
         demyx_execute -v demyx_update_image
