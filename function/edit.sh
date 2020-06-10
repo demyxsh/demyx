@@ -26,9 +26,8 @@ demyx_edit() {
         shift
     done
 
-    if [[ "$DEMYX_EDIT" = stack ]]; then
-        nano "$DEMYX_STACK"/.env
-        echo "$DEMYX_STACK"
+    if [[ "$DEMYX_EDIT" = traefik ]]; then
+        nano "$DEMYX_TRAEFIK"/.env
         [[ -n "$DEMYX_EDIT_UP" ]] && demyx compose stack up -d
     else
         demyx_app_config
