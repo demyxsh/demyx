@@ -2,50 +2,35 @@
 # Demyx
 # https://demyx.sh
 
-# Scan for open ports starting with 2222
-while true; do
-DEMYX_YML_SFTP_OPEN_PORT="$(netstat -tuplen 2>/dev/null | grep :${DEMYX_SSH:-2222} || true)"
-    if [[ -z "$DEMYX_YML_SFTP_OPEN_PORT" ]]; then
-        break
-    else
-        DEMYX_SSH="$((DEMYX_SSH+1))"
-    fi
-done
+# Set resolver
+if [[ "$DEMYX_EMAIL" != false && "$DEMYX_CF_KEY" != false ]]; then
+    DEMYX_YML_RESOLVER=demyx-cf
+else
+    DEMYX_YML_RESOLVER=demyx
+fi
 
-# Check for stack .env
-DEMYX_YML_GET_STACK_ENV="$([[ -f /demyx/app/stack/.env ]] && cat /demyx/app/stack/.env)"
-
-if [[ -n "$DEMYX_YML_GET_STACK_ENV" ]]; then
-    DEMYX_YML_DOMAIN="$(echo "$DEMYX_YML_GET_STACK_ENV" | grep DEMYX_STACK_SERVER_API | awk -F '[=]' '{print $2}')"
-    DEMYX_YML_AUTH="$(echo "$DEMYX_YML_GET_STACK_ENV" | grep DEMYX_STACK_AUTH | awk -F '[=]' '{print $2}')"
-    DEMYX_YML_CLOUDFLARE_EMAIL="$(echo "$DEMYX_YML_GET_STACK_ENV" | grep DEMYX_STACK_CLOUDFLARE_EMAIL | awk -F '[=]' '{print $2}')"
-    DEMYX_YML_CLOUDFLARE_KEY="$(echo "$DEMYX_YML_GET_STACK_ENV" | grep DEMYX_STACK_CLOUDFLARE_KEY | awk -F '[=]' '{print $2}')"
-
-    # Set resolver
-    if [[ -n "$DEMYX_YML_CLOUDFLARE_EMAIL" && -n "$DEMYX_YML_CLOUDFLARE_KEY" ]]; then
-      DEMYX_YML_RESOLVER=demyx-cf
-    else
-      DEMYX_YML_RESOLVER=demyx
-    fi
-
-    # Only generate labels when DEMYX_YML_DOMAIN is not false
-    if [[ "$DEMYX_YML_DOMAIN" != false ]]; then
-        DEMYX_YML_LABELS="labels:
+# Set label for api if conditions are met
+if [[ "$DEMYX_DOMAIN" != false && "$DEMYX_API" != false ]]; then
+    echo "DEMYX_YML_AUTH=$(demyx util --user=$DEMYX_AUTH_USERNAME --htpasswd=$DEMYX_AUTH_PASSWORD --raw)" > "$DEMYX"/.env
+    DEMYX_YML_LABELS="labels:
       - \"traefik.enable=true\"
-      - \"traefik.http.routers.demyx.rule=Host(\`\${DEMYX_YML_DOMAIN}\`)\"
-      - \"traefik.http.routers.demyx.entrypoints=https\"
-      - \"traefik.http.routers.demyx.tls.certresolver=${DEMYX_YML_RESOLVER}\"
-      - \"traefik.http.routers.demyx.service=demyx\"
-      - \"traefik.http.services.demyx.loadbalancer.server.port=8080\"
-      - \"traefik.http.routers.demyx.middlewares=demyx-auth\"
+      - \"traefik.http.routers.demyx-http.rule=Host(\`${DEMYX_API}.${DEMYX_DOMAIN}\`)\"
+      - \"traefik.http.routers.demyx-http.entrypoints=http\"
+      - \"traefik.http.routers.demyx-http.service=demyx-http-port\"
+      - \"traefik.http.services.demyx-http-port.loadbalancer.server.port=8080\"
+      - \"traefik.http.routers.demyx-https.middlewares=demyx-redirect\"
+      - \"traefik.http.middlewares.demyx-redirect.redirectscheme.scheme=http\"
+      - \"traefik.http.routers.demyx-https.rule=Host(\`${DEMYX_API}.${DEMYX_DOMAIN}\`)\"
+      - \"traefik.http.routers.demyx-https.entrypoints=https\"
+      - \"traefik.http.routers.demyx-https.tls.certresolver=${DEMYX_YML_RESOLVER}\"
+      - \"traefik.http.routers.demyx-https.service=demyx-https-port\"
+      - \"traefik.http.services.demyx-https-port.loadbalancer.server.port=8080\"
+      - \"traefik.http.routers.demyx-https.middlewares=demyx-auth\"
       - \"traefik.http.middlewares.demyx-auth.basicauth.users=\${DEMYX_YML_AUTH}\""
 
-        # Generate /demyx/.env
-        echo "# AUTO GENERATED
-            DEMYX_YML_DOMAIN="$DEMYX_YML_DOMAIN"
-            DEMYX_YML_AUTH="$DEMYX_YML_AUTH"
-        " | sed "s|            ||g" > /demyx/.env
-    fi
+      # IP whitelisting
+      #- \"traefik.http.routers.demyx-https.middlewares=demyx-auth,demyx-whitelist\"
+      #- \"traefik.http.middlewares.demyx-whitelist.ipwhitelist.sourcerange=${DEMYX_IP}\"
 fi
 
 # Use privilege flag if host OS isn't Alpine/Debian/Ubuntu
@@ -62,8 +47,8 @@ version: \"2.4\"
 services:
   socket:
     image: demyx/docker-socket-proxy
-    cpus: ${DEMYX_CPU:-.5}
-    mem_limit: ${DEMYX_MEM:-512m}
+    cpus: $DEMYX_CPU
+    mem_limit: $DEMYX_MEM
     container_name: demyx_socket
     restart: unless-stopped
     networks:
@@ -71,6 +56,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
+      - BUILD=1
       - CONTAINERS=1
       - EXEC=1
       - IMAGES=1
@@ -80,12 +66,12 @@ services:
       - VOLUMES=1
     $DEMYX_YML_PRIVILEGED
   demyx:
-    image: demyx/demyx
-    cpus: ${DEMYX_CPU:-.5}
-    mem_limit: ${DEMYX_MEM:-512m}
+    image: demyx/demyx:${DEMYX_IMAGE_VERSION}
+    cpus: $DEMYX_CPU
+    mem_limit: $DEMYX_MEM
     container_name: demyx
     restart: unless-stopped
-    hostname: $DEMYX_HOST
+    hostname: $DEMYX_HOSTNAME
     depends_on: 
       - socket
     networks:
@@ -93,17 +79,33 @@ services:
       - demyx_socket
     volumes:
       - demyx:/demyx
-      - demyx_user:/home/demyx
       - demyx_log:/var/log/demyx
     environment:
-      - DOCKER_HOST=tcp://demyx_socket:2375
-      - DEMYX_BRANCH="$DEMYX_BRANCH"
-      - DEMYX_MODE="$DEMYX_MODE"
-      - DEMYX_HOST="$DEMYX_HOST"
-      - DEMYX_SSH="$DEMYX_SSH"
-      - TZ="$TZ"
-    ports:
-      - ${DEMYX_SSH}:2222
+      - DEMYX_API=$DEMYX_API
+      - DEMYX_AUTH_USERNAME=$DEMYX_AUTH_USERNAME
+      - DEMYX_AUTH_PASSWORD=$DEMYX_AUTH_PASSWORD
+      - DEMYX_BACKUP_ENABLE=$DEMYX_BACKUP_ENABLE
+      - DEMYX_BACKUP_LIMIT=$DEMYX_BACKUP_LIMIT
+      - DEMYX_CODE_DOMAIN=$DEMYX_CODE_DOMAIN
+      - DEMYX_CODE_ENABLE=$DEMYX_CODE_ENABLE
+      - DEMYX_CODE_PASSWORD=$DEMYX_CODE_PASSWORD
+      - DEMYX_CF_KEY=$DEMYX_CF_KEY
+      - DEMYX_CPU=$DEMYX_CPU
+      - DEMYX_DOMAIN=$DEMYX_DOMAIN
+      - DEMYX_EMAIL=$DEMYX_EMAIL
+      - DEMYX_HEALTHCHECK_ENABLE=$DEMYX_HEALTHCHECK_ENABLE
+      - DEMYX_HEALTHCHECK_TIMEOUT=$DEMYX_HEALTHCHECK_TIMEOUT
+      - DEMYX_HOSTNAME=$DEMYX_HOSTNAME
+      - DEMYX_IMAGE_VERSION=$DEMYX_IMAGE_VERSION
+      - DEMYX_IP=$DEMYX_IP
+      - DEMYX_MEM=$DEMYX_MEM
+      - DEMYX_MONITOR_ENABLE=$DEMYX_MONITOR_ENABLE
+      - DEMYX_SERVER_IP=$DEMYX_SERVER_IP
+      - DEMYX_TELEMETRY=$DEMYX_TELEMETRY
+      - DEMYX_TRAEFIK_DASHBOARD=$DEMYX_TRAEFIK_DASHBOARD
+      - DEMYX_TRAEFIK_DASHBOARD_DOMAIN=$DEMYX_TRAEFIK_DASHBOARD_DOMAIN
+      - DEMYX_TRAEFIK_LOG=$DEMYX_TRAEFIK_LOG
+      - TZ=$TZ
     $DEMYX_YML_LABELS
 volumes:
   demyx:
@@ -118,3 +120,6 @@ networks:
   demyx_socket:
     name: demyx_socket
 " > /demyx/docker-compose.yml
+
+# Reset
+demyx-reset
