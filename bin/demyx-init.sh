@@ -1,36 +1,48 @@
-#!/usr/bin/dumb-init /bin/zsh
+#!/bin/bash
 # Demyx
 # https://demyx.sh
 
-source /etc/demyx/.config
-
 # Initialize files/directories
-demyx-skel
+demyx-skel &
 
-# Run init scripts when docker.sock is mounted
-if [[ -n "$(ls /run | grep docker.sock)" || -n "$DOCKER_HOST" ]]; then
-    # Execute update script
-    demyx update &
+# Execute update script
+demyx update &
 
-    # Start the API if DEMYX_STACK_SERVER_API has a url defined (Ex: api.domain.tld)
-    DEMYX_STACK_SERVER_API="$(demyx info stack --filter=DEMYX_STACK_SERVER_API --quiet)"
-    [[ "$DEMYX_STACK_SERVER_API" != false ]] && demyx-api &
+# Refresh and bring up traefik
+demyx refresh traefik &
 
-    # Refresh stack if .env exists
-    if [[ -f "$DEMYX_STACK"/.env ]]; then
-        demyx stack refresh &
-    fi
+# Refresh and bring up code-server
+[[ "$DEMYX_CODE_ENABLE" = true && "$DEMYX_IP" != false ]] && demyx refresh code &
+
+# TEMPORARY CODE
+demyx-reset &
+
+# Start api if DEMYX_API is set to true
+if [[ "$DEMYX_API" != false ]]; then
+    sudo -E crond -L /var/log/demyx/cron.log
+    
+    # Start the api
+    shell2http -log=/var/log/demyx/api.log -form -show-errors -export-all-vars -shell bash \
+        /run '
+            if [[ -d /demyx/app/wp/$v_domain ]]; then
+                echo "{\"status\": \"error\", \"message\": \"App already exists or missing domain.\"}"
+            else
+                demyx run $v_domain > /dev/null
+                demyx info $v_domain --json
+            fi
+        ' \
+        /clone '
+            if [[ -d /demyx/app/wp/$v_domain || -z $v_clone ]]; then
+                echo "{\"status\": \"error\", \"message\": \"App already exists, domain missing domain, or clone domain missing.\"}"
+            else
+                demyx run $v_domain --clone=$v_clone > /dev/null
+                demyx info $v_domain --json
+            fi
+        ' \
+        /info 'demyx info $v_domain --json --no-volume' \
+        /motd 'demyx info motd --json' \
+        /sites 'demyx info all --no-volume --no-password'
+
+else
+    sudo -E crond -fL /var/log/demyx/cron.log
 fi
-
-# Remove .zshrc if it exists and then symlink
-[[ -f /home/demyx/.zshrc ]] && rm -f /home/demyx/.zshrc
-ln -s /etc/demyx/.zshrc /home/demyx/.zshrc
-
-# Run sshd
-demyx-ssh &
-
-# Set /demyx to read-only
-demyx-prod
-
-# Final process to run in the foreground
-demyx-crond
