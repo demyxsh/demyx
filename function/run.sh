@@ -18,9 +18,6 @@ demyx_run() {
             --cache)
                 DEMYX_RUN_CACHE=true
                 ;;
-            --cdn)
-                DEMYX_RUN_CDN=true
-                ;;
             --cf)
                 DEMYX_RUN_CLOUDFLARE=true
                 ;;
@@ -118,14 +115,13 @@ demyx_run() {
         else
             demyx rm "$DEMYX_TARGET" -f
         fi
-        if [[ -n "$DEMYX_RUN_CLOUDFLARE" && -z "$DEMYX_STACK_CLOUDFLARE_EMAIL" && -z "$DEMYX_STACK_CLOUDFLARE_KEY" ]]; then
+        if [[ -n "$DEMYX_RUN_CLOUDFLARE" && -z "$DEMYX_EMAIL" && -z "$DEMYX_CF_KEY" ]]; then
             demyx_die 'Missing Cloudflare key and/or email, please run demyx help stack'
         fi
     fi
 
     DEMYX_RUN_TYPE="${DEMYX_RUN_TYPE:-wp}"
     DEMYX_RUN_RATE_LIMIT="${DEMYX_RUN_RATE_LIMIT:-false}"
-    DEMYX_RUN_CDN="${DEMYX_RUN_CDN:-false}"
     DEMYX_RUN_CACHE="${DEMYX_RUN_CACHE:-false}"
     DEMYX_RUN_AUTH="${DEMYX_RUN_AUTH:-false}"
     DEMYX_RUN_CLOUDFLARE="${DEMYX_RUN_CLOUDFLARE:-false}"
@@ -297,7 +293,7 @@ demyx_run() {
             demyx_echo 'Cleaning up'
             demyx_execute rm -rf "$DEMYX_APP_PATH"/demyx
 
-            demyx config "$DEMYX_APP_DOMAIN" --refresh --no-backup
+            demyx refresh "$DEMYX_APP_DOMAIN" --skip-backup
         elif [[ -n "$DEMYX_RUN_ARCHIVE" ]]; then
             demyx_echo 'Creating new wp-config.php' 
             demyx_execute demyx wp "$DEMYX_APP_DOMAIN" config create \
@@ -343,7 +339,7 @@ demyx_run() {
             demyx_echo 'Cleaning up'
             demyx_execute rm -rf "$DEMYX_BACKUP_WP"/"$DEMYX_APP_DOMAIN"/"$DEMYX_RUN_ARCHIVE"
 
-            demyx config "$DEMYX_APP_DOMAIN" --refresh --no-backup
+            demyx refresh "$DEMYX_APP_DOMAIN" --skip-backup
         else
             demyx_echo 'Configuring wp-config.php'
             demyx_execute demyx wp "$DEMYX_APP_DOMAIN" core install \
@@ -360,19 +356,17 @@ demyx_run() {
 
         if [[ -n "$DEMYX_RUN_CLONE" ]]; then
             DEMYX_RUN_CLONE_ENV_AUTH_CHECK="$(demyx info "$DEMYX_RUN_CLONE" --filter=DEMYX_APP_AUTH)"
-            DEMYX_RUN_CLONE_ENV_CDN_CHECK="$(demyx info "$DEMYX_RUN_CLONE" --filter=DEMYX_APP_CDN)"
             DEMYX_RUN_CLONE_ENV_CACHE_CHECK="$(demyx info "$DEMYX_RUN_CLONE" --filter=DEMYX_APP_CACHE)"
             
             [[ "$DEMYX_RUN_CLONE_ENV_CACHE_CHECK" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --cache && DEMYX_RUN_CACHE=true
-            [[ "$DEMYX_RUN_CLONE_ENV_CDN_CHECK" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --cdn && DEMYX_RUN_CDN=true
             [[ "$DEMYX_RUN_CLONE_ENV_AUTH_CHECK" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --auth && DEMYX_RUN_AUTH=true
         else
             [[ "$DEMYX_RUN_CACHE" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --cache
-            [[ "$DEMYX_RUN_CDN" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --cdn
             [[ "$DEMYX_RUN_AUTH" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --auth
         fi
 
-        demyx config "$DEMYX_APP_DOMAIN" --refresh --healthcheck
+        demyx refresh "$DEMYX_APP_DOMAIN" --skip-backup
+        demyx config "$DEMYX_APP_DOMAIN" --healthcheck
 
         if [[ "$DEMYX_RUN_TYPE" = html ]]; then
             DEMYX_RUN_TABLE_TITLE=HTML
