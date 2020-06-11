@@ -105,7 +105,7 @@ demyx_restore() {
             demyx_execute demyx wp "$DEMYX_APP_DOMAIN" db import "$DEMYX_APP_CONTAINER".sql
             
             demyx_echo 'Removing backup database'
-            demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" rm /demyx/"$DEMYX_APP_CONTAINER".sql
+            demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" rm -f /demyx/"$DEMYX_APP_CONTAINER".sql
 
             demyx_echo 'Stopping temporary container'
             demyx_execute docker stop "$DEMYX_APP_WP_CONTAINER"
