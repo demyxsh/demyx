@@ -25,12 +25,11 @@ demyx_help() {
     elif [[ "$DEMYX_HELP" = config ]]; then
         echo
         echo "demyx config <app> <args>                          Configure demyx apps"
-        echo "             all                                  Targets all apps (only works with --refresh and --restart)"
+        echo "             all                                  Targets all apps (only works with --restart)"
         echo "                   --auth                         Turns on/off basic auth"
         echo "                   --auth-wp                      Turns on/off basic auth for wp-login.php"
         echo "                   --bedrock                      Sets production/development mode for Bedrock"
         echo "                   --cache                        Turns on/off fastcgi cache"
-        echo "                   --cdn                          Turns on/off CDN, powered by Staticaly"
         echo "                   --cf                           Switch between HTTP or Cloudflare resolvers, accepts only true or false"
         echo "                   --clean                        Creates new MariaDB credentials and reinstalls WordPress core files"
         echo "                   --db-cpu                       Set the app's DB container CPU usage, --db-cpu=null to remove cap"
@@ -42,7 +41,6 @@ demyx_help() {
         echo "                   --force                        Force config"
         echo "                   --healthcheck                  Turns on/off healthcheck for WordPress container"
         echo "                   --mem                          Change the app's container memory usage, --mem=null to remove cap"
-        echo "                   --no-backup                    Disable auto back up"
         echo "                   --opcache                      Turns on/off PHP opcache"
         echo "                   --php-max-children             Update PHP's pm.max_children"
         echo "                   --php-max-requests             Update PHP's pm.max_requests"
@@ -53,10 +51,9 @@ demyx_help() {
         echo "                   --php-start-servers            Update PHP's pm.start_servers"
         echo "                   --pma                          Turns on/off phpMyAdmin"
         echo "                   --rate-limit                   Turns on/off NGINX rate limting"
-        echo "                   --refresh                      Regenerate config files and uploaded to container, use --force to reset non-essential variables"
         echo "                   --restart                      Restart NGINX/PHP/OLS services: nginx, nginx-php, ols, php"
         echo "                   --sftp                         Turns on/off SFTP container"
-        echo "                   --skip-checks                  Skip checking other configs (cache, cdn, rate limit, etc.)"
+        echo "                   --skip-checks                  Skip checking other configs (cache, rate limit, etc.)"
         echo "                   --sleep                        Set sleep when all loop is used"
         echo "                   --ssl                          Turns on/off SSL"
         echo "                   --stack                        Switch the WordPress stack: bedrock, nginx-php, ols, ols-bedrock"
@@ -103,8 +100,7 @@ demyx_help() {
         echo "demyx info <app>  <args>          Show environment info for an app"
         echo "           all                    Loop through all apps"
         echo "           env                    Use --filter for all WordPress sites"
-        echo "           stack                  Show stack versions and other info"
-        echo "           system                 Show miscellaneous server data"
+        echo "           motd                   Show miscellaneous server data for motd"
         echo "                  --all           Show all environment info"
         echo "                  --backup        Show all backups"
         echo "                  --filter         Filter environment variables"
@@ -112,15 +108,6 @@ demyx_help() {
         echo "                  --no-password   Omit passwords"
         echo "                  --no-volume     Omit volume sizes"
         echo "                  --quiet         Prevent output of error if filter not found"
-        echo
-    elif [[ "$DEMYX_HELP" = install ]]; then
-        echo
-        echo "demyx install <args>      Install the demyx stack"
-        echo "              --domain    Primary domain required"
-        echo "              --email     Email for Lets Encrypt notifications"
-        echo "              --force     Force reinstall the stack"
-        echo "              --user      Username for basic auth"
-        echo "              --pass      Password for basic auth"
         echo
     elif [[ "$DEMYX_HELP" = list ]]; then
         echo
@@ -174,6 +161,15 @@ demyx_help() {
         echo "           demyx/wordpress:bedrock"
         echo "           demyx/wordpress:cli"
         echo
+    elif [[ "$DEMYX_HELP" = refresh ]]; then
+        echo
+        echo "demyx refresh <app> <args>            Regenerate .env/.yml files of an app"
+        echo "              all                     Regenerate all app's .env/.yml files"
+        echo "              code                    Regenerate code-server .env/.yml files"
+        echo "              traefik                  Regenerate reverse proxy .yml"
+        echo "                    --skip-backup     Skip backing up config files"
+        echo "                    --skip-checks     Skip regenerating other configs like auth, cache, etc."
+        echo
     elif [[ "$DEMYX_HELP" = restore ]]; then
         echo
         echo "demyx restore <app> <args>        Restore an app from a backup"
@@ -194,7 +190,6 @@ demyx_help() {
         echo "                --archive       Run a WordPress app from an archive"
         echo "                --auth          Run with basic auth on/off"
         echo "                --cache         Run with cache on/off"
-        echo "                --cdn           Run with cdn on/off"
         echo "                --cf            Use Cloudflare as the DNS challenge for SSL/TLS"
         echo "                --clone         Clone an already running app"
         echo "                --email         Override email generation"
@@ -207,30 +202,10 @@ demyx_help() {
         echo "                --type          Run app type as wp/php/html"
         echo "                --user          Override user generation"
         echo
-    elif [[ "$DEMYX_HELP" = stack ]]; then
-        echo
-        echo "demyx stack <app> <arg>               Target stack containers"
-        echo "            api                       Configure api"
-        echo "            refresh                   Refresh env and yml stack files"
-        echo "            upgrade                   Upgrade acme.json and configs for Traefik v2"
-        echo "            --backup                  Turns on/off WordPress backups"
-        echo "            --backup-limit            Set how many daily backup files to keep per site, defaults to 30"
-        echo "            --cloudflare               Turns on/off Cloudflare as the CA resolver"
-        echo "            --cf-api-email            Required Cloudflare email for --cloudflare"
-        echo "            --cf-api-key              Required Cloudflare api key for --cloudflare"
-        echo "            --cpu                     Set the stack's container CPU usage, --cpu=null to remove cap"
-        echo "            --false                   Passes false flag"
-        echo "            --healthcheck             Turns on/off healthcheck globally"
-        echo "            --healthcheck-timeout     Update curl timeout"
-        echo "            --mem                     Set the stack's container MEM usage, --mem=null to remove cap"
-        echo "            --monitor                 Turns on/off auto scaling globally"
-        echo "            --telemetry               Pings to demyx.sh server to count active Demyx install"
-        echo "            --revert                  This flag is only used with refresh, it reverts the yml file back to using docker.sock directly"
-        echo "            --true                    Passes true flag"
-        echo
     elif [[ "$DEMYX_HELP" = update ]]; then
         echo
-        echo "demyx update      Update demyx code base"
+        echo "demyx update          Update demyx cache"
+        echo "demyx update show     Show demyx images that has an udpate"
         echo
     elif [[ "$DEMYX_HELP" = util ]]; then
         echo
@@ -256,6 +231,7 @@ demyx_help() {
         echo "      cron            Execute demyx cron"
         echo "      edit            Opens nano to edit .env files"
         echo "      exec            Accepts all docker exec arguments"
+        echo "      host            Command only available on the host OS, for more info: demyx host help"
         echo "      healthcheck     Checks if WordPress apps are up"
         echo "      info            Shows an app's .env and filter output"
         echo "      list            List all apps"
@@ -264,12 +240,14 @@ demyx_help() {
         echo "      monitor         For auto scaling purposes"
         echo "      motd            Message of the day"
         echo "      pull            Pull one or all demyx images from Docker hub"
+        echo "      refresh         Refresh env and yml files of an app"
         echo "      restore         Restore an app"
         echo "      rm              Removes an app and its volumes"
         echo "      run             Creates a new app"
-        echo "      stack           Control the stack via docker-compose arguments"
-        echo "      update          Update demyx code base"
+        echo "      shell           Host command to execute shell commands into the demyx container"
+        echo "      update          Update demyx ccache"
         echo "      util            Generates credentials or access util container"
+        echo "      version         Show demyx version"
         echo "      wp              Execute wp-cli commands"
         echo
     fi
