@@ -113,51 +113,8 @@ demyx_info() {
             PRINT_TABLE+="$i^ $DEMYX_INFO_ALL_FILTER\n"
         done
         demyx_execute -v -q demyx_table "$PRINT_TABLE"
-    elif [[ "$DEMYX_TARGET" = stack ]]; then
-        if [[ -n "$DEMYX_INFO_ALL" ]]; then
-            DEMYX_INFO_ALL="$(cat "$DEMYX_STACK"/.env | sed '1d')"
-            PRINT_TABLE="DEMYX^ INFO\n"
-            for i in $DEMYX_INFO_ALL
-            do
-                PRINT_TABLE+="$(echo "$i" | awk -F '[=]' '{print $1}')^ $(echo "$i" | awk -F '[=]' '{print $2}')\n"
-            done
-            demyx_execute -v -q demyx_table "$PRINT_TABLE"
-        elif [[ -n "$DEMYX_INFO_FILTER" ]]; then
-            DEMYX_INFO_FILTER="$(cat "$DEMYX_STACK"/.env | grep -w "$DEMYX_INFO_FILTER")"
-            if [[ -n "$DEMYX_INFO_FILTER" ]]; then
-                demyx_execute -v -q echo "$DEMYX_INFO_FILTER" | awk -F '[=]' '{print $2}'
-            else
-                [[ -z "$DEMYX_INFO_QUIET" ]] && demyx_die 'Filter not found'
-            fi
-        else
-            demyx_source stack
-            DEMYX_INFO_STACK_GET_NGINX="$(curl -s https://raw.githubusercontent.com/demyxco/nginx/master/README.md)"
-            DEMYX_INFO_STACK_GET_WORDPRESS="$(curl -s https://raw.githubusercontent.com/demyxco/wordpress/master/README.md)"
-            DEMYX_INFO_TRAEFIK_CHECK="$(echo "$DEMYX_DOCKER_PS" | grep demyx_traefik)"
-            [[ -n "$DEMYX_INFO_TRAEFIK_CHECK" ]] && DEMYX_INFO_TRAEFIK_VERSION="$(docker exec -t demyx_traefik traefik version | head -1 | awk -F '[:]' '{print $2}' | sed 's| ||g' | sed 's/\r//g')"
-            PRINT_TABLE="DEMYX^ STACK\n"
-            PRINT_TABLE+="IP^ $DEMYX_STACK_SERVER_IP\n"
-            PRINT_TABLE+="DOMAIN^ $DEMYX_STACK_DOMAIN\n"
-            PRINT_TABLE+="API^ $DEMYX_STACK_SERVER_API\n"
-            PRINT_TABLE+="TRAEFIK^ ${DEMYX_INFO_TRAEFIK_VERSION:-Traefik is not running}\n"
-            PRINT_TABLE+="ALPINE^ $(cat /etc/os-release | grep VERSION_ID | awk -F '[=]' '{print $2}')\n"
-            PRINT_TABLE+="NGINX^ $(grep "badge/nginx" <<< "$DEMYX_INFO_STACK_GET_NGINX" | awk -F '[-]' '{print $2}')\n"
-            PRINT_TABLE+="PHP^ $(grep "badge/php" <<< "$DEMYX_INFO_STACK_GET_WORDPRESS" | awk -F '[-]' '{print $2}')\n"
-            PRINT_TABLE+="WORDPRESS^ $(grep "badge/wordpress" <<< "$DEMYX_INFO_STACK_GET_WORDPRESS" | awk -F '[-]' '{print $2}')\n"
-            PRINT_TABLE+="TELEMETRY^ $DEMYX_STACK_TELEMETRY\n"
-            PRINT_TABLE+="AUTO UPDATE^ $DEMYX_STACK_AUTO_UPDATE\n"
-            PRINT_TABLE+="MONITOR^ $DEMYX_STACK_MONITOR\n"
-            PRINT_TABLE+="HEALTHCHECK^ $DEMYX_STACK_HEALTHCHECK\n"
-            PRINT_TABLE+="HEALTHCHECK TIMEOUT^ $DEMYX_STACK_HEALTHCHECK_TIMEOUT\n"
-            PRINT_TABLE+="BACKUP^ $DEMYX_STACK_BACKUP\n"
-            PRINT_TABLE+="BACKUP LIMIT^ $DEMYX_STACK_BACKUP_LIMIT\n"
-            PRINT_TABLE+="BACKUP PATH^ $DEMYX_BACKUP_WP\n"
-            PRINT_TABLE+="LOG PATH^ /var/log/demyx\n"
-            demyx_execute -v demyx_table "$PRINT_TABLE"
-        fi
-    elif [[ "$DEMYX_TARGET" = system ]]; then
+    elif [[ "$DEMYX_TARGET" = motd ]]; then
         DEMYX_INFO_HOST="$(hostname)"
-        DEMYX_INFO_MODE="$(demyx_get_mode)"
         DEMYX_INFO_WP_COUNT="$(find "$DEMYX_WP" -mindepth 1 -maxdepth 1 -type d | wc -l)"
         DEMYX_INFO_WP_BACKUPS="$([[ -d "$DEMYX_BACKUP_WP" ]] && du -sh "$DEMYX_BACKUP_WP" | awk '{print $1}' || echo 0)"
         DEMYX_INFO_DF="$(df -h /demyx)"
@@ -171,17 +128,13 @@ demyx_info() {
         DEMYX_INFO_LOAD_AVERAGE="$(cat /proc/loadavg | awk '{print $1 " " $2 " " $3}')"
         DEMYX_INFO_CONTAINER_RUNNING=0
         DEMYX_INFO_CONTAINER_DEAD=0
-
-        if [[ -n "$(demyx_check_docker_sock)" ]]; then
-            DEMYX_INFO_CONTAINER_RUNNING="$(/usr/local/bin/docker ps -q | wc -l)"
-            DEMYX_INFO_CONTAINER_DEAD="$(/usr/local/bin/docker ps -q --filter "status=exited" | wc -l)"
-        fi
+        DEMYX_INFO_CONTAINER_RUNNING="$(/usr/local/bin/docker ps -q | wc -l)"
+        DEMYX_INFO_CONTAINER_DEAD="$(/usr/local/bin/docker ps -q --filter "status=exited" | wc -l)"
         
         if [[ -n "$DEMYX_INFO_JSON" ]]; then 
             DEMYX_INFO_SYSTEM_JSON='{'
-            DEMYX_INFO_SYSTEM_JSON+='"build": "'$DEMYX_INFO_RECENT_MODIFIED_STAT'",'
+            DEMYX_INFO_SYSTEM_JSON+='"version": "'$DEMYX_VERSION'",'
             DEMYX_INFO_SYSTEM_JSON+='"hostname": "'$DEMYX_INFO_HOST'",'
-            DEMYX_INFO_SYSTEM_JSON+='"mode": "'$DEMYX_INFO_MODE'",'
             DEMYX_INFO_SYSTEM_JSON+='"wp_count": "'$DEMYX_INFO_WP_COUNT'",'
             DEMYX_INFO_SYSTEM_JSON+='"wp_backups": "'$DEMYX_INFO_WP_BACKUPS'",'
             DEMYX_INFO_SYSTEM_JSON+='"disk_used": "'$DEMYX_INFO_DISK_USED'",'
@@ -196,10 +149,8 @@ demyx_info() {
             DEMYX_INFO_SYSTEM_JSON+='}'
             echo "$DEMYX_INFO_SYSTEM_JSON"
         else
-            PRINT_TABLE="DEMYX^ SYSTEM INFO\n"
-            PRINT_TABLE+="BUILD^ $DEMYX_BUILD\n"
+            PRINT_TABLE="DEMYX ${DEMYX_VERSION}^ SYSTEM INFO\n"
             PRINT_TABLE+="HOSTNAME^ $DEMYX_INFO_HOST\n"
-            PRINT_TABLE+="MODE^ $DEMYX_INFO_MODE\n"
             PRINT_TABLE+="WORDPRESS APPS^ $DEMYX_INFO_WP_COUNT\n"
             PRINT_TABLE+="WORDPRESS BACKUPS^ $DEMYX_INFO_WP_BACKUPS\n"
             PRINT_TABLE+="DISK USED^ $DEMYX_INFO_DISK_USED\n"
@@ -216,7 +167,7 @@ demyx_info() {
         fi
     elif [[ "$DEMYX_APP_TYPE" = wp ]]; then
         if [[ -n "$DEMYX_INFO_ALL" ]]; then
-            DEMYX_INFO_ALL="$(cat "$DEMYX_APP_PATH"/.env | sed '1d')"
+            DEMYX_INFO_ALL="$(cat "$DEMYX_APP_PATH"/.env | sed '/#/d')"
             PRINT_TABLE="DEMYX^ INFO\n"
             for i in $DEMYX_INFO_ALL
             do
