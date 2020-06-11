@@ -4,9 +4,11 @@
 # demyx healthcheck
 #
 demyx_healthcheck() {
-    demyx_source stack
-
-    if [[ "$DEMYX_STACK_HEALTHCHECK" = true && "$(pgrep -f "demyx healthcheck" | wc -l)" < 2 ]]; then
+    if [[ "$DEMYX_HEALTHCHECK_ENABLE" = true && ! -f "$DEMYX"/.healthcheck_running ]]; then
+        # Create file to prevent demyx healthcheck from 
+        # executing again when the next minute hits
+        demyx_execute -v touch "$DEMYX"/.healthcheck_running
+        
         cd "$DEMYX_WP" || exit
 
         for i in *
@@ -21,7 +23,7 @@ demyx_healthcheck() {
                     DEMYX_HEALTHCHECK_CONTAINER="$DEMYX_APP_NX_CONTAINER"
                 fi
 
-                DEMYX_HEALTHCHECK_STATUS="$(wget --quiet --tries=1 --spider "$DEMYX_HEALTHCHECK_CONTAINER"; echo "$?")"
+                DEMYX_HEALTHCHECK_STATUS="$(curl -sL -m "$DEMYX_HEALTHCHECK_TIMEOUT" "$DEMYX_HEALTHCHECK_CONTAINER" > /dev/null; echo "$?")"
 
                 if [[ "$DEMYX_HEALTHCHECK_STATUS" != 0 ]]; then
                     if [[ ! -f "$DEMYX_WP"/"$i"/.healthcheck ]]; then
@@ -36,13 +38,12 @@ demyx_healthcheck() {
                         demyx compose "$i" fr
                     else
                         if [[ ! -f "$DEMYX_WP"/"$i"/.healthcheck-lock ]]; then
-                            DEMYX_HEALTHCHECK_SERVER_IP="$(demyx info stack --filter=DEMYX_STACK_SERVER_IP)"
                             DEMYX_HEALTHCHECK_IP="$(dig +short "$DEMYX_APP_DOMAIN" | tr '\r\n' ' ')"
                             DEMYX_HEALTHCHECK_NS="$(dig +short NS "$DEMYX_APP_DOMAIN" | tr '\r\n' ' ')"
                             DEMYX_HEALTHCHECK_HTTP_STATUS="$(curl -sL -o /dev/null -w %{http_code} "$DEMYX_HEALTHCHECK_CONTAINER")"
                             touch "$DEMYX_WP"/"$i"/.healthcheck-lock
                             if [[ -f "$DEMYX"/custom/callback.sh ]]; then
-                                bash "$DEMYX"/custom/callback.sh "healthcheck" "$i" "$DEMYX_HEALTHCHECK_HTTP_STATUS" "$DEMYX_HEALTHCHECK_SERVER_IP" "$DEMYX_HEALTHCHECK_IP" "$DEMYX_HEALTHCHECK_NS"
+                                bash "$DEMYX"/custom/callback.sh "healthcheck" "$i" "$DEMYX_HEALTHCHECK_HTTP_STATUS" "$DEMYX_SERVER_IP" "$DEMYX_HEALTHCHECK_IP" "$DEMYX_HEALTHCHECK_NS"
                             fi
                         fi
                     fi
@@ -56,5 +57,7 @@ demyx_healthcheck() {
                 fi
             fi
         done
+
+        demyx_execute -v rm -f "$DEMYX"/.healthcheck_running
     fi
 }
