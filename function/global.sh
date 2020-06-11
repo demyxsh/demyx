@@ -44,6 +44,11 @@ demyx_die() {
 
     exit 1
 }
+
+# Global variables
+DEMYX_GLOBAL_UPDATE_LIST="demyx browsersync code-server docker-compose docker-socket-proxy logrotate mariadb nginx openlitespeed ssh traefik utilities wordpress"
+DEMYX_DOCKER_PS="$(docker ps)"
+
 demyx_echo() {
     DEMYX_ECHO="$1"
 }
@@ -121,24 +126,12 @@ demyx_execute() {
     DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] ========================================")"
     echo -e "$DEMYX_COMMON_LOG" >> /var/log/demyx/demyx.log
 }
-demyx_check_docker_sock() {
-    DEMYX_GLOBAL_CHECK_DOCKER_SOCK="$(ls /run | grep docker.sock)"
-    [[ -n "$DEMYX_GLOBAL_CHECK_DOCKER_SOCK" ]] && echo volume
-    [[ -n "$DOCKER_HOST" ]] && echo proxy
-}
-# Global variables
-DEMYX_GLOBAL_UPDATE_LIST="demyx browsersync code-server docker-compose docker-socket-proxy logrotate mariadb nginx openlitespeed ssh traefik utilities wordpress"
-if [[ -n "$(demyx_check_docker_sock)" ]]; then
-    # Global environment variables
-    DEMYX_DOCKER_PS="$(docker ps)"
-fi
 demyx_table() {
     demyx_source table
     printTable '^' "$@"
 }
 demyx_permission() {
     chown -R demyx:demyx "$DEMYX"
-    chown -R demyx:demyx "$DEMYX_LOG"
 }
 demyx_app_config() {
     DEMYX_GET_APP="$(find "$DEMYX_APP" -name "$DEMYX_TARGET")"
@@ -196,51 +189,11 @@ demyx_wp_check_empty() {
         fi
     fi
 }
-demyx_upgrade_apps() {
-    demyx_wp_check_empty
-    
-    cd "$DEMYX_WP"
-    for i in *
-    do
-        DEMYX_CHECK_APP_IMAGE="$(grep DEMYX_APP_WP_IMAGE "$DEMYX_WP"/"$i"/.env | awk -F '[=]' '{print $2}')"
-        if [[ "$DEMYX_CHECK_APP_IMAGE" = demyx/nginx-php-wordpress || "$DEMYX_CHECK_APP_IMAGE" = demyx/nginx-php-wordpress:bedrock ]]; then
-            demyx_execute -v echo -e "- demyx config $i --upgrade"
-        fi
-    done
-}
 demyx_validate_ip() {
     echo "$DEMYX_APP_DOMAIN" | grep -E '(([0-9]{1,3})\.){3}([0-9]{1,3}){1}'  | grep -vE '25[6-9]|2[6-9][0-9]|[3-9][0-9][0-9]' | grep -Eo '(([0-9]{1,2}|1[0-9]{1,2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]{1,2}|1[0-9]{1,2}|2[0-4][0-9]|25[0-5]){1}'
 }
-demyx_get_mode() {
-    if [[ -f /tmp/demyx-dev ]]; then
-        echo development
-    else
-        echo production
-    fi
-}
-demyx_socket() {
-    docker run -d \
-    --privileged \
-    --name=demyx_socket \
-    --network=demyx_socket \
-    --cpus="$DEMYX_CPU" \
-    --memory="$DEMYX_MEM" \
-    -v /var/run/docker.sock:/var/run/docker.sock \
-    -e CONTAINERS=1 \
-    -e EXEC=1 \
-    -e IMAGES=1 \
-    -e INFO=1 \
-    -e NETWORKS=1 \
-    -e POST=1 \
-    -e VOLUMES=1 \
-    demyx/docker-socket-proxy 2>/dev/null
-}
 demyx_source() {
-    if [[ "$1" = stack && -f "$DEMYX_STACK"/.env ]]; then
-        source "$DEMYX_STACK"/.env
-    else
-        source "$DEMYX_FUNCTION"/"$1".sh
-    fi
+    source "$DEMYX_FUNCTION"/"$1".sh
 }
 demyx_alpine_check() {
     [[ -n "$(uname -a | grep Alpine || true)" ]] && echo true
@@ -302,29 +255,12 @@ demyx_update_remote() {
     DEMYX_REMOTE_WORDPRESS_PHP_VERSION=$DEMYX_WORDPRESS_PHP_VERSION
     DEMYX_REMOTE_WORDPRESS_BEDROCK_VERSION=$DEMYX_WORDPRESS_BEDROCK_VERSION" | sed "s|    ||g" > "$DEMYX"/.update_remote
 }
-demyx_update_count() {
-    if [[ -f "$DEMYX"/.update_local && -f "$DEMYX"/.update_remote ]]; then
-        DEMYX_UPDATE_LOCAL="$(cat "$DEMYX"/.update_local | awk -F '[=]' '{print $2}')"
-        DEMYX_UPDATE_REMOTE="$(cat "$DEMYX"/.update_remote | awk -F '[=]' '{print $2}')"
-        DEMYX_UPDATE_COUNT="$(diff <(echo "$DEMYX_UPDATE_LOCAL") <(echo "$DEMYX_UPDATE_REMOTE") | grep ^+ | sed '1d' | wc -l)"
-
-        if (( "$DEMYX_UPDATE_COUNT" > 0 )); then
-            echo "$DEMYX_UPDATE_COUNT" > "$DEMYX"/.update_count
-            demyx_update_image
-        else
-            echo 0 > "$DEMYX"/.update_count
-            [[ -f "$DEMYX"/.update_image ]] && rm "$DEMYX"/.update_image
-        fi
-    fi
-}
 demyx_update_image() {
     source "$DEMYX"/.update_local
     source "$DEMYX"/.update_remote
     
-    # Delete iamge first
-    [[ -f "$DEMYX"/.update_image ]] && rm "$DEMYX"/.update_image
-
-    [[ "$DEMYX_LOCAL_VERSION" != "$DEMYX_REMOTE_VERSION" ]] && echo "demyx" >> "$DEMYX"/.update_image
+    # Generate image cache
+    [[ "$(echo $DEMYX_LOCAL_VERSION | sed 's|.||g')" -lt "$(echo $DEMYX_REMOTE_VERSION | sed 's|.||g')" ]] && echo "demyx" > "$DEMYX"/.update_image
     [[ "$DEMYX_LOCAL_BROWSERSYNC_VERSION" != "$DEMYX_REMOTE_BROWSERSYNC_VERSION" ]] && echo "browsersync" >> "$DEMYX"/.update_image
     [[ "$DEMYX_LOCAL_CODE_VERSION" != "$DEMYX_REMOTE_CODE_VERSION" ]] && echo "code-server" >> "$DEMYX"/.update_image
     [[ "$DEMYX_LOCAL_DOCKER_COMPOSE_VERSION" != "$DEMYX_REMOTE_DOCKER_COMPOSE_VERSION" ]] && echo "docker-compose" >> "$DEMYX"/.update_image
