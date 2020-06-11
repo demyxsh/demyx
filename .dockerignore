@@ -4,6 +4,8 @@
 # Only allow
 !/.config
 !/demyx.sh
+!/host.sh
 !/bin/**
 !/example/**
 !/function/**
+!/skel/**
