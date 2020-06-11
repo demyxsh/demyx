@@ -1,12 +1,18 @@
 # Demyx
 # https://demyx.sh
 
+# Set resolver
+if [[ "$DEMYX_EMAIL" != false && "$DEMYX_CF_KEY" != false ]]; then
+    DEMYX_YML_RESOLVER=demyx-cf
+else
+    DEMYX_YML_RESOLVER=demyx
+fi
+
 demyx_yml() {
     demyx_app_config
     
     if [[ "$DEMYX_APP_TYPE" = wp ]]; then
         if [[ "$DEMYX_APP_SSL" = true ]]; then
-            DEMYX_YML_SERVER_IP="$(curl -m 10 -s https://ipecho.net/plain)"
             DEMYX_YML_SUBDOMAIN_CHECK="$(dig +short "$DEMYX_APP_DOMAIN" | sed -e '1d')"
             DEMYX_YML_CLOUDFLARE_CHECK="$(curl -m 10 -svo /dev/null "$DEMYX_APP_DOMAIN" 2>&1 | grep cloudflare || true)"
 
@@ -17,7 +23,7 @@ demyx_yml() {
             fi
 
             if [[ -z "$DEMYX_YML_CLOUDFLARE_CHECK" ]]; then
-                if [[ "$DEMYX_YML_SERVER_IP" != "$DEMYX_DOMAIN_IP" ]]; then
+                if [[ "$DEMYX_SERVER_IP" != "$DEMYX_DOMAIN_IP" ]]; then
                     demyx_execute -v sed -i "s|DEMYX_APP_SSL=.*|DEMYX_APP_SSL=false|g" "$DEMYX_APP_PATH"/.env; \
                         demyx_warning "$DEMYX_TARGET does not point to server's IP or isn't using a domain name!"
                 fi
@@ -45,19 +51,89 @@ demyx_yml() {
         fi
     fi
 }
+demyx_code_yml() {
+    echo "# AUTO GENERATED
+        version: \"$DEMYX_DOCKER_COMPOSE\"
+        services:
+          code:
+            image: demyx/code-server:browse
+            cpus: ${DEMYX_CPU}
+            mem_limit: ${DEMYX_MEM}
+            container_name: demyx_code
+            restart: unless-stopped
+            hostname: code-${DEMYX_HOSTNAME}
+            networks:
+              - demyx
+              - demyx_socket
+            volumes:
+              - demyx:/demyx
+              - demyx_user:/home/demyx
+              - demyx_log:/var/log/demyx
+            environment:
+              - PASSWORD=$DEMYX_CODE_PASSWORD
+              - TZ=$TZ
+            labels:
+              - \"traefik.enable=true\"
+              - \"traefik.http.routers.demyx-code-http.rule=Host(\`${DEMYX_CODE_DOMAIN}.${DEMYX_DOMAIN}\`)\"
+              - \"traefik.http.routers.demyx-code-http.entrypoints=http\"
+              - \"traefik.http.routers.demyx-code-http.service=demyx-code-http-port\"
+              - \"traefik.http.services.demyx-code-http-port.loadbalancer.server.port=8080\"
+              - \"traefik.http.routers.demyx-code-http.middlewares=demyx-code-redirect\"
+              - \"traefik.http.middlewares.demyx-code-redirect.redirectscheme.scheme=https\"
+              - \"traefik.http.routers.demyx-code-https.rule=Host(\`${DEMYX_CODE_DOMAIN}.${DEMYX_DOMAIN}\`)\"
+              - \"traefik.http.routers.demyx-code-https.entrypoints=https\"
+              - \"traefik.http.routers.demyx-code-https.tls.certresolver=${DEMYX_YML_RESOLVER}\"
+              - \"traefik.http.routers.demyx-code-https.service=demyx-code-https-port\"
+              - \"traefik.http.services.demyx-code-https-port.loadbalancer.server.port=8080\"
+              - \"traefik.http.routers.demyx-code-https.middlewares=demyx-code-whitelist\"
+              - \"traefik.http.middlewares.demyx-code-whitelist.ipwhitelist.sourcerange=${DEMYX_IP}\"
+        volumes:
+          demyx:
+            name: demyx
+          demyx_log:
+            name: demyx_log
+          demyx_user:
+            name: demyx_user
+        networks:
+          demyx:
+            name: demyx
+          demyx_socket:
+            name: demyx_socket" | sed "s|        ||g" > "$DEMYX_CODE"/docker-compose.yml
+}
+demyx_traefik_yml() {
+    # TEMPORARY CODE
+    if [[ -f "$DEMYX_APP"/stack/.env ]]; then
+        source "$DEMYX_APP"/stack/.env
+        DEMYX_TRAEFIK_YML="- CF_API_EMAIL=$DEMYX_STACK_ACME_EMAIL
+              - CF_API_KEY=$DEMYX_STACK_CLOUDFLARE_KEY
+              - DEMYX_ACME_EMAIL=$DEMYX_STACK_ACME_EMAIL"
+    else
+        DEMYX_TRAEFIK_YML="- CF_API_EMAIL=$DEMYX_EMAIL
+              - CF_API_KEY=$DEMYX_CF_KEY
+              - DEMYX_ACME_EMAIL=$DEMYX_EMAIL"
+    fi
 
-demyx_stack_yml() {
-    demyx_source stack
+    # Copy .env from /demyx/.env
+    [[ -f "$DEMYX"/.env ]] && cp -f "$DEMYX"/.env "$DEMYX_TRAEFIK"
 
-    if [[ "$DEMYX_STACK_API" = true ]]; then
-        DEMYX_YML_LABEL_TRAEFIK='labels: 
-                      - "traefik.http.routers.traefik-https.rule=Host(`${DEMYX_STACK_DOMAIN}`)" 
-                      - "traefik.http.routers.traefik-https.service=api@internal"
-                      - "traefik.http.routers.traefik-https.entrypoints=https"
-                      - "traefik.http.routers.traefik-https.tls.certresolver=demyx"
-
-                      - "traefik.http.routers.traefik-https.middlewares=traefik-https-auth"
-                      - "traefik.http.middlewares.traefik-https-auth.basicauth.users=${DEMYX_STACK_AUTH}"'
+    if [[ "$DEMYX_TRAEFIK_DASHBOARD" = true ]]; then
+        DEMYX_YML_LABEL_TRAEFIK="labels:
+              - \"traefik.enable=true\"
+              - \"traefik.http.routers.traefik-http.rule=Host(\`${DEMYX_TRAEFIK_DASHBOARD_DOMAIN}.${DEMYX_DOMAIN}\`)\"
+              - \"traefik.http.routers.traefik-http.entrypoints=http\"
+              - \"traefik.http.routers.traefik-http.service=traefik-http-port\"
+              - \"traefik.http.services.traefik-http-port.loadbalancer.server.port=8080\"
+              - \"traefik.http.routers.traefik-http.middlewares=traefik-redirect\"
+              - \"traefik.http.middlewares.traefik-redirect.redirectscheme.scheme=https\"
+              - \"traefik.http.routers.traefik-https.service=api@internal\"
+              - \"traefik.http.routers.traefik-https.rule=Host(\`${DEMYX_TRAEFIK_DASHBOARD_DOMAIN}.${DEMYX_DOMAIN}\`)\"
+              - \"traefik.http.routers.traefik-https.entrypoints=https\"
+              - \"traefik.http.routers.traefik-https.tls.certresolver=${DEMYX_YML_RESOLVER}\"
+              - \"traefik.http.routers.traefik-https.service=traefik-https-port\"
+              - \"traefik.http.services.traefik-https-port.loadbalancer.server.port=8080\"
+              - \"traefik.http.routers.traefik-https.middlewares=traefik-auth,traefik-whitelist\"
+              - \"traefik.http.middlewares.traefik-auth.basicauth.users=\${DEMYX_YML_AUTH}\"
+              - \"traefik.http.middlewares.traefik-whitelist.ipwhitelist.sourcerange=${DEMYX_IP}\""
     fi
 
     echo "# AUTO GENERATED
@@ -65,8 +141,8 @@ demyx_stack_yml() {
         services:
           traefik:
             image: demyx/traefik
-            cpus: \${DEMYX_STACK_CPU}
-            mem_limit: \${DEMYX_STACK_MEM}
+            cpus: ${DEMYX_CPU}
+            mem_limit: ${DEMYX_MEM}
             container_name: demyx_traefik
             restart: unless-stopped
             networks:
@@ -79,31 +155,9 @@ demyx_stack_yml() {
               - demyx_traefik:/demyx
               - demyx_log:/var/log/demyx
             environment:
-              - TRAEFIK_PROVIDERS_DOCKER_ENDPOINT=tcp://demyx_socket:2375
-              - TRAEFIK_API=$DEMYX_STACK_API
-              - TRAEFIK_PROVIDERS_DOCKER=true
-              - TRAEFIK_PROVIDERS_DOCKER_EXPOSEDBYDEFAULT=false
-              - TRAEFIK_ENTRYPOINTS_HTTP_FORWARDEDHEADERS_TRUSTEDIPS=\${DEMYX_STACK_TRUSTED_IPS}
-              - TRAEFIK_ENTRYPOINTS_HTTPS_FORWARDEDHEADERS_TRUSTEDIPS=\${DEMYX_STACK_TRUSTED_IPS}
-              # HTTP resolver
-              - TRAEFIK_CERTIFICATESRESOLVERS_DEMYX_ACME_EMAIL=\${DEMYX_STACK_ACME_EMAIL}
-              - TRAEFIK_CERTIFICATESRESOLVERS_DEMYX_ACME_STORAGE=\${DEMYX_STACK_ACME_STORAGE}
-              - TRAEFIK_CERTIFICATESRESOLVERS_DEMYX_ACME_HTTPCHALLENGE=true
-              - TRAEFIK_CERTIFICATESRESOLVERS_DEMYX_ACME_HTTPCHALLENGE_ENTRYPOINT=http
-              # Cloudflare resolver
-              - TRAEFIK_CERTIFICATESRESOLVERS_DEMYX-CF_ACME_EMAIL=\${DEMYX_STACK_ACME_EMAIL}
-              - TRAEFIK_CERTIFICATESRESOLVERS_DEMYX-CF_ACME_STORAGE=\${DEMYX_STACK_ACME_STORAGE}
-              - TRAEFIK_CERTIFICATESRESOLVERS_DEMYX-CF_ACME_DNSCHALLENGE=true
-              - TRAEFIK_CERTIFICATESRESOLVERS_DEMYX-CF_ACME_DNSCHALLENGE_PROVIDER=cloudflare
-              - TRAEFIK_CERTIFICATESRESOLVERS_DEMYX-CF_ACME_DNSCHALLENGE_DELAYBEFORECHECK=5
-              - TRAEFIK_CERTIFICATESRESOLVERS_DEMYX-CF_ACME_DNSCHALLENGE_RESOLVERS=1.1.1.1
-              - CF_API_EMAIL=\${DEMYX_STACK_CLOUDFLARE_EMAIL}
-              - CF_API_KEY=\${DEMYX_STACK_CLOUDFLARE_KEY}
-              - TRAEFIK_LOG=true
-              - TRAEFIK_LOG_LEVEL=INFO
-              - TRAEFIK_LOG_FILEPATH=/var/log/demyx/traefik.error.log
-              - TRAEFIK_ACCESSLOG=true
-              - TRAEFIK_ACCESSLOG_FILEPATH=/var/log/demyx/traefik.access.log
+              $DEMYX_TRAEFIK_YML
+              - DEMYX_TRAEFIK_LOG=$DEMYX_TRAEFIK_LOG
+              - TRAEFIK_PROVIDERS_DOCKER_ENDPOINT=$DOCKER_HOST
               - TZ=$TZ
             $DEMYX_YML_LABEL_TRAEFIK
         volumes:
@@ -115,5 +169,5 @@ demyx_stack_yml() {
           demyx:
             name: demyx
           demyx_socket:
-            name: demyx_socket" | sed "s|        ||g" > "$DEMYX_STACK"/docker-compose.yml
+            name: demyx_socket" | sed "s|        ||g" > "$DEMYX_TRAEFIK"/docker-compose.yml
 }
