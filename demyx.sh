@@ -5,7 +5,6 @@
 # demyx <args>
 #
 trap 'exit' ERR
-source /etc/demyx/.config
 DEMYX_COMMAND="$1"
 DEMYX_TARGET="$2"
 source "$DEMYX_FUNCTION"/global.sh
@@ -44,9 +43,6 @@ elif [[ "$DEMYX_COMMAND" = help ]]; then
 elif [[ "$DEMYX_COMMAND" = info ]]; then
     source "$DEMYX_FUNCTION"/info.sh
     demyx_info "$@"
-elif [[ "$DEMYX_COMMAND" = install ]]; then
-    source "$DEMYX_FUNCTION"/install.sh
-    demyx_install "$@"
 elif [[ "$DEMYX_COMMAND" = list ]]; then
     source "$DEMYX_FUNCTION"/list.sh
     demyx_list "$@"
@@ -67,6 +63,9 @@ elif [[ "$DEMYX_COMMAND" = pull ]]; then
     source "$DEMYX_FUNCTION"/pull.sh
     shift
     demyx_pull "$@"
+elif [[ "$DEMYX_COMMAND" = refresh ]]; then
+    source "$DEMYX_FUNCTION"/refresh.sh
+    demyx_refresh "$@"
 elif [[ "$DEMYX_COMMAND" = restore ]]; then
     source "$DEMYX_FUNCTION"/restore.sh
     demyx_restore "$@"
@@ -76,15 +75,14 @@ elif [[ "$DEMYX_COMMAND" = rm ]]; then
 elif [[ "$DEMYX_COMMAND" = run ]]; then
     source "$DEMYX_FUNCTION"/run.sh
     demyx_run "$@"
-elif [[ "$DEMYX_COMMAND" = stack ]]; then
-    source "$DEMYX_FUNCTION"/stack.sh
-    demyx_stack "$@"
 elif [[ "$DEMYX_COMMAND" = update ]]; then
     source "$DEMYX_FUNCTION"/update.sh
     demyx_update "$@"
 elif [[ "$DEMYX_COMMAND" = util ]]; then
     source "$DEMYX_FUNCTION"/utility.sh
     demyx_utility "$@"
+elif [[ "$DEMYX_COMMAND" = version ]]; then
+    demyx_execute -v echo "$DEMYX_VERSION"
 elif [[ "$DEMYX_COMMAND" = wp ]]; then
     source "$DEMYX_FUNCTION"/wp.sh
     shift 2
