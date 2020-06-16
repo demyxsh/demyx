@@ -2,6 +2,7 @@
 [![Build Status](https://img.shields.io/travis/demyxco/demyx?style=flat)](https://travis-ci.org/demyxco/demyx)
 [![Docker Pulls](https://img.shields.io/docker/pulls/demyx/demyx?style=flat&color=blue)](https://hub.docker.com/r/demyx/demyx)
 [![Architecture](https://img.shields.io/badge/linux-amd64-important?style=flat&color=blue)](https://hub.docker.com/r/demyx/demyx)
+[![demyx](https://img.shields.io/badge/demyx-1.0.0-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/demyx)
 [![Alpine](https://img.shields.io/badge/alpine-3.11.6-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/demyx)
 [![Docker Client](https://img.shields.io/badge/docker_client-19.03.8-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/demyx)
 [![Buy Me A Coffee](https://img.shields.io/badge/buy_me_coffee-$5-informational?style=flat&color=blue)](https://www.buymeacoffee.com/VXqkQK5tb)
@@ -27,7 +28,6 @@ Demyx is a Docker image that automates and manages WordPress installations. Trae
 * Basic auth site-wide or wp-login.php
 * Secure NGINX/PHP configurations
 * Backup/Restore/Clone
-* CDN provided by Staticaly
 * FastCGI cache with nginx-helper plugin by rtCamp (WooCommerce ready)
 * Auto activate rate requests and limit connections when CPU is high
 * Custom healthchecks
@@ -48,64 +48,37 @@ Demyx is a Docker image that automates and manages WordPress installations. Trae
 
 ### Install
 ```
-bash -c "$(curl -fsSL https://demyx.sh/install)"
+bash -c "$(curl -sL https://demyx.sh/install)"
 ```
 
 ### Getting Started
 - [Step-by-Step Guide](https://demyx.sh/docker/how-to-easily-manage-multiple-wordpress-sites-in-docker-using-demyx/)
 
 ```
-# Create a WordPress site on the host OS
-demyx cmd run domain.tld --cdn --cache
+# Create a WordPress site with cache
+demyx run domain.tld --cache
 
-# Create a WordPress site in the demyx container
-demyx run domain.tld --cdn --cache
-
-# Create a WordPress site powered by Bedrock in the demyx container
+# Create a WordPress site powered by Bedrock
 demyx run domain.tld --bedrock
 ```
 
 ### Demyx Image
-Demyx needs access to the docker.sock as a non-root user, which the chroot helper script will set that up for you. Sudo is installed to only allow the demyx user to execute specific scripts as root. The image is put in production mode by default, meaning that /demyx directory and all its folders and files will be set to read-only mode by root. This prevents the non-privelege user to modify the script and do malicious things.
+Demyx needs access to the docker.sock as a non-root user, which the helper script will set that up for you. Sudo is installed to only allow the demyx user to execute specific scripts as root. The image has /bin/busybox and other binaries locked down. This prevents the non-privelege user to modify the script and do malicious things.
 
-* user/group: demyx:demyx (1000:1000)
-* docker (binary)
-* bash
-* curl
-* git
-* gnupg
-* jq
-* nano
-* oh-my-zsh
-* sudo
-* tzdata
-* util-linux
-* rsync
-* zsh
+### host.sh
+This is a helper script that gets installed on the host and configuration file is installed at `~/.demyx`. It wraps docker exec commands into the demyx container. It also restarts and removes the main demyx containers. See demyx host help for more info.
 
-### chroot.sh
-This script helps you change root to the demyx container, it's installed on the host OS and lives in /usr/local/bin. The script will generate a docker-compose.yml for demyx and the [demyx/docker-socket-proxy](https://github.com/demyxco/docker-socket-proxy). Executing the install script will automatically install the Demyx chroot script. The chroot script will start the demyx container and binds port 2222 for SSH. SSH port can be overriden by the script.
-
-(host) demyx help
+demyx host help
 ```
-demyx <args>          Chroot into the demyx container
-      cmd             Send demyx commands from host
-      help            Demyx help
-      rm              Stops and removes demyx container
-      rs|restart      Stops, removes, and starts demyx container
-      sh              Execute root commands to demyx container from host
-      update          Update chroot.sh from GitHub
-      -a, --all       Targets both demyx and demyx_socket container
-      --cpu           Set container CPU usage, --cpu=null to remove cap
-      -d|--dev        Puts demyx container into development mode
-      --edge          Use latest code updates from git repo
-      --mem           Set container MEM usage, --mem=null to remove cap
-      --nc            Starts demyx containr but prevent chrooting into container
-      -p|--prod       Puts demyx container into production mode
-      -r, --root      Execute as root user
-      --ssh           Override ssh port
-      --system        Pulls all demyx images, updates demyx helper script, and force recreates the demyx_socket and demyx containers when using demyx update --system
-      --tz            Set timezone
+demyx host <args>          Chroot into the demyx container
+           all             Targets both demyx and demyx_socket container, works with remove and restart
+           config           Edit Demyx config on the host (~/.demyx)
+           help            Demyx helper help menu
+           remove|rm       Stops and removes demyx container
+           restart|rs      Stops, removes, and starts demyx container
+           shell           Run commands into demyx container from the host, leave blank to open a shell
+           update          List available updates
+           upgrade         Upgrade the demyx stack
 ```
 
 ### Commands
@@ -113,11 +86,12 @@ demyx <args>          Chroot into the demyx container
 demyx <arg>           Main demyx command
       backup          Back up an app
       compose         Accepts all docker-compose arguments
-      config          Modifies an app's configuration
+      config           Modifies an app's configuration
       cp              Wrapper for docker cp
       cron            Execute demyx cron
-      edit            Opens nano to edit .env and docker-compose.yml files
+      edit            Opens nano to edit .env files
       exec            Accepts all docker exec arguments
+      host            Command only available on the host OS, for more info: demyx host help
       healthcheck     Checks if WordPress apps are up
       info            Shows an app's .env and filter output
       list            List all apps
@@ -126,10 +100,10 @@ demyx <arg>           Main demyx command
       monitor         For auto scaling purposes
       motd            Message of the day
       pull            Pull one or all demyx images from Docker hub
+      refresh         Refresh env and yml files of an app
       restore         Restore an app
       rm              Removes an app and its volumes
       run             Creates a new app
-      stack           Control the stack via docker-compose arguments
       update          Update demyx code base
       util            Generates credentials or access util container
       wp              Execute wp-cli commands
@@ -144,19 +118,11 @@ If you are uncomfortable with this, then you can turn off telemetry by running t
 * [Statistics](https://demyx.sh/statistics/)
 
 ```
-# Execute in the host OS
-demyx cmd stack --telemetry=false
-
-# Execute in the demyx container
-demyx stack --telemetry=false
+# Edit demyx environment variables and set DEMYX_TELEMETRY=false
+demyx host edit
 ```
 
 ### Resources
-*  [Demyx](https://github.com/demyxco/demyx) - Demyx GitHub
-*  [Traefik](https://hub.docker.com/_/traefik) - Reverse Proxy with Lets Encrypt SSL
-*  [WordPress](https://hub.docker.com/_/wordpress) - Using their `wordpress:cli` image
-*  [phpMyAdmin](https://hub.docker.com/r/phpmyadmin/phpmyadmin) - Web GUI used with Demyx stack
-*  [ctop](https://ctop.sh) - htop but for containers!
-*  [VirtuBox](https://github.com/VirtuBox/ubuntu-nginx-web-server) - Borrowed configs for NGINX and PHP
-*  [EasyEngine](https://easyengine.io/) - Using their nginx helper plugin
-*  [Staticaly](https://www.staticaly.com/) - Free CDN setup
+- [ctop](https://ctop.sh) - htop but for containers!
+- [VirtuBox](https://github.com/VirtuBox/ubuntu-nginx-web-server) - Borrowed configs for NGINX and PHP
+- [EasyEngine](https://easyengine.io/) - Using their nginx helper plugin

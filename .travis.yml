@@ -7,7 +7,7 @@ services:
   - docker
 
 env:
-  - DEMYX_USERNAME=demyx DEMYX_REPOSITORY=demyx
+  - DEMYX_USERNAME=demyx DEMYX_REPOSITORY=demyx DEMYX_VERSION=1.0.0
 
 before_install:
   - docker pull demyx/docker-compose
@@ -21,18 +21,18 @@ before_install:
   - docker pull alpine
 
 script:
-  - export DEMYX_BUILD_DATE="$(date +%Y.%m.%d)"
-  - docker build --no-cache --build-arg DEMYX_BUILD="$DEMYX_BUILD_DATE" -t demyx/"$DEMYX_REPOSITORY" .
-  - sudo cp chroot.sh /usr/local/bin/demyx
+  - docker build --no-cache -t demyx/"$DEMYX_REPOSITORY" .
+  - sudo cp host.sh /usr/local/bin/demyx
   - sudo chmod +x /usr/local/bin/demyx
-  - sudo demyx --nc
-  - sleep 5
-  - sudo demyx cmd install --domain=domain.tld --email=info@domain.tld --user="$DEMYX_REPOSITORY" --pass="$DEMYX_REPOSITORY"
-  - sudo demyx cmd motd
-  - sudo demyx cmd run domain.tld
-  - sudo demyx cmd wp domain.tld core is-installed
+  - sudo echo -e "DEMYX_HOST_DOMAIN=demyx.app\nDEMYX_HOST_EMAIL=info@demyx.app\nDEMYX_HOST_AUTH_USERNAME=travis\nDEMYX_HOST_IP=127.0.0.1\nDEMYX_HOST_INSTALL=false" > "$HOME"/.demyx
+  - sudo demyx help
+  - sudo demyx run demyx.app
+  - sudo demyx wp demyx.app core is-installed
+  - sudo demyx exec demyx.app nx wget -qO- http://localhost | grep 'Hello world'
+  - sudo demyx motd
 
 after_success:
   - echo "$DEMYX_PASSWORD" | docker login -u "$DEMYX_USERNAME" --password-stdin
-  - docker push demyx/"$DEMYX_REPOSITORY"
+  - docker push demyx/"$DEMYX_REPOSITORY":latest
+  - docker push demyx/"$DEMYX_REPOSITORY":"$DEMYX_VERSION"
   - bash travis.sh
