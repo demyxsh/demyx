@@ -186,6 +186,15 @@ demyx_config() {
             --upgrade)
                 DEMYX_CONFIG_UPGRADE=1
                 ;;
+            --whitelist|--whitelist=true)
+                DEMYX_CONFIG_WHITELIST=true
+                ;;
+            --whitelist=false)
+                DEMYX_CONFIG_WHITELIST=false
+                ;;
+            --whitelist-type=all|--whitelist-type=login)
+                DEMYX_CONFIG_WHITELIST_TYPE="${3#*=}"
+                ;;
             --wp-cpu=null|--wp-cpu=?*)
                 DEMYX_CONFIG_WP_CPU="${3#*=}"
                 DEMYX_CONFIG_RESOURCE=1
@@ -972,6 +981,43 @@ demyx_config() {
 
                 demyx_echo 'Turning off WordPress auto update'
                 demyx_execute sed -i "s|DEMYX_APP_WP_UPDATE=.*|DEMYX_APP_WP_UPDATE=false|g" "$DEMYX_APP_PATH"/.env
+            fi
+            if [[ "$DEMYX_CONFIG_WHITELIST" = true ]]; then
+                [[ -z "$DEMYX_CONFIG_WHITELIST_TYPE" ]] && DEMYX_CONFIG_WHITELIST_TYPE=login
+                demyx_source yml
+
+                # TEMPORARY CODE
+                if [[ -z "$DEMYX_APP_IP_WHITELIST" ]]; then
+                    demyx_echo "Updating .env and .yml"
+                    demyx_execute demyx_source env; \
+                        demyx_env
+                fi
+
+                demyx_echo "Setting whitelist type to $DEMYX_CONFIG_WHITELIST_TYPE"
+                demyx_execute sed -i "s|DEMYX_APP_IP_WHITELIST=.*|DEMYX_APP_IP_WHITELIST=true|g" "$DEMYX_APP_PATH"/.env; \
+                    sed -i "s|DEMYX_APP_IP_WHITELIST_TYPE=.*|DEMYX_APP_IP_WHITELIST_TYPE=$DEMYX_CONFIG_WHITELIST_TYPE|g" "$DEMYX_APP_PATH"/.env; \
+                    demyx_yml
+
+                demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
+            elif [[ "$DEMYX_CONFIG_WHITELIST" = false ]]; then
+                demyx_source yml
+
+                # TEMPORARY CODE
+                if [[ -z "$DEMYX_APP_IP_WHITELIST" ]]; then
+                    demyx_echo "Updating .env and .yml"
+                    demyx_execute demyx_source env; \
+                        demyx_env
+                fi
+
+                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
+                    [[ "$DEMYX_APP_IP_WHITELIST" = false ]] && demyx_die 'IP whitelist is already off'
+                fi
+
+                demyx_echo 'Disabling IP whitelist'
+                demyx_execute sed -i "s|DEMYX_APP_IP_WHITELIST=.*|DEMYX_APP_IP_WHITELIST=false|g" "$DEMYX_APP_PATH"/.env; \
+                    demyx_yml
+
+                demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
             fi
             if [[ "$DEMYX_CONFIG_XMLRPC" = true ]]; then
                 demyx_app_is_up

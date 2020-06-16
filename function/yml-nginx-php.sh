@@ -42,6 +42,12 @@ if [[ "$DEMYX_APP_AUTH" = true || -n "$DEMYX_RUN_AUTH" ]]; then
       - \"traefik.http.middlewares.\${DEMYX_APP_COMPOSE_PROJECT}-auth.basicauth.users=\${DEMYX_APP_AUTH_HTPASSWD}\""
 fi
 
+if [[ "$DEMYX_APP_IP_WHITELIST" = true || -n "$DEMYX_RUN_IP_WHITELIST" ]]; then
+    DEMYX_YML_WHITELIST="- NGINX_WHITELIST=\${DEMYX_APP_IP_WHITELIST}
+      - NGINX_WHITELIST_IP=$DEMYX_IP
+      - NGINX_WHITELIST_TYPE=\${DEMYX_APP_IP_WHITELIST_TYPE}"
+fi
+
 echo "# AUTO GENERATED
 version: \"$DEMYX_DOCKER_COMPOSE\"
 services:
@@ -65,6 +71,7 @@ services:
       - NGINX_BASIC_AUTH=\${DEMYX_APP_AUTH_WP}
       - NGINX_BASIC_AUTH_HTPASSWD=\${DEMYX_APP_AUTH_HTPASSWD}
       - TZ=$TZ
+      $DEMYX_YML_WHITELIST
     volumes:
       - wp_${DEMYX_APP_ID}:/demyx
       - wp_${DEMYX_APP_ID}_log:/var/log/demyx
