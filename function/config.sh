@@ -288,7 +288,7 @@ demyx_config() {
                 demyx_execute -v demyx_table "$PRINT_TABLE"
             elif [[ "$DEMYX_CONFIG_AUTH" = false ]]; then
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_AUTH" = false ]] && demyx_die 'Basic Auth is already turned on'
+                    [[ "$DEMYX_APP_AUTH" = false ]] && demyx_die 'Basic Auth is already turned off'
                 fi
 
                 demyx_source yml
