@@ -8,7 +8,6 @@ DEMYX_ALPINE_VERSION="$(docker exec -t demyx cat /etc/os-release | grep VERSION_
 DEMYX_DOCKER_VERSION="$(curl -sL https://api.github.com/repos/docker/docker-ce/releases/latest | grep '"name":' | awk -F '[:]' '{print $2}' | sed 's/"//g' | sed 's/,//g' | sed 's/ //g' | sed -e 's/\r//g')"
 
 # Replace versions
-sed -i "s|demyx-.*.-informational|demyx-${DEMYX_VERSION}-informational|g" README.md
 sed -i "s|alpine-.*.-informational|alpine-${DEMYX_ALPINE_VERSION}-informational|g" README.md
 sed -i "s|docker_client-.*.-informational|docker_client-${DEMYX_DOCKER_VERSION}-informational|g" README.md
 
