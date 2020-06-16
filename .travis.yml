@@ -22,6 +22,7 @@ before_install:
 
 script:
   - docker build --no-cache -t demyx/"$DEMYX_REPOSITORY" .
+  - docker build -t demyx/"$DEMYX_REPOSITORY":"$DEMYX_VERSION" .
   - sudo cp host.sh /usr/local/bin/demyx
   - sudo chmod +x /usr/local/bin/demyx
   - sudo echo -e "DEMYX_HOST_DOMAIN=demyx.app\nDEMYX_HOST_EMAIL=info@demyx.app\nDEMYX_HOST_AUTH_USERNAME=travis\nDEMYX_HOST_IP=127.0.0.1\nDEMYX_HOST_INSTALL=false" > "$HOME"/.demyx
