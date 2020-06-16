@@ -452,8 +452,7 @@ demyx_config() {
                 demyx_execute sed -i "s|DEMYX_APP_CACHE=.*|DEMYX_APP_CACHE=false|g" "$DEMYX_APP_PATH"/.env
             fi
             if [[ "$DEMYX_CONFIG_CLOUDFLARE" = true ]]; then
-                demyx_source stack
-                    # Exit if these two variables are missing
+                # Exit if these two variables are missing
                 [[ -z "$DEMYX_EMAIL" || -z "$DEMYX_CF_KEY" ]] && demyx_die 'Missing Cloudflare key and/or email, please run demyx help stack'
 
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
