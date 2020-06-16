@@ -1,7 +1,7 @@
 # Demyx
 # https://demyx.sh
 
-DEMYX_MOTD_CHECK_WP="$(ls -A "$DEMYX_WP")"
+DEMYX_MOTD_CHECK_WP="$([[ -d "$DEMYX_WP" ]] && ls -A "$DEMYX_WP")"
 
 demyx_motd_dev_warning() {
     if [[ -n "$DEMYX_MOTD_CHECK_WP" ]]; then
