@@ -2,7 +2,7 @@
 # Demyx
 # https://demyx.sh
 
-if [[ ! -d "$DEMYX_APP" ]]; then
+if [[ ! -d "$DEMYX_WP" ]]; then
     cp -r "$DEMYX_CONFIG"/skel/. "$DEMYX"
 fi
 
