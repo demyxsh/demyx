@@ -212,7 +212,7 @@ demyx_dev_password() {
     fi
 }
 demyx_update_local() {
-    echo "DEMYX_LOCAL_VERSION=$DEMYX_BUILD
+    echo "DEMYX_LOCAL_VERSION=$DEMYX_VERSION
     DEMYX_LOCAL_BROWSERSYNC_VERSION=$(docker run --rm --entrypoint=browser-sync demyx/browsersync --version | sed 's/\r//g')
     DEMYX_LOCAL_CODE_VERSION=$(docker run --rm --entrypoint=code-server demyx/code-server --version | awk -F '[ ]' '{print $1}' | sed 's/\r//g')
     DEMYX_LOCAL_DOCKER_COMPOSE_VERSION=$(docker run --rm --entrypoint=docker-compose demyx/docker-compose --version | awk -F '[ ]' '{print $3}' | cut -c -6 | sed 's/\r//g')
