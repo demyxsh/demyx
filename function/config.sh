@@ -858,8 +858,8 @@ demyx_config() {
                     -p "$DEMYX_SFTP_PORT":2222 \
                     demyx/ssh 2>/dev/null
 
-                if [[ ! -f /tmp/aijasldfjasldjkfa ]]; then
-                    demyx_warning "No authorized_keys found; please paste your keys in /home/demyx/.ssh inside the SFTP container and then restart it"
+                if [[ -z "$(docker exec -t "$DEMYX_APP_COMPOSE_PROJECT"_sftp ls /home/demyx/.ssh | grep authorized_keys || true)" ]]; then
+                    demyx_warning "No authorized_keys found; please run the command: docker cp \"\$HOME\"/.ssh/authorized_keys ${DEMYX_APP_COMPOSE_PROJECT}_sftp:/home/demyx/.ssh; docker exec -t ${DEMYX_APP_COMPOSE_PROJECT}_sftp demyx-permission"
                 fi
 
                 PRINT_TABLE="DEMYX^ SFTP\n"
