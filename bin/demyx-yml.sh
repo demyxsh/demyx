@@ -9,9 +9,11 @@ else
     DEMYX_YML_RESOLVER=demyx
 fi
 
+# Generate basic auth
+echo "DEMYX_YML_AUTH=$(demyx util --user=$DEMYX_AUTH_USERNAME --htpasswd=$DEMYX_AUTH_PASSWORD --raw)" > "$DEMYX"/.env
+
 # Set label for api if conditions are met
 if [[ "$DEMYX_DOMAIN" != false && "$DEMYX_API" != false ]]; then
-    echo "DEMYX_YML_AUTH=$(demyx util --user=$DEMYX_AUTH_USERNAME --htpasswd=$DEMYX_AUTH_PASSWORD --raw)" > "$DEMYX"/.env
     DEMYX_YML_LABELS="labels:
       - \"traefik.enable=true\"
       - \"traefik.http.routers.demyx-http.rule=Host(\`${DEMYX_API}.${DEMYX_DOMAIN}\`)\"
