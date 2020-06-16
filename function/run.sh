@@ -102,7 +102,6 @@ demyx_run() {
     fi
 
     if [[ -n "$DEMYX_RUN_CHECK" ]]; then
-        demyx_source stack
         if [[ -n "$DEMYX_RUN_FORCE" ]]; then
             DEMYX_RM_CONFIRM=y
         else
