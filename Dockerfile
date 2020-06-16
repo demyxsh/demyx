@@ -127,7 +127,6 @@ RUN set -ex; \
     chmod o-x /bin/busybox; \
     chmod o-x /bin/echo; \
     chmod o-x /usr/bin/curl; \
-    chmod o-x /usr/bin/git; \
     chmod o-x /usr/bin/nano; \
     chmod o-x /usr/local/bin/docker; \
     \
