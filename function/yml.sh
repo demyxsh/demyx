@@ -38,10 +38,13 @@ demyx_yml() {
             DEMYX_YML_RUN_CREDENTIALS="$(echo "$DEMYX_YML_RUN_CREDENTIALS" | sed "s|          ||")"
         fi
 
-        if (( "$(echo "$DEMYX_APP_DOMAIN" | grep -o "\." | wc -l)" < 1 )); then
-            DEMYX_YML_WWW='Host(`${DEMYX_APP_DOMAIN}`) || Host(`www.${DEMYX_APP_DOMAIN}`)'
+        if [[ "$(echo "$DEMYX_APP_DOMAIN" | awk -F '[.]' '{print $1}')" = www ]]; then
+            DEMYX_YML_HOST_RULE='Host(`'"$(echo "$DEMYX_APP_DOMAIN" | sed 's|www.||g')"'`) || Host(`${DEMYX_APP_DOMAIN}`)'
+            DEMYX_YML_REGEX=www.
+        elif [[ "$(echo "$DEMYX_APP_DOMAIN" | grep -o "\." | wc -l)" -gt 1 ]]; then
+            DEMYX_YML_HOST_RULE='Host(`${DEMYX_APP_DOMAIN}`)'
         else
-            DEMYX_YML_WWW='Host(`${DEMYX_APP_DOMAIN}`)'
+            DEMYX_YML_HOST_RULE='Host(`${DEMYX_APP_DOMAIN}`) || Host(`www.${DEMYX_APP_DOMAIN}`)'
         fi
 
         if [[ "$DEMYX_APP_DEV" = true ]]; then
