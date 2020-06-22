@@ -7,7 +7,7 @@ services:
   - docker
 
 env:
-  - DEMYX_USERNAME=demyx DEMYX_REPOSITORY=demyx DEMYX_VERSION=1.0.1
+  - DEMYX_USERNAME=demyx DEMYX_REPOSITORY=demyx DEMYX_VERSION=1.1.0
 
 before_install:
   - docker pull demyx/docker-compose
@@ -25,12 +25,11 @@ script:
   - docker build -t demyx/"$DEMYX_REPOSITORY":"$DEMYX_VERSION" .
   - sudo cp host.sh /usr/local/bin/demyx
   - sudo chmod +x /usr/local/bin/demyx
-  - sudo echo -e "DEMYX_HOST_DOMAIN=demyx.app\nDEMYX_HOST_EMAIL=info@demyx.app\nDEMYX_HOST_AUTH_USERNAME=travis\nDEMYX_HOST_IP=127.0.0.1\nDEMYX_HOST_INSTALL=false" > "$HOME"/.demyx
-  - sudo demyx help
-  - sudo demyx run demyx.app
-  - sudo demyx wp demyx.app core is-installed
-  - sudo demyx exec demyx.app nx wget -qO- http://localhost | grep 'Hello world'
-  - sudo demyx motd
+  - echo -e "DEMYX_HOST_DOMAIN=demyx.app\nDEMYX_HOST_EMAIL=info@demyx.app\nDEMYX_HOST_AUTH_USERNAME=travis\nDEMYX_HOST_IP=127.0.0.1\nDEMYX_HOST_INSTALL=false" > "$HOME"/.demyx
+  - demyx run demyx.app
+  - demyx wp demyx.app core is-installed
+  - demyx exec demyx.app nx wget -qO- http://localhost | grep 'Hello world'
+  - demyx motd
 
 after_success:
   - echo "$DEMYX_PASSWORD" | docker login -u "$DEMYX_USERNAME" --password-stdin
