@@ -252,7 +252,6 @@ demyx_info() {
                 PRINT_TABLE+="PHP OPCACHE^ $DEMYX_APP_PHP_OPCACHE\n"
                 PRINT_TABLE+="SSL^ $DEMYX_APP_SSL\n"
                 PRINT_TABLE+="CACHE^ $DEMYX_APP_CACHE\n"
-                PRINT_TABLE+="CDN^ $DEMYX_APP_CDN\n"
                 PRINT_TABLE+="AUTH^ $DEMYX_APP_AUTH\n"
                 PRINT_TABLE+="WP AUTH^ $DEMYX_APP_AUTH_WP\n"
                 PRINT_TABLE+="DEV^ $DEMYX_APP_DEV\n"
