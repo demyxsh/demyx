@@ -431,6 +431,8 @@ demyx_config() {
                 
                 demyx_echo 'Updating configs'
                 demyx_execute sed -i "s|DEMYX_APP_CACHE=.*|DEMYX_APP_CACHE=true|g" "$DEMYX_APP_PATH"/.env
+
+                demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
             elif [[ "$DEMYX_CONFIG_CACHE" = false ]]; then
                 demyx_app_is_up
 
@@ -456,6 +458,8 @@ demyx_config() {
 
                 demyx_echo 'Updating configs'
                 demyx_execute sed -i "s|DEMYX_APP_CACHE=.*|DEMYX_APP_CACHE=false|g" "$DEMYX_APP_PATH"/.env
+
+                demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
             fi
             if [[ "$DEMYX_CONFIG_CLOUDFLARE" = true ]]; then
                 # Exit if these two variables are missing
