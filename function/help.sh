@@ -58,8 +58,7 @@ demyx_help() {
         echo "                   --ssl                          Turns on/off SSL"
         echo "                   --stack                        Switch the WordPress stack: bedrock, nginx-php, ols, ols-bedrock"
         echo "                   --upgrade                      Upgrade the app"
-        echo "                   --whitelist                    Enables IP whitelisting, must have a valid IP address set in host config"
-        echo "                   --whitelist-type               Available types: all (site-wide), login"
+        echo "                   --whitelist                    Available values: all (site-wide), login"
         echo "                   --wp-cpu                       Set the app's container CPU usage, --wp-cpu=null to remove cap"
         echo "                   --wp-mem                       Set the app's container MEM usage, --wp-mem=null to remove cap"
         echo "                   --wp-update                    Auto update WordPress core, themes, and plugins"
@@ -203,8 +202,7 @@ demyx_help() {
         echo "                --stack               Create a WordPress app using preferred stack: bedrock, nginx-php, ols (default), ols-bedrock"
         echo "                --type                Run app type as wp/php/html"
         echo "                --user                Override user generation"
-        echo "                --whitelist           Enables IP whitelisting, must have a valid IP address set in host config"
-        echo "                --whitelist-type      Available types: all (site-wide), login"
+        echo "                --whitelist           Available values: all (site-wide), login"
         echo
     elif [[ "$DEMYX_HELP" = update ]]; then
         echo

@@ -42,10 +42,9 @@ if [[ "$DEMYX_APP_AUTH" = true || -n "$DEMYX_RUN_AUTH" ]]; then
       - \"traefik.http.middlewares.\${DEMYX_APP_COMPOSE_PROJECT}-auth.basicauth.users=\${DEMYX_APP_AUTH_HTPASSWD}\""
 fi
 
-if [[ "$DEMYX_APP_IP_WHITELIST" = true || -n "$DEMYX_RUN_IP_WHITELIST" ]]; then
+if [[ "$DEMYX_APP_IP_WHITELIST" != false ]]; then
     DEMYX_YML_WHITELIST="- NGINX_WHITELIST=\${DEMYX_APP_IP_WHITELIST}
-      - NGINX_WHITELIST_IP=$DEMYX_IP
-      - NGINX_WHITELIST_TYPE=\${DEMYX_APP_IP_WHITELIST_TYPE}"
+      - NGINX_WHITELIST_IP=$DEMYX_IP"
 fi
 
 echo "# AUTO GENERATED

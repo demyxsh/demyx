@@ -186,14 +186,11 @@ demyx_config() {
             --upgrade)
                 DEMYX_CONFIG_UPGRADE=1
                 ;;
-            --whitelist|--whitelist=true)
-                DEMYX_CONFIG_WHITELIST=true
+            --whitelist=all|--whitelist=login)
+                DEMYX_CONFIG_WHITELIST="${3#*=}"
                 ;;
             --whitelist=false)
                 DEMYX_CONFIG_WHITELIST=false
-                ;;
-            --whitelist-type=all|--whitelist-type=login)
-                DEMYX_CONFIG_WHITELIST_TYPE="${3#*=}"
                 ;;
             --wp-cpu=null|--wp-cpu=?*)
                 DEMYX_CONFIG_WP_CPU="${3#*=}"
@@ -982,8 +979,7 @@ demyx_config() {
                 demyx_echo 'Turning off WordPress auto update'
                 demyx_execute sed -i "s|DEMYX_APP_WP_UPDATE=.*|DEMYX_APP_WP_UPDATE=false|g" "$DEMYX_APP_PATH"/.env
             fi
-            if [[ "$DEMYX_CONFIG_WHITELIST" = true ]]; then
-                [[ -z "$DEMYX_CONFIG_WHITELIST_TYPE" ]] && DEMYX_CONFIG_WHITELIST_TYPE=login
+            if [[ -n "$DEMYX_CONFIG_WHITELIST" ]]; then
                 demyx_source yml
 
                 # TEMPORARY CODE
@@ -993,9 +989,8 @@ demyx_config() {
                         demyx_env
                 fi
 
-                demyx_echo "Setting whitelist type to $DEMYX_CONFIG_WHITELIST_TYPE"
-                demyx_execute sed -i "s|DEMYX_APP_IP_WHITELIST=.*|DEMYX_APP_IP_WHITELIST=true|g" "$DEMYX_APP_PATH"/.env; \
-                    sed -i "s|DEMYX_APP_IP_WHITELIST_TYPE=.*|DEMYX_APP_IP_WHITELIST_TYPE=$DEMYX_CONFIG_WHITELIST_TYPE|g" "$DEMYX_APP_PATH"/.env; \
+                demyx_echo "Setting whitelist type to $DEMYX_CONFIG_WHITELIST"
+                demyx_execute sed -i "s|DEMYX_APP_IP_WHITELIST=.*|DEMYX_APP_IP_WHITELIST=$DEMYX_CONFIG_WHITELIST|g" "$DEMYX_APP_PATH"/.env; \
                     demyx_yml
 
                 demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans

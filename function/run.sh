@@ -75,11 +75,8 @@ demyx_run() {
             --user=)
                 demyx_die '"--user" cannot be empty'
                 ;;
-            --whitelist|--whitelist=true)
-                DEMYX_RUN_WHITELIST=true
-                ;;
-            --whitelist-type=all|--whitelist-type=login)
-                DEMYX_RUN_WHITELIST_TYPE="${3#*=}"
+            --whitelist=all|--whitelist=login)
+                DEMYX_RUN_WHITELIST="${3#*=}"
                 ;;
             --)
                 shift
@@ -131,7 +128,6 @@ demyx_run() {
     DEMYX_RUN_AUTH="${DEMYX_RUN_AUTH:-false}"
     DEMYX_RUN_CLOUDFLARE="${DEMYX_RUN_CLOUDFLARE:-false}"
     DEMYX_RUN_WHITELIST="${DEMYX_RUN_WHITELIST:-false}"
-    DEMYX_RUN_WHITELIST_TYPE=${DEMYX_RUN_WHITELIST_TYPE:-login}
     
     [[ -n "$DEMYX_RUN_CLONE" ]] && DEMYX_RUN_CLONE_APP="$(demyx info "$DEMYX_RUN_CLONE" --filter=DEMYX_APP_WP_CONTAINER)"
 
@@ -368,11 +364,11 @@ demyx_run() {
             
             [[ "$DEMYX_RUN_CLONE_ENV_CACHE_CHECK" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --cache && DEMYX_RUN_CACHE=true
             [[ "$DEMYX_RUN_CLONE_ENV_AUTH_CHECK" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --auth && DEMYX_RUN_AUTH=true
-            [[ "$DEMYX_RUN_CLONE_ENV_WHITELIST_CHECK" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --whitelist --whitelist-type="$DEMYX_RUN_WHITELIST_TYPE" && DEMYX_RUN_WHITELIST=true
+            [[ "$DEMYX_RUN_CLONE_ENV_WHITELIST_CHECK" != false ]] && demyx config "$DEMYX_APP_DOMAIN" --whitelist="$DEMYX_RUN_WHITELIST" && DEMYX_RUN_WHITELIST="$DEMYX_RUN_CLONE_ENV_WHITELIST_CHECK"
         else
             [[ "$DEMYX_RUN_CACHE" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --cache
             [[ "$DEMYX_RUN_AUTH" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --auth
-            [[ "$DEMYX_RUN_WHITELIST" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --whitelist --whitelist-type="$DEMYX_RUN_WHITELIST_TYPE"
+            [[ "$DEMYX_RUN_WHITELIST" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --whitelist="$DEMYX_RUN_WHITELIST"
         fi
 
         demyx refresh "$DEMYX_APP_DOMAIN" --skip-backup
