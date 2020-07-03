@@ -313,7 +313,7 @@ demyx_config() {
                     demyx_execute docker exec -t -e NGINX_BASIC_AUTH=true "$DEMYX_APP_NX_CONTAINER" sh -c "demyx-wp; demyx-reload"; \
                         sed -i "s|DEMYX_APP_AUTH_WP=.*|DEMYX_APP_AUTH_WP=true|g" "$DEMYX_APP_PATH"/.env
                     
-                    demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
+                    demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
                 fi
 
                 PRINT_TABLE="DEMYX^ BASIC AUTH\n"
@@ -336,7 +336,7 @@ demyx_config() {
                     demyx_execute demyx_execute docker exec -t -e NGINX_BASIC_AUTH=false "$DEMYX_APP_NX_CONTAINER" sh -c "demyx-wp; demyx-reload"; \
                         sed -i "s|DEMYX_APP_AUTH_WP=.*|DEMYX_APP_AUTH_WP=false|g" "$DEMYX_APP_PATH"/.env
 
-                    demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
+                    demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
                 fi
             fi
             if [[ "$DEMYX_CONFIG_BEDROCK" = production ]]; then
