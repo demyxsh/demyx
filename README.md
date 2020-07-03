@@ -1,50 +1,39 @@
-# demyx 
-[![Build Status](https://img.shields.io/travis/demyxco/demyx?style=flat)](https://travis-ci.org/demyxco/demyx)
+# demyx [![Build Status](https://img.shields.io/travis/demyxco/demyx?style=flat)](https://travis-ci.org/demyxco/demyx) [![demyx](https://img.shields.io/badge/version-1.1.2-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/demyx)
+
+<p align="center"><img  src="https://i.imgur.com/kwKTZHE.gif"></p>
+
+Demyx is a Docker image that automates and manages WordPress installations. Traefik for reverse proxy with Lets Encrypt SSL/TLS. WordPress sites are powered by OpenLiteSpeed/NGINX-PHP and MariaDB.
+
 [![Docker Pulls](https://img.shields.io/docker/pulls/demyx/demyx?style=flat&color=blue)](https://hub.docker.com/r/demyx/demyx)
 [![Architecture](https://img.shields.io/badge/linux-amd64-important?style=flat&color=blue)](https://hub.docker.com/r/demyx/demyx)
-[![demyx](https://img.shields.io/badge/demyx-1.1.1-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/demyx)
 [![Alpine](https://img.shields.io/badge/alpine-3.11.6-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/demyx)
 [![Docker Client](https://img.shields.io/badge/docker_client-19.03.8-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/demyx)
 [![Buy Me A Coffee](https://img.shields.io/badge/buy_me_coffee-$5-informational?style=flat&color=blue)](https://www.buymeacoffee.com/VXqkQK5tb)
 [![Become a Patron!](https://img.shields.io/badge/become%20a%20patron-$5-informational?style=flat&color=blue)](https://www.patreon.com/bePatron?u=23406156)
 
-Demyx is a Docker image that automates and manages WordPress installations. Traefik for reverse proxy with Lets Encrypt SSL/TLS. WordPress sites are powered by OpenLiteSpeed/NGINX-PHP and MariaDB.
-
-<p align="center"><img  src="https://i.imgur.com/kwKTZHE.gif"></p>
-
-### Updates & Support
-[![Code Size](https://img.shields.io/github/languages/code-size/demyxco/demyx?style=flat&color=blue)](https://github.com/demyxco/demyx)
-[![Repository Size](https://img.shields.io/github/repo-size/demyxco/demyx?style=flat&color=blue)](https://github.com/demyxco/demyx)
-[![Watches](https://img.shields.io/github/watchers/demyxco/demyx?style=flat&color=blue)](https://github.com/demyxco/demyx)
-[![Stars](https://img.shields.io/github/stars/demyxco/demyx?style=flat&color=blue)](https://github.com/demyxco/demyx)
-[![Forks](https://img.shields.io/github/forks/demyxco/demyx?style=flat&color=blue)](https://github.com/demyxco/demyx)
-
-* Auto built weekly on Saturdays (America/Los_Angeles)
-* Rolling release updates
-* For support: [#demyx](https://webchat.freenode.net/?channel=#demyx)
-
 ### Features
-* SSL turned on by default
-* Basic auth site-wide or wp-login.php
-* Secure NGINX/PHP configurations
-* Backup/Restore/Clone
-* FastCGI cache with nginx-helper plugin by rtCamp (WooCommerce ready)
-* Auto activate rate requests and limit connections when CPU is high
-* Custom healthchecks
-* Development mode includes the tools code-server, BrowserSync, and demyx_helper plugin
-* [Bedrock](https://roots.io/bedrock/)
+- Everything is in containers
+- SSL turned on by default
+- Site-wide or login only basic auth and/or IP whitelisted protection
+- Secure NGINX/PHP configurations
+- Backup/Restore/Clone
+- FastCGI cache with nginx-helper plugin by rtCamp (WooCommerce ready)
+- Auto activate rate requests and limit connections when CPU is high
+- Custom healthchecks
+- Development mode includes the tools code-server (with WPCS and Xdebug), BrowserSync, and demyx_helper plugin
+- [Bedrock](https://roots.io/bedrock/)
+- Browse Demyx file system using code-server (with capabilities of executing demyx commands inside the container and a full fledge terminal using oh-my-zsh)
 
 ### Requirements
-* Docker
-* Dedicated/KVM server with Linux
-* Port 80 and 443 must be open
-* CentOS/Fedora/RHEL requires [selinux-dockersock](https://github.com/dpw/selinux-dockersock) or similar fix
+- Dedicated/KVM server that can install Docker
+- Port 80 and 443 must be open
+- CentOS/Fedora/RHEL requires [selinux-dockersock](https://github.com/dpw/selinux-dockersock) or similar fix
 
-### Tested Distros
-- Alpine 3.10 x64
-- Debian 10 x64
-- Ubuntu 19.10 x64
-- CentOS 7.6 x64 (Probably works on Fedora and RHEL)
+### Tested Distros (x64)
+- Alpine 3.1x
+- Debian 10.x
+- Ubuntu 18.04, 19.10, 20.04
+- CentOS 7.6 (Probably works on Fedora and RHEL)
 
 ### Install
 ```
@@ -86,7 +75,7 @@ demyx host <args>          Chroot into the demyx container
 demyx <arg>           Main demyx command
       backup          Back up an app
       compose         Accepts all docker-compose arguments
-      config           Modifies an app's configuration
+      config          Modifies an app's configuration
       cp              Wrapper for docker cp
       cron            Execute demyx cron
       edit            Opens nano to edit .env files
@@ -126,3 +115,14 @@ demyx host edit
 - [ctop](https://ctop.sh) - htop but for containers!
 - [VirtuBox](https://github.com/VirtuBox/ubuntu-nginx-web-server) - Borrowed configs for NGINX and PHP
 - [EasyEngine](https://easyengine.io/) - Using their nginx helper plugin
+
+### Updates & Support
+[![Code Size](https://img.shields.io/github/languages/code-size/demyxco/demyx?style=flat&color=blue)](https://github.com/demyxco/demyx)
+[![Repository Size](https://img.shields.io/github/repo-size/demyxco/demyx?style=flat&color=blue)](https://github.com/demyxco/demyx)
+[![Watches](https://img.shields.io/github/watchers/demyxco/demyx?style=flat&color=blue)](https://github.com/demyxco/demyx)
+[![Stars](https://img.shields.io/github/stars/demyxco/demyx?style=flat&color=blue)](https://github.com/demyxco/demyx)
+[![Forks](https://img.shields.io/github/forks/demyxco/demyx?style=flat&color=blue)](https://github.com/demyxco/demyx)
+
+- Auto built weekly on Saturdays (America/Los_Angeles)
+- Rolling release updates
+- For support: [#demyx](https://webchat.freenode.net/?channel=#demyx)
