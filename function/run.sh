@@ -100,8 +100,8 @@ demyx_run() {
     fi
 
     if [[ -n "$DEMYX_RUN_CLONE" ]]; then
-        DEMYX_CLONE_CHECK="$(find "$DEMYX_APP" -name "$DEMYX_RUN_CLONE" || true)"
-        [[ -z "$DEMYX_CLONE_CHECK" ]] && demyx_die "App doesn't exist"
+        DEMYX_RUN_CLONE_CHECK="$(find "$DEMYX_APP" -name "$DEMYX_RUN_CLONE" || true)"
+        [[ -z "$DEMYX_RUN_CLONE_CHECK" ]] && demyx_die "App doesn't exist"
     fi
 
     if [[ -n "$DEMYX_RUN_CHECK" ]]; then
@@ -163,6 +163,11 @@ demyx_run() {
         demyx_echo 'Creating .env'
         demyx_execute demyx_env
 
+        if [[ -n "$DEMYX_RUN_CLONE" ]]; then
+            DEMYX_RUN_CLONE_STACK="$(grep DEMYX_APP_STACK "$DEMYX_RUN_CLONE_CHECK"/.env | awk -F '[=]' '{print $2}')"
+            demyx_execute -v sed -i "s|DEMYX_APP_STACK=.*|DEMYX_APP_STACK=${DEMYX_RUN_CLONE_STACK}|g" "$DEMYX_RUN_CHECK"/.env
+        fi
+
         demyx_app_config
 
         demyx config "$DEMYX_APP_DOMAIN" --healthcheck=false
@@ -176,13 +181,13 @@ demyx_run() {
 
         if [[ -n "$DEMYX_RUN_CLONE" ]]; then
             demyx_echo 'Cloning database'
-            demyx_execute demyx wp "$DEMYX_RUN_CLONE" db export clone.sql
+            demyx_execute demyx wp "$DEMYX_RUN_CLONE" db export /demyx/clone.sql
             
             demyx_echo 'Cloning files'
             demyx_execute docker cp "$DEMYX_RUN_CLONE_APP":/demyx "$DEMYX_APP_PATH"
 
             demyx_echo 'Removing exported clone database'
-            demyx_execute docker exec -t "$DEMYX_RUN_CLONE_APP" rm clone.sql
+            demyx_execute docker exec -t "$DEMYX_RUN_CLONE_APP" rm /demyx/clone.sql
         fi
 
         demyx_echo 'Creating WordPress volume'
@@ -208,9 +213,11 @@ demyx_run() {
                 --network demyx \
                 -v wp_"$DEMYX_APP_ID":/demyx \
                 demyx/utilities sh
-                
-            demyx_echo 'Removing old wp-config.php'
-            demyx_execute rm -f "$DEMYX_APP_PATH"/demyx/wp-config.php
+            
+            if [[ "$DEMYX_RUN_CLONE_STACK" = nginx-php || "$DEMYX_RUN_CLONE_STACK" = ols ]]; then
+                demyx_echo 'Removing old wp-config.php'
+                demyx_execute rm -f "$DEMYX_APP_PATH"/demyx/wp-config.php
+            fi
 
             demyx_echo 'Copying files' 
             demyx_execute docker cp "$DEMYX_APP_PATH"/demyx "$DEMYX_APP_ID":/
@@ -244,40 +251,35 @@ demyx_run() {
 
         demyx compose "$DEMYX_APP_DOMAIN" up -d
 
-        if [[ -z "$DEMYX_RUN_SKIP_INIT" ]]; then
-            if [[ "$DEMYX_RUN_STACK" = bedrock || "$DEMYX_RUN_STACK" = ols-bedrock ]]; then
-                demyx_echo 'Initializing Bedrock'
-                demyx_execute demyx_bedrock_ready
-            else
-                demyx_echo 'Initializing WordPress'
-                demyx_execute demyx_wordpress_ready
-            fi
-        fi
-
         if [[ -n "$DEMYX_RUN_CLONE" ]]; then
-            demyx_echo 'Creating new wp-config.php' 
-            demyx_execute demyx wp "$DEMYX_APP_DOMAIN" config create \
-                --dbhost="$WORDPRESS_DB_HOST" \
-                --dbname="$WORDPRESS_DB_NAME" \
-                --dbuser="$WORDPRESS_DB_USER" \
-                --dbpass="$WORDPRESS_DB_PASSWORD"
+            if [[ "$DEMYX_RUN_CLONE_STACK" = nginx-php || "$DEMYX_RUN_CLONE_STACK" = ols ]]; then
+                demyx_echo 'Creating new wp-config.php' 
+                demyx_execute demyx wp "$DEMYX_APP_DOMAIN" config create \
+                    --dbhost="$WORDPRESS_DB_HOST" \
+                    --dbname="$WORDPRESS_DB_NAME" \
+                    --dbuser="$WORDPRESS_DB_USER" \
+                    --dbpass="$WORDPRESS_DB_PASSWORD"
+                
+                demyx_echo 'Configuring wp-config.php for reverse proxy'
+                demyx_execute docker run -t --rm \
+                    --volumes-from "$DEMYX_APP_WP_CONTAINER" \
+                    demyx/utilities demyx-proxy
 
-            demyx_echo 'Configuring wp-config.php for reverse proxy'
-            demyx_execute docker run -t --rm \
-                --volumes-from "$DEMYX_APP_WP_CONTAINER" \
-                demyx/utilities demyx-proxy
-        
-            demyx_echo 'Installing WordPress' 
-            demyx_execute demyx wp "$DEMYX_APP_DOMAIN" core install \
-                --url="$DEMYX_RUN_PROTO" \
-                --title="$DEMYX_APP_DOMAIN" \
-                --admin_user="$WORDPRESS_USER" \
-                --admin_password="$WORDPRESS_USER_PASSWORD" \
-                --admin_email="$WORDPRESS_USER_EMAIL" \
-                --skip-email
+                demyx_echo 'Installing WordPress'
+                demyx_execute demyx wp "$DEMYX_APP_DOMAIN" core install \
+                    --url="$DEMYX_RUN_PROTO" \
+                    --title="$DEMYX_APP_DOMAIN" \
+                    --admin_user="$WORDPRESS_USER" \
+                    --admin_password="$WORDPRESS_USER_PASSWORD" \
+                    --admin_email="$WORDPRESS_USER_EMAIL" \
+                    --skip-email
+            else
+                demyx_echo 'Installing Bedrock'
+                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "tar -xzf /etc/demyx/bedrock.tgz -C /tmp; mv /tmp/bedrock/.env /demyx; demyx-install; rm -rf /tmp/*"
+            fi
 
-            demyx_echo 'Importing clone database' 
-            demyx_execute demyx wp "$DEMYX_APP_DOMAIN" db import clone.sql
+            demyx_echo 'Importing clone database'
+            demyx_execute demyx wp "$DEMYX_APP_DOMAIN" db import /demyx/clone.sql
 
             demyx_echo 'Creating admin account'
             demyx_execute demyx wp "$DEMYX_APP_DOMAIN" user create "$WORDPRESS_USER" info@"$DEMYX_APP_DOMAIN" \
@@ -291,7 +293,7 @@ demyx_run() {
             demyx_execute demyx wp "$DEMYX_APP_DOMAIN" rewrite structure '/%category%/%postname%/'
 
             demyx_echo 'Removing clone database'
-            demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" rm clone.sql
+            demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" rm -f /demyx/clone.sql
 
             demyx_echo 'Cleaning up'
             demyx_execute rm -rf "$DEMYX_APP_PATH"/demyx
@@ -344,6 +346,15 @@ demyx_run() {
 
             demyx refresh "$DEMYX_APP_DOMAIN" --skip-backup
         else
+            if [[ "$DEMYX_RUN_STACK" = nginx-php || "$DEMYX_RUN_STACK" = ols ]]; then
+                demyx_echo 'Creating wp-config.php' 
+                demyx_execute demyx wp "$DEMYX_APP_DOMAIN" config create \
+                    --dbhost="$WORDPRESS_DB_HOST" \
+                    --dbname="$WORDPRESS_DB_NAME" \
+                    --dbuser="$WORDPRESS_DB_USER" \
+                    --dbpass="$WORDPRESS_DB_PASSWORD"
+            fi
+
             demyx_echo 'Configuring wp-config.php'
             demyx_execute demyx wp "$DEMYX_APP_DOMAIN" core install \
                 --url="$DEMYX_RUN_PROTO" \
@@ -355,6 +366,13 @@ demyx_run() {
 
             demyx_echo 'Configuring permalinks'
             demyx_execute demyx wp "$DEMYX_APP_DOMAIN" rewrite structure '/%category%/%postname%/'
+
+            if [[ "$DEMYX_RUN_STACK" = nginx-php || "$DEMYX_RUN_STACK" = ols ]]; then
+                demyx_echo 'Configuring reverse proxy'
+                demyx_execute docker run -t --rm \
+                    --volumes-from="$DEMYX_APP_WP_CONTAINER" \
+                    demyx/utilities demyx-proxy
+            fi
         fi
 
         if [[ -n "$DEMYX_RUN_CLONE" ]]; then
