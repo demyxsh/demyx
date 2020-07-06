@@ -4,7 +4,7 @@ set -euo pipefail
 IFS=$'\n\t'
 
 # Get versions
-DEMYX_ALPINE_VERSION="$(docker exec -t demyx cat /etc/os-release | grep VERSION_ID | cut -c 12- | sed -e 's/\r//g')"
+DEMYX_ALPINE_VERSION="$(docker exec -t --user=root demyx cat /etc/os-release | grep VERSION_ID | cut -c 12- | sed -e 's/\r//g')"
 DEMYX_DOCKER_VERSION="$(curl -sL https://api.github.com/repos/docker/docker-ce/releases/latest | grep '"name":' | awk -F '[:]' '{print $2}' | sed 's/"//g' | sed 's/,//g' | sed 's/ //g' | sed -e 's/\r//g')"
 
 # Replace versions
