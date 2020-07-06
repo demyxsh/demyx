@@ -89,7 +89,7 @@ services:
   nx_${DEMYX_APP_ID}:
     cpus: \${DEMYX_APP_WP_CPU}
     depends_on:
-      - db_${DEMYX_APP_ID}
+      - wp_${DEMYX_APP_ID}
     environment:
       - WORDPRESS=true
       - WORDPRESS_CONTAINER=\${DEMYX_APP_WP_CONTAINER}
