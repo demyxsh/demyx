@@ -32,8 +32,7 @@ README_FILEPATH="./README.md"
 
 # Acquire a token for the Docker Hub API
 echo "Acquiring token"
-LOGIN_PAYLOAD="{\"username\": \"${DEMYX_USERNAME}\", \"password\": \"${DEMYX_PASSWORD}\"}"
-TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d ${LOGIN_PAYLOAD} https://hub.docker.com/v2/users/login/ | jq -r .token)
+TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'$DEMYX_USERNAME'", "password": "'$DEMYX_PASSWORD'"}' https://hub.docker.com/v2/users/login/ | jq -r .token)
 
 # Send a PATCH request to update the description of the repository
 echo "Sending PATCH request"
