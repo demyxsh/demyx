@@ -142,25 +142,26 @@ demyx_help() {
         echo
     elif [[ "$DEMYX_HELP" = pull ]]; then
         echo
-        echo "demyx pull <args>     Enter specific image or blank to pull all"
-        echo "           demyx/browsersync"
-        echo "           demyx/code-server:openlitespeed"
-        echo "           demyx/code-server:openlitespeed-sage"
-        echo "           demyx/code-server:sage"
-        echo "           demyx/code-server:wp"
-        echo "           demyx/demyx"
-        echo "           demyx/docker-compose"
-        echo "           demyx/docker-socket-proxy"
-        echo "           demyx/logrotate"
-        echo "           demyx/mariadb"
-        echo "           demyx/nginx"
-        echo "           demyx/openlitespeed:bedrock"
-        echo "           demyx/ssh"
-        echo "           demyx/traefik"
-        echo "           demyx/utilities"
-        echo "           demyx/wordpress"
-        echo "           demyx/wordpress:bedrock"
-        echo "           demyx/wordpress:cli"
+        echo "demyx pull <args>                                 Enter specific image or demyx pull all"
+        echo "demyx pull all                                    Pull core and relevant images"
+        echo "demyx pull browsersync"
+        echo "demyx pull code-server:openlitespeed"
+        echo "demyx pull code-server:openlitespeed-sage"
+        echo "demyx pull code-server:sage"
+        echo "demyx pull code-server:wp"
+        echo "demyx pull demyx"
+        echo "demyx pull docker-compose"
+        echo "demyx pull docker-socket-proxy"
+        echo "demyx pull logrotate"
+        echo "demyx pull mariadb"
+        echo "demyx pull nginx"
+        echo "demyx pull openlitespeed:bedrock"
+        echo "demyx pull ssh"
+        echo "demyx pull traefik"
+        echo "demyx pull utilities"
+        echo "demyx pull wordpress"
+        echo "demyx pull wordpress:bedrock"
+        echo "demyx pull wordpress:cli"
         echo
     elif [[ "$DEMYX_HELP" = refresh ]]; then
         echo
@@ -208,6 +209,7 @@ demyx_help() {
         echo
         echo "demyx update          Update demyx cache"
         echo "demyx update show     Show demyx images that has an udpate"
+        echo "             -f       Force update to rebuild update cache"
         echo
     elif [[ "$DEMYX_HELP" = util ]]; then
         echo
