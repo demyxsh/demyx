@@ -279,26 +279,27 @@ elif [[ "$DEMYX_HOST" = host ]]; then
 
         for i in $DEMYX_HOST_IMAGES
         do
-            # Pull relevant code-server tags
+            # Pull relevant tags
             if [[ "$i" = code-server ]]; then
-                DEMYX_HOST_CS_IMAGES="$(docker images demyx/code-server)"
-                docker pull demyx/code-server:wp
-                [[ -n "$(echo "$DEMYX_HOST_CS_IMAGES" | grep browse || true )" ]] && docker pull demyx/code-server:browse
-                [[ -n "$(echo "$DEMYX_HOST_CS_IMAGES" | grep " sage " || true )" ]] && docker pull demyx/code-server:sage
-                [[ -n "$(echo "$DEMYX_HOST_CS_IMAGES" | grep "openlitespeed " || true )" ]] && docker pull demyx/code-server:openlitespeed
-                [[ -n "$(echo "$DEMYX_HOST_CS_IMAGES" | grep openlitespeed-sage || true )" ]] &&  docker pull demyx/code-server:openlitespeed-sage
+                docker pull demyx/code-server:browse
+                [[ -n "$(docker images demyx/code-server:openlitespeed -q)" ]] && docker pull demyx/code-server:openlitespeed
+                [[ -n "$(docker images demyx/code-server:openlitespeed-sage -q)" ]] &&  docker pull demyx/code-server:openlitespeed-sage
+                [[ -n "$(docker images demyx/code-server:sage -q)" ]] && docker pull demyx/code-server:sage
+                [[ -n "$(docker images demyx/code-server:wp -q)" ]] && docker pull demyx/code-server:wp
             else
                 docker pull demyx/"$i"
             fi
 
+            [[ "$i" = wordpress && -n "$(docker images demyx/wordpress:bedrock -q)" ]] && docker pull demyx/wordpress:bedrock
+
             # Set variable to true if there's an update for the following images: mariadb, nginx, and wordpress/wordpress:bedrock
-            [[ "$i" = mariadb || "$i" = nginx || "$i" = wordpress || "$i" = wordpress:bedrock ]] && DEMYX_HOST_IMAGE_WP_UPDATE=true
+            [[ "$i" = mariadb || "$i" = nginx || "$i" = wordpress ]] && DEMYX_HOST_IMAGE_WP_UPDATE=true
         done
 
         demyx_compose up -d --remove-orphans
 
-        # Update cache
-        docker exec -t --user=root demyx bash -c "rm /demyx/.update*; demyx update"
+        # Force update cache
+        demyx_exec update -f
 
         # Update WordPress services if true
         [[ "$DEMYX_HOST_IMAGE_WP_UPDATE" = true ]] && docker exec demyx demyx compose all up -d
