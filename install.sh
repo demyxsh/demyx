@@ -3,8 +3,8 @@
 # https://demyx.sh
 set -euo pipefail
 
+docker pull demyx/code-server:browse
 docker pull demyx/demyx
-docker pull demyx/browsersync
 docker pull demyx/docker-compose
 docker pull demyx/docker-socket-proxy
 docker pull demyx/logrotate
