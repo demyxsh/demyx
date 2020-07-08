@@ -213,22 +213,31 @@ demyx_dev_password() {
 }
 demyx_update_local() {
     echo "DEMYX_LOCAL_VERSION=$DEMYX_VERSION
-    DEMYX_LOCAL_BROWSERSYNC_VERSION=$(docker run --rm --entrypoint=browser-sync demyx/browsersync --version | sed 's/\r//g')
     DEMYX_LOCAL_CODE_VERSION=$(docker run --rm --entrypoint=code-server demyx/code-server:browse --version | awk -F '[ ]' '{print $1}' | awk '{line=$0} END{print line}' | sed 's/\r//g')
     DEMYX_LOCAL_DOCKER_COMPOSE_VERSION=$(docker run --rm --entrypoint=docker-compose demyx/docker-compose --version | awk -F '[ ]' '{print $3}' | cut -c -6 | sed 's/\r//g')
     DEMYX_LOCAL_HAPROXY_VERSION=$(docker run --rm --user=root --entrypoint=haproxy demyx/docker-socket-proxy -v | awk '{print $3}' | sed 's/\r//g')
     DEMYX_LOCAL_LOGROTATE_VERSION=$(docker run --rm --entrypoint=logrotate demyx/logrotate --version | head -n 1 | awk -F '[ ]' '{print $2}' | sed 's/\r//g')
     DEMYX_LOCAL_MARIADB_VERSION=$(docker run --rm --entrypoint=mariadb demyx/mariadb --version | awk -F '[ ]' '{print $6}' | awk -F '[,]' '{print $1}' | sed 's/-MariaDB//g' | sed 's/\r//g')
-    DEMYX_LOCAL_NGINX_VERSION=$(docker run --rm --entrypoint=nginx demyx/nginx -V 2>&1 | head -n 1 | cut -c 22- | sed 's/\r//g')
-    DEMYX_LOCAL_OPENLITESPEED_VERSION=$(docker run --rm --entrypoint=cat demyx/openlitespeed /usr/local/lsws/VERSION | sed 's/\r//g')
-    DEMYX_LOCAL_OPENLITESPEED_LSPHP_VERSION=$(docker run --rm --entrypoint=bash demyx/openlitespeed -c '/usr/local/lsws/${OPENLITESPEED_LSPHP_VERSION}/bin/lsphp -v' | head -1 | awk '{print $2}' | sed 's/\r//g')
-    DEMYX_LOCAL_OPENSSH_VERSION=$(docker run --rm --entrypoint=ssh demyx/ssh -V  2>&1 | cut -c -13 | awk -F '[_]' '{print $2}' | sed 's/\r//g')
+    DEMYX_LOCAL_NGINX_VERSION=$(docker run --rm --entrypoint=nginx demyx/nginx -V 2>&1 > /dev/null | head -n 1 | cut -c 22- | sed 's/\r//g')
     DEMYX_LOCAL_TRAEFIK_VERSION=$(docker run --rm --user=root --entrypoint=traefik demyx/traefik version | sed -n 1p | awk '{print $2}' | sed 's/\r//g')
     DEMYX_LOCAL_UTILITIES_VERSION=$(docker run --rm demyx/utilities cat /etc/debian_version | sed 's/\r//g')
     DEMYX_LOCAL_WORDPRESS_VERSION=$(docker run --rm --entrypoint=sh demyx/wordpress -c "grep '\$wp_version =' /etc/demyx/wordpress/wp-includes/version.php | cut -d\"'\" -f 2" | sed 's/\r//g')
+    DEMYX_LOCAL_WORDPRESS_BEDROCK_VERSION=$(curl -sL https://api.github.com/repos/roots/bedrock/releases/latest | jq -r '.tag_name' | sed 's/\r//g')
     DEMYX_LOCAL_WORDPRESS_CLI_VERSION=$(docker run --rm demyx/wordpress:cli --version | awk -F '[ ]' '{print $2}' | sed 's/\r//g')
-    DEMYX_LOCAL_WORDPRESS_PHP_VERSION=$(docker run --rm --entrypoint=php demyx/wordpress -v | grep cli | awk -F '[ ]' '{print $2}' | sed 's/\r//g')
-    DEMYX_LOCAL_WORDPRESS_BEDROCK_VERSION=$(curl -sL https://api.github.com/repos/roots/bedrock/releases/latest | jq -r '.tag_name' | sed 's/\r//g')" | sed "s|    ||g" > "$DEMYX"/.update_local
+    DEMYX_LOCAL_WORDPRESS_PHP_VERSION=$(docker run --rm --entrypoint=php demyx/wordpress -v | grep cli | awk -F '[ ]' '{print $2}' | sed 's/\r//g')" | sed "s|    ||g" > "$DEMYX"/.update_local
+
+    if [[ -n "$(docker images demyx/browsersync -q)" ]]; then
+        echo "DEMYX_LOCAL_BROWSERSYNC_VERSION=$(docker run --rm --entrypoint=browser-sync demyx/browsersync --version | sed 's/\r//g')" >> "$DEMYX"/.update_local
+    fi
+
+    if [[ -n "$(docker images demyx/openlitespeed -q)" ]]; then
+        echo "DEMYX_LOCAL_OPENLITESPEED_VERSION=$(docker run --rm --entrypoint=cat demyx/openlitespeed /usr/local/lsws/VERSION | sed 's/\r//g')" >> "$DEMYX"/.update_local
+        echo "DEMYX_LOCAL_OPENLITESPEED_LSPHP_VERSION=$(docker run --rm --entrypoint=bash demyx/openlitespeed -c '/usr/local/lsws/${OPENLITESPEED_LSPHP_VERSION}/bin/lsphp -v' | head -1 | awk '{print $2}' | sed 's/\r//g')"  >> "$DEMYX"/.update_local
+    fi
+
+    if [[ -n "$(docker images demyx/ssh -q)" ]]; then
+        echo "DEMYX_LOCAL_OPENSSH_VERSION=$(docker run --rm --entrypoint=ssh demyx/ssh -V  2>&1 | cut -c -13 | awk -F '[_]' '{print $2}' | sed 's/\r//g')" >> "$DEMYX"/.update_local
+    fi
 }
 demyx_update_remote() {
     for i in $DEMYX_GLOBAL_UPDATE_LIST
