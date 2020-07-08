@@ -278,21 +278,27 @@ demyx_update_image() {
     source "$DEMYX"/.update_remote
     
     # Generate image cache
-    [[ "$(echo $DEMYX_LOCAL_VERSION | sed 's|.||g')" -lt "$(echo $DEMYX_REMOTE_VERSION | sed 's|.||g')" ]] && echo "demyx" > "$DEMYX"/.update_image
-    [[ "$DEMYX_LOCAL_BROWSERSYNC_VERSION" != "$DEMYX_REMOTE_BROWSERSYNC_VERSION" ]] && echo "browsersync" >> "$DEMYX"/.update_image
-    [[ "$DEMYX_LOCAL_CODE_VERSION" != "$DEMYX_REMOTE_CODE_VERSION" ]] && echo "code-server" >> "$DEMYX"/.update_image
-    [[ "$DEMYX_LOCAL_DOCKER_COMPOSE_VERSION" != "$DEMYX_REMOTE_DOCKER_COMPOSE_VERSION" ]] && echo "docker-compose" >> "$DEMYX"/.update_image
-    [[ "$DEMYX_LOCAL_HAPROXY_VERSION" != "$DEMYX_REMOTE_HAPROXY_VERSION" ]] && echo "docker-socket-proxy" >> "$DEMYX"/.update_image
-    [[ "$DEMYX_LOCAL_LOGROTATE_VERSION" != "$DEMYX_REMOTE_LOGROTATE_VERSION" ]] && echo "logrotate" >> "$DEMYX"/.update_image
-    [[ "$DEMYX_LOCAL_MARIADB_VERSION" != "$DEMYX_REMOTE_MARIADB_VERSION" ]] && echo "mariadb" >> "$DEMYX"/.update_image
-    [[ "$DEMYX_LOCAL_NGINX_VERSION" != "$DEMYX_REMOTE_NGINX_VERSION" ]] && echo "nginx" >> "$DEMYX"/.update_image
-    [[ "$DEMYX_LOCAL_OPENLITESPEED_VERSION" != "$DEMYX_REMOTE_OPENLITESPEED_VERSION" || "$DEMYX_LOCAL_OPENLITESPEED_LSPHP_VERSION" != "$DEMYX_REMOTE_OPENLITESPEED_LSPHP_VERSION" ]] && echo "openlitespeed" >> "$DEMYX"/.update_image
-    [[ "$DEMYX_LOCAL_OPENSSH_VERSION" != "$DEMYX_REMOTE_OPENSSH_VERSION" ]] && echo "ssh" >> "$DEMYX"/.update_image
-    [[ "$DEMYX_LOCAL_TRAEFIK_VERSION" != "$DEMYX_REMOTE_TRAEFIK_VERSION" ]] && echo "traefik" >> "$DEMYX"/.update_image
-    [[ "$DEMYX_LOCAL_UTILITIES_VERSION" != "$DEMYX_REMOTE_UTILITIES_VERSION" ]] && echo "utilities" >> "$DEMYX"/.update_image
-    [[ "$DEMYX_LOCAL_WORDPRESS_VERSION" != "$DEMYX_REMOTE_WORDPRESS_VERSION" || "$DEMYX_LOCAL_WORDPRESS_PHP_VERSION" != "$DEMYX_REMOTE_WORDPRESS_PHP_VERSION" ]] && echo "wordpress" >> "$DEMYX"/.update_image
-    [[ "$DEMYX_LOCAL_WORDPRESS_CLI_VERSION" != "$DEMYX_REMOTE_WORDPRESS_CLI_VERSION" ]] && echo "wordpress:cli" >> "$DEMYX"/.update_image
-    [[ "$DEMYX_LOCAL_WORDPRESS_BEDROCK_VERSION" != "$DEMYX_REMOTE_WORDPRESS_BEDROCK_VERSION" ]] && echo "wordpress:bedrock" >> "$DEMYX"/.update_image
+    (( ${DEMYX_LOCAL_VERSION//./} < ${DEMYX_REMOTE_VERSION//./} )) && echo "demyx" > "$DEMYX"/.update_image
+    if [[ -n "$DEMYX_LOCAL_BROWSERSYNC_VERSION" ]]; then
+        (( "${DEMYX_LOCAL_BROWSERSYNC_VERSION//./}" < "${DEMYX_REMOTE_BROWSERSYNC_VERSION//./}" )) && echo "browsersync" >> "$DEMYX"/.update_image
+    fi
+    (( "${DEMYX_LOCAL_CODE_VERSION//./}" < "${DEMYX_REMOTE_CODE_VERSION//./}" )) && echo "code-server" >> "$DEMYX"/.update_image
+    (( "${DEMYX_LOCAL_DOCKER_COMPOSE_VERSION//./}" < "${DEMYX_REMOTE_DOCKER_COMPOSE_VERSION//./}" )) && echo "docker-compose" >> "$DEMYX"/.update_image
+    (( "${DEMYX_LOCAL_HAPROXY_VERSION//./}" < "${DEMYX_REMOTE_HAPROXY_VERSION//./}" )) && echo "docker-socket-proxy" >> "$DEMYX"/.update_image
+    (( "${DEMYX_LOCAL_LOGROTATE_VERSION//./}" < "${DEMYX_REMOTE_LOGROTATE_VERSION//./}" )) && echo "logrotate" >> "$DEMYX"/.update_image
+    (( "${DEMYX_LOCAL_MARIADB_VERSION//./}" < "${DEMYX_REMOTE_MARIADB_VERSION//./}" )) && echo "mariadb" >> "$DEMYX"/.update_image
+    (( "${DEMYX_LOCAL_NGINX_VERSION//./}" < "${DEMYX_REMOTE_NGINX_VERSION//./}" )) && echo "nginx" >> "$DEMYX"/.update_image
+    if [[ -n "$DEMYX_LOCAL_OPENLITESPEED_VERSION" ]]; then
+        (( "${DEMYX_LOCAL_OPENLITESPEED_VERSION//./}" < "${DEMYX_REMOTE_OPENLITESPEED_VERSION//./}" || "${DEMYX_LOCAL_OPENLITESPEED_LSPHP_VERSION//./}" < "${DEMYX_REMOTE_OPENLITESPEED_LSPHP_VERSION//./}" )) && echo "openlitespeed" >> "$DEMYX"/.update_image
+    fi
+    if [[ -n "$DEMYX_LOCAL_OPENSSH_VERSION" ]]; then
+        (( "${DEMYX_LOCAL_OPENSSH_VERSION//[.p]/}" < "${DEMYX_REMOTE_OPENSSH_VERSION//[.p]/}" )) && echo "ssh" >> "$DEMYX"/.update_image
+    fi
+    (( "${DEMYX_LOCAL_TRAEFIK_VERSION//./}" < "${DEMYX_REMOTE_TRAEFIK_VERSION//./}" )) && echo "traefik" >> "$DEMYX"/.update_image
+    (( "${DEMYX_LOCAL_UTILITIES_VERSION//./}" < "${DEMYX_REMOTE_UTILITIES_VERSION//./}" )) && echo "utilities" >> "$DEMYX"/.update_image
+    (( "${DEMYX_LOCAL_WORDPRESS_VERSION//./}" < "${DEMYX_REMOTE_WORDPRESS_VERSION//./}" || "${DEMYX_LOCAL_WORDPRESS_PHP_VERSION//./}" < "${DEMYX_REMOTE_WORDPRESS_PHP_VERSION//./}" )) && echo "wordpress" >> "$DEMYX"/.update_image
+    (( "${DEMYX_LOCAL_WORDPRESS_BEDROCK_VERSION//./}" < "${DEMYX_REMOTE_WORDPRESS_BEDROCK_VERSION//./}" )) && echo "wordpress:bedrock" >> "$DEMYX"/.update_image
+    (( "${DEMYX_LOCAL_WORDPRESS_CLI_VERSION//./}" < "${DEMYX_REMOTE_WORDPRESS_CLI_VERSION//./}" )) && echo "wordpress:cli" >> "$DEMYX"/.update_image
 }
 demyx_certificate_challenge() {
     if [[ "$DEMYX_APP_CLOUDFLARE" = true ]]; then
