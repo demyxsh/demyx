@@ -156,6 +156,7 @@ demyx_help() {
         echo "demyx pull mariadb"
         echo "demyx pull nginx"
         echo "demyx pull openlitespeed:bedrock"
+        echo "demyx pull pma"
         echo "demyx pull ssh"
         echo "demyx pull traefik"
         echo "demyx pull utilities"
