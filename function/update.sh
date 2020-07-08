@@ -28,6 +28,30 @@ demyx_update() {
         PRINT_TABLE+="WORDPRESS-BEDROCK^ $DEMYX_LOCAL_WORDPRESS_BEDROCK_VERSION^ $( (( "${DEMYX_LOCAL_WORDPRESS_BEDROCK_VERSION//./}" < "${DEMYX_REMOTE_WORDPRESS_BEDROCK_VERSION//./}" )) && echo "$DEMYX_REMOTE_WORDPRESS_BEDROCK_VERSION" )"
         demyx_execute -v demyx_table "$PRINT_TABLE"
     else
+        while :; do
+            case "$2" in
+                -f|--force)
+                    DEMYX_UPDATE_FORCE=true
+                    ;;
+                --)
+                    shift
+                    break
+                    ;;
+                -?*)
+                    printf '\e[31m[CRITICAL]\e[39m Unknown option: %s\n' "$2" >&2
+                    exit 1
+                    ;;
+                *)
+                    break
+            esac
+            shift
+        done
+
+        if [[ -n "$DEMYX_UPDATE_FORCE" ]]; then
+            demyx_echo "Force flag detected, removing old cache first"
+            demyx_execute rm -f "$DEMYX"/.update*
+        fi
+
         # Build local versions
         if [[ ! -f "$DEMYX"/.update_local ]]; then
             demyx_echo "Updating local cache"
