@@ -61,6 +61,9 @@ if [[ "$DEMYX_APP_AUTH" = true || -n "$DEMYX_RUN_AUTH" ]]; then
       - \"traefik.http.middlewares.\${DEMYX_APP_COMPOSE_PROJECT}-auth.basicauth.users=\${DEMYX_APP_AUTH_HTPASSWD}\""
 fi
 
+# Refreshing an app while in development loses the value of DEMYX_CONFIG_DEV_BASE_PATH
+[[ -z "$DEMYX_CONFIG_DEV_BASE_PATH" ]] && DEMYX_CONFIG_DEV_BASE_PATH=/demyx
+
 echo "# AUTO GENERATED
 networks:
   demyx:

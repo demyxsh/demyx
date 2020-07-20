@@ -53,6 +53,9 @@ if [[ "$DEMYX_APP_IP_WHITELIST" != false ]]; then
       - NGINX_WHITELIST_IP=$DEMYX_IP"
 fi
 
+# Refreshing an app while in development loses the value of DEMYX_CONFIG_DEV_BASE_PATH
+[[ -z "$DEMYX_CONFIG_DEV_BASE_PATH" ]] && DEMYX_CONFIG_DEV_BASE_PATH=/demyx
+
 echo "# AUTO GENERATED
 networks:
   demyx:
