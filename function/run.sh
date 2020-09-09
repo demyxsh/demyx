@@ -253,6 +253,14 @@ demyx_run() {
 
         if [[ -n "$DEMYX_RUN_CLONE" ]]; then
             if [[ "$DEMYX_RUN_CLONE_STACK" = nginx-php || "$DEMYX_RUN_CLONE_STACK" = ols ]]; then
+                demyx_echo 'Generating new wp-config.php'
+                demyx_execute demyx wp "$DEMYX_APP_DOMAIN" config create \
+                    --dbhost="$WORDPRESS_DB_HOST" \
+                    --dbname="$WORDPRESS_DB_NAME" \
+                    --dbuser="$WORDPRESS_DB_USER" \
+                    --dbpass="$WORDPRESS_DB_PASSWORD" \
+                    --force
+                
                 demyx_echo 'Installing WordPress'
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" core install \
                     --url="$DEMYX_RUN_PROTO" \
@@ -261,6 +269,11 @@ demyx_run() {
                     --admin_password="$WORDPRESS_USER_PASSWORD" \
                     --admin_email="$WORDPRESS_USER_EMAIL" \
                     --skip-email
+
+                demyx_echo 'Configuring reverse proxy'
+                demyx_execute docker run -t --rm \
+                    --volumes-from="$DEMYX_APP_WP_CONTAINER" \
+                    demyx/utilities demyx-proxy
             else
                 demyx_echo 'Installing Bedrock'
                 demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "rm -f /demyx/.env; demyx-install"
