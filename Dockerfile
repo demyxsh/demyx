@@ -45,7 +45,7 @@ ENV DEMYX_MONITOR_ENABLE                true
 ENV DEMYX_SERVER_IP                     false
 ENV DEMYX_TELEMETRY                     true
 ENV DEMYX_TRAEFIK_LOG                   INFO
-ENV DEMYX_VERSION                       1.2.2
+ENV DEMYX_VERSION                       1.2.3
 ENV DOCKER_HOST                         tcp://demyx_socket:2375
 ENV TZ                                  America/Los_Angeles
 
