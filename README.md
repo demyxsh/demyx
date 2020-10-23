@@ -48,7 +48,7 @@ bash -c "$(curl -sL https://demyx.sh/install)"
 demyx run domain.tld --cache
 
 # Create a WordPress site powered by Bedrock
-demyx run domain.tld --bedrock
+demyx run domain.tld --stack=bedrock
 ```
 
 ### Demyx Image
