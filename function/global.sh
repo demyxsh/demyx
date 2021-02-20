@@ -134,7 +134,7 @@ demyx_permission() {
     chown -R demyx:demyx "$DEMYX"
 }
 demyx_app_config() {
-    DEMYX_GET_APP="$(find "$DEMYX_APP" -name "$DEMYX_TARGET")"
+    DEMYX_GET_APP="$(find "$DEMYX_APP" -name "$DEMYX_TARGET" | head -1)"
     [[ -f "$DEMYX_GET_APP"/.env ]] && source "$DEMYX_GET_APP"/.env
 }
 demyx_app_is_up() {
