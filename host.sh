@@ -244,11 +244,22 @@ if [[ "$DEMYX_HOST" = shell ]]; then
     fi
 elif [[ "$DEMYX_HOST" = host ]]; then
     if [[ "$DEMYX_HOST_COMMAND" = edit ]]; then
-        docker run -it --rm \
-        --user=root \
-        --entrypoint=nano \
-        -v "$DEMYX_HOST_CONFIG":/tmp/.demyx \
-        demyx/demyx /tmp/.demyx
+        # Check for default editor first
+        if [[ -n "$EDITOR" ]]; then
+            "$EDITOR" "$DEMYX_HOST_CONFIG"
+        elif [[ -f "$(which nano)" ]]; then
+            nano "$DEMYX_HOST_CONFIG"
+        elif [[ -f "$(which vi)" ]]; then
+            vi "$DEMYX_HOST_CONFIG"
+        else
+            echo -en "\e[33m[WARNING]\e[39m No suitable text editors found, using demyx default ..."
+
+            docker run -it --rm \
+                --user=root \
+                --entrypoint=nano \
+                -v "$DEMYX_HOST_CONFIG":/tmp/.demyx \
+                demyx/demyx /tmp/.demyx
+        fi
     elif [[ "$DEMYX_HOST_COMMAND" = help ]]; then
         demyx_help
     elif [[ "$DEMYX_HOST_COMMAND" = install ]]; then
