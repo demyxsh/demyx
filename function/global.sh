@@ -181,7 +181,7 @@ demyx_generate_password() {
 }
 demyx_wp_check_empty() {
     DEMYX_COMMON_WP_APPS="$(ls "$DEMYX_WP")"
-    if [[ -z "$DEMYX_COMMON_WP_APPS" ]]; then
+    if [[ -z "$DEMYX_COMMON_WP_APPS" || ! -d "$DEMYX_WP" ]]; then
         if [[ "$1" = true ]]; then
             demyx_die 'There are no WordPress apps installed.'
         else
