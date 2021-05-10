@@ -277,6 +277,9 @@ demyx_update_image() {
     source "$DEMYX"/.update_local
     source "$DEMYX"/.update_remote
     
+    # Remove old images list to prevent duplicates
+    [[ -f "$DEMYX"/.update_image ]] && rm -f "$DEMYX"/.update_image
+
     # Generate image cache
     (( ${DEMYX_LOCAL_VERSION//./} < ${DEMYX_REMOTE_VERSION//./} )) && echo "demyx" > "$DEMYX"/.update_image
     if [[ -n "$DEMYX_LOCAL_BROWSERSYNC_VERSION" ]]; then
