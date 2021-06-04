@@ -47,12 +47,12 @@ demyx_config() {
     [[ -f "$DEMYX_HOST_CONFIG" ]] && source "$DEMYX_HOST_CONFIG"
     echo "DEMYX_HOST_API=${DEMYX_HOST_API:-false}
         DEMYX_HOST_AUTH_USERNAME=${DEMYX_HOST_AUTH_USERNAME:-demyx}
-        DEMYX_HOST_AUTH_PASSWORD=${DEMYX_HOST_AUTH_PASSWORD:-$(docker run -t --rm demyx/utilities uuidgen)}
+        DEMYX_HOST_AUTH_PASSWORD=${DEMYX_HOST_AUTH_PASSWORD:-$(docker run -t --rm demyx/utilities head /dev/urandom | tr -dc a-z0-9 | head -c 10 && echo)}
         DEMYX_HOST_BACKUP=${DEMYX_HOST_BACKUP:-true}
         DEMYX_HOST_BACKUP_LIMIT=${DEMYX_HOST_BACKUP_LIMIT:-30}
         DEMYX_HOST_CODE=${DEMYX_HOST_CODE:-false}
         DEMYX_HOST_CODE_DOMAIN=${DEMYX_HOST_CODE_DOMAIN:-code}
-        DEMYX_HOST_CODE_PASSWORD=${DEMYX_HOST_CODE_PASSWORD:-$(docker run -t --rm demyx/utilities uuidgen)}
+        DEMYX_HOST_CODE_PASSWORD=${DEMYX_HOST_CODE_PASSWORD:-$(docker run -t --rm demyx/utilities head /dev/urandom | tr -dc a-z0-9 | head -c 10 && echo)}
         DEMYX_HOST_CF_KEY=${DEMYX_HOST_CF_KEY:-false}
         DEMYX_HOST_CPU=${DEMYX_HOST_CPU:-.50}
         DEMYX_HOST_DOMAIN=${DEMYX_HOST_DOMAIN:-domain.tld}
