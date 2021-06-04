@@ -71,6 +71,10 @@ RUN set -ex; \
     install -d -m 0755 -o demyx -g demyx "$DEMYX_CONFIG"; \
     install -d -m 0755 -o demyx -g demyx "$DEMYX_LOG"; \
     \
+    # Update .bashrc
+    echo 'PS1="$(whoami)@\h:\w \$ "' > /home/demyx/.bashrc; \
+    echo 'PS1="$(whoami)@\h:\w \$ "' > /root/.bashrc; \
+    \
     echo "$DEMYX_HOSTNAME" /etc/hostname; \
     \
     ln -s "$DEMYX" /home/demyx; \
