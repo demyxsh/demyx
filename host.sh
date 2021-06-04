@@ -18,7 +18,7 @@ DEMYX_HOST_COMMAND="${2:-}"
 DEMYX_HOST_CONFIG="$HOME"/.demyx
 DEMYX_HOST_DOCKER_PS="$(docker ps)"
 DEMYX_HOST_DEMYX_CHECK="$(echo "$DEMYX_HOST_DOCKER_PS" | grep demyx-init | grep Up || true)"
-DEMYX_HOST_SOCKET_CHECK="$(echo "$DEMYX_HOST_DOCKER_PS" | awk '{print $NF}' | grep -w demyx_socket || true)"
+#DEMYX_HOST_SOCKET_CHECK="$(echo "$DEMYX_HOST_DOCKER_PS" | awk '{print $NF}' | grep -w demyx_socket || true)"
 
 # Update check
 if [[ -n "$DEMYX_HOST_DEMYX_CHECK" ]]; then
