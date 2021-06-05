@@ -293,9 +293,9 @@ elif [[ "$DEMYX_HOST" = host ]]; then
             # Pull relevant tags
             if [[ "$i" = code-server ]]; then
                 docker pull demyx/code-server:browse
+                [[ -n "$(docker images demyx/code-server:bedrock -q)" ]] && docker pull demyx/code-server:bedrock
                 [[ -n "$(docker images demyx/code-server:openlitespeed -q)" ]] && docker pull demyx/code-server:openlitespeed
-                [[ -n "$(docker images demyx/code-server:openlitespeed-sage -q)" ]] &&  docker pull demyx/code-server:openlitespeed-sage
-                [[ -n "$(docker images demyx/code-server:sage -q)" ]] && docker pull demyx/code-server:sage
+                [[ -n "$(docker images demyx/code-server:openlitespeed-bedrock -q)" ]] &&  docker pull demyx/code-server:openlitespeed-bedrock
                 [[ -n "$(docker images demyx/code-server:wp -q)" ]] && docker pull demyx/code-server:wp
             else
                 docker pull demyx/"$i"
