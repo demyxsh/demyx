@@ -39,7 +39,7 @@ demyx_exec() {
 demyx_compose() {
     docker run -t --rm \
     --workdir=/demyx \
-    -v /var/run/docker.sock:/var/run/docker.sock:ro \   
+    -v /var/run/docker.sock:/var/run/docker.sock:ro \
     -v demyx:/demyx \
     demyx/docker-compose "$@"
 }
