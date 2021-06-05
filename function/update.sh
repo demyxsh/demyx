@@ -30,22 +30,17 @@ demyx_update() {
         demyx_execute -v demyx_table "$PRINT_TABLE"
     else
         # Build local versions
-            demyx_echo "Updating local cache"
-            demyx_execute demyx_update_local
-        fi
+        demyx_echo "Updating local cache"
+        demyx_execute demyx_update_local
 
         # Build remote versions
-        if [[ ! -f "$DEMYX"/.update_remote ]]; then
-            demyx_echo "Updating remote cache"
-            demyx_execute demyx_update_remote
-        fi
+        demyx_echo "Updating remote cache"
+        demyx_execute demyx_update_remote
 
         # Get images that needs updating
-        if [[ ! -f "$DEMYX"/.update_image ]]; then
-            demyx_echo "Updating image cache"
-            demyx_execute demyx_update_image
-        fi
-
+        demyx_echo "Updating image cache"
+        demyx_execute demyx_update_image
+        
         # Update chroot on the host
         demyx_echo "Updating demyx helper on the host"
         demyx_execute docker run -t --rm \
