@@ -10,9 +10,9 @@ demyx_pull() {
         [[ -n "$(docker images demyx/browsersync:latest -q)" ]] && docker pull demyx/browsersync
         docker pull demyx/code-server:browse
         # Pull other variations of code-server
+        [[ -n "$(docker images demyx/code-server:bedrock -q)" ]] && docker pull demyx/code-server:bedrock
         [[ -n "$(docker images demyx/code-server:openlitespeed -q)" ]] && docker pull demyx/code-server:openlitespeed
-        [[ -n "$(docker images demyx/code-server:openlitespeed-sage -q)" ]] && docker pull demyx/code-server:openlitespeed-sage
-        [[ -n "$(docker images demyx/code-server:sage -q)" ]] && docker pull demyx/code-server:sage
+        [[ -n "$(docker images demyx/code-server:openlitespeed-bedrock -q)" ]] && docker pull demyx/code-server:openlitespeed-bedrock
         [[ -n "$(docker images demyx/code-server:wp -q)" ]] && docker pull demyx/code-server:wp
         docker pull demyx/demyx
         docker pull demyx/docker-compose
