@@ -11,7 +11,7 @@ demyx_help() {
         echo "demyx backup <app> <args>     Backup an app by domain"
         echo "             all              Backup all apps"
         echo "                   --path     Save backups to a specific path"
-        echo "                   --config    Backup only the configs"
+        echo "                   --config   Backup only the configs"
         echo
     elif [[ "$DEMYX_HELP" = compose ]]; then
         echo
@@ -24,7 +24,7 @@ demyx_help() {
         echo
     elif [[ "$DEMYX_HELP" = config ]]; then
         echo
-        echo "demyx config <app> <args>                          Configure demyx apps"
+        echo "demyx config <app> <args>                         Configure demyx apps"
         echo "             all                                  Targets all apps (only works with --restart)"
         echo "                   --auth                         Turns on/off basic auth"
         echo "                   --auth-wp                      Turns on/off basic auth for wp-login.php"
@@ -37,7 +37,8 @@ demyx_help() {
         echo "                   --dev                          Turns on/off development mode"
         echo "                   --dev-base-path                Change code-server base path"
         echo "                   --expose                       Export ports to access web endpoint, works only with --dev and --pma"
-        echo "                   --files                         BrowserSync arg: themes, plugins, or custom path"
+        echo "                   --files                        BrowserSync arg: themes, plugins, or custom path"
+        echo "                   --fix-innodb                   Back up ib_logfile files and deletes them"
         echo "                   --force                        Force config"
         echo "                   --healthcheck                  Turns on/off healthcheck for WordPress container"
         echo "                   --mem                          Change the app's container memory usage, --mem=null to remove cap"
@@ -104,7 +105,7 @@ demyx_help() {
         echo "           motd                   Show miscellaneous server data for motd"
         echo "                  --all           Show all environment info"
         echo "                  --backup        Show all backups"
-        echo "                  --filter         Filter environment variables"
+        echo "                  --filter        Filter environment variables"
         echo "                  --json          Output data in JSON"
         echo "                  --no-password   Omit passwords"
         echo "                  --no-volume     Omit volume sizes"
@@ -123,7 +124,7 @@ demyx_help() {
         echo "          api                     Show api log"
         echo "          cron                    Show cron log"
         echo "          main                    Show demyx container log, pass -e for error log"
-        echo "          traefik                  Show Traefik logs"
+        echo "          traefik                 Show Traefik logs"
         echo "          domain.tld              Show WP container logs"
         echo "                -c|--container    Show container log"
         echo "                -d|--database     Show log for MariaDB"
@@ -169,14 +170,14 @@ demyx_help() {
         echo "demyx refresh <app> <args>            Regenerate .env/.yml files of an app"
         echo "              all                     Regenerate all app's .env/.yml files"
         echo "              code                    Regenerate code-server .env/.yml files"
-        echo "              traefik                  Regenerate reverse proxy .yml"
+        echo "              traefik                 Regenerate reverse proxy .yml"
         echo "                    --skip-backup     Skip backing up config files"
         echo "                    --skip-checks     Skip regenerating other configs like auth, cache, etc."
         echo
     elif [[ "$DEMYX_HELP" = restore ]]; then
         echo
         echo "demyx restore <app> <args>        Restore an app from a backup"
-        echo "                    --config       Restore only the configs"
+        echo "                    --config      Restore only the configs"
         echo "                    --date        Restore from a specific date in format: YY/mm/dd"
         echo "                    -f|--force    Force restore"
         echo
@@ -210,7 +211,6 @@ demyx_help() {
         echo
         echo "demyx update          Update demyx cache"
         echo "demyx update show     Show demyx images that has an udpate"
-        echo "             -f       Force update to rebuild update cache"
         echo
     elif [[ "$DEMYX_HELP" = util ]]; then
         echo
@@ -231,7 +231,7 @@ demyx_help() {
         echo "demyx <arg>           Main demyx command"
         echo "      backup          Back up an app"
         echo "      compose         Accepts all docker-compose arguments"
-        echo "      config           Modifies an app's configuration"
+        echo "      config          Modifies an app's configuration"
         echo "      cp              Wrapper for docker cp"
         echo "      cron            Execute demyx cron"
         echo "      edit            Opens nano to edit .env files"
