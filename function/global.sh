@@ -226,16 +226,16 @@ demyx_update_local() {
     DEMYX_LOCAL_WORDPRESS_CLI_VERSION=$(docker run --rm demyx/wordpress:cli --version 2>&1 | awk -F '[ ]' '{print $2}' | sed 's/\r//g')
     DEMYX_LOCAL_WORDPRESS_PHP_VERSION=$(docker run --rm --entrypoint=php demyx/wordpress -v 2>&1 | grep cli | awk -F '[ ]' '{print $2}' | sed 's/\r//g')" | sed "s|    ||g" > "$DEMYX"/.update_local
 
-    if [[ -n "$(docker images demyx/browsersync -q)" ]]; then
+    if [[ -n "$(docker images demyx/browsersync:latest -q)" ]]; then
         echo "DEMYX_LOCAL_BROWSERSYNC_VERSION=$(docker run --rm --entrypoint=browser-sync demyx/browsersync --version 2>&1 | sed 's/\r//g')" >> "$DEMYX"/.update_local
     fi
 
-    if [[ -n "$(docker images demyx/openlitespeed -q)" ]]; then
+    if [[ -n "$(docker images demyx/openlitespeed:latest -q)" ]]; then
         echo "DEMYX_LOCAL_OPENLITESPEED_VERSION=$(docker run --rm --entrypoint=cat demyx/openlitespeed /usr/local/lsws/VERSION 2>&1 | sed 's/\r//g')" >> "$DEMYX"/.update_local
         echo "DEMYX_LOCAL_OPENLITESPEED_LSPHP_VERSION=$(docker run --rm --entrypoint=bash demyx/openlitespeed -c '/usr/local/lsws/lsphp74/bin/lsphp -v' 2>&1 | head -1 | awk '{print $2}' | sed 's/\r//g')" >> "$DEMYX"/.update_local
     fi
 
-    if [[ -n "$(docker images demyx/ssh -q)" ]]; then
+    if [[ -n "$(docker images demyx/ssh:latest -q)" ]]; then
         echo "DEMYX_LOCAL_OPENSSH_VERSION=$(docker run --rm --entrypoint=ssh demyx/ssh -V 2>&1 | cut -c -13 | awk -F '[_]' '{print $2}' | sed 's/\r//g')" >> "$DEMYX"/.update_local
     fi
 }
@@ -260,16 +260,16 @@ demyx_update_remote() {
     DEMYX_REMOTE_WORDPRESS_CLI_VERSION=$DEMYX_WORDPRESS_CLI_VERSION
     DEMYX_REMOTE_WORDPRESS_PHP_VERSION=$DEMYX_WORDPRESS_PHP_VERSION" | sed "s|    ||g" > "$DEMYX"/.update_remote
 
-    if [[ -n "$(docker images demyx/browsersync -q)" ]]; then
+    if [[ -n "$(docker images demyx/browsersync:latest -q)" ]]; then
         echo "DEMYX_REMOTE_BROWSERSYNC_VERSION=$DEMYX_BROWSERSYNC_VERSION" >> "$DEMYX"/.update_remote
     fi
 
-    if [[ -n "$(docker images demyx/openlitespeed -q)" ]]; then
+    if [[ -n "$(docker images demyx/openlitespeed:latest -q)" ]]; then
         echo "DEMYX_REMOTE_OPENLITESPEED_VERSION=$DEMYX_OPENLITESPEED_VERSION" >> "$DEMYX"/.update_remote
         echo "DEMYX_REMOTE_OPENLITESPEED_LSPHP_VERSION=$DEMYX_OPENLITESPEED_LSPHP_VERSION"  >> "$DEMYX"/.update_remote
     fi
 
-    if [[ -n "$(docker images demyx/ssh -q)" ]]; then
+    if [[ -n "$(docker images demyx/ssh:latest -q)" ]]; then
         echo "DEMYX_REMOTE_OPENSSH_VERSION=$DEMYX_SSH_OPENSSH_VERSION" >> "$DEMYX"/.update_remote
     fi
 }

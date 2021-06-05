@@ -7,7 +7,7 @@ demyx_pull() {
     DEMYX_PULL_IMAGE="$1"
 
     if [[ "$DEMYX_PULL_IMAGE" = all ]]; then
-        [[ -n "$(docker images demyx/browsersync -q)" ]] && docker pull demyx/browsersync
+        [[ -n "$(docker images demyx/browsersync:latest -q)" ]] && docker pull demyx/browsersync
         docker pull demyx/code-server:browse
         # Pull other variations of code-server
         [[ -n "$(docker images demyx/code-server:openlitespeed -q)" ]] && docker pull demyx/code-server:openlitespeed
@@ -20,7 +20,7 @@ demyx_pull() {
         docker pull demyx/logrotate
         docker pull demyx/mariadb
         docker pull demyx/nginx
-        [[ -n "$(docker images demyx/ssh -q)" ]] && docker pull demyx/ssh
+        [[ -n "$(docker images demyx/ssh:latest -q)" ]] && docker pull demyx/ssh
         docker pull demyx/traefik
         docker pull demyx/utilities
         docker pull demyx/wordpress

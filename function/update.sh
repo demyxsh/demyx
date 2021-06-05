@@ -6,6 +6,7 @@
 
 demyx_update() {
     if [[ "$DEMYX_TARGET" = show ]]; then
+        DEMYX_LOCAL_CHECK_OPENLITESPEED="$(docker images demyx/openlitespeed:latest -q)"
         source "$DEMYX"/.update_local
         source "$DEMYX"/.update_remote
         PRINT_TABLE="DEMYX^ CURRENT^ LATEST\n"
