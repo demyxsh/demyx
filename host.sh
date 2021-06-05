@@ -245,7 +245,7 @@ if [[ "$DEMYX_HOST" = shell ]]; then
 elif [[ "$DEMYX_HOST" = host ]]; then
     if [[ "$DEMYX_HOST_COMMAND" = edit ]]; then
         # Check for default editor first
-        if [[ -n "$EDITOR" ]]; then
+        if [[ -n "${EDITOR:-}" ]]; then
             "$EDITOR" "$DEMYX_HOST_CONFIG"
         elif [[ -f "$(which nano)" ]]; then
             nano "$DEMYX_HOST_CONFIG"
