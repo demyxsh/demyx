@@ -310,7 +310,7 @@ elif [[ "$DEMYX_HOST" = host ]]; then
         demyx_compose up -d --remove-orphans
 
         # Force update cache
-        demyx_exec update -f
+        demyx_exec update
 
         # Update WordPress services if true
         [[ "$DEMYX_HOST_IMAGE_WP_UPDATE" = true ]] && docker exec demyx demyx compose all up -d
