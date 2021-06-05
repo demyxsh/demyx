@@ -39,7 +39,7 @@ demyx_exec() {
 demyx_compose() {
     docker run -t --rm \
     --workdir=/demyx \
-    -v /var/run/docker.sock:/var/run/docker.sock:ro \
+    -v /var/run/docker.sock:/var/run/docker.sock:ro \   
     -v demyx:/demyx \
     demyx/docker-compose "$@"
 }
@@ -313,7 +313,7 @@ elif [[ "$DEMYX_HOST" = host ]]; then
         demyx_exec update
 
         # Update WordPress services if true
-        [[ "$DEMYX_HOST_IMAGE_WP_UPDATE" = true ]] && docker exec demyx demyx compose all up -d
+        [[ "$DEMYX_HOST_IMAGE_WP_UPDATE" = true ]] && docker exec demyx demyx compose all --check-db up -d
 
         # Empty out this variable to suppress update message
         DEMYX_HOST_IMAGES=
