@@ -18,18 +18,21 @@ if [[ "$DEMYX_DOMAIN" != false && "$DEMYX_API" != false ]]; then
       - \"traefik.enable=true\"
       - \"traefik.http.middlewares.demyx-auth-http.basicauth.users=\${DEMYX_YML_AUTH}\"
       - \"traefik.http.middlewares.demyx-auth-https.basicauth.users=\${DEMYX_YML_AUTH}\"
-      - \"traefik.http.routers.demyx-http.rule=Host(\`${DEMYX_API}.${DEMYX_DOMAIN}\`)\"
+      - \"traefik.http.middlewares.demyx-redirect.redirectregex.permanent=true\"
+      - \"traefik.http.middlewares.demyx-redirect.redirectregex.regex=^https?:\/\/(?:www\\\\.)?(.+)\"
+      - \"traefik.http.middlewares.demyx-redirect.redirectregex.replacement=https://\$\${1}\"
       - \"traefik.http.routers.demyx-http.entrypoints=http\"
+      - \"traefik.http.routers.demyx-http.middlewares=demyx-redirect\"
+      - \"traefik.http.routers.demyx-http.rule=Host(\`${DEMYX_API}.${DEMYX_DOMAIN}\`)\"
       - \"traefik.http.routers.demyx-http.service=demyx-http-port\"
+      - \"traefik.http.routers.demyx-https.entrypoints=https\"
       - \"traefik.http.routers.demyx-https.middlewares=demyx-auth-http\"
       - \"traefik.http.routers.demyx-https.middlewares=demyx-auth-https\"
       - \"traefik.http.routers.demyx-https.rule=Host(\`${DEMYX_API}.${DEMYX_DOMAIN}\`)\"
-      - \"traefik.http.routers.demyx-https.entrypoints=https\"
-      - \"traefik.http.routers.demyx-https.tls.certresolver=${DEMYX_YML_RESOLVER}\"
       - \"traefik.http.routers.demyx-https.service=demyx-https-port\"
-      - \"traefik.http.services.demyx-https-port.loadbalancer.server.port=8080\"
-      - \"traefik.http.routers.demyx-https.middlewares=demyx-auth\"
-      - \"traefik.http.middlewares.demyx-auth.basicauth.users=\${DEMYX_YML_AUTH}\""
+      - \"traefik.http.routers.demyx-https.tls.certresolver=${DEMYX_YML_RESOLVER}\"
+      - \"traefik.http.services.demyx-http-port.loadbalancer.server.port=8080\"
+      - \"traefik.http.services.demyx-https-port.loadbalancer.server.port=8080\""
 
       # IP whitelisting
       #- \"traefik.http.routers.demyx-https.middlewares=demyx-auth,demyx-whitelist\"
@@ -75,7 +78,7 @@ services:
     container_name: demyx
     restart: unless-stopped
     hostname: $DEMYX_HOSTNAME
-    depends_on: 
+    depends_on:
       - socket
     networks:
       - demyx
