@@ -43,7 +43,7 @@ demyx_motd() {
         - Help: demyx help
         - Bugs: github.com/demyxco/demyx/issues
         - Changelog: github.com/demyxco/demyx/blob/master/changelog/${DEMYX_VERSION}.md
-        - Chat: https://webchat.freenode.net/?channel=#demyx
+        - Chat: https://web.libera.chat/?channel=#demyx
         - Contact: info@demyx.sh
         " | sed 's/        //g'
     
