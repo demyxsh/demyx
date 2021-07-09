@@ -16,14 +16,13 @@ echo "DEMYX_YML_AUTH=$(demyx util --user=$DEMYX_AUTH_USERNAME --htpasswd=$DEMYX_
 if [[ "$DEMYX_DOMAIN" != false && "$DEMYX_API" != false ]]; then
     DEMYX_YML_LABELS="labels:
       - \"traefik.enable=true\"
+      - \"traefik.http.middlewares.demyx-auth-http.basicauth.users=\${DEMYX_YML_AUTH}\"
+      - \"traefik.http.middlewares.demyx-auth-https.basicauth.users=\${DEMYX_YML_AUTH}\"
       - \"traefik.http.routers.demyx-http.rule=Host(\`${DEMYX_API}.${DEMYX_DOMAIN}\`)\"
       - \"traefik.http.routers.demyx-http.entrypoints=http\"
       - \"traefik.http.routers.demyx-http.service=demyx-http-port\"
-      - \"traefik.http.services.demyx-http-port.loadbalancer.server.port=8080\"
-      - \"traefik.http.routers.demyx-http.middlewares=demyx-redirect\"
-      - \"traefik.http.middlewares.demyx-redirect.redirectregex.regex=^https?:\/\/(?:www\\\\.)?(.+)\"
-      - \"traefik.http.middlewares.demyx-redirect.redirectregex.replacement=https://\$\${1}\"
-      - \"traefik.http.middlewares.demyx-redirect.redirectregex.permanent=true\"
+      - \"traefik.http.routers.demyx-https.middlewares=demyx-auth-http\"
+      - \"traefik.http.routers.demyx-https.middlewares=demyx-auth-https\"
       - \"traefik.http.routers.demyx-https.rule=Host(\`${DEMYX_API}.${DEMYX_DOMAIN}\`)\"
       - \"traefik.http.routers.demyx-https.entrypoints=https\"
       - \"traefik.http.routers.demyx-https.tls.certresolver=${DEMYX_YML_RESOLVER}\"
