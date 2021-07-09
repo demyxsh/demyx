@@ -1,4 +1,4 @@
-# demyx [![Build Status](https://img.shields.io/travis/demyxco/demyx?style=flat)](https://travis-ci.org/demyxco/demyx) [![demyx](https://img.shields.io/badge/version-1.3.0-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/demyx)
+# demyx [![Build Status](https://img.shields.io/travis/demyxco/demyx?style=flat)](https://travis-ci.org/demyxco/demyx) [![demyx](https://img.shields.io/badge/version-1.3.1-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/demyx)
 
 <p align="center"><img  src="https://i.imgur.com/kwKTZHE.gif"></p>
 
