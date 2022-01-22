@@ -1,4 +1,4 @@
-# demyx [![Demyx](https://github.com/demyxsh/demyx/actions/workflows/main.yml/badge.svg)](https://github.com/demyxsh/demyx/actions/workflows/main.yml) [![Version](https://img.shields.io/badge/dynamic/json?url=https://github.com/demyxsh/demyx/raw/master/version.json&label=version&query=$.version&color=blue)](https://hub.docker.com/r/demyx/demyx)
+# demyx [![Demyx](https://github.com/demyxsh/demyx/actions/workflows/main.yml/badge.svg)](https://github.com/demyxsh/demyx/actions/workflows/main.yml) [![Version](https://img.shields.io/badge/dynamic/json?url=https://github.com/demyxsh/demyx/raw/master/version.json&label=version&query=$.demyx&color=blue)](https://hub.docker.com/r/demyx/demyx)
 
 <p align="center"><img  src="https://i.imgur.com/kwKTZHE.gif"></p>
 
