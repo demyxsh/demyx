@@ -1,0 +1,87 @@
+name: demyx/demyx
+
+on:
+  push:
+    branches:
+      - master
+  schedule:
+    - cron:  '0 0 * * 6'
+
+jobs:
+  master:
+    runs-on: ubuntu-latest
+    env:
+      DEMYX_REPOSITORY: demyx
+      DEMYX_VERSION: 1.2.1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Login
+        uses: docker/login-action@v1
+        with:
+          username: demyx
+          password: ${{ secrets.DOCKER_TOKEN }}
+      - name: Build
+        run: |
+          docker pull demyx/docker-compose
+          docker pull demyx/docker-socket-proxy
+          docker pull demyx/mariadb
+          docker pull demyx/nginx
+          docker pull demyx/traefik
+          docker pull demyx/utilities
+          docker pull demyx/wordpress
+          docker pull demyx/wordpress:cli
+          docker pull alpine
+          docker build -t demyx/${{ env.DEMYX_REPOSITORY }} .
+      - name: Test
+        id: test
+        shell: 'script -q -e -c "bash {0}"'
+        run: |
+          sudo cp host.sh /usr/local/bin/demyx
+          sudo chmod +x /usr/local/bin/demyx
+
+          echo "DEMYX_HOST_DOMAIN=demyx.app
+          DEMYX_HOST_EMAIL=info@demyx.app
+          DEMYX_HOST_AUTH_USERNAME=demyx
+          DEMYX_HOST_IP=127.0.0.1
+          DEMYX_HOST_INSTALL=false" > "$HOME"/.demyx
+
+          demyx motd
+          demyx run demyx.app
+          demyx wp demyx.app core is-installed
+
+          DEMYX_TEST="$(demyx exec demyx.app nx wget -qO- http://localhost 2>&1)"
+          if [[ "$DEMYX_TEST" == *"Hello world"* ]]; then
+            echo "All good."
+          else
+            echo "$DEMYX_TEST"
+            exit 1
+          fi
+      - name: Version
+        run: |
+          DEMYX_ALPINE_VERSION="$(docker exec --user=root ${{ env.DEMYX_REPOSITORY }} cat /etc/os-release | grep VERSION_ID | cut -c 12-)"
+          DEMYX_DOCKER_VERSION="$(docker exec --user=root ${{ env.DEMYX_REPOSITORY }} docker version | grep Version: | head -n 1 | awk -F ' ' '{print $2}')"
+          DEMYX_JQ="$(jq ".alpine = \"$DEMYX_ALPINE_VERSION\" | .demyx = \"$DEMYX_VERSION\" | .docker = \"$DEMYX_DOCKER_VERSION\"" version.json)"
+
+          # Update versions
+          echo "$DEMYX_JQ" > version.json
+          echo "DEMYX_ALPINE_VERSION=$DEMYX_ALPINE_VERSION
+          DEMYX_VERSION=$DEMYX_VERSION
+          DEMYX_DOCKER_VERSION=$DEMYX_DOCKER_VERSION" > VERSION
+      - name: Push
+        run: |
+          # Not sure why this is being created?
+          [[ -f typescript ]] && rm -f typescript
+
+          DEMYX_CHECK_STATUS="$(git status)"
+          if [[ "$DEMYX_CHECK_STATUS" != *"nothing to commit"* ]]; then
+            git config --global user.name github-actions[bot]
+            git config --global user.email github-actions[bot]@users.noreply.github.com
+            git remote set-url origin https://demyxsh:${{ secrets.DEMYX_TOKEN }}@github.com/demyxsh/${{ env.DEMYX_REPOSITORY }}
+            git add .
+            git commit -m "Scheduled Build"
+            git push
+          fi
+
+          docker push demyx/${{ env.DEMYX_REPOSITORY }}
+          docker push demyx/${{ env.DEMYX_REPOSITORY }}:${{ env.DEMYX_VERSION }}

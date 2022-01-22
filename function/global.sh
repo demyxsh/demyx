@@ -242,7 +242,7 @@ demyx_update_local() {
 demyx_update_remote() {
     for i in $DEMYX_GLOBAL_UPDATE_LIST
     do
-        curl -sL https://raw.githubusercontent.com/demyxco/"$i"/master/VERSION -o /tmp/"$i"
+        curl -sL https://raw.githubusercontent.com/demyxsh/"$i"/master/VERSION -o /tmp/"$i"
         source /tmp/"$i"
     done
 

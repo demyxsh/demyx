@@ -12,7 +12,7 @@ demyx_plugin() {
     */
     /*
     Plugin Name: Demyx Helper
-    Plugin URI: https://github.com/demyxco/demyx/blob/master/function/plugin.sh/
+    Plugin URI: https://github.com/demyxsh/demyx/blob/master/function/plugin.sh/
     Description: A collection of helper functions.
     Author: Demyx
     Version: 1.0

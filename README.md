@@ -1,15 +1,26 @@
-# demyx [![Build Status](https://img.shields.io/travis/demyxco/demyx?style=flat)](https://travis-ci.org/demyxco/demyx) [![demyx](https://img.shields.io/badge/version-1.2.1-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/demyx)
+# demyx [![Demyx](https://github.com/demyxsh/demyx/actions/workflows/main.yml/badge.svg)](https://github.com/demyxsh/demyx/actions/workflows/main.yml) [![Version](https://img.shields.io/badge/dynamic/json?url=https://github.com/demyxsh/demyx/raw/master/version.json&label=version&query=$.version&color=blue)](https://hub.docker.com/r/demyx/demyx)
 
 <p align="center"><img  src="https://i.imgur.com/kwKTZHE.gif"></p>
 
 Demyx is a Docker image that automates and manages WordPress installations. Traefik for reverse proxy with Lets Encrypt SSL/TLS. WordPress sites are powered by OpenLiteSpeed/NGINX-PHP and MariaDB.
 
+[![Code Size](https://img.shields.io/github/languages/code-size/demyxsh/demyx?style=flat&color=blue)](https://github.com/demyxsh/demyx)
+[![Repository Size](https://img.shields.io/github/repo-size/demyxsh/demyx?style=flat&color=blue)](https://github.com/demyxsh/demyx)
+[![Watches](https://img.shields.io/github/watchers/demyxsh/demyx?style=flat&color=blue)](https://github.com/demyxsh/demyx)
+[![Stars](https://img.shields.io/github/stars/demyxsh/demyx?style=flat&color=blue)](https://github.com/demyxsh/demyx)
+[![Forks](https://img.shields.io/github/forks/demyxsh/demyx?style=flat&color=blue)](https://github.com/demyxsh/demyx)
 [![Docker Pulls](https://img.shields.io/docker/pulls/demyx/demyx?style=flat&color=blue)](https://hub.docker.com/r/demyx/demyx)
 [![Architecture](https://img.shields.io/badge/linux-amd64-important?style=flat&color=blue)](https://hub.docker.com/r/demyx/demyx)
-[![Alpine](https://img.shields.io/badge/alpine-3.12.0-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/demyx)
-[![Docker Client](https://img.shields.io/badge/docker_client-19.03.12-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/demyx)
+[![Alpine](https://img.shields.io/badge/dynamic/json?url=https://github.com/demyxsh/demyx/raw/master/version.json&label=alpine&query=$.alpine&color=blue)](https://hub.docker.com/r/demyx/demyx)
+[![Docker Client](https://img.shields.io/badge/dynamic/json?url=https://github.com/demyxsh/demyx/raw/master/version.json&label=docker&query=$.docker&color=blue)](https://hub.docker.com/r/demyx/demyx)
 [![Buy Me A Coffee](https://img.shields.io/badge/buy_me_coffee-$5-informational?style=flat&color=blue)](https://www.buymeacoffee.com/VXqkQK5tb)
 [![Become a Patron!](https://img.shields.io/badge/become%20a%20patron-$5-informational?style=flat&color=blue)](https://www.patreon.com/bePatron?u=23406156)
+
+## NOTICE
+This repository has been moved to the organization [demyxsh](https://github.com/demyxsh); please update the remote URL.
+```
+git remote set-url origin git@github.com:demyxsh/demyx.git
+```
 
 ### Features
 - Everything is in containers
@@ -103,7 +114,7 @@ I have a telemetry setting that is enabled by default. It sends a curl request t
 
 If you are uncomfortable with this, then you can turn off telemetry by running the command below OR keep it turned on to show your support!
 
-* [Curl](https://github.com/demyxco/demyx/blob/master/function/cron.sh#L40)
+* [Curl](https://github.com/demyxsh/demyx/blob/master/function/cron.sh#L40)
 * [Statistics](https://demyx.sh/statistics/)
 
 ```
@@ -117,12 +128,6 @@ demyx host edit
 - [EasyEngine](https://easyengine.io/) - Using their nginx helper plugin
 
 ### Updates & Support
-[![Code Size](https://img.shields.io/github/languages/code-size/demyxco/demyx?style=flat&color=blue)](https://github.com/demyxco/demyx)
-[![Repository Size](https://img.shields.io/github/repo-size/demyxco/demyx?style=flat&color=blue)](https://github.com/demyxco/demyx)
-[![Watches](https://img.shields.io/github/watchers/demyxco/demyx?style=flat&color=blue)](https://github.com/demyxco/demyx)
-[![Stars](https://img.shields.io/github/stars/demyxco/demyx?style=flat&color=blue)](https://github.com/demyxco/demyx)
-[![Forks](https://img.shields.io/github/forks/demyxco/demyx?style=flat&color=blue)](https://github.com/demyxco/demyx)
-
 - Auto built weekly on Saturdays (America/Los_Angeles)
 - Rolling release updates
-- For support: [#demyx](https://webchat.freenode.net/?channel=#demyx)
+- For support: [#demyx](https://web.libera.chat/?channel=#demyx)
