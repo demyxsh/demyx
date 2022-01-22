@@ -32,7 +32,7 @@ jobs:
           docker pull demyx/wordpress
           docker pull demyx/wordpress:cli
           docker pull alpine
-          docker build -t demyx/${{ env.DEMYX_REPOSITORY }} .
+          docker build -t demyx/${{ env.DEMYX_REPOSITORY }} -t demyx/${{ env.DEMYX_REPOSITORY }}:${{ env.DEMYX_VERSION }} .
       - name: Test
         id: test
         shell: 'script -q -e -c "bash {0}"'
