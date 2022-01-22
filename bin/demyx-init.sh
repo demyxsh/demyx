@@ -5,9 +5,6 @@
 # Initialize files/directories
 demyx-skel &
 
-# Execute update script
-demyx update &
-
 # Refresh and bring up traefik
 demyx refresh traefik &
 

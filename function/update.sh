@@ -6,6 +6,7 @@
 
 demyx_update() {
     if [[ "$DEMYX_TARGET" = show ]]; then
+        DEMYX_LOCAL_CHECK_OPENLITESPEED="$(docker images demyx/openlitespeed:latest -q)"
         source "$DEMYX"/.update_local
         source "$DEMYX"/.update_remote
         PRINT_TABLE="DEMYX^ CURRENT^ LATEST\n"
@@ -17,8 +18,8 @@ demyx_update() {
         PRINT_TABLE+="LOGROTATE^ $DEMYX_LOCAL_LOGROTATE_VERSION^ $( (( "${DEMYX_LOCAL_LOGROTATE_VERSION//./}" < "${DEMYX_REMOTE_LOGROTATE_VERSION//./}" )) && echo "$DEMYX_REMOTE_LOGROTATE_VERSION" )\n"
         PRINT_TABLE+="MARIADB^ $DEMYX_LOCAL_MARIADB_VERSION^ $( (( "${DEMYX_LOCAL_MARIADB_VERSION//./}" < "${DEMYX_REMOTE_MARIADB_VERSION//./}" )) && echo "$DEMYX_REMOTE_MARIADB_VERSION" )\n"
         PRINT_TABLE+="NGINX^ $DEMYX_LOCAL_NGINX_VERSION^ $( (( "${DEMYX_LOCAL_NGINX_VERSION//./}" < "${DEMYX_REMOTE_NGINX_VERSION//./}" )) && echo "$DEMYX_REMOTE_NGINX_VERSION" )\n"
-        [[ -n "$DEMYX_LOCAL_OPENLITESPEED_VERSION" ]] && PRINT_TABLE+="OPENLITESPEED^ $DEMYX_LOCAL_OPENLITESPEED_VERSION^ $( (( "${DEMYX_LOCAL_OPENLITESPEED_VERSION//./}" < "${DEMYX_REMOTE_OPENLITESPEED_VERSION//./}" )) && echo "$DEMYX_REMOTE_OPENLITESPEED_VERSION" )\n"
-        [[ -n "$DEMYX_LOCAL_OPENLITESPEED_VERSION" ]] && PRINT_TABLE+="OPENLITESPEED-LSPHP^ $DEMYX_LOCAL_OPENLITESPEED_LSPHP_VERSION^ $( (( "${DEMYX_LOCAL_OPENLITESPEED_LSPHP_VERSION//./}" < "${DEMYX_REMOTE_OPENLITESPEED_LSPHP_VERSION//./}" )) && echo "$DEMYX_REMOTE_OPENLITESPEED_LSPHP_VERSION" )\n"
+        [[ -n "$DEMYX_LOCAL_OPENLITESPEED_VERSION" && -n "$DEMYX_LOCAL_CHECK_OPENLITESPEED" ]] && PRINT_TABLE+="OPENLITESPEED^ $DEMYX_LOCAL_OPENLITESPEED_VERSION^ $( (( "${DEMYX_LOCAL_OPENLITESPEED_VERSION//./}" < "${DEMYX_REMOTE_OPENLITESPEED_VERSION//./}" )) && echo "$DEMYX_REMOTE_OPENLITESPEED_VERSION" )\n"
+        [[ -n "$DEMYX_LOCAL_OPENLITESPEED_VERSION" && -n "$DEMYX_LOCAL_CHECK_OPENLITESPEED" ]] && PRINT_TABLE+="OPENLITESPEED-LSPHP^ $DEMYX_LOCAL_OPENLITESPEED_LSPHP_VERSION^ $( (( "${DEMYX_LOCAL_OPENLITESPEED_LSPHP_VERSION//./}" < "${DEMYX_REMOTE_OPENLITESPEED_LSPHP_VERSION//./}" )) && echo "$DEMYX_REMOTE_OPENLITESPEED_LSPHP_VERSION" )\n"
         [[ -n "$DEMYX_LOCAL_OPENSSH_VERSION" ]] && PRINT_TABLE+="SSH^ $DEMYX_LOCAL_OPENSSH_VERSION^ $( (( "${DEMYX_LOCAL_OPENSSH_VERSION//[.p]/}" < "${DEMYX_REMOTE_OPENSSH_VERSION//[.p]/}" )) && echo "$DEMYX_REMOTE_OPENSSH_VERSION" )\n"
         PRINT_TABLE+="TRAEFIK^ $DEMYX_LOCAL_TRAEFIK_VERSION^ $( (( "${DEMYX_LOCAL_TRAEFIK_VERSION//./}" < "${DEMYX_REMOTE_TRAEFIK_VERSION//./}" )) && echo "$DEMYX_REMOTE_TRAEFIK_VERSION" )\n"
         PRINT_TABLE+="UTILITIES^ $DEMYX_LOCAL_UTILITIES_VERSION^ $( (( "${DEMYX_LOCAL_UTILITIES_VERSION//./}" < "${DEMYX_REMOTE_UTILITIES_VERSION//./}" )) && echo "$DEMYX_REMOTE_UTILITIES_VERSION" )\n"
@@ -28,48 +29,18 @@ demyx_update() {
         PRINT_TABLE+="WORDPRESS-BEDROCK^ $DEMYX_LOCAL_WORDPRESS_BEDROCK_VERSION^ $( (( "${DEMYX_LOCAL_WORDPRESS_BEDROCK_VERSION//./}" < "${DEMYX_REMOTE_WORDPRESS_BEDROCK_VERSION//./}" )) && echo "$DEMYX_REMOTE_WORDPRESS_BEDROCK_VERSION" )"
         demyx_execute -v demyx_table "$PRINT_TABLE"
     else
-        while :; do
-            case "$2" in
-                -f|--force)
-                    DEMYX_UPDATE_FORCE=true
-                    ;;
-                --)
-                    shift
-                    break
-                    ;;
-                -?*)
-                    printf '\e[31m[CRITICAL]\e[39m Unknown option: %s\n' "$2" >&2
-                    exit 1
-                    ;;
-                *)
-                    break
-            esac
-            shift
-        done
-
-        if [[ -n "$DEMYX_UPDATE_FORCE" ]]; then
-            demyx_echo "Force flag detected, removing old cache first"
-            demyx_execute rm -f "$DEMYX"/.update*
-        fi
-
         # Build local versions
-        if [[ ! -f "$DEMYX"/.update_local ]]; then
-            demyx_echo "Updating local cache"
-            demyx_execute demyx_update_local
-        fi
+        demyx_echo "Updating local cache"
+        demyx_execute demyx_update_local
 
         # Build remote versions
-        if [[ ! -f "$DEMYX"/.update_remote ]]; then
-            demyx_echo "Updating remote cache"
-            demyx_execute demyx_update_remote
-        fi
+        demyx_echo "Updating remote cache"
+        demyx_execute demyx_update_remote
 
         # Get images that needs updating
-        if [[ ! -f "$DEMYX"/.update_image ]]; then
-            demyx_echo "Updating image cache"
-            demyx_execute demyx_update_image
-        fi
-
+        demyx_echo "Updating image cache"
+        demyx_execute demyx_update_image
+        
         # Update chroot on the host
         demyx_echo "Updating demyx helper on the host"
         demyx_execute docker run -t --rm \

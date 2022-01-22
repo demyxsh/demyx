@@ -1,20 +1,38 @@
 # Demyx
 # https://demyx.sh
-# 
+#
 # demyx compose <app> <args> <docker-compose args>
 #
 demyx_compose() {
     demyx_app_config
 
     DEMYX_COMPOSE="$1"
+    DEMYX_COMPOSE_CHECK_DB="$2" # Checks for --check-db flag
 
     if [[ "$DEMYX_TARGET" = all ]]; then
-        shift
+        if [[ "$DEMYX_COMPOSE_CHECK_DB" = --check-db ]]; then
+            shift 2
+        else
+            shift
+        fi
+
         cd "$DEMYX_WP" || exit
         for i in *
         do
-            [[ ! -d "$DEMYX_WP"/"$i" || -z "$(echo "$DEMYX_DOCKER_PS" | grep "$(demyx info "$i" --filter=DEMYX_APP_WP_CONTAINER)" || true)" ]] && continue
+            DEMYX_TARGET="$i"
+            demyx_app_config
+
+            [[ ! -d "$DEMYX_WP"/"$i" || -z "$DEMYX_APP_WP_CONTAINER" ]] && continue
+
             demyx compose "$i" "$@"
+
+            if [[ "$DEMYX_COMPOSE_CHECK_DB" = --check-db ]]; then
+                DEMYX_COMPOSE_CHECK_DB_CONTAINER="$(docker inspect --format='{{.State.Status}}' "$DEMYX_APP_DB_CONTAINER")"
+
+                if [[ "$DEMYX_COMPOSE_CHECK_DB_CONTAINER" != running ]]; then
+                    demyx config "$i" --fix-innodb
+                fi
+            fi
         done
     elif [[ "$DEMYX_APP_TYPE" = wp ]]; then
         [[ ! -d "$DEMYX_WP"/"$DEMYX_APP_DOMAIN" ]] && demyx_die --not-found

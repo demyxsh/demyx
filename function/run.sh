@@ -1,9 +1,14 @@
 # Demyx
 # https://demyx.sh
-# 
+#
 # demyx run <app> <args>
 #
 demyx_run() {
+    # Make sure domain isn't a flag
+    if [[ "$2" == *"--"*"="* ]]; then
+        demyx_die "$2 isn't a valid domain"
+    fi
+
     while :; do
         case "$3" in
             --archive=?*)
@@ -94,7 +99,7 @@ demyx_run() {
 
     DEMYX_RUN_CHECK="$(find "$DEMYX_APP" -name "$DEMYX_TARGET" || true)"
     DEMYX_RUN_TODAYS_DATE="$(date +%Y-%m-%d)"
-    
+
     if [[ ! -f "$DEMYX_BACKUP_WP"/"$DEMYX_TARGET"/"$DEMYX_RUN_TODAYS_DATE"-"$DEMYX_RUN_ARCHIVE".tgz && -n "$DEMYX_RUN_ARCHIVE" ]]; then
         demyx_die "${DEMYX_BACKUP_WP}/${DEMYX_TARGET}/${DEMYX_RUN_TODAYS_DATE}-${DEMYX_RUN_ARCHIVE}.tgz doesn't exist"
     fi
@@ -128,7 +133,7 @@ demyx_run() {
     DEMYX_RUN_AUTH="${DEMYX_RUN_AUTH:-false}"
     DEMYX_RUN_CLOUDFLARE="${DEMYX_RUN_CLOUDFLARE:-false}"
     DEMYX_RUN_WHITELIST="${DEMYX_RUN_WHITELIST:-false}"
-    
+
     [[ -n "$DEMYX_RUN_CLONE" ]] && DEMYX_RUN_CLONE_APP="$(demyx info "$DEMYX_RUN_CLONE" --filter=DEMYX_APP_WP_CONTAINER)"
 
     if [[ "$DEMYX_RUN_STACK" = bedrock ]]; then
@@ -142,10 +147,10 @@ demyx_run() {
         DEMYX_RUN_STACK=nginx-php
     fi
 
-    if [[ "$DEMYX_RUN_SSL" = true ]]; then 
+    if [[ "$DEMYX_RUN_SSL" = true ]]; then
         DEMYX_RUN_SSL=true
         DEMYX_RUN_PROTO="https://$DEMYX_TARGET"
-    elif [[ "$DEMYX_RUN_SSL" = false ]]; then 
+    elif [[ "$DEMYX_RUN_SSL" = false ]]; then
         DEMYX_RUN_SSL=false
         DEMYX_RUN_PROTO="$DEMYX_TARGET"
     else
@@ -182,7 +187,7 @@ demyx_run() {
         if [[ -n "$DEMYX_RUN_CLONE" ]]; then
             demyx_echo 'Cloning database'
             demyx_execute demyx wp "$DEMYX_RUN_CLONE" db export /demyx/clone.sql
-            
+
             demyx_echo 'Cloning files'
             demyx_execute docker cp "$DEMYX_RUN_CLONE_APP":/demyx "$DEMYX_APP_PATH"
 
@@ -198,7 +203,7 @@ demyx_run() {
 
         demyx_echo 'Creating log volume'
         demyx_execute docker volume create wp_"$DEMYX_APP_ID"_log
-        
+
         demyx compose "$DEMYX_APP_DOMAIN" up -d db_"$DEMYX_APP_ID"
 
         if [[ -z "$DEMYX_RUN_SKIP_INIT" ]]; then
@@ -213,13 +218,13 @@ demyx_run() {
                 --network demyx \
                 -v wp_"$DEMYX_APP_ID":/demyx \
                 demyx/utilities sh
-            
+
             if [[ "$DEMYX_RUN_CLONE_STACK" = nginx-php || "$DEMYX_RUN_CLONE_STACK" = ols ]]; then
                 demyx_echo 'Removing old wp-config.php'
                 demyx_execute rm -f "$DEMYX_APP_PATH"/demyx/wp-config.php
             fi
 
-            demyx_echo 'Copying files' 
+            demyx_echo 'Copying files'
             demyx_execute docker cp "$DEMYX_APP_PATH"/demyx "$DEMYX_APP_ID":/
 
             demyx_echo 'Stopping temporary container'
@@ -229,7 +234,7 @@ demyx_run() {
         if [[ -n "$DEMYX_RUN_ARCHIVE" ]]; then
             demyx_echo 'Extracting archive'
             demyx_execute tar -xzf "$DEMYX_BACKUP_WP"/"$DEMYX_TARGET"/"$DEMYX_RUN_TODAYS_DATE"-"$DEMYX_RUN_ARCHIVE".tgz -C "$DEMYX_BACKUP_WP"/"$DEMYX_APP_DOMAIN"
-            
+
             demyx_echo 'Creating temporary container'
             demyx_execute docker run -dt --rm \
                 --name "$DEMYX_APP_ID" \
@@ -238,7 +243,7 @@ demyx_run() {
                 -v wp_"$DEMYX_APP_ID"_log:/var/log/demyx \
                 demyx/utilities sh
 
-            demyx_echo 'Copying files' 
+            demyx_echo 'Copying files'
             demyx_execute docker cp "$DEMYX_BACKUP_WP"/"$DEMYX_APP_DOMAIN"/"$DEMYX_RUN_ARCHIVE"/demyx-wp/. "$DEMYX_APP_ID":/demyx; \
                 docker cp "$DEMYX_BACKUP_WP"/"$DEMYX_APP_DOMAIN"/"$DEMYX_RUN_ARCHIVE"/demyx-log/. "$DEMYX_APP_ID":/var/log/demyx
 
@@ -253,6 +258,14 @@ demyx_run() {
 
         if [[ -n "$DEMYX_RUN_CLONE" ]]; then
             if [[ "$DEMYX_RUN_CLONE_STACK" = nginx-php || "$DEMYX_RUN_CLONE_STACK" = ols ]]; then
+                demyx_echo 'Generating new wp-config.php'
+                demyx_execute demyx wp "$DEMYX_APP_DOMAIN" config create \
+                    --dbhost="$WORDPRESS_DB_HOST" \
+                    --dbname="$WORDPRESS_DB_NAME" \
+                    --dbuser="$WORDPRESS_DB_USER" \
+                    --dbpass="$WORDPRESS_DB_PASSWORD" \
+                    --force
+
                 demyx_echo 'Installing WordPress'
                 demyx_execute demyx wp "$DEMYX_APP_DOMAIN" core install \
                     --url="$DEMYX_RUN_PROTO" \
@@ -261,6 +274,11 @@ demyx_run() {
                     --admin_password="$WORDPRESS_USER_PASSWORD" \
                     --admin_email="$WORDPRESS_USER_EMAIL" \
                     --skip-email
+
+                demyx_echo 'Configuring reverse proxy'
+                demyx_execute docker run -t --rm \
+                    --volumes-from="$DEMYX_APP_WP_CONTAINER" \
+                    demyx/utilities demyx-proxy
             else
                 demyx_echo 'Installing Bedrock'
                 demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "rm -f /demyx/.env; demyx-install"
@@ -274,7 +292,7 @@ demyx_run() {
                 --role=administrator \
                 --user_pass="$WORDPRESS_USER_PASSWORD"
 
-            demyx_echo 'Replacing old URLs' 
+            demyx_echo 'Replacing old URLs'
             demyx_execute demyx wp "$DEMYX_APP_DOMAIN" search-replace "$DEMYX_RUN_CLONE" "$DEMYX_APP_DOMAIN"
 
             demyx_echo 'Configuring permalinks'
@@ -286,7 +304,7 @@ demyx_run() {
             demyx_echo 'Cleaning up'
             demyx_execute rm -rf "$DEMYX_APP_PATH"/demyx
         elif [[ -n "$DEMYX_RUN_ARCHIVE" ]]; then
-            demyx_echo 'Creating new wp-config.php' 
+            demyx_echo 'Creating new wp-config.php'
             demyx_execute demyx wp "$DEMYX_APP_DOMAIN" config create \
                 --dbhost="$WORDPRESS_DB_HOST" \
                 --dbname="$WORDPRESS_DB_NAME" \
@@ -298,7 +316,7 @@ demyx_run() {
                 --volumes-from="$DEMYX_APP_WP_CONTAINER" \
                 demyx/utilities demyx-proxy
 
-            demyx_echo 'Installing WordPress' 
+            demyx_echo 'Installing WordPress'
             demyx_execute demyx wp "$DEMYX_APP_DOMAIN" core install \
                 --url="$DEMYX_RUN_PROTO" \
                 --title="$DEMYX_APP_DOMAIN" \
@@ -307,7 +325,7 @@ demyx_run() {
                 --admin_email="$WORDPRESS_USER_EMAIL" \
                 --skip-email
 
-            demyx_echo 'Importing archive database' 
+            demyx_echo 'Importing archive database'
             demyx_execute demyx wp "$DEMYX_APP_DOMAIN" db import "${DEMYX_RUN_ARCHIVE//./_}".sql
 
             demyx_echo 'Creating admin account'
@@ -315,7 +333,7 @@ demyx_run() {
                 --role=administrator \
                 --user_pass="$WORDPRESS_USER_PASSWORD"
 
-            demyx_echo 'Replacing old URLs' 
+            demyx_echo 'Replacing old URLs'
             demyx_execute demyx wp "$DEMYX_APP_DOMAIN" search-replace "$DEMYX_RUN_ARCHIVE" "$DEMYX_APP_DOMAIN"
 
             demyx_echo 'Configuring permalinks'
@@ -347,7 +365,7 @@ demyx_run() {
             DEMYX_RUN_CLONE_ENV_AUTH_CHECK="$(demyx info "$DEMYX_RUN_CLONE" --filter=DEMYX_APP_AUTH)"
             DEMYX_RUN_CLONE_ENV_CACHE_CHECK="$(demyx info "$DEMYX_RUN_CLONE" --filter=DEMYX_APP_CACHE)"
             DEMYX_RUN_CLONE_ENV_WHITELIST_CHECK="$(demyx info "$DEMYX_RUN_CLONE" --filter=DEMYX_APP_IP_WHITELIST)"
-            
+
             [[ "$DEMYX_RUN_CLONE_ENV_CACHE_CHECK" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --cache && DEMYX_RUN_CACHE=true
             [[ "$DEMYX_RUN_CLONE_ENV_AUTH_CHECK" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --auth && DEMYX_RUN_AUTH=true
             [[ "$DEMYX_RUN_CLONE_ENV_WHITELIST_CHECK" != false ]] && demyx config "$DEMYX_APP_DOMAIN" --whitelist="$DEMYX_RUN_WHITELIST" && DEMYX_RUN_WHITELIST="$DEMYX_RUN_CLONE_ENV_WHITELIST_CHECK"
@@ -382,7 +400,7 @@ demyx_run() {
         PRINT_TABLE+="WORDPRESS PASSWORD^ $WORDPRESS_USER_PASSWORD\n"
         PRINT_TABLE+="WORDPRESS EMAIL^ $WORDPRESS_USER_EMAIL\n"
         PRINT_TABLE+="^\n"
-        
+
         if [[ "$DEMYX_RUN_STACK" = nginx-php || "$DEMYX_RUN_STACK" = bedrock ]]; then
             PRINT_TABLE+="NX CONTAINER^ $DEMYX_APP_NX_CONTAINER\n"
         fi

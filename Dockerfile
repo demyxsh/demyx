@@ -45,7 +45,7 @@ ENV DEMYX_MONITOR_ENABLE                true
 ENV DEMYX_SERVER_IP                     false
 ENV DEMYX_TELEMETRY                     true
 ENV DEMYX_TRAEFIK_LOG                   INFO
-ENV DEMYX_VERSION                       1.2.1
+ENV DEMYX_VERSION                       1.3.1
 ENV DOCKER_HOST                         tcp://demyx_socket:2375
 ENV TZ                                  America/Los_Angeles
 
@@ -70,6 +70,10 @@ RUN set -ex; \
     install -d -m 0755 -o demyx -g demyx "$DEMYX"; \
     install -d -m 0755 -o demyx -g demyx "$DEMYX_CONFIG"; \
     install -d -m 0755 -o demyx -g demyx "$DEMYX_LOG"; \
+    \
+    # Update .bashrc
+    echo 'PS1="$(whoami)@\h:\w \$ "' > /home/demyx/.bashrc; \
+    echo 'PS1="$(whoami)@\h:\w \$ "' > /root/.bashrc; \
     \
     echo "$DEMYX_HOSTNAME" /etc/hostname; \
     \

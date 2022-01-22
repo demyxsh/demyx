@@ -18,7 +18,7 @@ DEMYX_HOST_COMMAND="${2:-}"
 DEMYX_HOST_CONFIG="$HOME"/.demyx
 DEMYX_HOST_DOCKER_PS="$(docker ps)"
 DEMYX_HOST_DEMYX_CHECK="$(echo "$DEMYX_HOST_DOCKER_PS" | grep demyx-init | grep Up || true)"
-DEMYX_HOST_SOCKET_CHECK="$(echo "$DEMYX_HOST_DOCKER_PS" | awk '{print $NF}' | grep -w demyx_socket || true)"
+#DEMYX_HOST_SOCKET_CHECK="$(echo "$DEMYX_HOST_DOCKER_PS" | awk '{print $NF}' | grep -w demyx_socket || true)"
 
 # Update check
 if [[ -n "$DEMYX_HOST_DEMYX_CHECK" ]]; then
@@ -47,12 +47,12 @@ demyx_config() {
     [[ -f "$DEMYX_HOST_CONFIG" ]] && source "$DEMYX_HOST_CONFIG"
     echo "DEMYX_HOST_API=${DEMYX_HOST_API:-false}
         DEMYX_HOST_AUTH_USERNAME=${DEMYX_HOST_AUTH_USERNAME:-demyx}
-        DEMYX_HOST_AUTH_PASSWORD=${DEMYX_HOST_AUTH_PASSWORD:-$(docker run -t --rm demyx/utilities uuidgen)}
+        DEMYX_HOST_AUTH_PASSWORD=${DEMYX_HOST_AUTH_PASSWORD:-$(docker run -t --rm demyx/utilities head /dev/urandom | tr -dc a-z0-9 | head -c 10 && echo)}
         DEMYX_HOST_BACKUP=${DEMYX_HOST_BACKUP:-true}
         DEMYX_HOST_BACKUP_LIMIT=${DEMYX_HOST_BACKUP_LIMIT:-30}
         DEMYX_HOST_CODE=${DEMYX_HOST_CODE:-false}
         DEMYX_HOST_CODE_DOMAIN=${DEMYX_HOST_CODE_DOMAIN:-code}
-        DEMYX_HOST_CODE_PASSWORD=${DEMYX_HOST_CODE_PASSWORD:-$(docker run -t --rm demyx/utilities uuidgen)}
+        DEMYX_HOST_CODE_PASSWORD=${DEMYX_HOST_CODE_PASSWORD:-$(docker run -t --rm demyx/utilities head /dev/urandom | tr -dc a-z0-9 | head -c 10 && echo)}
         DEMYX_HOST_CF_KEY=${DEMYX_HOST_CF_KEY:-false}
         DEMYX_HOST_CPU=${DEMYX_HOST_CPU:-.50}
         DEMYX_HOST_DOMAIN=${DEMYX_HOST_DOMAIN:-domain.tld}
@@ -244,11 +244,22 @@ if [[ "$DEMYX_HOST" = shell ]]; then
     fi
 elif [[ "$DEMYX_HOST" = host ]]; then
     if [[ "$DEMYX_HOST_COMMAND" = edit ]]; then
-        docker run -it --rm \
-        --user=root \
-        --entrypoint=nano \
-        -v "$DEMYX_HOST_CONFIG":/tmp/.demyx \
-        demyx/demyx /tmp/.demyx
+        # Check for default editor first
+        if [[ -n "${EDITOR:-}" ]]; then
+            "$EDITOR" "$DEMYX_HOST_CONFIG"
+        elif [[ -f "$(which nano)" ]]; then
+            nano "$DEMYX_HOST_CONFIG"
+        elif [[ -f "$(which vi)" ]]; then
+            vi "$DEMYX_HOST_CONFIG"
+        else
+            echo -en "\e[33m[WARNING]\e[39m No suitable text editors found, using demyx default ..."
+
+            docker run -it --rm \
+                --user=root \
+                --entrypoint=nano \
+                -v "$DEMYX_HOST_CONFIG":/tmp/.demyx \
+                demyx/demyx /tmp/.demyx
+        fi
     elif [[ "$DEMYX_HOST_COMMAND" = help ]]; then
         demyx_help
     elif [[ "$DEMYX_HOST_COMMAND" = install ]]; then
@@ -282,9 +293,9 @@ elif [[ "$DEMYX_HOST" = host ]]; then
             # Pull relevant tags
             if [[ "$i" = code-server ]]; then
                 docker pull demyx/code-server:browse
+                [[ -n "$(docker images demyx/code-server:bedrock -q)" ]] && docker pull demyx/code-server:bedrock
                 [[ -n "$(docker images demyx/code-server:openlitespeed -q)" ]] && docker pull demyx/code-server:openlitespeed
-                [[ -n "$(docker images demyx/code-server:openlitespeed-sage -q)" ]] &&  docker pull demyx/code-server:openlitespeed-sage
-                [[ -n "$(docker images demyx/code-server:sage -q)" ]] && docker pull demyx/code-server:sage
+                [[ -n "$(docker images demyx/code-server:openlitespeed-bedrock -q)" ]] &&  docker pull demyx/code-server:openlitespeed-bedrock
                 [[ -n "$(docker images demyx/code-server:wp -q)" ]] && docker pull demyx/code-server:wp
             else
                 docker pull demyx/"$i"
@@ -299,10 +310,10 @@ elif [[ "$DEMYX_HOST" = host ]]; then
         demyx_compose up -d --remove-orphans
 
         # Force update cache
-        demyx_exec update -f
+        demyx_exec update
 
         # Update WordPress services if true
-        [[ "$DEMYX_HOST_IMAGE_WP_UPDATE" = true ]] && docker exec demyx demyx compose all up -d
+        [[ "$DEMYX_HOST_IMAGE_WP_UPDATE" = true ]] && docker exec demyx demyx compose all --check-db up -d
 
         # Empty out this variable to suppress update message
         DEMYX_HOST_IMAGES=
