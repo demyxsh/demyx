@@ -75,11 +75,12 @@ jobs:
 
           DEMYX_CHECK_STATUS="$(git status)"
           if [[ "$DEMYX_CHECK_STATUS" != *"nothing to commit"* ]]; then
+            DEMYX_RANDOM_QUOTE="$(curl -s "https://api.quotable.io/random?tags=technology" | jq -r '. | "\"\(.content)\" - \(.author)"')"
             git config --global user.name github-actions[bot]
             git config --global user.email github-actions[bot]@users.noreply.github.com
             git remote set-url origin https://demyxsh:${{ secrets.DEMYX_TOKEN }}@github.com/demyxsh/${{ env.DEMYX_REPOSITORY }}
             git add .
-            git commit -m "Scheduled Build"
+            git commit -m "${DEMYX_RANDOM_QUOTE:-Scheduled Build}"
             git push
           fi
 
