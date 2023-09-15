@@ -17,14 +17,18 @@ demyx_compose() {
         ;;
     esac
 }
+#
+#   Loop for demyx_compose_app.
+#
+demyx_compose_all() {
+    local DEMYX_COMPOSE_ALL=
 
-        cd "$DEMYX_WP" || exit
-        for i in *
-        do
-            DEMYX_TARGET="$i"
-            demyx_app_config
+    cd "$DEMYX_WP" || exit
 
-            [[ ! -d "$DEMYX_WP"/"$i" || -z "$DEMYX_APP_WP_CONTAINER" ]] && continue
+    for DEMYX_COMPOSE_ALL in *; do
+        eval demyx_compose "$DEMYX_COMPOSE_ALL" "$DEMYX_COMPOSE_ARGS"
+    done
+}
 
             demyx compose "$i" "$@"
 
