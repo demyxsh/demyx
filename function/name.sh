@@ -22,8 +22,14 @@ demyx_name() {
 
 	echo "${DEMYX_NAME_LEFT}_${DEMYX_NAME_RIGHT}"
 }
+#
+#	Randomly spits out adjective words from the array.
+#
 demyx_name_adjectives() {
-    IFS=$'\r\n' GLOBIGNORE='*' command eval 'DEMYX_NAME_ADJECTIVES=(admiring
+	local DEMYX_NAME_ADJECTIVES=
+	local DEMYX_NAME_ADJECTIVES_RANDOM=
+
+    DEMYX_NAME_ADJECTIVES=(admiring
         adoring
         affectionate
         agitated
@@ -130,10 +136,10 @@ demyx_name_adjectives() {
         xenodochial
         youthful
         zealous
-        zen)'
-    DEMYX_NAME_ADJECTIVES_COUNT="${#DEMYX_NAME_ADJECTIVES[@]}"
-    DEMYX_NAME_ADJECTIVES_RANDOM="$(((RANDOM % "$DEMYX_NAME_ADJECTIVES_COUNT")+1))"
-    echo "${DEMYX_NAME_ADJECTIVES[$DEMYX_NAME_ADJECTIVES_RANDOM]}"
+        zen)
+
+    DEMYX_NAME_ADJECTIVES_RANDOM="$(demyx_name_randomizer "${DEMYX_NAME_ADJECTIVES[@]}")"
+	echo "$DEMYX_NAME_ADJECTIVES_RANDOM"
 }
 
 demyx_name_sur() {
