@@ -457,9 +457,14 @@ demyx_notification() {
         demyx_smtp "$DEMYX_NOTIFICATION" "$DEMYX_NOTIFICATION_BODY"
     fi
 }
+#
+#   Checks if stack is ols and then exits.
+#
+demyx_ols_not_supported() {
+    demyx_app_env wp DEMYX_APP_STACK
 
-    if [[ -n "$(docker images demyx/ssh:latest -q)" ]]; then
-        echo "DEMYX_REMOTE_OPENSSH_VERSION=$DEMYX_SSH_OPENSSH_VERSION" >> "$DEMYX"/.update_remote
+    if [[ "$DEMYX_APP_STACK" = ols || "$DEMYX_APP_STACK" = ols-bedrock ]]; then
+        demyx_error custom "OpenLiteSpeed doesn't support that feature"
     fi
 }
 demyx_update_image() {
