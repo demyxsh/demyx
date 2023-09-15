@@ -171,14 +171,19 @@ demyx_backup_app() {
             rm -rf ${DEMYX_TMP}/${DEMYX_APP_DOMAIN}"
     fi
 }
+#
+#   Backup config only.
+#
+demyx_backup_config() {
+    demyx_app_env wp DEMYX_APP_DOMAIN
 
-                demyx_echo 'Backing up configs'
-                demyx_execute tar -czf "$DEMYX_BACKUP"/config/"$DEMYX_APP_DOMAIN".tgz -C "$DEMYX_WP" "$DEMYX_APP_DOMAIN"
-            else
-                [[ ! -d "$DEMYX_BACKUP_WP"/"$DEMYX_APP_DOMAIN" ]] && mkdir -p "$DEMYX_BACKUP_WP"/"$DEMYX_APP_DOMAIN"
+    if [[ ! -d "$DEMYX_BACKUP"/config ]]; then
+        demyx_execute false "mkdir -p ${DEMYX_BACKUP}/config"
+    fi
 
-                demyx_echo 'Exporting database'
-                demyx_execute demyx wp "$DEMYX_APP_DOMAIN" db export "$DEMYX_APP_CONTAINER".sql
+    demyx_execute "Backing up configs" \
+        "tar -czf ${DEMYX_BACKUP}/config/${DEMYX_APP_DOMAIN}.tgz -C $DEMYX_WP $DEMYX_APP_DOMAIN"
+}
 
                 demyx_echo 'Exporting WordPress'
                 demyx_execute docker cp "$DEMYX_APP_WP_CONTAINER":/demyx "$DEMYX_APP_PATH"/demyx-wp
