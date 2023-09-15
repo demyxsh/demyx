@@ -1,10 +1,24 @@
 # Demyx
 # https://demyx.sh
-# 
-# demyx pull <image>
+#
+#   demyx pull <args>
 #
 demyx_pull() {
-    DEMYX_PULL_IMAGE="$1"
+    DEMYX_ARG_2="${1:-$DEMYX_ARG_2}"
+
+    case "$DEMYX_ARG_2" in
+        all)
+            demyx_pull_all
+        ;;
+        *)
+            if [[ -n "$DEMYX_ARG_2" ]]; then
+                demyx_pull_image
+            else
+                demyx_help pull
+            fi
+        ;;
+    esac
+}
 
     if [[ "$DEMYX_PULL_IMAGE" = all ]]; then
         [[ -n "$(docker images demyx/browsersync:latest -q)" ]] && docker pull demyx/browsersync
