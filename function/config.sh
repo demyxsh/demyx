@@ -579,17 +579,17 @@ demyx_config_dev() {
         } > "$DEMYX_CONFIG_TRANSIENT"
     fi
 }
-                    demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "rm -f \${CODE_SERVER_ROOT}/web/app/mu-plugins/bs.php"
-                    demyx config "$DEMYX_APP_DOMAIN" --bedrock=production -f
-                elif [[ "$DEMYX_APP_STACK" = nginx-php ]]; then
-                    demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "rm -f \${CODE_SERVER_ROOT}/wp-content/mu-plugins/bs.php; sed -i \"s|'WP_DEBUG', true|'WP_DEBUG', false|g\" \${CODE_SERVER_ROOT}/wp-config.php"
-                else
-                    demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "rm -f \${OPENLITESPEED_ROOT}/wp-content/mu-plugins/bs.php; sed -i \"s|'WP_DEBUG', true|'WP_DEBUG', false|g\" \${OPENLITESPEED_ROOT}/wp-config.php"
-                fi
+#
+#   Configures an app's healthcheck.
+#
+demyx_config_healthcheck() {
+    demyx_app_env wp "
+        DEMYX_APP_HEALTHCHECK
+    "
 
-                demyx_echo 'Updating configs'
-                demyx_execute sed -i "s|DEMYX_APP_DEV=.*|DEMYX_APP_DEV=false|g" "$DEMYX_APP_PATH"/.env; \
-                    demyx_yml
+    demyx_execute "Setting healthcheck to $DEMYX_CONFIG_FLAG_HEALTHCHECK" \
+        "demyx_app_env_update DEMYX_APP_HEALTHCHECK=$DEMYX_CONFIG_FLAG_HEALTHCHECK"
+}
 
                 demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
                 demyx config "$DEMYX_APP_DOMAIN" --healthcheck
