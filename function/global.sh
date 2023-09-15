@@ -250,8 +250,13 @@ demyx_divider_title() {
     echo "[$DEMYX_DIVIDER_TITLE] $DEMYX_DIVIDER_TITLE_BODY"
     demyx_divider "$DEMYX_DIVIDER_TITLE_COUNT"
 }
-demyx_alpine_check() {
-    [[ -n "$(uname -a | grep Alpine || true)" ]] && echo true
+#
+#   Echos INFO messages
+#
+demyx_echo() {
+    local DEMYX_ECHO="\e[34m[INFO]\e[39m ${1:-}"
+    echo -e "$DEMYX_ECHO"
+    demyx_logger false "demyx_echo" "$DEMYX_ECHO"
 }
 demyx_ols_not_supported() {
     [[ "$DEMYX_APP_STACK" = ols ]] && demyx_die "OpenLiteSpeed doesn't support feature"
