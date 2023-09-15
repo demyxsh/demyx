@@ -1,37 +1,48 @@
 # Demyx
 # https://demyx.sh
-# 
-# demyx edit <app> <args>
+#
+#   demyx edit <app> <args>
 #
 demyx_edit() {
+    local DEMYX_EDIT_FLAG=
+    local DEMYX_EDIT_FLAG_REFRESH=
+
+    demyx_source refresh
+
     while :; do
-        case "$2" in
-            stack)
-                DEMYX_EDIT=stack
-                ;;
-            --up)
-                DEMYX_EDIT_UP=1
-                ;;
+        DEMYX_EDIT_FLAG="${2:-}"
+        case "$DEMYX_EDIT_FLAG" in
+            -r)
+                DEMYX_EDIT_FLAG_REFRESH=true
+            ;;
             --)
                 shift
                 break
-                ;;
+            ;;
             -?*)
-                printf '\e[31m[CRITICAL]\e[39m Unknown option: %s\n' "$2" >&2
-                exit 1
-                ;;
+                demyx_error flag "$DEMYX_EDIT_FLAG"
+            ;;
             *)
                 break
         esac
         shift
     done
 
-    if [[ "$DEMYX_EDIT" = traefik ]]; then
-        nano "$DEMYX_TRAEFIK"/.env
-        [[ -n "$DEMYX_EDIT_UP" ]] && demyx compose stack up -d
-    else
-        demyx_app_config
+    if [[ -n "$DEMYX_ARG_2" ]]; then
+        demyx_app_env wp "
+            DEMYX_APP_DOMAIN
+            DEMYX_APP_PATH
+        "
+
         nano "$DEMYX_APP_PATH"/.env
-        [[ -n "$DEMYX_EDIT_UP" ]] && demyx compose "$DEMYX_APP_DOMAIN" up -d
+
+        demyx_logger false "nano ${DEMYX_APP_PATH}/.env" "$(cat < "$DEMYX_APP_PATH"/.env)"
+
+        if [[ "$DEMYX_EDIT_FLAG_REFRESH" = true ]]; then
+            demyx_refresh "$DEMYX_APP_DOMAIN"
+        fi
+    else
+        demyx_help edit
     fi
+
 }
