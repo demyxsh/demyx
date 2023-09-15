@@ -165,5 +165,17 @@ demyx_cron_six_hour() {
             "bash ${DEMYX}/custom/cron/six-hour.sh"
     fi
 }
+#
+#   Every week cron.
+#
+demyx_cron_weekly() {
+    # Check for updates
+    demyx_execute "[CROND WEEKLY] Updating cache" \
+        "demyx_update"
+
+    # Execute custom cron
+    if [[ -f "$DEMYX"/custom/cron/weekly.sh ]]; then
+        demyx_execute "[CROND WEEKLY] Executing ${DEMYX}/custom/cron/weekly.sh" \
+            "bash ${DEMYX}/custom/cron/weekly.sh"
     fi
 }
