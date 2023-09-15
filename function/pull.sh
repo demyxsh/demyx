@@ -19,38 +19,56 @@ demyx_pull() {
         ;;
     esac
 }
+#
+#   Smart pull all demyx images.
+#
+demyx_pull_all() {
+    if [[ -f "$DEMYX"/.update_local ]]; then
+        . "$DEMYX"/.update_local
+    fi
 
-    if [[ "$DEMYX_PULL_IMAGE" = all ]]; then
-        [[ -n "$(docker images demyx/browsersync:latest -q)" ]] && docker pull demyx/browsersync
-        docker pull demyx/code-server:browse
-        # Pull other variations of code-server
-        [[ -n "$(docker images demyx/code-server:bedrock -q)" ]] && docker pull demyx/code-server:bedrock
-        [[ -n "$(docker images demyx/code-server:openlitespeed -q)" ]] && docker pull demyx/code-server:openlitespeed
-        [[ -n "$(docker images demyx/code-server:openlitespeed-bedrock -q)" ]] && docker pull demyx/code-server:openlitespeed-bedrock
-        [[ -n "$(docker images demyx/code-server:wp -q)" ]] && docker pull demyx/code-server:wp
-        docker pull demyx/demyx
-        docker pull demyx/docker-compose
-        docker pull demyx/docker-socket-proxy
-        docker pull demyx/logrotate
-        docker pull demyx/mariadb
-        docker pull demyx/nginx
-        [[ -n "$(docker images demyx/ssh:latest -q)" ]] && docker pull demyx/ssh
-        docker pull demyx/traefik
-        docker pull demyx/utilities
-        docker pull demyx/wordpress
-        # Pull Bedrock
-        [[ -n "$(docker images demyx/wordpress:bedrock -q)" ]] && docker pull demyx/wordpress:bedrock
-        docker pull demyx/wordpress:cli
+    if [[ -f "$DEMYX"/.update_remote ]]; then
+        . "$DEMYX"/.update_remote
+    fi
 
-        # Third party images
-        docker pull phpmyadmin/phpmyadmin
-    elif [[ -n "$DEMYX_PULL_IMAGE" ]]; then
-        if [[ "$DEMYX_PULL_IMAGE" = pma || "$DEMYX_PULL_IMAGE" = phpmyadmin ]]; then
-            docker pull phpmyadmin/phpmyadmin
-        else
-            docker pull demyx/"$DEMYX_PULL_IMAGE"
+    if [[ "${DEMYX_LOCAL_VERSION:-}" = "${DEMYX_REMOTE_VERSION:-}" ]]; then
+        DEMYX_VERSION=latest
+    fi
+
+    local DEMYX_PULL_ALL="
+        demyx/browsersync
+        demyx/code-server:bedrock
+        demyx/code-server:browse
+        demyx/code-server:openlitespeed
+        demyx/code-server:openlitespeed-bedrock
+        demyx/code-server:wp
+        demyx/demyx:${DEMYX_VERSION}
+        demyx/docker-socket-proxy
+        demyx/mariadb
+        demyx/nginx
+        demyx/ssh
+        demyx/traefik
+        demyx/utilities
+        demyx/wordpress
+        demyx/wordpress:bedrock
+        phpmyadmin/phpmyadmin
+        quay.io/vektorlab/ctop
+    "
+    local DEMYX_PULL_ALL_CHECK=
+    local DEMYX_PULL_ALL_I=
+    local DEMYX_PULL_ALL_PATH=
+    DEMYX_PULL_ALL_PATH="$(demyx_images path)"
+
+    for DEMYX_PULL_ALL_I in $DEMYX_PULL_ALL; do
+        DEMYX_PULL_ALL_CHECK="$(grep "$DEMYX_PULL_ALL_I" "$DEMYX_PULL_ALL_PATH" || true)"
+
+        if [[ -n "$DEMYX_PULL_ALL_CHECK" ]]; then
+            demyx_execute false \
+                "docker pull ${DEMYX_PULL_ALL_I}"
         fi
-    else
-        demyx help pull
+
+        echo "$DEMYX_PULL_ALL_CHECK"
+    done
+}
     fi
 }
