@@ -890,26 +890,27 @@ demyx_config_wp_update() {
     demyx_execute "Setting WP auto update to $DEMYX_CONFIG_FLAG_WP_UPDATE" \
         "demyx_app_env_update DEMYX_APP_WP_UPDATE=$DEMYX_CONFIG_FLAG_WP_UPDATE"
 }
+#
+#   Configures an app's whitelist mode.
+#
+demyx_config_whitelist() {
+    # TODO - make this work with OLS
+    demyx_ols_not_supported
+    demyx_app_env wp "
+        DEMYX_APP_IP_WHITELIST
+        DEMYX_APP_STACK
+    "
 
-                # TEMPORARY CODE
-                if [[ -z "$DEMYX_APP_IP_WHITELIST" ]]; then
-                    demyx_echo "Updating .env and .yml"
-                    demyx_execute demyx_source env; \
-                        demyx_env
-                fi
+    DEMYX_CONFIG_COMPOSE=true
 
-                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_IP_WHITELIST" = false ]] && demyx_die 'IP whitelist is already off'
-                fi
+    if [[ "$DEMYX_CONFIG_FLAG_WHITELIST" = --whitelist ]]; then
+        DEMYX_CONFIG_FLAG_WHITELIST=all
+    fi
 
-                demyx_echo 'Disabling IP whitelist'
-                demyx_execute sed -i "s|DEMYX_APP_IP_WHITELIST=.*|DEMYX_APP_IP_WHITELIST=false|g" "$DEMYX_APP_PATH"/.env; \
-                    demyx_yml
-
-                demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
-            fi
-            if [[ "$DEMYX_CONFIG_XMLRPC" = true ]]; then
-                demyx_app_is_up
+    demyx_execute "Setting whitelist to $DEMYX_CONFIG_FLAG_WHITELIST" \
+        "demyx_app_env_update DEMYX_APP_IP_WHITELIST=$DEMYX_CONFIG_FLAG_WHITELIST &&
+        demyx_yml $DEMYX_APP_STACK"
+}
 
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ "$DEMYX_APP_XMLRPC" = true ]] && demyx_die 'WordPress xmlrpc is already turned on'
