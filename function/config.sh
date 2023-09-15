@@ -725,64 +725,54 @@ demyx_config_resources() {
     fi
 }
 
-                    if [[ "$DEMYX_CONFIG_WP_CPU" = null ]]; then
-                        demyx_execute sed -i "s|DEMYX_APP_WP_CPU=.*|DEMYX_APP_WP_CPU=|g" "$DEMYX_APP_PATH"/.env
-                    else
-                        demyx_execute sed -i "s|DEMYX_APP_WP_CPU=.*|DEMYX_APP_WP_CPU=$DEMYX_CONFIG_WP_CPU|g" "$DEMYX_APP_PATH"/.env
-                    fi
-                fi
-                if [[ -n "$DEMYX_CONFIG_WP_MEM" ]]; then
-                    demyx_echo "Updating $DEMYX_APP_DOMAIN MEM"
+#
+#   Configures an SFTP container for an app.
+#
+demyx_config_sftp() {
+    demyx_app_env wp "
+        DEMYX_APP_COMPOSE_PROJECT
+        DEMYX_APP_DOMAIN
+        DEMYX_APP_ID
+        DEMYX_APP_SFTP
+        DEMYX_APP_SFTP_PASSWORD
+        DEMYX_APP_SFTP_USERNAME
+        DEMYX_APP_STACK
+        DEMYX_APP_TYPE
+    "
 
-                    if [[ "$DEMYX_CONFIG_WP_MEM" = null ]]; then
-                        demyx_execute sed -i "s|DEMYX_APP_WP_MEM=.*|DEMYX_APP_WP_MEM=|g" "$DEMYX_APP_PATH"/.env
-                    else
-                        demyx_execute sed -i "s|DEMYX_APP_WP_MEM=.*|DEMYX_APP_WP_MEM=$DEMYX_CONFIG_WP_MEM|g" "$DEMYX_APP_PATH"/.env
-                    fi
-                fi
+    # TODO
+    #local DEMYX_CONFIG_SFTP_VOLUME=
+    DEMYX_CONFIG=SFTP
+    DEMYX_CONFIG_COMPOSE=true
 
-                demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
-            fi
-            if [[ -n "$DEMYX_CONFIG_RESTART" ]]; then
-                demyx_app_is_up
+    demyx_execute "Setting SFTP to $DEMYX_CONFIG_FLAG_SFTP" \
+        "demyx_app_env_update DEMYX_APP_SFTP=${DEMYX_CONFIG_FLAG_SFTP}; \
+        demyx_yml $DEMYX_APP_STACK"
 
-                if [[ "$DEMYX_CONFIG_RESTART" = nginx-php ]]; then
-                    demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
-                    demyx config "$DEMYX_APP_DOMAIN" --restart=php
-                elif [ "$DEMYX_CONFIG_RESTART" = nginx ]; then
-                    demyx_echo "Restarting NGINX"
-                    demyx_execute docker exec -t "$DEMYX_APP_NX_CONTAINER" sh -c 'rm -rf /tmp/nginx-cache; sudo demyx-reload'
-                elif [ "$DEMYX_CONFIG_RESTART" = ols ]; then
-                    demyx_echo "Restarting OpenLiteSpeed"
-                    demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c 'demyx-lsws restart'
-                elif [ "$DEMYX_CONFIG_RESTART" = php ]; then
-                    demyx_echo "Restarting PHP"
-                    demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c 'kill -USR2 9'
-                fi
-            fi
-            if [[ "$DEMYX_CONFIG_SFTP" = true ]]; then
-                demyx_app_is_up
+    if [[ "$DEMYX_CONFIG_FLAG_SFTP" = true ]]; then
+        demyx_execute "Configuring SFTP container" \
+            "demyx_open_port"
 
-                DEMYX_SFTP_VOLUME_CHECK="$(docker volume ls | grep demyx_sftp || true)"
-                DEMYX_SFTP_CONTAINER_CHECK="$(echo "$DEMYX_DOCKER_PS" | grep "$DEMYX_APP_COMPOSE_PROJECT"_sftp || true)"
-                DEMYX_SFTP_PORT="$(demyx_open_port)"
+        # TODO
+        #DEMYX_CONFIG_SFTP_VOLUME="$(docker run -t --rm \
+        #    -v "$DEMYX_APP_TYPE"_"$DEMYX_APP_ID"_sftp:/home/demyx \
+        #    --entrypoint=bash \
+        #    demyx/ssh -c 'if [[ -f /home/demyx/.ssh/authorized_keys ]]; then echo true; fi')"
 
-                [[ -n "$DEMYX_SFTP_CONTAINER_CHECK" ]] && demyx_die 'SFTP container is already running'
+        {
+            echo "IP            $DEMYX_SERVER_IP"
+            echo "Port          $(cat < "$DEMYX_TMP"/"$DEMYX_APP_DOMAIN"_sftp)"
+            echo "Username      demyx"
+            echo "Password      $DEMYX_APP_SFTP_PASSWORD"
+        } > "$DEMYX_CONFIG_TRANSIENT"
 
-                demyx_echo 'Creating SFTP container'
-                demyx_execute docker run -dit --rm \
-                    --name="$DEMYX_APP_COMPOSE_PROJECT"_sftp \
-                    --cpus="$DEMYX_CPU" \
-                    --memory="$DEMYX_MEM" \
-                    --workdir="/demyx" \
-                    --volumes-from="$DEMYX_APP_WP_CONTAINER" \
-                    -v demyx_sftp:/home/demyx/.ssh \
-                    -p "$DEMYX_SFTP_PORT":2222 \
-                    demyx/ssh 2>/dev/null
-
-                if [[ -z "$(docker exec -t "$DEMYX_APP_COMPOSE_PROJECT"_sftp ls /home/demyx/.ssh | grep authorized_keys || true)" ]]; then
-                    demyx_warning "No authorized_keys found; please run the command: docker cp \"\$HOME\"/.ssh/authorized_keys ${DEMYX_APP_COMPOSE_PROJECT}_sftp:/home/demyx/.ssh; docker exec -t ${DEMYX_APP_COMPOSE_PROJECT}_sftp demyx-permission"
-                fi
+        # TODO
+        #if [[ -z "$DEMYX_CONFIG_SFTP_VOLUME" ]]; then
+        #    demyx_warning "No authorized_keys found"
+        #    demyx_echo "Please run the command: docker cp \"\$HOME\"/.ssh/authorized_keys ${DEMYX_APP_COMPOSE_PROJECT}_sftp_${DEMYX_APP_ID}_1:/home/demyx/.ssh && docker exec -t ${DEMYX_APP_COMPOSE_PROJECT}_sftp_${DEMYX_APP_ID}_1 sudo demyx-permission"
+        #fi
+    fi
+}
 
                 PRINT_TABLE="DEMYX^ SFTP\n"
                 PRINT_TABLE+="SFTP^ $DEMYX_APP_DOMAIN\n"
