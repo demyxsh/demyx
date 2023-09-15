@@ -1,7 +1,24 @@
 # Demyx
 # https://demyx.sh
 
-DEMYX_MOTD_CHECK_WP="$([[ -d "$DEMYX_WP" ]] && ls -A "$DEMYX_WP")"
+#
+#   Main motd function.
+#
+demyx_motd() {
+    demyx_source info
+    demyx_divider_title "DEMYX" "https://demyx.sh" "${DEMYX_STTY:-}"
+    echo "Welcome to Demyx! Please report any bugs you see."
+    echo
+    echo "- Docs: https://demyx.sh/kb"
+    echo "- Bugs: https://github.com/demyxsh/demyx/issues"
+    echo "- Changelog: https://github.com/demyxsh/demyx/blob/master/CHANGELOG.md"
+    echo "- Discussions: https://github.com/demyxsh/demyx/discussions"
+    echo "- Chat: https://web.libera.chat/?channel=#demyx"
+    demyx_info system
+    echo
+    demyx_motd_warning
+    demyx_motd_start
+}
 
 demyx_motd_dev_warning() {
     if [[ -n "$DEMYX_MOTD_CHECK_WP" ]]; then
