@@ -68,6 +68,38 @@ demyx_backup() {
         ;;
     esac
 }
+#
+#   Loop for demyx_backup_app.
+#
+demyx_backup_all() {
+    local DEMYX_BACKUP_ALL=
+    local DEMYX_BACKUP_ALL_CHECK=
+    local DEMYX_BACKUP_ALL_CHECK_WP=
+
+    cd "$DEMYX_WP" || exit
+
+    for DEMYX_BACKUP_ALL in *; do
+        DEMYX_ARG_2="$DEMYX_BACKUP_ALL"
+        DEMYX_BACKUP_ALL_CHECK=0
+
+        demyx_app_env wp DEMYX_APP_WP_CONTAINER
+        demyx_echo "Backing up $DEMYX_BACKUP_ALL"
+
+        DEMYX_BACKUP_ALL_CHECK_WP="$(docker exec "$DEMYX_APP_WP_CONTAINER" "wp core is-installed" 2>&1 || true)"
+        if [[ "$DEMYX_BACKUP_ALL_CHECK_WP" == *"Error"* ||
+                "$DEMYX_BACKUP_ALL_CHECK_WP" == *"error"* ]]; then
+            DEMYX_BACKUP_ALL_CHECK=1
+            demyx_logger "Backing up $DEMYX_BACKUP_ALL" "demyx_backup $DEMYX_BACKUP_ALL $DEMYX_BACKUP_ARGS" "$DEMYX_BACKUP_ALL_CHECK_WP" error
+        fi
+
+        if [[ "$DEMYX_BACKUP_ALL_CHECK" = 1 ]]; then
+            demyx_warning "$DEMYX_ARG_2 has one or more errors. Please check error log, skipping ..."
+            continue
+        else
+            eval demyx_backup "$DEMYX_BACKUP_ALL" "$DEMYX_BACKUP_ARGS"
+        fi
+    done
+}
 
         demyx_app_config
         demyx_app_is_up
