@@ -135,7 +135,24 @@ demyx_healthcheck_disk() {
     demyx_divider_title "HEALTHCHECK - DISK" "$DEMYX_HEALTHCHECK_DISK_SUBJECT"
     echo "$DEMYX_HEALTHCHECK_DISK_ALL"
 }
+#
+#   Checks for high load average.
+#
+demyx_healthcheck_load() {
+    local DEMYX_HEALTHCHECK_LOAD_AVERAGE=
+    DEMYX_HEALTHCHECK_LOAD_AVERAGE="$(cat < /proc/loadavg | awk '{print $1 " " $2 " " $3}')"
+    local DEMYX_HEALTHCHECK_LOAD_AVERAGE_TARGET=
+    DEMYX_HEALTHCHECK_LOAD_AVERAGE_TARGET="$(echo "$DEMYX_HEALTHCHECK_LOAD_AVERAGE" | awk '{print $2}' | awk -F '.' '{print $1}')"
 
-        demyx_execute -v rm -f "$DEMYX"/.healthcheck_running
+    {
+        demyx_divider_title "HEALTHCHECK - LOAD" "top ($DEMYX_HEALTHCHECK_LOAD_AVERAGE)"
+        top -b -n 1
+
+        demyx_divider_title "HEALTHCHECK - LOAD" "docker stats --no-stream"
+        docker stats --no-stream
+    } | tee "$DEMYX_HEALTHCHECK_TRANSIENT"
+
+    if (( "$DEMYX_HEALTHCHECK_LOAD_AVERAGE_TARGET" >= "$DEMYX_HEALTHCHECK_LOAD" )); then
+        demyx_notification healthcheck "Load average has hit the threshold - $DEMYX_HEALTHCHECK_LOAD_AVERAGE"
     fi
 }
