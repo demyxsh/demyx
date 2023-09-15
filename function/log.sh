@@ -111,6 +111,12 @@ demyx_log_app() {
             tail "$DEMYX_LOG_TAIL_FLAG" "$DEMYX_LOG"/"$DEMYX_APP_DOMAIN".access.log
     fi
 }
+#
+#   View cron logs.
+#
+demyx_log_cron() {
+    tail "$DEMYX_LOG_TAIL_FLAG" "$DEMYX_LOG"/cron.log
+}
         else
             DEMYX_LOG_WP=access
             if [[ -n "$DEMYX_LOG_DATABASE" ]]; then
