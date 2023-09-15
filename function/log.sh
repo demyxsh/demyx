@@ -85,13 +85,32 @@ demyx_log() {
         ;;
     esac
 }
-        else
-            tail -200 $DEMYX_LOG_FOLLOW /var/log/demyx/traefik.access.log
-        fi
-    elif [[ "$DEMYX_APP_TYPE" = wp ]]; then
-        if [[ -n "$DEMYX_LOG_ROTATE" ]]; then
-            demyx_echo "Rotating $DEMYX_APP_DOMAIN log"
-            demyx_execute docker run -t --rm --user=root --volumes-from="$DEMYX_APP_WP_CONTAINER" demyx/logrotate
+#
+#   Main log function.
+#
+demyx_log_app() {
+    demyx_app_env wp "
+        DEMYX_APP_DOMAIN
+        DEMYX_APP_DB_CONTAINER
+        DEMYX_APP_WP_CONTAINER
+    "
+
+    if [[ "$DEMYX_LOG_FLAG_CRON" ]]; then
+        docker exec -it "$DEMYX_APP_WP_CONTAINER" \
+            tail "$DEMYX_LOG_TAIL_FLAG" "$DEMYX_LOG"/"$DEMYX_APP_DOMAIN".cron.log
+    elif [[ "$DEMYX_LOG_FLAG_DATABASE" = true ]]; then
+        docker exec -it "$DEMYX_APP_DB_CONTAINER" \
+            tail "$DEMYX_LOG_TAIL_FLAG" "$DEMYX_LOG"/"$DEMYX_APP_DOMAIN".mariadb.log
+    elif [[ "$DEMYX_LOG_FLAG_ERROR" = true ]]; then
+        docker exec -it "$DEMYX_APP_WP_CONTAINER" \
+            tail "$DEMYX_LOG_TAIL_FLAG" "$DEMYX_LOG"/"$DEMYX_APP_DOMAIN".error.log
+    elif [[ "$DEMYX_LOG_STDOUT_FLAG" = true ]]; then
+        eval docker logs "$DEMYX_APP_WP_CONTAINER" "$DEMYX_LOG_FLAG_FOLLOW"
+    else
+        docker exec -it "$DEMYX_APP_WP_CONTAINER" \
+            tail "$DEMYX_LOG_TAIL_FLAG" "$DEMYX_LOG"/"$DEMYX_APP_DOMAIN".access.log
+    fi
+}
         else
             DEMYX_LOG_WP=access
             if [[ -n "$DEMYX_LOG_DATABASE" ]]; then
