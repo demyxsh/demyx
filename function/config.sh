@@ -298,21 +298,19 @@ demyx_config() {
         ;;
     esac
 }
+#
+#   Loop arguments for all sites.
+#
+demyx_config_all() {
+    local DEMYX_CONFIG_ALL=
 
-                    demyx_echo 'Configuring lsws'
-                    demyx_execute docker exec -t -e OPENLITESPEED_CACHE=true "$DEMYX_APP_WP_CONTAINER" sh -c 'demyx-config'; \
-                        demyx config "$DEMYX_APP_DOMAIN" --restart=ols
-                elif [[ "$DEMYX_APP_STACK" = bedrock ]]; then
-                    DEMYX_CONFIG_NGINX_HELPER_CHECK="$(demyx exec "$DEMYX_APP_DOMAIN" ls web/app/plugins | grep nginx-helper || true)"
+    cd "$DEMYX_WP" || exit
 
-                    if [[ -n "$DEMYX_CONFIG_NGINX_HELPER_CHECK" ]]; then
-                        demyx_echo 'Activating nginx-helper'
-                        demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin activate nginx-helper
-                    else
-                        demyx_echo 'Installing nginx-helper'
-                        demyx_execute demyx exec "$DEMYX_APP_DOMAIN" composer require wpackagist-plugin/nginx-helper; \
-                            demyx wp "$DEMYX_APP_DOMAIN" plugin activate nginx-helper
-                    fi
+    for DEMYX_CONFIG_ALL in *; do
+        demyx_echo "Configuring $DEMYX_CONFIG_ALL"
+        eval demyx_config "$DEMYX_CONFIG_ALL" "$DEMYX_CONFIG_ARGS"
+    done
+}
 
                     demyx_echo 'Configuring nginx-helper'
                     demyx_execute demyx wp "$DEMYX_APP_DOMAIN" option update rt_wp_nginx_helper_options '{"enable_purge":"1","cache_method":"enable_fastcgi","purge_method":"get_request","enable_map":null,"enable_log":null,"log_level":"INFO","log_filesize":"5","enable_stamp":null,"purge_homepage_on_edit":"1","purge_homepage_on_del":"1","purge_archive_on_edit":"1","purge_archive_on_del":"1","purge_archive_on_new_comment":"1","purge_archive_on_deleted_comment":"1","purge_page_on_mod":"1","purge_page_on_new_comment":"1","purge_page_on_deleted_comment":"1","redis_hostname":"127.0.0.1","redis_port":"6379","redis_prefix":"nginx-cache:","purge_url":"","redis_enabled_by_constant":0}' --format=json; \
