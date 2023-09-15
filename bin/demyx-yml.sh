@@ -225,7 +225,19 @@ networks:
     name: demyx_socket
 " > "$DEMYX"/docker-compose.yml
 }
+#
+#   Grabs env variable without sourcing.
+#
+demyx_yml_env() {
+    local DEMYX_YML_ENV="${1:-}"
+    local DEMYX_YML_ENV_FILE="${2:-${DEMYX}/.env}"
+    local DEMYX_YML_GREP=
+    DEMYX_YML_GREP="$(grep -w "$DEMYX_YML_ENV" "$DEMYX_YML_ENV_FILE" | awk -F '[=]' '{print $2}' || true)"
 
+    if [[ -n "$DEMYX_YML_GREP" ]]; then
+        echo "$DEMYX_YML_GREP"
+    fi
+}
 #
 #   Init.
 #
