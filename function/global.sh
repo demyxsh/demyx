@@ -296,14 +296,41 @@ demyx_error() {
 
     exit 1
 }
-demyx_warning() {
-    demyx_execute -v echo -e "\e[33m[WARNING]\e[39m $1"
-}
-demyx_dev_password() {
-    if [[ -n "$DEMYX_APP_DEV_PASSWORD" ]]; then
-        echo "$DEMYX_APP_DEV_PASSWORD"
+#
+#   Echos useful messages to the user and executes second argument.
+#
+demyx_execute() {
+    local DEMYX_EXECUTE_ECHO="${1:-}"
+    shift
+    local DEMYX_EXECUTE="$*"
+    local DEMYX_EXECUTE_FILE="$DEMYX_TMP"/demyx_execute
+    local DEMYX_EXECUTE_LOG=main
+    local DEMYX_EXECUTE_STDOUT=
+
+    if [[ "$DEMYX_EXECUTE_ECHO" = false ]]; then
+        if ! eval "$DEMYX_EXECUTE" 2>&1 | tee -i "$DEMYX_EXECUTE_FILE"; then
+            DEMYX_EXECUTE_LOG=error
+        fi
+
+        DEMYX_EXECUTE_STDOUT="$(cat < "$DEMYX_EXECUTE_FILE")"
     else
-        echo "$(demyx util --pass --raw)"
+        echo -n "$DEMYX_EXECUTE_ECHO ... "
+
+        if ! DEMYX_EXECUTE_STDOUT="$(eval "$DEMYX_EXECUTE" 2>&1)"; then
+            DEMYX_EXECUTE_LOG=error
+        fi
+
+        echo -en "\e[32mdone\e[39m\n"
+    fi
+
+    demyx_logger "$DEMYX_EXECUTE_ECHO" "$DEMYX_EXECUTE" "$DEMYX_EXECUTE_STDOUT" "$DEMYX_EXECUTE_LOG"
+
+    if [[ "$DEMYX_EXECUTE_LOG" = error ]]; then
+        if [[ "$DEMYX_EXECUTE_ECHO" != false ]]; then
+            cat < "$DEMYX_TMP"/demyx_execute
+        fi
+
+        exit 1
     fi
 }
 demyx_update_local() {
