@@ -171,29 +171,31 @@ demyx_info_app() {
         fi
     fi
 }
+#
+#   # TODO - List apps that are currently installed.
+#
+demyx_info_apps() {
+    local DEMYX_INFO_APPS_COUNT=
+    DEMYX_INFO_APPS_COUNT="$(find "$DEMYX_WP" -mindepth 1 -maxdepth 1 -type d | wc -l)"
 
-            if [[ "$DEMYX_INFO_BACKUP_COUNT" != 0 ]]; then
-                cd "$DEMYX_BACKUP_WP"/"$DEMYX_APP_DOMAIN"
-                for i in *
-                do
-                    DEMYX_INFO_BACKUP_SIZE="$(du -sh "$DEMYX_BACKUP_WP"/"$DEMYX_APP_DOMAIN"/"$i" | cut -f1)"
-                    PRINT_TABLE+="$DEMYX_INFO_BACKUP_SIZE^ $i\n"
-                done
-            fi
-                        
-            demyx_execute -v demyx_table "$PRINT_TABLE"
-        elif [[ -n "$DEMYX_INFO_FILTER" ]]; then
-            DEMYX_INFO_FILTER="$(cat "$DEMYX_APP_PATH"/.env | grep -w "$DEMYX_INFO_FILTER")"
-            if [[ -n "$DEMYX_INFO_FILTER" ]]; then
-                demyx_execute -v -q echo "$DEMYX_INFO_FILTER" | awk -F '[=]' '{print $2}'
-            else
-                demyx_die 'Filter not found'
-            fi
+    if (( "$DEMYX_INFO_APPS_COUNT" > 0 )); then
+        cd "$DEMYX_WP" || exit
+
+        {
+            for DEMYX_INFO_APPS_I in *; do
+                echo "$DEMYX_INFO_APPS_I"
+            done
+        } > "$DEMYX_INFO_TRANSIENT"
+
+        if [[ "$DEMYX_INFO_FLAG_RAW" = true ]]; then
+            cat < "$DEMYX_INFO_TRANSIENT"
         else
-            if [[ -z "$DEMYX_INFO_NO_VOLUME" ]]; then
-                DEMYX_INFO_DATA_VOLUME="$(docker exec -t "$DEMYX_APP_WP_CONTAINER" du -sh /demyx | cut -f1)"
-                DEMYX_INFO_DB_VOLUME="$(docker exec -t "$DEMYX_APP_DB_CONTAINER" du -sh /demyx/"$WORDPRESS_DB_NAME" | cut -f1)"
-            fi
+            demyx_execute false \
+                "demyx_divider_title \"$DEMYX_INFO\" \"Apps ($DEMYX_INFO_APPS_COUNT)\"; \
+                    cat < $DEMYX_INFO_TRANSIENT"
+        fi
+    fi
+}
 
             if [[ -n "$DEMYX_INFO_JSON" ]]; then
                 echo '{
