@@ -879,10 +879,17 @@ demyx_config_stack() {
         fi
     } > "$DEMYX_CONFIG_TRANSIENT"
 }
+#
+#   Configures an app's auto updating of WordPress core, theme, and plugin files.
+#
+demyx_config_wp_update() {
+    demyx_app_env wp "
+        DEMYX_APP_WP_UPDATE
+    "
 
-                demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
-            elif [[ "$DEMYX_CONFIG_WHITELIST" = false ]]; then
-                demyx_source yml
+    demyx_execute "Setting WP auto update to $DEMYX_CONFIG_FLAG_WP_UPDATE" \
+        "demyx_app_env_update DEMYX_APP_WP_UPDATE=$DEMYX_CONFIG_FLAG_WP_UPDATE"
+}
 
                 # TEMPORARY CODE
                 if [[ -z "$DEMYX_APP_IP_WHITELIST" ]]; then
