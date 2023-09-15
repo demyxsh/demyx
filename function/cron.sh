@@ -119,57 +119,21 @@ demyx_cron_daily() {
             "bash ${DEMYX}/custom/cron/daily.sh"
     fi
 }
+#
+#   Every five minute cron.
+#
+demyx_cron_five_minute() {
+    # Healthchecks
+    demyx_execute "[CROND FIVE-MINUTE] Healthcheck - App" \
+        "demyx_healthcheck app"
+    demyx_execute "[CROND FIVE-MINUTE] Healthcheck - Load" \
+        "demyx_healthcheck load"
 
-        # Execute custom cron
-        if [[ -f /demyx/custom/cron/minute.sh ]]; then
-            echo "[$(date +%F-%T)] CROND MINUTE: CUSTOM"
-            demyx_execute -v bash /demyx/custom/cron/minute.sh
-        fi
-    elif [[ "$DEMYX_CRON" = six-hour ]]; then
-        # Check for Demyx updates
-        #cd "$DEMYX_CONFIG"
-        #git remote update
-        #DEMYX_CRON_UPDATES="$(git rev-list HEAD...origin/master --count)"
-        #echo "[$(date +%F-%T)] CROND: CHECK DEMYX UPDATE"
-        #demyx_execute -v sed -i "s|DEMYX_ENV_STATUS=.*|DEMYX_ENV_STATUS=$DEMYX_CRON_UPDATES|g" "$DEMYX"/.env
-
-        # Execute custom cron
-        if [[ -f /demyx/custom/cron/six-hour.sh ]]; then
-            echo "[$(date +%F-%T)] CROND SIX-HOUR: CUSTOM"
-            demyx_execute -v bash /demyx/custom/cron/six-hour.sh
-        fi
-    elif [[ "$DEMYX_CRON" = weekly ]]; then
-        # Rotate demyx log
-        echo "[$(date +%F-%T)] CROND WEEKLY: LOGROTATE DEMYX"
-        demyx_execute -v demyx log main --rotate
-
-        # Rotate WordPress log
-        echo "[$(date +%F-%T)] CROND WEEKLY: LOGROTATE WORDPRESS"
-        cd "$DEMYX_WP"
-        for i in *
-        do
-            demyx_execute -v demyx log "$i" --rotate
-        done
-
-        # Update local versions
-        demyx_execute -v demyx_update_local
-
-        # Update remote versions
-        demyx_execute -v demyx_update_remote
-
-        # Update image list
-        demyx_execute -v demyx_update_image
-
-        # Execute custom cron
-        if [[ -f /demyx/custom/cron/weekly.sh ]]; then
-            echo "[$(date +%F-%T)] CROND WEEKLY: CUSTOM"
-            demyx_execute -v bash /demyx/custom/cron/weekly.sh
-        fi
-    else
-        if [[ -z "$1" ]]; then
-            demyx_die 'Missing argument'
-        else
-            demyx_die --command-not-found
-        fi
+    # Execute custom cron
+    if [[ -f "$DEMYX"/custom/cron/minute.sh ]]; then
+        demyx_execute "[CROND FIVE-MINUTE] Executing ${DEMYX}/custom/cron/five-minute.sh" \
+            "bash ${DEMYX}/custom/cron/five-minute.sh"
+    fi
+}
     fi
 }
