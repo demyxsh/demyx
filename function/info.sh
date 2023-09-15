@@ -1,56 +1,70 @@
 # Demyx
 # https://demyx.sh
-# 
-# demyx info <app> <args>
+#
+#   demyx info <app> <args>
 #
 demyx_info() {
+    DEMYX_ARG_2="${1:-$DEMYX_ARG_2}"
+    local DEMYX_INFO="DEMYX - INFO"
+    local DEMYX_INFO_FLAG=
+    local DEMYX_INFO_FLAG_ENV=
+    local DEMYX_INFO_FLAG_ENV_GREP=
+    local DEMYX_INFO_FLAG_JSON=
+    local DEMYX_INFO_FLAG_RAW=
+    local DEMYX_INFO_FLAG_LOGIN=
+    local DEMYX_INFO_FLAG_NO_VOLUME=
+    local DEMYX_INFO_TRANSIENT="$DEMYX_TMP"/demyx_transient
+
     while :; do
-        case "$3" in
-            --all)
-                DEMYX_INFO_ALL=1
-                ;;
-            --backup)
-                DEMYX_INFO_BACKUP=1
-                ;;
-            --filter=?*)
-                DEMYX_INFO_FILTER="${3#*=}"
-                ;;
-            --filter=)
-                demyx_die '"--filter" cannot be empty'
-                ;;
-            --json)
-                DEMYX_INFO_JSON=1
-                ;;
-            --no-password)
-                DEMYX_INFO_NO_PASSWORD=1
-                ;;
-            --no-volume)
-                DEMYX_INFO_NO_VOLUME=1
-                ;;
-            --quiet)
-                DEMYX_INFO_QUIET=1
-                ;;
+        DEMYX_INFO_FLAG="${2:-}"
+        case "$DEMYX_INFO_FLAG" in
+            --env=?*)
+                DEMYX_INFO_FLAG_ENV=true
+                DEMYX_INFO_FLAG_ENV_GREP="${DEMYX_INFO_FLAG#*=}"
+            ;;
+            -j)
+                DEMYX_INFO_FLAG_JSON=true
+            ;;
+            -r)
+                DEMYX_INFO_FLAG_RAW=true
+            ;;
+            -l)
+                DEMYX_INFO_FLAG_LOGIN=true
+            ;;
+            -nv)
+                DEMYX_INFO_FLAG_NO_VOLUME=true
+            ;;
             --)
                 shift
                 break
                 ;;
             -?*)
-                printf '\e[31m[CRITICAL]\e[39m Unknown option: %s\n' "$3" >&2
-                exit 1
+                demyx_error flag "$DEMYX_INFO_FLAG"
                 ;;
             *)
                 break
         esac
         shift
     done
-    
-    demyx_app_config
 
-    if [[ "$DEMYX_TARGET" = all ]]; then
-        if [[ -n "$DEMYX_INFO_BACKUP" ]]; then
-            DEMYX_INFO_BACKUP_COUNT="$(ls -A "$DEMYX_BACKUP_WP" | wc -l)"
-            DEMYX_INFO_BACKUP_TOTAL_SIZE="$(du -sh "$DEMYX_BACKUP_WP" | cut -f1)"
-            PRINT_TABLE="DEMYX^ BACKUPS - $DEMYX_INFO_BACKUP_TOTAL_SIZE\n"
+    case "$DEMYX_ARG_2" in
+        app|apps)
+            demyx_info_apps
+        ;;
+        system)
+            demyx_info_system
+        ;;
+        *)
+            if [[ -n "$DEMYX_ARG_2" ]]; then
+                demyx_arg_valid
+                demyx_info_app
+            else
+                demyx_help info
+            fi
+        ;;
+    esac
+
+}
 
             if [[ "$DEMYX_INFO_BACKUP_COUNT" != 0 ]]; then
                 cd "$DEMYX_BACKUP_WP"
