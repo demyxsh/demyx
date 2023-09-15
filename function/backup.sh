@@ -1,48 +1,73 @@
 # Demyx
 # https://demyx.sh
-# 
-# demyx backup <app>
-# demyx backup <args>
-# 
+#
+#   demyx backup <app> <args>
+#
 demyx_backup() {
+    DEMYX_ARG_2="${1:-$DEMYX_ARG_2}"
+    shift && local DEMYX_BACKUP_ARGS="$*"
+    local DEMYX_BACKUP_FLAG=
+    local DEMYX_BACKUP_FLAG_CONFIG=
+    local DEMYX_BACKUP_FLAG_DB=
+    local DEMYX_BACKUP_FLAG_LIST=
+    local DEMYX_BACKUP_FLAG_PATH=
+
+    demyx_source wp
+
     while :; do
-        case "$3" in
-            --config)
-                DEMYX_BACKUP_CONFIG=1
-                ;;
+        DEMYX_BACKUP_FLAG="${1:-}"
+        case "$DEMYX_BACKUP_FLAG" in
+            -c)
+                DEMYX_BACKUP_FLAG_CONFIG=true
+            ;;
+            -d)
+                DEMYX_BACKUP_FLAG_DB=true
+            ;;
+            -l)
+                DEMYX_BACKUP_FLAG_LIST=true
+            ;;
             --path=?*)
-                DEMYX_BACKUP_PATH="${3#*=}"
-                ;;
+                DEMYX_BACKUP_FLAG_PATH="${DEMYX_BACKUP_FLAG#*=}"
+            ;;
             --path=)
-                demyx_die '"--path" cannot be empty'
-                ;;
+                demyx_error flag-empty "$DEMYX_BACKUP_FLAG"
+            ;;
             --)
                 shift
                 break
-                ;;
+            ;;
             -?*)
-                printf '\e[31m[CRITICAL]\e[39m Unknown option: %s\n' "$3" >&2
-                exit 1
-                ;;
+                demyx_error flag "$DEMYX_BACKUP_FLAG"
+            ;;
             *)
                 break
         esac
         shift
     done
 
-    if [[ "$DEMYX_TARGET" = all ]]; then
-        cd "$DEMYX_WP" || exit
-        for i in *
-        do
-            echo -e "\e[34m[INFO]\e[39m Backing up $i"
-            if [[ -n "$DEMYX_BACKUP_PATH" ]]; then
-                demyx backup "$i" --path="$DEMYX_BACKUP_PATH"
+    case "$DEMYX_ARG_2" in
+        all)
+            demyx_backup_all
+        ;;
+        *)
+            demyx_arg_valid
+
+            if [[ "$DEMYX_BACKUP_FLAG_CONFIG" = true ]]; then
+                demyx_backup_config
+            elif [[ "$DEMYX_BACKUP_FLAG_DB" = true ]]; then
+                demyx_backup_db
+            elif [[ "$DEMYX_BACKUP_FLAG_LIST" = true ]]; then
+                demyx_backup_list
             else
-                demyx backup "$i"
+                if [[ -n "$DEMYX_ARG_2" ]]; then
+                    demyx_backup_app
+                else
+                    demyx_help backup
+                fi
             fi
-        done
-    else
-        DEMYX_BACKUP_TODAYS_DATE="$(date +%Y-%m-%d)"
+        ;;
+    esac
+}
 
         demyx_app_config
         demyx_app_is_up
