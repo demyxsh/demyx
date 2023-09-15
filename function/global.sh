@@ -258,8 +258,43 @@ demyx_echo() {
     echo -e "$DEMYX_ECHO"
     demyx_logger false "demyx_echo" "$DEMYX_ECHO"
 }
-demyx_ols_not_supported() {
-    [[ "$DEMYX_APP_STACK" = ols ]] && demyx_die "OpenLiteSpeed doesn't support feature"
+#
+#   Outputs error string with an exit code 1.
+#
+demyx_error() {
+    local DEMYX_ERROR="${1:-}"
+    local DEMYX_ERROR_ARG="${2:-$DEMYX_ARG_2}"
+    local DEMYX_ERROR_STRING=
+    DEMYX_ERROR_STRING="[$(date +%F-%T)] \e[31m[ERROR]\e[39m"
+
+    case "$DEMYX_ERROR" in
+        app)
+            echo -en "$DEMYX_ERROR_STRING Not a valid app: $DEMYX_ERROR_ARG\n"
+        ;;
+        args)
+            echo -en "$DEMYX_ERROR_STRING Missing argument(s)\n"
+        ;;
+        config)
+            echo -en "$DEMYX_ERROR_STRING This config is already set to $DEMYX_ERROR_ARG, use -f to force\n"
+        ;;
+        cancel)
+            echo -en "$DEMYX_ERROR_STRING Cancelled\n"
+        ;;
+        custom)
+            echo -en "$DEMYX_ERROR_STRING $DEMYX_ERROR_ARG\n"
+        ;;
+        file)
+            echo -en "$DEMYX_ERROR_STRING File not found: $DEMYX_ERROR_ARG\n"
+        ;;
+        flag)
+            echo -en "$DEMYX_ERROR_STRING Invalid flag: $DEMYX_ERROR_ARG\n"
+        ;;
+        flag-empty)
+            echo -en "$DEMYX_ERROR_STRING Cannot be empty: ${DEMYX_ERROR_ARG//=/}\n"
+        ;;
+    esac
+
+    exit 1
 }
 demyx_warning() {
     demyx_execute -v echo -e "\e[33m[WARNING]\e[39m $1"
