@@ -224,11 +224,31 @@ demyx_count_wp() {
         echo 0
     fi
 }
-demyx_validate_ip() {
-    echo "$DEMYX_APP_DOMAIN" | grep -E '(([0-9]{1,3})\.){3}([0-9]{1,3}){1}'  | grep -vE '25[6-9]|2[6-9][0-9]|[3-9][0-9][0-9]' | grep -Eo '(([0-9]{1,2}|1[0-9]{1,2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]{1,2}|1[0-9]{1,2}|2[0-4][0-9]|25[0-5]){1}'
+#
+#   Print a divider as long as the current terminal width. Defaults to 100.
+#
+demyx_divider() {
+    local DEMYX_DIVIDER="${1:-}"
+    local DEMYX_DIVIDER_COUNT="${DEMYX_DIVIDER:-50}"
+
+    if [[ -t 0 && -z "$DEMYX_DIVIDER" ]]; then
+        DEMYX_DIVIDER_COUNT="$(stty size | awk -F ' ' '{print $2}')"
+    fi
+
+    printf %"${DEMYX_DIVIDER_COUNT}"s | tr " " "="
+    echo
 }
-demyx_source() {
-    source "$DEMYX_FUNCTION"/"$1".sh
+#
+#   Print divider title.
+#
+demyx_divider_title() {
+    local DEMYX_DIVIDER_TITLE="${1:-}"
+    local DEMYX_DIVIDER_TITLE_BODY="${2:-}"
+    local DEMYX_DIVIDER_TITLE_COUNT="${3:-}"
+
+    demyx_divider "$DEMYX_DIVIDER_TITLE_COUNT"
+    echo "[$DEMYX_DIVIDER_TITLE] $DEMYX_DIVIDER_TITLE_BODY"
+    demyx_divider "$DEMYX_DIVIDER_TITLE_COUNT"
 }
 demyx_alpine_check() {
     [[ -n "$(uname -a | grep Alpine || true)" ]] && echo true
