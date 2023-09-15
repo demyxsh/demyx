@@ -161,11 +161,26 @@ demyx_app_path() {
     local DEMYX_APP_PATH="${1:-$DEMYX_ARG_2}"
     find "$DEMYX_APP" -name "$DEMYX_APP_PATH" -type d
 }
-demyx_wordpress_ready() {
-    until docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "ls | grep xmlrpc.php"
-    do
-        sleep 1
-    done
+#
+#   Echo out protocol based on DEMYX_APP_SSL.
+#
+demyx_app_proto() {
+    local DEMYX_APP_PROTO=
+    local DEMYX_APP_PROTO_ENV=
+    DEMYX_APP_PROTO_ENV="$(demyx_app_path "$DEMYX_ARG_2")"/.env
+    local DEMYX_APP_PROTO_SSL=
+
+    if [[ -f "$DEMYX_APP_PROTO_ENV" ]]; then
+        DEMYX_APP_PROTO_SSL="$(grep DEMYX_APP_SSL=false "$DEMYX_APP_PROTO_ENV" || true)"
+    fi
+
+    if [[ -n "$DEMYX_APP_PROTO_SSL" ]]; then
+        DEMYX_APP_PROTO=http
+    else
+        DEMYX_APP_PROTO=https
+    fi
+
+    echo "$DEMYX_APP_PROTO"
 }
 demyx_generate_password() {
     DEMYX_PASSWORD_1="$(uuidgen | awk -F '[-]' '{print $5}' | head -c $(( ( RANDOM % 10 )  + 4 )) | sed -e 's/\r//g')"
