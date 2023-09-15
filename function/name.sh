@@ -4,6 +4,24 @@
 # Docker container naming scheme
 # https://github.com/moby/moby/blob/master/pkg/namesgenerator/names-generator.go
 #
+#	Loops until a word/name is present.
+#
+demyx_name() {
+	local DEMYX_NAME_LEFT=
+    local DEMYX_NAME_RIGHT=
+
+	while true; do
+		DEMYX_NAME_LEFT="$(demyx_name_adjectives)"
+		[[ -n "$DEMYX_NAME_LEFT" ]] && break
+	done
+
+	while true; do
+		DEMYX_NAME_RIGHT="$(demyx_name_sur)"
+		[[ -n "$DEMYX_NAME_RIGHT" ]] && break
+	done
+
+	echo "${DEMYX_NAME_LEFT}_${DEMYX_NAME_RIGHT}"
+}
 demyx_name_adjectives() {
     IFS=$'\r\n' GLOBIGNORE='*' command eval 'DEMYX_NAME_ADJECTIVES=(admiring
         adoring
