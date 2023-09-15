@@ -1,20 +1,22 @@
 # Demyx
 # https://demyx.sh
 #
-# demyx compose <app> <args> <docker-compose args>
+#   demyx compose <app> <args> <docker-compose args>
 #
 demyx_compose() {
-    demyx_app_config
+    DEMYX_ARG_2="${1:-$DEMYX_ARG_2}"
+    local DEMYX_COMPOSE_TYPE="${2:-}"
+    [[ -n "$DEMYX_ARG_2" ]] && shift && local DEMYX_COMPOSE_ARGS="$*"
 
-    DEMYX_COMPOSE="$1"
-    DEMYX_COMPOSE_CHECK_DB="$2" # Checks for --check-db flag
-
-    if [[ "$DEMYX_TARGET" = all ]]; then
-        if [[ "$DEMYX_COMPOSE_CHECK_DB" = --check-db ]]; then
-            shift 2
-        else
-            shift
-        fi
+    case "$DEMYX_ARG_2" in
+        all)
+            demyx_compose_all
+        ;;
+        *)
+            demyx_compose_app
+        ;;
+    esac
+}
 
         cd "$DEMYX_WP" || exit
         for i in *
