@@ -604,68 +604,52 @@ demyx_config_opcache() {
     demyx_execute "Setting $DEMYX_CONFIG_FLAG_OPCACHE to opcache" \
         "demyx_app_env_update DEMYX_APP_PHP_OPCACHE=$DEMYX_CONFIG_FLAG_OPCACHE"
 }
+#
+#   Configures an app's php-fpm settings.
+#
+demyx_config_php() {
+    DEMYX_CONFIG_COMPOSE=true
 
-                demyx_echo 'Turning on PHP opcache'
-
-                if [[ "$DEMYX_APP_WP_IMAGE" = demyx/openlitespeed ]]; then
-                    demyx_execute sed -i "s|DEMYX_APP_PHP_OPCACHE=.*|DEMYX_APP_PHP_OPCACHE=true|g" "$DEMYX_APP_PATH"/.env; \
-                        docker exec -t -e OPENLITESPEED_PHP_OPCACHE=true "$DEMYX_APP_WP_CONTAINER" demyx-config
-
-                    demyx config "$DEMYX_APP_DOMAIN" --restart=ols; \
-                else
-                    demyx_execute sed -i "s|DEMYX_APP_PHP_OPCACHE=.*|DEMYX_APP_PHP_OPCACHE=true|g" "$DEMYX_APP_PATH"/.env
-                    demyx config "$DEMYX_APP_DOMAIN" --restart=php
-                fi
-            elif [[ "$DEMYX_CONFIG_OPCACHE" = false ]]; then
-                demyx_app_is_up
-
-                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_PHP_OPCACHE" = false ]] && demyx_die 'PHP opcache is already turned off'
-                fi
-
-                demyx_echo 'Turning off PHP opcache'
-
-                if [[ "$DEMYX_APP_WP_IMAGE" = demyx/openlitespeed ]]; then
-                    demyx_execute sed -i "s|DEMYX_APP_PHP_OPCACHE=.*|DEMYX_APP_PHP_OPCACHE=false|g" "$DEMYX_APP_PATH"/.env; \
-                        docker exec -t -e OPENLITESPEED_PHP_OPCACHE=false "$DEMYX_APP_WP_CONTAINER" demyx-config
-
-                    demyx config "$DEMYX_APP_DOMAIN" --restart=ols
-                else
-                    demyx_execute sed -i "s|DEMYX_APP_PHP_OPCACHE=.*|DEMYX_APP_PHP_OPCACHE=false|g" "$DEMYX_APP_PATH"/.env
-                    demyx config "$DEMYX_APP_DOMAIN" --restart=php
-                fi
-            fi
-            if [[ -n "$DEMYX_CONFIG_PHP" ]]; then
-                demyx_ols_not_supported
-
-                if [[ -n "$DEMYX_CONFIG_PHP_MAX_CHILDREN" ]]; then
-                    demyx_echo "Updating pm.max_children $DEMYX_CONFIG_PHP_MAX_CHILDREN"
-                    demyx_execute sed -i "s|DEMYX_APP_PHP_PM_MAX_CHILDREN=.*|DEMYX_APP_PHP_PM_MAX_CHILDREN=$DEMYX_CONFIG_PHP_MAX_CHILDREN|g" "$DEMYX_APP_PATH"/.env
-                fi
-                if [[ -n "$DEMYX_CONFIG_PHP_MAX_REQUESTS" ]]; then
-                    demyx_echo "Updating pm.max_requests $DEMYX_CONFIG_PHP_MAX_REQUESTS"
-                    demyx_execute sed -i "s|DEMYX_APP_PHP_PM_MAX_REQUESTS=.*|DEMYX_APP_PHP_PM_MAX_REQUESTS=$DEMYX_CONFIG_PHP_MAX_REQUESTS|g" "$DEMYX_APP_PATH"/.env
-                fi
-                if [[ -n "$DEMYX_CONFIG_PHP_MAX_SPARE_SERVERS" ]]; then
-                    demyx_echo "Updating pm.max_spare_servers $DEMYX_CONFIG_PHP_MAX_SPARE_SERVERS"
-                    demyx_execute sed -i "s|DEMYX_APP_PHP_PM_MAX_SPARE_SERVERS=.*|DEMYX_APP_PHP_PM_MAX_SPARE_SERVERS=$DEMYX_CONFIG_PHP_MAX_SPARE_SERVERS|g" "$DEMYX_APP_PATH"/.env
-                fi
-                if [[ -n "$DEMYX_CONFIG_PHP_MIN_SPARE_SERVERS" ]]; then
-                    demyx_echo "Updating pm.min_spare_servers $DEMYX_CONFIG_PHP_MIN_SPARE_SERVERS"
-                    demyx_execute sed -i "s|DEMYX_APP_PHP_PM_MIN_SPARE_SERVERS=.*|DEMYX_APP_PHP_PM_MIN_SPARE_SERVERS=$DEMYX_CONFIG_PHP_MIN_SPARE_SERVERS|g" "$DEMYX_APP_PATH"/.env
-                fi
-                if [[ -n "$DEMYX_CONFIG_PHP_PM" ]]; then
-                    demyx_echo "Updating pm $DEMYX_CONFIG_PHP_PM"
-                    demyx_execute sed -i "s|DEMYX_APP_PHP_PM=.*|DEMYX_APP_PHP_PM=$DEMYX_CONFIG_PHP_PM|g" "$DEMYX_APP_PATH"/.env
-                fi
-                if [[ -n "$DEMYX_CONFIG_PHP_PROCESS_IDLE_TIMEOUT" ]]; then
-                    demyx_echo "Updating pm.process_idle_timeout $DEMYX_CONFIG_PHP_PROCESS_IDLE_TIMEOUT"
-                    demyx_execute sed -i "s|DEMYX_APP_PHP_PM_PROCESS_IDLE_TIMEOUT=.*|DEMYX_APP_PHP_PM_PROCESS_IDLE_TIMEOUT=$DEMYX_CONFIG_PHP_PROCESS_IDLE_TIMEOUT|g" "$DEMYX_APP_PATH"/.env
-                fi
-                if [[ -n "$DEMYX_CONFIG_PHP_START_SERVERS" ]]; then
-                    demyx_echo "Updating pm.start_servers $DEMYX_CONFIG_PHP_START_SERVERS"
-                    demyx_execute sed -i "s|DEMYX_APP_PHP_PM_START_SERVERS=.*|DEMYX_APP_PHP_PM_START_SERVERS=$DEMYX_CONFIG_PHP_START_SERVERS|g" "$DEMYX_APP_PATH"/.env
-                fi
+    if [[ -n "$DEMYX_CONFIG_FLAG_PHP_PM" ]]; then
+        demyx_ols_not_supported
+        demyx_execute "Updating pm $DEMYX_CONFIG_FLAG_PHP_PM" \
+            "demyx_app_env_update DEMYX_APP_PHP_PM=$DEMYX_CONFIG_FLAG_PHP_PM"
+    fi
+    if [[ -n "$DEMYX_CONFIG_FLAG_PHP_MAX_CHILDREN" ]]; then
+        demyx_ols_not_supported
+        demyx_execute "Updating pm.max_children $DEMYX_CONFIG_FLAG_PHP_MAX_CHILDREN" \
+            "demyx_app_env_update DEMYX_APP_PHP_PM_MAX_CHILDREN=$DEMYX_CONFIG_FLAG_PHP_MAX_CHILDREN"
+    fi
+    if [[ -n "$DEMYX_CONFIG_FLAG_PHP_MAX_REQUESTS" ]]; then
+        demyx_ols_not_supported
+        demyx_execute "Updating pm.max_requests $DEMYX_CONFIG_FLAG_PHP_MAX_REQUESTS" \
+            "demyx_app_env_update DEMYX_APP_PHP_PM_MAX_REQUESTS=$DEMYX_CONFIG_FLAG_PHP_MAX_REQUESTS"
+    fi
+    if [[ -n "$DEMYX_CONFIG_FLAG_PHP_MAX_SPARE_SERVERS" ]]; then
+        demyx_ols_not_supported
+        demyx_execute "Updating pm.max_spare_servers $DEMYX_CONFIG_FLAG_PHP_MAX_SPARE_SERVERS" \
+            "demyx_app_env_update DEMYX_APP_PHP_PM_MAX_SPARE_SERVERS=$DEMYX_CONFIG_FLAG_PHP_MAX_SPARE_SERVERS"
+    fi
+    if [[ -n "$DEMYX_CONFIG_FLAG_PHP_MIN_SPARE_SERVERS" ]]; then
+        demyx_ols_not_supported
+        demyx_execute "Updating pm.min_spare_servers $DEMYX_CONFIG_FLAG_PHP_MIN_SPARE_SERVERS" \
+            "demyx_app_env_update DEMYX_APP_PHP_PM_MIN_SPARE_SERVERS=$DEMYX_CONFIG_FLAG_PHP_MIN_SPARE_SERVERS"
+    fi
+    if [[ -n "$DEMYX_CONFIG_FLAG_PHP_PROCESS_IDLE_TIMEOUT" ]]; then
+        demyx_ols_not_supported
+        demyx_execute "Updating pm.process_idle_timeout $DEMYX_CONFIG_FLAG_PHP_PROCESS_IDLE_TIMEOUT" \
+            "demyx_app_env_update DEMYX_APP_PHP_PM_PROCESS_IDLE_TIMEOUT=$DEMYX_CONFIG_FLAG_PHP_PROCESS_IDLE_TIMEOUT"
+    fi
+    if [[ -n "$DEMYX_CONFIG_FLAG_PHP_START_SERVERS" ]]; then
+        demyx_ols_not_supported
+        demyx_execute "Updating pm.start_servers $DEMYX_CONFIG_FLAG_PHP_START_SERVERS" \
+            "demyx_app_env_update DEMYX_APP_PHP_PM_START_SERVERS=$DEMYX_CONFIG_FLAG_PHP_START_SERVERS"
+    fi
+    if [[ -n "$DEMYX_CONFIG_FLAG_PHP_VERSION" ]]; then
+        demyx_execute "Updating php to version $DEMYX_CONFIG_FLAG_PHP_VERSION" \
+            "demyx_app_env_update DEMYX_APP_PHP=$DEMYX_CONFIG_FLAG_PHP_VERSION"
+    fi
+}
 
                 demyx compose "$DEMYX_APP_DOMAIN" up -d wp_"$DEMYX_APP_ID"
             fi
