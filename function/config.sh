@@ -336,17 +336,31 @@ demyx_config_auth() {
         } > "$DEMYX_CONFIG_TRANSIENT"
     fi
 }
+#
+#   Configures app's basic auth for WordPress login page.
+#
+demyx_config_auth_wp() {
+    demyx_app_env wp "
+        DEMYX_APP_AUTH_WP
+        DEMYX_APP_AUTH_USERNAME
+        DEMYX_APP_AUTH_PASSWORD
+        DEMYX_APP_STACK
+    "
 
-                demyx_echo 'Updating configs'
-                demyx_execute sed -i "s|DEMYX_APP_CACHE=.*|DEMYX_APP_CACHE=true|g" "$DEMYX_APP_PATH"/.env
+    DEMYX_CONFIG="WordPress Login Basic Auth"
+    DEMYX_CONFIG_COMPOSE=true
 
-                demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
-            elif [[ "$DEMYX_CONFIG_CACHE" = false ]]; then
-                demyx_app_is_up
+    demyx_execute "Setting $DEMYX_CONFIG_FLAG_AUTH_WP to WordPress basic auth" \
+        "demyx_app_env_update DEMYX_APP_AUTH_WP=${DEMYX_CONFIG_FLAG_AUTH_WP}; \
+        demyx_yml $DEMYX_APP_STACK"
 
-                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_CACHE" = false ]] && demyx_die 'Cache is already turned off'
-                fi
+    if [[ "$DEMYX_CONFIG_FLAG_AUTH_WP" = true ]]; then
+        {
+            echo "Username      $DEMYX_APP_AUTH_USERNAME"
+            echo "Password      $DEMYX_APP_AUTH_PASSWORD"
+        } > "$DEMYX_CONFIG_TRANSIENT"
+    fi
+}
 
                 if [[ "$DEMYX_APP_STACK" = ols || "$DEMYX_APP_STACK" = ols-bedrock ]]; then
                     demyx_echo 'Deactivating litespeed-cache'
