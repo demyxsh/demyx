@@ -118,6 +118,23 @@ demyx_healthcheck_app() {
         fi
     fi
 }
+#
+#   Checks disk space.
+#
+demyx_healthcheck_disk() {
+    local DEMYX_HEALTHCHECK_DISK=
+    local DEMYX_HEALTHCHECK_DISK_ALL=
+    DEMYX_HEALTHCHECK_DISK_ALL="$(df -h | tee "$DEMYX_HEALTHCHECK_TRANSIENT")"
+    DEMYX_HEALTHCHECK_DISK="$(df "${DEMYX_HEALTHCHECK_DISK:-/}" | head -n2 | tail -n1 | awk '{print $5}' | sed 's|%||g')"
+    local DEMYX_HEALTHCHECK_DISK_SUBJECT="Disk ${DEMYX_HEALTHCHECK_DISK}% full"
+
+    if (( "$DEMYX_HEALTHCHECK_DISK" > "$DEMYX_HEALTHCHECK_DISK_THRESHOLD" )); then
+        demyx_notification healthcheck "$DEMYX_HEALTHCHECK_DISK_SUBJECT"
+    fi
+
+    demyx_divider_title "HEALTHCHECK - DISK" "$DEMYX_HEALTHCHECK_DISK_SUBJECT"
+    echo "$DEMYX_HEALTHCHECK_DISK_ALL"
+}
 
         demyx_execute -v rm -f "$DEMYX"/.healthcheck_running
     fi
