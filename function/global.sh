@@ -359,10 +359,53 @@ demyx_images() {
         ;;
     esac
 }
+#
+#   Logs commands/outputs to /var/log/demyx/demyx.log.
+#
+demyx_logger() {
+    local DEMYX_LOGGER=
+    local DEMYX_LOGGER_COUNTER=
+    local DEMYX_LOGGER_DATE=
+    local DEMYX_LOGGER_ECHO="${1:-}"
+    local DEMYX_LOGGER_EXECUTE="${2:-}"
+    local DEMYX_LOGGER_STDOUT="${3:-}"
+    local DEMYX_LOGGER_STDOUT_LINEBREAK=
+    local DEMYX_LOGGER_TYPE="${4:-}"
+    local DEMYX_LOGGER_FILE="$DEMYX_LOG"/demyx.log
+
+    DEMYX_LOGGER_COUNTER="$(echo "$DEMYX_LOGGER_STDOUT" | wc -l)"
+    DEMYX_LOGGER_DATE="$(date +%F-%T)"
+
+    if [[ "$DEMYX_ARG_1" = cron ]]; then
+        DEMYX_LOGGER_FILE="$DEMYX_LOG"/cron.log
     fi
 
-    if [[ -n "$(docker images demyx/ssh:latest -q)" ]]; then
-        echo "DEMYX_LOCAL_OPENSSH_VERSION=$(docker run --rm --entrypoint=ssh demyx/ssh -V 2>&1 | cut -c -13 | awk -F '[_]' '{print $2}' | sed 's/\r//g')" >> "$DEMYX"/.update_local
+    if [[ "$DEMYX_LOGGER_TYPE" = error ]]; then
+        DEMYX_LOGGER_FILE="$DEMYX_LOG"/error.log
+    fi
+
+    # TODO
+    #local DEMYX_LOGGER_EXECUTE_LINEBREAK=
+    #[[ "$DEMYX_LOGGER_EXECUTE" == *"&&"* ]] && DEMYX_LOGGER_EXECUTE_LINEBREAK="\n"
+
+    DEMYX_LOGGER+="[$DEMYX_LOGGER_DATE] ========================================\n"
+    DEMYX_LOGGER+="CMD: demyx ${DEMYX_ARGS}\n"
+    DEMYX_LOGGER+="ECHO: ${DEMYX_LOGGER_ECHO}\n"
+    DEMYX_LOGGER+="EXECUTE: $(echo "$DEMYX_LOGGER_EXECUTE" | tr -s " ")\n"
+
+    if [[ "$DEMYX_LOGGER_COUNTER" -gt 2 ]]; then
+        DEMYX_LOGGER_STDOUT_LINEBREAK="\n"
+    fi
+
+    DEMYX_LOGGER+="STDOUT: ${DEMYX_LOGGER_STDOUT_LINEBREAK}${DEMYX_LOGGER_STDOUT}\n"
+    DEMYX_LOGGER+="[$DEMYX_LOGGER_DATE] ========================================"
+    echo -e "$DEMYX_LOGGER" >> "$DEMYX_LOGGER_FILE"
+
+    if [[ "$DEMYX_LOGGER_TYPE" = error ]]; then
+        # Notify host script about new errors
+        touch "$DEMYX_TMP"/demyx_log_error
+        echo -e "$DEMYX_LOGGER" > "$DEMYX_TMP"/demyx_notification
+        demyx_notification error "$DEMYX_ARGS"
     fi
 }
 demyx_update_remote() {
