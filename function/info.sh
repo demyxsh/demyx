@@ -65,133 +65,112 @@ demyx_info() {
     esac
 
 }
+#
+#   Displays app's entire environment variables.
+#
+demyx_info_app() {
+    local DEMYX_INFO_APP_DB_VOLUME=
+    local DEMYX_INFO_APP_ENV=
+    local DEMYX_INFO_APP_ENV_VAR=
+    local DEMYX_INFO_APP_ENV_VAL=
+    local DEMYX_INFO_APP_JSON=
+    local DEMYX_INFO_APP_VOLUME=
+    local DEMYX_INFO_APP_WP_VOLUME=
 
-            if [[ "$DEMYX_INFO_BACKUP_COUNT" != 0 ]]; then
-                cd "$DEMYX_BACKUP_WP"
-                for i in *
-                do
-                    DEMYX_INFO_BACKUP_SIZE="$(du -sh "$DEMYX_BACKUP_WP"/"$i" | cut -f1)"
-                    PRINT_TABLE+="$DEMYX_INFO_BACKUP_SIZE^ $i ("$(ls -A "$DEMYX_BACKUP_WP"/"$i" | wc -l)")\n"
-                done
+    if [[ "$DEMYX_INFO_FLAG_ENV" = true ]]; then
+        demyx_app_env wp DEMYX_APP_PATH
+        DEMYX_INFO_APP_ENV="$(grep -i "$DEMYX_INFO_FLAG_ENV_GREP" "$DEMYX_APP_PATH"/.env || true)"
+        if [[ -n "$DEMYX_INFO_APP_ENV" ]]; then
+            echo "$DEMYX_INFO_APP_ENV"
+        else
+            demyx_error custom "$DEMYX_INFO_FLAG_ENV_GREP doesn't exist"
+        fi
+    elif [[ "$DEMYX_INFO_FLAG_LOGIN" = true ]]; then
+        demyx_source wp
+        demyx_app_env wp "
+            DEMYX_APP_AUTH_PASSWORD
+            DEMYX_APP_AUTH_USERNAME
+            DEMYX_APP_DEV_PASSWORD
+            DEMYX_APP_DOMAIN
+            DEMYX_APP_OLS_ADMIN_PASSWORD
+            DEMYX_APP_OLS_ADMIN_USERNAME
+            DEMYX_APP_STACK
+            MARIADB_ROOT_PASSWORD
+            WORDPRESS_DB_HOST
+            WORDPRESS_DB_NAME
+            WORDPRESS_DB_PASSWORD
+            WORDPRESS_DB_USER
+            WORDPRESS_USER
+            WORDPRESS_USER_PASSWORD
+        "
+
+        {
+            echo "Basic Auth Username           $DEMYX_APP_AUTH_USERNAME"
+            echo "Basic Auth Password           $DEMYX_APP_AUTH_PASSWORD"
+            echo
+            echo "Code Server Login             $(demyx_app_proto)://$(demyx_app_domain)/demyx/cs/"
+            echo "Code Server Password          $DEMYX_APP_DEV_PASSWORD"
+
+            if [[ "$DEMYX_APP_STACK" = ols || "$DEMYX_APP_STACK" = ols-bedrock ]]; then
+                echo
+                echo "OLS Admin Login           $(demyx_app_proto)://$(demyx_app_domain)/demyx/ols/"
+                echo "OLS Admin Username        $DEMYX_APP_OLS_ADMIN_USERNAME"
+                echo "OLS Admin Password        $DEMYX_APP_OLS_ADMIN_PASSWORD"
             fi
-                        
-            demyx_execute -v demyx_table "$PRINT_TABLE"
-        else
-            cd "$DEMYX_WP"
-            for i in *
-            do
-                source "$DEMYX_WP"/"$i"/.env
 
-                if [[ -z "$DEMYX_INFO_NO_VOLUME" ]]; then
-                    DEMYX_INFO_DATA_VOLUME="$(docker exec -t "$DEMYX_APP_WP_CONTAINER" du -sh /demyx | cut -f1)"
-                    DEMYX_INFO_DB_VOLUME="$(docker exec -t "$DEMYX_APP_DB_CONTAINER" du -sh /demyx/"$WORDPRESS_DB_NAME" | cut -f1)"
-                fi
+            echo
+            echo "MariaDB DB Host               $WORDPRESS_DB_HOST"
+            echo "MariaDB DB Name               $WORDPRESS_DB_NAME"
+            echo "MariaDB DB Username           $WORDPRESS_DB_USER"
+            echo "MariaDB DB Password           $WORDPRESS_DB_PASSWORD"
+            echo "MariaDB Root Password         $MARIADB_ROOT_PASSWORD"
+            echo
+            echo "WordPress Login               $(demyx_app_login)"
+            echo "WordPress Username            $WORDPRESS_USER"
+            echo "WordPress Password            $WORDPRESS_USER_PASSWORD"
+        } > "$DEMYX_INFO_TRANSIENT"
 
-                if [[ -n "$DEMYX_INFO_NO_PASSWORD" ]]; then
-                    WORDPRESS_USER_PASSWORD=
-                fi
+        demyx_execute false "demyx_divider_title \"$DEMYX_INFO\" \"Login Credentials\"; \
+            cat < $DEMYX_INFO_TRANSIENT"
+    else
+        demyx_app_env wp "
+            DEMYX_APP_DB_CONTAINER
+            DEMYX_APP_PATH
+            DEMYX_APP_WP_CONTAINER
+            WORDPRESS_DB_NAME
+        "
 
-                DEMYX_INFO_ALL_JSON+='{'
-                DEMYX_INFO_ALL_JSON+='"domain": "'$DEMYX_APP_DOMAIN'",'
-                DEMYX_INFO_ALL_JSON+='"path": "'$DEMYX_APP_PATH'",'
-                DEMYX_INFO_ALL_JSON+='"wp_user": "'$WORDPRESS_USER'",'
-                DEMYX_INFO_ALL_JSON+='"wp_password": "'$WORDPRESS_USER_PASSWORD'",'
-                DEMYX_INFO_ALL_JSON+='"nx_container": "'$DEMYX_APP_NX_CONTAINER'",'
-                DEMYX_INFO_ALL_JSON+='"wp_container": "'$DEMYX_APP_WP_CONTAINER'",'
-                DEMYX_INFO_ALL_JSON+='"db_container": "'$DEMYX_APP_DB_CONTAINER'",'
-                DEMYX_INFO_ALL_JSON+='"wp_volume": "'$DEMYX_INFO_DATA_VOLUME'",'
-                DEMYX_INFO_ALL_JSON+='"db_volume": "'$DEMYX_INFO_DB_VOLUME'",'
-                DEMYX_INFO_ALL_JSON+='"wp_cpu": "'$DEMYX_APP_WP_CPU'",'
-                DEMYX_INFO_ALL_JSON+='"wp_mem": "'$DEMYX_APP_WP_MEM'",'
-                DEMYX_INFO_ALL_JSON+='"db_cpu": "'$DEMYX_APP_DB_CPU'",'
-                DEMYX_INFO_ALL_JSON+='"db_mem": "'$DEMYX_APP_DB_MEM'",'
-                DEMYX_INFO_ALL_JSON+='"ssl": "'$DEMYX_APP_SSL'",'
-                DEMYX_INFO_ALL_JSON+='"cache": "'$DEMYX_APP_CACHE'",'
-                DEMYX_INFO_ALL_JSON+='"cdn": "'$DEMYX_APP_CDN'",'
-                DEMYX_INFO_ALL_JSON+='"auth": "'$DEMYX_APP_AUTH'",'
-                DEMYX_INFO_ALL_JSON+='"auth_wp": "'$DEMYX_APP_AUTH_WP'",'
-                DEMYX_INFO_ALL_JSON+='"dev": "'$DEMYX_APP_DEV'",'
-                DEMYX_INFO_ALL_JSON+='"healthcheck": "'$DEMYX_APP_HEALTHCHECK'"'
-                DEMYX_INFO_ALL_JSON+='},'
-            done
-            echo "[$DEMYX_INFO_ALL_JSON]" | sed 's|,]|]|g'
+        if [[ -z "$DEMYX_INFO_FLAG_NO_VOLUME" ]]; then
+            DEMYX_INFO_APP_DB_VOLUME="$(docker exec -t "$DEMYX_APP_DB_CONTAINER" du -sh /demyx/"$WORDPRESS_DB_NAME" | cut -f1)"
+            DEMYX_INFO_APP_WP_VOLUME="$(docker exec -t "$DEMYX_APP_WP_CONTAINER" du -sh /demyx | cut -f1)"
+            DEMYX_INFO_APP_VOLUME="^DB VOLUME^ $DEMYX_INFO_APP_DB_VOLUME\n"
+            DEMYX_INFO_APP_VOLUME+="^WP VOLUME^ $DEMYX_INFO_APP_WP_VOLUME\n"
+            DEMYX_INFO_APP_JSON="{\"db_volume\":\"${DEMYX_INFO_APP_DB_VOLUME}\",\"wp_volume\":\"${DEMYX_INFO_APP_WP_VOLUME}\","
         fi
-    elif [[ "$DEMYX_TARGET" = env ]]; then
-        [[ -z "$DEMYX_INFO_FILTER" ]] && demyx_die '--filter is required'
-        cd "$DEMYX_WP"
-        PRINT_TABLE="DEMYX^ $DEMYX_INFO_FILTER\n"
-        for i in *
-        do
-            DEMYX_INFO_ALL_FILTER="$(grep "$DEMYX_INFO_FILTER" "$DEMYX_WP"/"$i"/.env | awk -F '[=]' '{print $2}')"
-            [[ -z "$DEMYX_INFO_ALL_FILTER" ]] && demyx_die "$DEMYX_INFO_FILTER is not a valid filter"
-            PRINT_TABLE+="$i^ $DEMYX_INFO_ALL_FILTER\n"
-        done
-        demyx_execute -v -q demyx_table "$PRINT_TABLE"
-    elif [[ "$DEMYX_TARGET" = motd ]]; then
-        DEMYX_INFO_HOST="$(hostname)"
-        DEMYX_INFO_WP_COUNT="$(find "$DEMYX_WP" -mindepth 1 -maxdepth 1 -type d | wc -l)"
-        DEMYX_INFO_WP_BACKUPS="$([[ -d "$DEMYX_BACKUP_WP" ]] && du -sh "$DEMYX_BACKUP_WP" | awk '{print $1}' || echo 0)"
-        DEMYX_INFO_DF="$(df -h /demyx)"
-        DEMYX_INFO_DISK_USED="$(echo "$DEMYX_INFO_DF" | sed '1d' | awk '{print $3}')"
-        DEMYX_INFO_DISK_TOTAL="$(echo "$DEMYX_INFO_DF" | sed '1d' | awk '{print $2}')"
-        DEMYX_INFO_DISK_PERCENTAGE="$(echo "$DEMYX_INFO_DF" | sed '1d' | awk '{print $5}')"
-        DEMYX_INFO_MEMORY="$(free -m)"
-        DEMYX_INFO_MEMORY_USED="$(echo "$DEMYX_INFO_MEMORY" | sed '1d' | sed '2d' | awk '{print $3}')"
-        DEMYX_INFO_MEMORY_TOTAL="$(echo "$DEMYX_INFO_MEMORY" | sed '1d' | sed '2d' | awk '{print $2}')"
-        DEMYX_INFO_UPTIME="$(uptime | awk -F '[,]' '{print $1}' | awk -F '[up]' '{print $3}' | sed 's|^.||')"
-        DEMYX_INFO_LOAD_AVERAGE="$(cat /proc/loadavg | awk '{print $1 " " $2 " " $3}')"
-        DEMYX_INFO_CONTAINER_RUNNING=0
-        DEMYX_INFO_CONTAINER_DEAD=0
-        DEMYX_INFO_CONTAINER_RUNNING="$(/usr/local/bin/docker ps -q | wc -l)"
-        DEMYX_INFO_CONTAINER_DEAD="$(/usr/local/bin/docker ps -q --filter "status=exited" | wc -l)"
-        
-        if [[ -n "$DEMYX_INFO_JSON" ]]; then 
-            DEMYX_INFO_SYSTEM_JSON='{'
-            DEMYX_INFO_SYSTEM_JSON+='"version": "'$DEMYX_VERSION'",'
-            DEMYX_INFO_SYSTEM_JSON+='"hostname": "'$DEMYX_INFO_HOST'",'
-            DEMYX_INFO_SYSTEM_JSON+='"wp_count": "'$DEMYX_INFO_WP_COUNT'",'
-            DEMYX_INFO_SYSTEM_JSON+='"wp_backups": "'$DEMYX_INFO_WP_BACKUPS'",'
-            DEMYX_INFO_SYSTEM_JSON+='"disk_used": "'$DEMYX_INFO_DISK_USED'",'
-            DEMYX_INFO_SYSTEM_JSON+='"disk_total": "'$DEMYX_INFO_DISK_TOTAL'",'
-            DEMYX_INFO_SYSTEM_JSON+='"disk_total_percentage": "'$DEMYX_INFO_DISK_PERCENTAGE'",'
-            DEMYX_INFO_SYSTEM_JSON+='"memory_used": "'$DEMYX_INFO_MEMORY_USED'",'
-            DEMYX_INFO_SYSTEM_JSON+='"memory_total": "'$DEMYX_INFO_MEMORY_TOTAL'",'
-            DEMYX_INFO_SYSTEM_JSON+='"uptime": "'$DEMYX_INFO_UPTIME'",'
-            DEMYX_INFO_SYSTEM_JSON+='"load_average": "'$DEMYX_INFO_LOAD_AVERAGE'",'
-            DEMYX_INFO_SYSTEM_JSON+='"container_running": "'$DEMYX_INFO_CONTAINER_RUNNING'",'
-            DEMYX_INFO_SYSTEM_JSON+='"container_dead": "'$DEMYX_INFO_CONTAINER_DEAD'"'
-            DEMYX_INFO_SYSTEM_JSON+='}'
-            echo "$DEMYX_INFO_SYSTEM_JSON"
+
+        if [[ "$DEMYX_INFO_FLAG_JSON" = true ]]; then
+            while IFS= read -r DEMYX_INFO_APP_ENV; do
+                DEMYX_INFO_APP_ENV_VAR="$(echo "${DEMYX_INFO_APP_ENV/=*/}" | awk '{print tolower($0)}')"
+                DEMYX_INFO_APP_ENV_VAL="${DEMYX_INFO_APP_ENV/*=/}"
+                DEMYX_INFO_APP_JSON+="\"${DEMYX_INFO_APP_ENV_VAR}\":\"${DEMYX_INFO_APP_ENV_VAL}\","
+            done < <(grep '=' < "$DEMYX_APP_PATH"/.env)
+
+            echo "${DEMYX_INFO_APP_JSON%,*}}" > "$DEMYX_TMP"/demyx_info
+
+            demyx_execute false \
+                "cat < ${DEMYX_TMP}/demyx_info"
         else
-            PRINT_TABLE="DEMYX ${DEMYX_VERSION}^ SYSTEM INFO\n"
-            PRINT_TABLE+="HOSTNAME^ $DEMYX_INFO_HOST\n"
-            PRINT_TABLE+="WORDPRESS APPS^ $DEMYX_INFO_WP_COUNT\n"
-            PRINT_TABLE+="WORDPRESS BACKUPS^ $DEMYX_INFO_WP_BACKUPS\n"
-            PRINT_TABLE+="DISK USED^ $DEMYX_INFO_DISK_USED\n"
-            PRINT_TABLE+="DISK TOTAL^ $DEMYX_INFO_DISK_TOTAL\n"
-            PRINT_TABLE+="DISK TOTAL PERCENTAGE^ $DEMYX_INFO_DISK_PERCENTAGE\n"
-            PRINT_TABLE+="MEMORY USED^ $DEMYX_INFO_MEMORY_USED\n"
-            PRINT_TABLE+="MEMORY TOTAL^ $DEMYX_INFO_MEMORY_TOTAL\n"
-            PRINT_TABLE+="UPTIME^ $DEMYX_INFO_UPTIME\n"
-            PRINT_TABLE+="LOAD AVERAGE^ $DEMYX_INFO_LOAD_AVERAGE\n"
-            PRINT_TABLE+="RUNNING CONTAINERS^ $DEMYX_INFO_CONTAINER_RUNNING\n"
-            PRINT_TABLE+="DEAD CONTAINERS^ $DEMYX_INFO_CONTAINER_DEAD"
-            
-            demyx_execute -v demyx_table "$PRINT_TABLE"
+            demyx_app_env wp DEMYX_APP_PATH
+
+            {
+                cat < "$DEMYX_APP_PATH"/.env | sed '/#/d'
+            } > "$DEMYX_INFO_TRANSIENT"
+
+            demyx_execute false "demyx_divider_title \"$DEMYX_INFO\" \"DB Volume ($DEMYX_INFO_APP_DB_VOLUME) - WP Volume ($DEMYX_INFO_APP_WP_VOLUME)\""
+            column "$DEMYX_INFO_TRANSIENT"
         fi
-    elif [[ "$DEMYX_APP_TYPE" = wp ]]; then
-        if [[ -n "$DEMYX_INFO_ALL" ]]; then
-            DEMYX_INFO_ALL="$(cat "$DEMYX_APP_PATH"/.env | sed '/#/d')"
-            PRINT_TABLE="DEMYX^ INFO\n"
-            for i in $DEMYX_INFO_ALL
-            do
-                PRINT_TABLE+="$(echo "$i" | awk -F '[=]' '{print $1}')^ $(echo "$i" | awk -F '[=]' '{print $2}')\n"
-            done
-            demyx_execute -v -q demyx_table "$PRINT_TABLE"
-        elif [[ -n "$DEMYX_INFO_BACKUP" ]]; then
-            DEMYX_INFO_BACKUP_COUNT="$(ls -A "$DEMYX_BACKUP_WP"/"$DEMYX_APP_DOMAIN" | wc -l)"
-            DEMYX_INFO_BACKUP_TOTAL_SIZE="$(du -sh "$DEMYX_BACKUP_WP"/"$DEMYX_APP_DOMAIN" | cut -f1)"
-            PRINT_TABLE="DEMYX^ BACKUPS - $DEMYX_INFO_BACKUP_TOTAL_SIZE\n"
+    fi
+}
 
             if [[ "$DEMYX_INFO_BACKUP_COUNT" != 0 ]]; then
                 cd "$DEMYX_BACKUP_WP"/"$DEMYX_APP_DOMAIN"
