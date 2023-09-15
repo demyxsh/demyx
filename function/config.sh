@@ -681,27 +681,20 @@ demyx_config_pma() {
         } > "$DEMYX_CONFIG_TRANSIENT"
     fi
 }
+#
+#   Configures an app's rate limit.
+#
+demyx_config_rate_limit() {
+    demyx_ols_not_supported
+    demyx_app_env wp "
+        DEMYX_APP_RATE_LIMIT
+    "
 
-                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_RATE_LIMIT" = true ]] && demyx_die 'Rate limit is already turned on'
-                fi
+    DEMYX_CONFIG_COMPOSE=true
 
-                demyx_echo 'Turning on rate limiting'
-                demyx_execute docker exec -t -e NGINX_RATE_LIMIT=true "$DEMYX_APP_NX_CONTAINER" demyx-wp; \
-                    sed -i "s|DEMYX_APP_RATE_LIMIT=.*|DEMYX_APP_RATE_LIMIT=true|g" "$DEMYX_APP_PATH"/.env
-
-                demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
-            elif [[ "$DEMYX_CONFIG_RATE_LIMIT" = false ]]; then
-                demyx_app_is_up
-                demyx_ols_not_supported
-
-                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_RATE_LIMIT" = false ]] && demyx_die 'Rate limit is already turned off'
-                fi
-
-                demyx_echo 'Turning off rate limiting'
-                demyx_execute docker exec -t -e NGINX_RATE_LIMIT=false "$DEMYX_APP_NX_CONTAINER" demyx-wp; \
-                    sed -i "s|DEMYX_APP_RATE_LIMIT=.*|DEMYX_APP_RATE_LIMIT=false|g" "$DEMYX_APP_PATH"/.env
+    demyx_execute "Setting rate limit to $DEMYX_CONFIG_FLAG_RATE_LIMIT" \
+        "demyx_app_env_update DEMYX_APP_RATE_LIMIT=$DEMYX_CONFIG_FLAG_RATE_LIMIT"
+}
 
                 demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
             fi
