@@ -374,49 +374,62 @@ demyx_config_bedrock() {
         "docker exec -t $DEMYX_APP_WP_CONTAINER sh -c \"sed -i 's|WP_ENV=.*|WP_ENV=$DEMYX_CONFIG_FLAG_BEDROCK|g' /demyx/.env\"; \
         demyx_app_env_update DEMYX_APP_BEDROCK_MODE=$DEMYX_CONFIG_FLAG_BEDROCK"
 }
+#
+#   Configures app's cache plugin.
+#
+demyx_config_cache() {
+    demyx_app_env wp "
+        DEMYX_APP_CACHE
+        DEMYX_APP_DOMAIN
+        DEMYX_APP_STACK
+    "
 
-                    demyx_echo 'Configuring lsws'
-                    demyx_execute docker exec -t -e OPENLITESPEED_CACHE=false "$DEMYX_APP_WP_CONTAINER" sh -c 'demyx-config'; \
-                        demyx config "$DEMYX_APP_DOMAIN" --restart=ols
-                else
-                    demyx_echo 'Deactivating nginx-helper'
-                    demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin deactivate nginx-helper
+    local DEMYX_CONFIG_CACHE_CHECK=
+    local DEMYX_CONFIG_CACHE_PLUGIN=
+    DEMYX_CONFIG_COMPOSE=true
 
-                    demyx_echo 'Configuring nginx-helper'
-                    demyx_execute docker exec -t -e NGINX_CACHE=false "$DEMYX_APP_NX_CONTAINER" demyx-wp; \
-                        demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
-                fi
-
-                demyx_echo 'Updating configs'
-                demyx_execute sed -i "s|DEMYX_APP_CACHE=.*|DEMYX_APP_CACHE=false|g" "$DEMYX_APP_PATH"/.env
-
-                demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
+    case "$DEMYX_APP_STACK" in
+        bedrock|nginx-php)
+            DEMYX_CONFIG_CACHE_PLUGIN=nginx-helper
+            if [[ "$DEMYX_CONFIG_FLAG_CACHE" = true ]]; then
+                demyx_execute "Configuring nginx-helper" \
+                    "demyx_config_cache_helper"
             fi
-            if [[ "$DEMYX_CONFIG_CLOUDFLARE" = true ]]; then
-                # Exit if these two variables are missing
-                [[ -z "$DEMYX_EMAIL" || -z "$DEMYX_CF_KEY" ]] && demyx_die 'Missing Cloudflare key and/or email, please run demyx help stack'
+        ;;
+        ols|ols-bedrock)
+            DEMYX_CONFIG_CACHE_PLUGIN=litespeed-cache
+        ;;
+    esac
 
-                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_CLOUDFLARE" = true ]] && demyx_die 'Cloudflare is already set'
-                fi
+    if [[ "$DEMYX_CONFIG_FLAG_CACHE" = true ]]; then
+        DEMYX_CONFIG_CACHE_CHECK="$(demyx_wp "$DEMYX_APP_DOMAIN" plugin list --format=csv)"
 
-                demyx_echo 'Setting SSL/TLS resolver to Cloudflare'
-                demyx_execute sed -i "s|DEMYX_APP_CLOUDFLARE=.*|DEMYX_APP_CLOUDFLARE=true|g" "$DEMYX_APP_PATH"/.env; \
-                    demyx refresh "$DEMYX_APP_DOMAIN"
-            elif [[ "$DEMYX_CONFIG_CLOUDFLARE" = false ]]; then
-                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_CLOUDFLARE" = false ]] && demyx_die 'Cloudflare is already off'
-                fi
+        if [[ "$DEMYX_CONFIG_CACHE_CHECK" == *"$DEMYX_CONFIG_CACHE_PLUGIN,inactive"* ]]; then
+            demyx_execute "Activating $DEMYX_CONFIG_CACHE_PLUGIN" \
+                "demyx_wp $DEMYX_APP_DOMAIN plugin activate $DEMYX_CONFIG_CACHE_PLUGIN"
+        else
+            demyx_execute "Installing $DEMYX_CONFIG_CACHE_PLUGIN" \
+                "demyx_wp $DEMYX_APP_DOMAIN plugin install $DEMYX_CONFIG_CACHE_PLUGIN --activate"
+        fi
 
-                demyx_echo 'Setting SSL/TLS resolver to HTTP'
-                demyx_execute sed -i "s|DEMYX_APP_CLOUDFLARE=.*|DEMYX_APP_CLOUDFLARE=false|g" "$DEMYX_APP_PATH"/.env; \
-                    demyx refresh "$DEMYX_APP_DOMAIN"
-            fi
-            if [[ -n "$DEMYX_CONFIG_CLEAN" ]]; then
-                if [[ -z "$DEMYX_CONFIG_NO_BACKUP" ]]; then
-                    demyx backup "$DEMYX_APP_DOMAIN"
-                fi
-                demyx config "$DEMYX_APP_DOMAIN" --healthcheck=false
+        # Delete old cache plugin when switching stacks.
+        if [[   "$DEMYX_APP_STACK" = bedrock && "$DEMYX_CONFIG_CACHE_CHECK" == *"litespeed-cache"* ||
+                "$DEMYX_APP_STACK" = nginx-php && "$DEMYX_CONFIG_CACHE_CHECK" == *"litespeed-cache"* ]]; then
+            demyx_execute "Deleting litespeed-cache" \
+                "demyx_wp $DEMYX_APP_DOMAIN plugin delete litespeed-cache"
+        elif [[   "$DEMYX_APP_STACK" = ols && "$DEMYX_CONFIG_CACHE_CHECK" == *"nginx-helper"* ||
+                "$DEMYX_APP_STACK" = ols-bedrock && "$DEMYX_CONFIG_CACHE_CHECK" == *"nginx-helper"* ]]; then
+            demyx_execute "Deleting nginx-helper" \
+                "demyx_wp $DEMYX_APP_DOMAIN plugin delete nginx-helper"
+        fi
+    elif [[ "$DEMYX_CONFIG_FLAG_CACHE" = false ]]; then
+        demyx_execute "Deactivating $DEMYX_CONFIG_CACHE_PLUGIN" \
+            "demyx_wp $DEMYX_APP_DOMAIN plugin deactivate $DEMYX_CONFIG_CACHE_PLUGIN"
+    fi
+
+    demyx_execute "Updating .env" \
+        "demyx_app_env_update DEMYX_APP_CACHE=$DEMYX_CONFIG_FLAG_CACHE"
+}
 
                 demyx_echo 'Putting WordPress into maintenance mode'
                 demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "echo '<?php \$upgrading = time(); ?>' > .maintenance"
