@@ -361,10 +361,19 @@ demyx_config_auth_wp() {
         } > "$DEMYX_CONFIG_TRANSIENT"
     fi
 }
+#
+#   Configures app's bedrock .env mode.
+#
+demyx_config_bedrock() {
+    demyx_app_env wp "
+        DEMYX_APP_BEDROCK_MODE
+        DEMYX_APP_WP_CONTAINER
+    "
 
-                if [[ "$DEMYX_APP_STACK" = ols || "$DEMYX_APP_STACK" = ols-bedrock ]]; then
-                    demyx_echo 'Deactivating litespeed-cache'
-                    demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin deactivate litespeed-cache
+    demyx_execute "Setting Bedrock config to $DEMYX_CONFIG_FLAG_BEDROCK" \
+        "docker exec -t $DEMYX_APP_WP_CONTAINER sh -c \"sed -i 's|WP_ENV=.*|WP_ENV=$DEMYX_CONFIG_FLAG_BEDROCK|g' /demyx/.env\"; \
+        demyx_app_env_update DEMYX_APP_BEDROCK_MODE=$DEMYX_CONFIG_FLAG_BEDROCK"
+}
 
                     demyx_echo 'Configuring lsws'
                     demyx_execute docker exec -t -e OPENLITESPEED_CACHE=false "$DEMYX_APP_WP_CONTAINER" sh -c 'demyx-config'; \
