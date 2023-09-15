@@ -147,8 +147,14 @@ demyx_name_adjectives() {
 demyx_name_randomizer() {
 	printf "%s\0" "$@" | shuf -z -n1 | tr -d '\0'
 }
+#
+#	Randomly spits out names from the array.
+#
 demyx_name_sur() {
-    IFS=$'\r\n' GLOBIGNORE='*' command eval 'DEMYX_NAME_SUR=(albattani
+	local DEMYX_NAME_SUR=
+	local DEMYX_NAME_SUR_RANDOM=
+
+    DEMYX_NAME_SUR=(albattani
 		allen
 		almeida
 		antonelli
@@ -191,6 +197,7 @@ demyx_name_sur() {
 		chatelet
 		chatterjee
 		chebyshev
+		cim
 		cohen
 		chaum
 		clarke
@@ -201,6 +208,7 @@ demyx_name_sur() {
 		curie
 		darwin
 		davinci
+		demyx
 		dewdney
 		dhawan
 		diffie
@@ -383,15 +391,8 @@ demyx_name_sur() {
 		wu
 		yalow
 		yonath
-		zhukovsky)'
-    DEMYX_NAME_SUR_COUNT="${#DEMYX_NAME_SUR[@]}"
-    DEMYX_NAME_SUR_RANDOM="$(((RANDOM % "$DEMYX_NAME_SUR_COUNT")+1))"
-    echo "${DEMYX_NAME_SUR[$DEMYX_NAME_SUR_RANDOM]}"
-}
+		zhukovsky)
 
-demyx_name() {
-    DEMYX_NAME_LEFT="$(demyx_name_adjectives)"
-    DEMYX_NAME_RIGHT="$(demyx_name_sur)"
-    DEMYX_NAME_ID="$(demyx util --id --raw)"
-    echo "${DEMYX_NAME_LEFT}_${DEMYX_NAME_RIGHT}_${DEMYX_NAME_ID}"
+	DEMYX_NAME_SUR_RANDOM="$(demyx_name_randomizer "${DEMYX_NAME_SUR[@]}")"
+	echo "$DEMYX_NAME_SUR_RANDOM"
 }
