@@ -155,11 +155,11 @@ demyx_app_login() {
         fi
     done
 }
-demyx_bedrock_ready() {
-    until docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "ls | grep web"
-    do
-        sleep 1
-    done
+#   Get app's path using find.
+#
+demyx_app_path() {
+    local DEMYX_APP_PATH="${1:-$DEMYX_ARG_2}"
+    find "$DEMYX_APP" -name "$DEMYX_APP_PATH" -type d
 }
 demyx_wordpress_ready() {
     until docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "ls | grep xmlrpc.php"
