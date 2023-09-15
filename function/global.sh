@@ -467,17 +467,18 @@ demyx_ols_not_supported() {
         demyx_error custom "OpenLiteSpeed doesn't support that feature"
     fi
 }
-demyx_update_image() {
-    source "$DEMYX"/.update_local
-    source "$DEMYX"/.update_remote
+#
+#   Checks for open ports on the host.
+#
+demyx_open_port() {
+    local DEMYX_OPEN_PORT=
 
-    # Remove old images list to prevent duplicates
-    [[ -f "$DEMYX"/.update_image ]] && rm -f "$DEMYX"/.update_image
+    DEMYX_OPEN_PORT="$(docker run --rm \
+        --network=host \
+        demyx/utilities demyx-port | sed 's/\r//g')"
 
-    # Generate image cache
-    (( ${DEMYX_LOCAL_VERSION//./} < ${DEMYX_REMOTE_VERSION//./} )) && echo "demyx" > "$DEMYX"/.update_image
-    if [[ -n "$DEMYX_LOCAL_BROWSERSYNC_VERSION" ]]; then
-        (( "${DEMYX_LOCAL_BROWSERSYNC_VERSION//./}" < "${DEMYX_REMOTE_BROWSERSYNC_VERSION//./}" )) && echo "browsersync" >> "$DEMYX"/.update_image
+    echo "$DEMYX_OPEN_PORT" > "$DEMYX_TMP"/"$DEMYX_ARG_2"_sftp
+}
     fi
     (( "${DEMYX_LOCAL_CODE_VERSION//./}" < "${DEMYX_REMOTE_CODE_VERSION//./}" )) && echo "code-server" >> "$DEMYX"/.update_image
     (( "${DEMYX_LOCAL_DOCKER_COMPOSE_VERSION//./}" < "${DEMYX_REMOTE_DOCKER_COMPOSE_VERSION//./}" )) && echo "docker-compose" >> "$DEMYX"/.update_image
