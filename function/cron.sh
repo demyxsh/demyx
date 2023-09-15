@@ -145,5 +145,15 @@ demyx_cron_hourly() {
             "bash ${DEMYX}/custom/cron/hourly.sh"
     fi
 }
+#
+#   Every minute cron.
+#
+demyx_cron_minute() {
+    # Execute custom cron
+    if [[ -f "$DEMYX"/custom/cron/minute.sh ]]; then
+        demyx_execute "[CROND MINUTE] Executing ${DEMYX}/custom/cron/minute.sh" \
+            "bash ${DEMYX}/custom/cron/minute.sh"
+    fi
+}
     fi
 }
