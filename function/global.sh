@@ -423,29 +423,40 @@ demyx_mariadb_ready() {
         sleep 1
     done
 }
+#
+#   Send notification by email/matrix.
+#
+demyx_notification() {
+    local DEMYX_NOTIFICATION="${1:-}"
+    local DEMYX_NOTIFICATION_ARG_2="${2:-}"
+    local DEMYX_NOTIFICATION_BODY=
+    DEMYX_NOTIFICATION_BODY="$(cat < "$DEMYX_TMP"/demyx_notification | sed 's/\r$//' | sed 's|["'\'']||g' | sed ':a;N;$!ba;s/\n/<br>/g')"
 
-    echo "DEMYX_REMOTE_VERSION=$DEMYX_VERSION
-    DEMYX_REMOTE_CODE_VERSION=$DEMYX_CODE_VERSION
-    DEMYX_REMOTE_DOCKER_COMPOSE_VERSION=$DEMYX_DOCKER_COMPOSE_VERSION
-    DEMYX_REMOTE_HAPROXY_VERSION=$DEMYX_DOCKER_SOCKET_PROXY_HAPROXY_VERSION
-    DEMYX_REMOTE_LOGROTATE_VERSION=$DEMYX_LOGROTATE_VERSION
-    DEMYX_REMOTE_MARIADB_VERSION=$DEMYX_MARIADB_VERSION
-    DEMYX_REMOTE_NGINX_VERSION=$DEMYX_NGINX_VERSION
-    DEMYX_REMOTE_TRAEFIK_VERSION=$DEMYX_TRAEFIK_VERSION
-    DEMYX_REMOTE_UTILITIES_VERSION=$DEMYX_UTILITIES_DEBIAN_VERSION
-    DEMYX_REMOTE_WORDPRESS_VERSION=$DEMYX_WORDPRESS_VERSION
-    DEMYX_REMOTE_WORDPRESS_BEDROCK_VERSION=$DEMYX_WORDPRESS_BEDROCK_VERSION
-    DEMYX_REMOTE_WORDPRESS_CLI_VERSION=$DEMYX_WORDPRESS_CLI_VERSION
-    DEMYX_REMOTE_WORDPRESS_PHP_VERSION=$DEMYX_WORDPRESS_PHP_VERSION" | sed "s|    ||g" > "$DEMYX"/.update_remote
+    case "$DEMYX_NOTIFICATION" in
+        error)
+            DEMYX_NOTIFICATION="[ERROR - $DEMYX_HOSTNAME] $DEMYX_NOTIFICATION_ARG_2"
+        ;;
+        healthcheck)
+            DEMYX_NOTIFICATION="[HEALTHCHECK - $DEMYX_HOSTNAME] $DEMYX_NOTIFICATION_ARG_2"
+        ;;
+    esac
 
-    if [[ -n "$(docker images demyx/browsersync:latest -q)" ]]; then
-        echo "DEMYX_REMOTE_BROWSERSYNC_VERSION=$DEMYX_BROWSERSYNC_VERSION" >> "$DEMYX"/.update_remote
+    if [[ "$DEMYX_MATRIX" = true && -n "$DEMYX_MATRIX_KEY" && -n "$DEMYX_MATRIX_URL" ]]; then
+        curl -s -X POST \
+        -H 'Content-Type: application/json' \
+        --data "
+            {
+                \"text\":\"${DEMYX_NOTIFICATION}<br>${DEMYX_NOTIFICATION_BODY}\",
+                \"key\":\"$DEMYX_MATRIX_KEY\"
+            }
+        " \
+        "$DEMYX_MATRIX_URL" >/dev/null 2>&1
     fi
 
-    if [[ -n "$(docker images demyx/openlitespeed:latest -q)" ]]; then
-        echo "DEMYX_REMOTE_OPENLITESPEED_VERSION=$DEMYX_OPENLITESPEED_VERSION" >> "$DEMYX"/.update_remote
-        echo "DEMYX_REMOTE_OPENLITESPEED_LSPHP_VERSION=$DEMYX_OPENLITESPEED_LSPHP_VERSION"  >> "$DEMYX"/.update_remote
+    if [[ "$DEMYX_SMTP" = true ]]; then
+        demyx_smtp "$DEMYX_NOTIFICATION" "$DEMYX_NOTIFICATION_BODY"
     fi
+}
 
     if [[ -n "$(docker images demyx/ssh:latest -q)" ]]; then
         echo "DEMYX_REMOTE_OPENSSH_VERSION=$DEMYX_SSH_OPENSSH_VERSION" >> "$DEMYX"/.update_remote
