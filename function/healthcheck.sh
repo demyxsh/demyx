@@ -29,53 +29,95 @@ demyx_healthcheck() {
         esac
     fi
 }
+#
+#   Checks if apps are running.
+#
+demyx_healthcheck_app() {
+    local DEMYX_HEALTHCHECK_APP_COUNT=0
+    local DEMYX_HEALTHCHECK_APP_I=
+    local DEMYX_HEALTHCHECK_APP_DB=
+    local DEMYX_HEALTHCHECK_APP_NX=
+    local DEMYX_HEALTHCHECK_APP_SUBJECT=
+    local DEMYX_HEALTHCHECK_APP_TAIL=50
+    local DEMYX_HEALTHCHECK_APP_WP=
 
-        for i in *
-        do
-            if [[ -d "$i" ]]; then
-                source "$DEMYX_WP"/"$i"/.env
-                [[ "$DEMYX_APP_HEALTHCHECK" = false ]] && continue
+    [[ -f "$DEMYX_HEALTHCHECK_TRANSIENT" ]] && rm -f "$DEMYX_HEALTHCHECK_TRANSIENT"
 
-                if [[ "$DEMYX_APP_STACK" = ols || "$DEMYX_APP_STACK" = ols-bedrock ]]; then
-                    DEMYX_HEALTHCHECK_CONTAINER="$DEMYX_APP_WP_CONTAINER"
-                else
-                    DEMYX_HEALTHCHECK_CONTAINER="$DEMYX_APP_NX_CONTAINER"
-                fi
+    cd "$DEMYX_WP" || exit
 
-                DEMYX_HEALTHCHECK_STATUS="$(curl -s -m "$DEMYX_HEALTHCHECK_TIMEOUT" "$DEMYX_HEALTHCHECK_CONTAINER" > /dev/null; echo "$?")"
+    for DEMYX_HEALTHCHECK_APP_I in *; do
+        DEMYX_ARG_2="$DEMYX_HEALTHCHECK_APP_I"
 
-                if [[ "$DEMYX_HEALTHCHECK_STATUS" != 0 ]]; then
-                    if [[ ! -f "$DEMYX_WP"/"$i"/.healthcheck ]]; then
-                        demyx_execute -v echo "DEMYX_APP_HEALTHCHECK_COUNT=0" > "$DEMYX_WP"/"$i"/.healthcheck
-                    fi
+        demyx_app_env wp "
+            DEMYX_APP_DB_CONTAINER
+            DEMYX_APP_DOMAIN
+            DEMYX_APP_HEALTHCHECK
+            DEMYX_APP_ID
+            DEMYX_APP_NX_CONTAINER
+            DEMYX_APP_STACK
+            DEMYX_APP_WP_CONTAINER
+        "
 
-                    source "$DEMYX_WP"/"$i"/.healthcheck
+        [[ "$DEMYX_APP_HEALTHCHECK" = false ]] && continue
 
-                    if [[ "$DEMYX_APP_HEALTHCHECK_COUNT" != 3 ]]; then
-                        DEMYX_APP_MONITOR_COUNT_UP="$((DEMYX_APP_HEALTHCHECK_COUNT+1))"
-                        demyx_execute -v echo "DEMYX_APP_HEALTHCHECK_COUNT=$DEMYX_APP_MONITOR_COUNT_UP" > "$DEMYX_WP"/"$i"/.healthcheck
-                        demyx compose "$i" fr
-                    else
-                        if [[ ! -f "$DEMYX_WP"/"$i"/.healthcheck-lock ]]; then
-                            DEMYX_HEALTHCHECK_IP="$(dig +short "$DEMYX_APP_DOMAIN" | tr '\r\n' ' ')"
-                            DEMYX_HEALTHCHECK_NS="$(dig +short NS "$DEMYX_APP_DOMAIN" | tr '\r\n' ' ')"
-                            DEMYX_HEALTHCHECK_HTTP_STATUS="$(curl -sL -o /dev/null -w %{http_code} "$DEMYX_HEALTHCHECK_CONTAINER")"
-                            touch "$DEMYX_WP"/"$i"/.healthcheck-lock
-                            if [[ -f "$DEMYX"/custom/callback.sh ]]; then
-                                bash "$DEMYX"/custom/callback.sh "healthcheck" "$i" "$DEMYX_HEALTHCHECK_HTTP_STATUS" "$DEMYX_SERVER_IP" "$DEMYX_HEALTHCHECK_IP" "$DEMYX_HEALTHCHECK_NS"
-                            fi
-                        fi
-                    fi
-                else
-                    if [[ -f "$DEMYX_WP"/"$i"/.healthcheck ]]; then
-                        demyx_execute -v rm "$DEMYX_WP"/"$i"/.healthcheck
-                    fi
-                    if [[ -f "$DEMYX_WP"/"$i"/.healthcheck-lock ]]; then
-                        demyx_execute -v rm "$DEMYX_WP"/"$i"/.healthcheck-lock
-                    fi
-                fi
+        if [[ "$DEMYX_APP_STACK" = nginx-php || "$DEMYX_APP_STACK" = bedrock ]]; then
+            DEMYX_HEALTHCHECK_APP_NX="$(docker inspect "$DEMYX_APP_NX_CONTAINER" | jq -r '.[].State.Status' || true)"
+        fi
+
+        DEMYX_HEALTHCHECK_APP_DB="$(docker inspect "$DEMYX_APP_DB_CONTAINER" | jq -r '.[].State.Status' || true)"
+        DEMYX_HEALTHCHECK_APP_WP="$(docker inspect "$DEMYX_APP_WP_CONTAINER" | jq -r '.[].State.Status' || true)"
+
+        {
+            if [[ "$DEMYX_HEALTHCHECK_APP_DB" != running ]]; then
+                demyx_divider_title "HEALTHCHECK - MARIADB" "docker logs $DEMYX_APP_DB_CONTAINER ($DEMYX_HEALTHCHECK_APP_DB)"
+                docker logs "$DEMYX_APP_DB_CONTAINER" 2>&1 | tail -n "$DEMYX_HEALTHCHECK_APP_TAIL"
+                demyx_divider_title "HEALTHCHECK - MARIADB" "tail -n $DEMYX_HEALTHCHECK_APP_TAIL ${DEMYX_LOG}/${DEMYX_APP_DOMAIN}.mariadb.log"
+                docker run -t --rm \
+                    --entrypoint=tail \
+                    -v wp_"$DEMYX_APP_ID"_log:/var/log/demyx demyx/wordpress \
+                    -n "$DEMYX_HEALTHCHECK_APP_TAIL" "$DEMYX_LOG"/"$DEMYX_APP_DOMAIN".mariadb.log
             fi
-        done
+
+            if [[ "$DEMYX_HEALTHCHECK_APP_NX" != running && "$DEMYX_APP_STACK" = nginx-php && "$DEMYX_APP_STACK" = bedrock ]]; then
+                demyx_divider_title "HEALTHCHECK - NGINX" "docker logs $DEMYX_APP_NX_CONTAINER ($DEMYX_HEALTHCHECK_APP_NX)"
+                docker logs "$DEMYX_APP_NX_CONTAINER" 2>&1 | tail -n "$DEMYX_HEALTHCHECK_APP_TAIL"
+                demyx_divider_title "HEALTHCHECK - NGINX" "tail -n $DEMYX_HEALTHCHECK_APP_TAIL ${DEMYX_LOG}/${DEMYX_APP_DOMAIN}.access.log"
+                docker run -t --rm \
+                    --entrypoint=tail \
+                    -v wp_"$DEMYX_APP_ID"_log:/var/log/demyx demyx/wordpress \
+                    -n "$DEMYX_HEALTHCHECK_APP_TAIL" "$DEMYX_LOG"/"$DEMYX_APP_DOMAIN".access.log
+            fi
+
+            if [[ "$DEMYX_HEALTHCHECK_APP_WP" != running ]]; then
+                demyx_divider_title "HEALTHCHECK - WORDPRESS" "docker logs $DEMYX_APP_WP_CONTAINER ($DEMYX_HEALTHCHECK_APP_WP)"
+                docker logs "$DEMYX_APP_WP_CONTAINER" 2>&1 | tail -n "$DEMYX_HEALTHCHECK_APP_TAIL"
+                demyx_divider_title "HEALTHCHECK - WORDPRESS" "tail -n $DEMYX_HEALTHCHECK_APP_TAIL ${DEMYX_LOG}/${DEMYX_APP_DOMAIN}.error.log"
+                docker run -t --rm \
+                    --entrypoint=tail \
+                    -v wp_"$DEMYX_APP_ID"_log:/var/log/demyx demyx/wordpress \
+                    -n "$DEMYX_HEALTHCHECK_APP_TAIL" "$DEMYX_LOG"/"$DEMYX_APP_DOMAIN".error.log
+            fi
+        } | tee -a "$DEMYX_HEALTHCHECK_TRANSIENT"
+
+        demyx_proper "$DEMYX_HEALTHCHECK_TRANSIENT"
+
+        [[ "$DEMYX_HEALTHCHECK_APP_DB" != running ]] && DEMYX_HEALTHCHECK_APP_COUNT=$((DEMYX_HEALTHCHECK_APP_COUNT+1))
+        [[ "$DEMYX_HEALTHCHECK_APP_NX" != running &&
+            "$DEMYX_APP_STACK" = nginx-php &&
+            "$DEMYX_APP_STACK" = bedrock ]] && DEMYX_HEALTHCHECK_APP_COUNT=$((DEMYX_HEALTHCHECK_APP_COUNT+1))
+        [[ "$DEMYX_HEALTHCHECK_APP_WP" != running ]] && DEMYX_HEALTHCHECK_APP_COUNT=$((DEMYX_HEALTHCHECK_APP_COUNT+1))
+    done
+
+    if [[ "$DEMYX_APP_HEALTHCHECK" = true ]]; then
+        DEMYX_HEALTHCHECK_APP_SUBJECT="$DEMYX_HEALTHCHECK_APP_COUNT app isn't running"
+        
+        if (( "$DEMYX_HEALTHCHECK_APP_COUNT" >= 2 )); then
+            DEMYX_HEALTHCHECK_APP_SUBJECT="$DEMYX_HEALTHCHECK_APP_COUNT apps aren't running"
+        elif (( "$DEMYX_HEALTHCHECK_APP_COUNT" > 0 )); then
+            demyx_notification healthcheck "$DEMYX_HEALTHCHECK_APP_SUBJECT"
+        fi
+    fi
+}
 
         demyx_execute -v rm -f "$DEMYX"/.healthcheck_running
     fi
