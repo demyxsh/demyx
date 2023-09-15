@@ -19,17 +19,16 @@ demyx_motd() {
     demyx_motd_warning
     demyx_motd_start
 }
-
-demyx_motd_dev_warning() {
-    if [[ -n "$DEMYX_MOTD_CHECK_WP" ]]; then
-        cd "$DEMYX_WP"
-        for i in *
-        do
-            DEMYX_COMMON_DEV_CHECK="$(grep DEMYX_APP_DEV "$DEMYX_WP"/"$i"/.env | awk -F '[=]' '{print $2}')"
-            if [[ "$DEMYX_COMMON_DEV_CHECK" = true ]]; then
-                demyx_execute -v echo -e "\e[33m[WARNING]\e[39m $i is in development mode"
-            fi
-        done
+#
+#   Show getting started message if no apps are installed.
+#
+demyx_motd_start() {
+    if [[ -z "$(demyx_motd_wp)" ]]; then
+        demyx_echo "To create a WordPress app: demyx run $DEMYX_DOMAIN"
+        demyx_echo "Supported stacks: bedrock, nginx-php, ols, ols-bedrock"
+        demyx_echo "To see more run options: demyx help run"
+    fi
+}
     fi
 }
 demyx_motd_getting_started() {
