@@ -87,9 +87,34 @@ demyx_app_env() {
         demyx_error custom "Invalid app or missing app's .env"
     fi
 }
-demyx_table() {
-    demyx_source table
-    printTable '^' "$@"
+#
+#   Update an app's specific environment variable.
+#
+demyx_app_env_update() {
+    local DEMYX_APP_ENV_UPDATE="${1:-}"
+    local DEMYX_APP_ENV_UPDATE_I=
+    local DEMYX_APP_ENV_UPDATE_I_VAL=
+    local DEMYX_APP_ENV_UPDATE_I_VAR=
+
+    demyx_app_env wp "
+        DEMYX_APP_PATH
+        DEMYX_APP_STACK
+    "
+
+    demyx_source "
+        env
+        yml
+    "
+
+    demyx_env
+    demyx_yml "$DEMYX_APP_STACK"
+
+    for DEMYX_APP_ENV_UPDATE_I in $DEMYX_APP_ENV_UPDATE; do
+        DEMYX_APP_ENV_UPDATE_I_VAL="${DEMYX_APP_ENV_UPDATE_I//*=/}"
+        DEMYX_APP_ENV_UPDATE_I_VAR="${DEMYX_APP_ENV_UPDATE_I//=*/}"
+
+        sed -i "s|${DEMYX_APP_ENV_UPDATE_I_VAR}=.*|${DEMYX_APP_ENV_UPDATE_I_VAR}=${DEMYX_APP_ENV_UPDATE_I_VAL}|g" "$DEMYX_APP_PATH"/.env
+    done
 }
 demyx_permission() {
     chown -R demyx:demyx "$DEMYX"
