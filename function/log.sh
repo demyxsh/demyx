@@ -1,61 +1,90 @@
 # Demyx
 # https://demyx.sh
-# 
-# demyx log <app> <args>
+#
+#   demyx log <app> <args>
 #
 demyx_log() {
+    DEMYX_ARG_2="${1:-$DEMYX_ARG_2}"
+    local DEMYX_LOG_FLAG=
+    local DEMYX_LOG_FLAG_CRON=
+    local DEMYX_LOG_FLAG_DATABASE=
+    local DEMYX_LOG_FLAG_ERROR=
+    local DEMYX_LOG_FLAG_FOLLOW=
+    local DEMYX_LOG_TAIL_FLAG=-200
+    local DEMYX_LOG_STDOUT_FLAG=
+
     while :; do
-        case "$3" in
-            -c|--container)
-                DEMYX_LOG_CONTAINER=1
+        DEMYX_LOG_FLAG="${2:-}"
+        case "$DEMYX_LOG_FLAG" in
+            -c|-cf|-fc)
+                DEMYX_LOG_FLAG_CRON=true
+
+                if [[ "$DEMYX_LOG_FLAG" = -cf || "$DEMYX_LOG_FLAG" = -fc ]]; then
+                    DEMYX_LOG_FLAG_FOLLOW=true
+                fi
+            ;;
+            -d|-df|-fd)
+                DEMYX_LOG_FLAG_DATABASE=true
+
+                if [[ "$DEMYX_LOG_FLAG" = -df || "$DEMYX_LOG_FLAG" = -fd ]]; then
+                    DEMYX_LOG_FLAG_FOLLOW=true
+                fi
                 ;;
-            -d|--database)
-                DEMYX_LOG_DATABASE=1
+            -e|-ef|-fe)
+                DEMYX_LOG_FLAG_ERROR=true
+
+            if [[ "$DEMYX_LOG_FLAG" = -ef || "$DEMYX_LOG_FLAG" = -fe ]]; then
+                DEMYX_LOG_FLAG_FOLLOW=true
+            fi
                 ;;
-            -e|--error)
-                DEMYX_LOG_ERROR=1
+            -f)
+                DEMYX_LOG_FLAG_FOLLOW=true
                 ;;
-            -f|--follow)
-                DEMYX_LOG_FOLLOW=-f
-                ;;
-            --rotate)
-                DEMYX_LOG_ROTATE=1
+            -s|-sf|-fs)
+                DEMYX_LOG_STDOUT_FLAG=true
+
+                if [[ "$DEMYX_LOG_FLAG" = -sf || "$DEMYX_LOG_FLAG" = -fs ]]; then
+                    DEMYX_LOG_FLAG_FOLLOW=true
+                fi
                 ;;
             --)
                 shift
                 break
                 ;;
             -?*)
-                printf '\e[31m[CRITICAL]\e[39m Unknown option: %s\n' "$3" >&2
-                exit 1
+                demyx_error flag "$DEMYX_LOG_FLAG"
                 ;;
-            *) 
+            *)
                 break
         esac
         shift
     done
 
-    demyx_app_config
-    demyx_app_is_up
+    if [[ "$DEMYX_LOG_FLAG_FOLLOW" = true ]]; then
+        DEMYX_LOG_TAIL_FLAG=-f
+        DEMYX_LOG_FLAG_FOLLOW=-f
+    fi
 
-    if [[ "$DEMYX_TARGET" = api ]]; then
-        tail "$DEMYX_LOG_FOLLOW" /var/log/demyx/api.log
-    elif [[ "$DEMYX_TARGET" = cron ]]; then
-        tail "$DEMYX_LOG_FOLLOW" /var/log/demyx/cron.log
-    elif [[ "$DEMYX_TARGET" = main ]]; then
-        if [[ -n "$DEMYX_LOG_ROTATE" ]]; then
-            demyx_echo 'Rotating demyx log'
-            demyx_execute docker run -t --rm --user=root --volumes-from=demyx demyx/logrotate
-        else
-            if [[ -n "$DEMYX_LOG_CONTAINER" ]]; then
-                docker logs $DEMYX_LOG_FOLLOW demyx
+    case "$DEMYX_ARG_2" in
+        cron)
+            demyx_log_cron
+        ;;
+        main)
+            demyx_log_main
+        ;;
+        traefik)
+            demyx_log_traefik
+        ;;
+        *)
+            if [[ -n "$DEMYX_ARG_2" ]]; then
+                demyx_arg_valid
+                demyx_log_app "$DEMYX_ARG_2"
             else
-                tail -200 $DEMYX_LOG_FOLLOW /var/log/demyx/demyx.log
+                demyx_help log
             fi
-        fi
-    elif [[ "$DEMYX_TARGET" = traefik ]]; then
-        if [[ -n "$DEMYX_LOG_ERROR" ]]; then
-            tail -200 $DEMYX_LOG_FOLLOW /var/log/demyx/traefik.error.log
+        ;;
+    esac
+}
         else
             tail -200 $DEMYX_LOG_FOLLOW /var/log/demyx/traefik.access.log
         fi
