@@ -155,5 +155,15 @@ demyx_cron_minute() {
             "bash ${DEMYX}/custom/cron/minute.sh"
     fi
 }
+#
+#   Every six hour cron.
+#
+demyx_cron_six_hour() {
+    # Execute custom cron
+    if [[ -f "$DEMYX"/custom/cron/six-hour.sh ]]; then
+        demyx_execute "[CROND SIX-HOUR] Executing ${DEMYX}/custom/cron/six-hour.sh" \
+            "bash ${DEMYX}/custom/cron/six-hour.sh"
+    fi
+}
     fi
 }
