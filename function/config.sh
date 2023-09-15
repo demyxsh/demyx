@@ -590,34 +590,20 @@ demyx_config_healthcheck() {
     demyx_execute "Setting healthcheck to $DEMYX_CONFIG_FLAG_HEALTHCHECK" \
         "demyx_app_env_update DEMYX_APP_HEALTHCHECK=$DEMYX_CONFIG_FLAG_HEALTHCHECK"
 }
+#
+#   Configures an app's opcache setting.
+#
+demyx_config_opcache() {
+    demyx_app_env wp "
+        DEMYX_APP_STACK
+        DEMYX_APP_PHP_OPCACHE
+    "
 
-                demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
-                demyx config "$DEMYX_APP_DOMAIN" --healthcheck
-            fi
-            if [[ "$DEMYX_CONFIG_FIX_INNODB" = true ]]; then
-                demyx_echo "Backing up and deleting ib_logfile*"
-                demyx_execute docker run -t --rm -v wp_"$DEMYX_APP_ID"_db:/tmp/wp_"$DEMYX_APP_ID"_db demyx/utilities bash -c "cp /tmp/wp_${DEMYX_APP_ID}_db/ib_logfile0 /tmp/wp_${DEMYX_APP_ID}_db/ib_logfile0.bak; cp /tmp/wp_${DEMYX_APP_ID}_db/ib_logfile1 /tmp/wp_${DEMYX_APP_ID}_db/ib_logfile1.bak; rm -f /tmp/wp_${DEMYX_APP_ID}_db/ib_logfile0; rm -f /tmp/wp_${DEMYX_APP_ID}_db/ib_logfile1"; \
-                    docker restart "$DEMYX_APP_DB_CONTAINER"
-            fi
-            if [[ "$DEMYX_CONFIG_HEALTHCHECK" = true ]]; then
-                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_HEALTHCHECK" = true ]] && demyx_die 'Healthcheck is already turned on'
-                fi
-                demyx_echo 'Turning on healthcheck'
-                demyx_execute sed -i "s|DEMYX_APP_HEALTHCHECK=.*|DEMYX_APP_HEALTHCHECK=true|g" "$DEMYX_APP_PATH"/.env
-            elif [[ "$DEMYX_CONFIG_HEALTHCHECK" = false ]]; then
-                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_HEALTHCHECK" = false ]] && demyx_die 'Healthcheck is already turned off'
-                fi
-                demyx_echo 'Turning off healthcheck'
-                demyx_execute sed -i "s|DEMYX_APP_HEALTHCHECK=.*|DEMYX_APP_HEALTHCHECK=false|g" "$DEMYX_APP_PATH"/.env
-            fi
-            if [[ "$DEMYX_CONFIG_OPCACHE" = true ]]; then
-                demyx_app_is_up
+    DEMYX_CONFIG_COMPOSE=true
 
-                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_PHP_OPCACHE" = true ]] && demyx_die 'PHP opcache is already turned on'
-                fi
+    demyx_execute "Setting $DEMYX_CONFIG_FLAG_OPCACHE to opcache" \
+        "demyx_app_env_update DEMYX_APP_PHP_OPCACHE=$DEMYX_CONFIG_FLAG_OPCACHE"
+}
 
                 demyx_echo 'Turning on PHP opcache'
 
