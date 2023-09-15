@@ -911,18 +911,33 @@ demyx_config_whitelist() {
         "demyx_app_env_update DEMYX_APP_IP_WHITELIST=$DEMYX_CONFIG_FLAG_WHITELIST &&
         demyx_yml $DEMYX_APP_STACK"
 }
+#
+#   Configures app's WordPress URL.
+#
+demyx_config_www() {
+    demyx_app_env wp "
+        DEMYX_APP_DOMAIN
+        DEMYX_APP_DOMAIN_WWW
+        DEMYX_APP_STACK
+    "
 
-                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_XMLRPC" = true ]] && demyx_die 'WordPress xmlrpc is already turned on'
-                fi
+    DEMYX_CONFIG_COMPOSE=true
 
-                demyx_echo 'Turning on WordPress xmlrpc'
-                demyx_execute docker exec -t "$DEMYX_APP_NX_CONTAINER" sh -c 'mv "$NGINX_CONFIG"/common/xmlrpc.conf "$NGINX_CONFIG"/common/xmlrpc.on; demyx-reload'; \
-                    sed -i "s|DEMYX_APP_XMLRPC=.*|DEMYX_APP_XMLRPC=true|g" "$DEMYX_APP_PATH"/.env
+    case "$DEMYX_CONFIG_FLAG_WWW" in
+        false)
+            demyx_execute "Updating domain to ${DEMYX_APP_DOMAIN}" \
+                "demyx_wp $DEMYX_APP_DOMAIN search-replace --precise --all-tables $(demyx_app_proto)://www.${DEMYX_APP_DOMAIN} $(demyx_app_proto)://${DEMYX_APP_DOMAIN}"
+        ;;
+        true)
+            demyx_execute "Updating domain to www.${DEMYX_APP_DOMAIN}" \
+                "demyx_wp $DEMYX_APP_DOMAIN search-replace --precise --all-tables $(demyx_app_proto)://${DEMYX_APP_DOMAIN} $(demyx_app_proto)://www.${DEMYX_APP_DOMAIN}"
+        ;;
+    esac
 
-                demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
-            elif [[ "$DEMYX_CONFIG_XMLRPC" = false ]]; then
-                demyx_app_is_up
+    demyx_execute "Setting www to $DEMYX_CONFIG_FLAG_WWW" \
+        "demyx_app_env_update DEMYX_APP_DOMAIN_WWW=${DEMYX_CONFIG_FLAG_WWW}; \
+        demyx_yml $DEMYX_APP_STACK"
+}
 
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ "$DEMYX_APP_XMLRPC" = false ]] && demyx_die 'WordPress xmlrpc is already turned off'
