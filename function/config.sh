@@ -430,6 +430,12 @@ demyx_config_cache() {
     demyx_execute "Updating .env" \
         "demyx_app_env_update DEMYX_APP_CACHE=$DEMYX_CONFIG_FLAG_CACHE"
 }
+#
+#   Option updater for nginx-helper plugin.
+#
+demyx_config_cache_helper() {
+    demyx_wp "$DEMYX_APP_DOMAIN" "option update rt_wp_nginx_helper_options '{\"enable_purge\":\"1\",\"cache_method\":\"enable_fastcgi\",\"purge_method\":\"get_request\",\"enable_map\":null,\"enable_log\":null,\"log_level\":\"INFO\",\"log_filesize\":\"5\",\"enable_stamp\":null,\"purge_homepage_on_edit\":\"1\",\"purge_homepage_on_del\":\"1\",\"purge_archive_on_edit\":\"1\",\"purge_archive_on_del\":\"1\",\"purge_archive_on_new_comment\":\"1\",\"purge_archive_on_deleted_comment\":\"1\",\"purge_page_on_mod\":\"1\",\"purge_page_on_new_comment\":\"1\",\"purge_page_on_deleted_comment\":\"1\",\"redis_hostname\":\"127.0.0.1\",\"redis_port\":\"6379\",\"redis_prefix\":\"nginx-cache:\",\"purge_url\":\"\",\"redis_enabled_by_constant\":0}' --format=json"
+}
 
                 demyx_echo 'Putting WordPress into maintenance mode'
                 demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "echo '<?php \$upgrading = time(); ?>' > .maintenance"
