@@ -132,19 +132,27 @@ demyx_app_is_up() {
         demyx_error "$DEMYX_APP_DOMAIN isn't running"
     fi
 }
-demyx_open_port() {
-    DEMYX_UTILITIES_PORT=22222
-    [[ -n "$1" ]] && DEMYX_UTILITIES_PORT="$1"
+#
+#   Output WordPress login URL.
+#
+#
+demyx_app_login() {
+    local DEMYX_APP_LOGIN=
 
-    docker run -it --rm \
-    --network=host \
-    -e DEMYX_UTILITIES_PORT="$DEMYX_UTILITIES_PORT" \
-    demyx/utilities demyx-port | sed 's/\r//g'
-}
-demyx_mariadb_ready() {
-    until docker exec -t "$DEMYX_APP_DB_CONTAINER" mysqladmin -u "$WORDPRESS_DB_USER" -p"$WORDPRESS_DB_PASSWORD" status 2>/dev/null
-    do
-        sleep 1
+    demyx_app_env wp "
+        DEMYX_APP_WP_CONTAINER
+        WORDPRESS_USER
+    "
+
+    while true; do
+        DEMYX_APP_LOGIN="$(docker exec "$DEMYX_APP_WP_CONTAINER" wp login as "$WORDPRESS_USER" --url-only 2>&1 | tr '\r' ' ' || true)"
+
+        if [[ "$DEMYX_APP_LOGIN" == *"Error:"* ]]; then
+            sleep 1
+        else
+            echo "$DEMYX_APP_LOGIN"
+            break
+        fi
     done
 }
 demyx_bedrock_ready() {
