@@ -1,69 +1,87 @@
 # Demyx
 # https://demyx.sh
-# 
-# demyx exec <app> <docker exec args>
-# demyx exec <app> <args> <docker exec args>
+#
+#   demyx exec <app> <args>
 #
 demyx_exec() {
+    local DEMYX_EXEC=
+    local DEMYX_EXEC_CONTAINER=
+    local DEMYX_EXEC_FLAG=
+    local DEMYX_EXEC_FLAG_DB=
+    local DEMYX_EXEC_FLAG_NX=
+    local DEMYX_EXEC_FLAG_ROOT=
+    local DEMYX_EXEC_FLAG_NON_INTERACTIVE=
+    local DEMYX_EXEC_TTY=
+    local DEMYX_EXEC_USER=
+
     while :; do
-        case "$1" in
-            db)
-                DEMYX_EXEC_DB=1
-                ;;
-            nx)
-                DEMYX_EXEC_NX=1
-                ;;
+        DEMYX_EXEC_FLAG="${2:-}"
+        case "$DEMYX_EXEC_FLAG" in
+            -d)
+                DEMYX_EXEC_FLAG_DB=true
+            ;;
+            -n)
+                DEMYX_EXEC_FLAG_NX=true
+            ;;
             -r)
-                DEMYX_EXEC_ROOT=1
-                ;;
+                DEMYX_EXEC_FLAG_ROOT=true
+            ;;
             -t)
-                DEMYX_EXEC_TTY=1
-                ;;
+                DEMYX_EXEC_FLAG_NON_INTERACTIVE=true
+            ;;
             --)
                 shift
                 break
-                ;;
+            ;;
             -?*)
-                printf '\e[31m[CRITICAL]\e[39m Unknown option: %s\n' "$1" >&2
-                exit 1
-                ;;
+                demyx_error flag "$DEMYX_EXEC_FLAG"
+            ;;
             *)
                 break
         esac
         shift
     done
 
-    demyx_app_config
-    demyx_app_is_up
+    if [[ -n "$DEMYX_ARG_2" ]]; then
+        demyx_arg_valid
+        demyx_app_env wp "
+            DEMYX_APP_DB_CONTAINER
+            DEMYX_APP_NX_CONTAINER
+            DEMYX_APP_WP_CONTAINER
+        "
 
-    # If -t flag is passed then TTY only
-    if [[ -n "$DEMYX_EXEC_TTY" ]]; then
-        DEMYX_EXEC_FLAG="-t"
-    else
-        DEMYX_EXEC_FLAG="-it"
-    fi
+        # If -t flag is passed then TTY only
+        if [[ -n "$DEMYX_EXEC_FLAG_NON_INTERACTIVE" ]]; then
+            DEMYX_EXEC_TTY="-t"
+        else
+            DEMYX_EXEC_TTY="-it"
+        fi
 
-    # Execute as root
-    if [[ -n "$DEMYX_EXEC_ROOT" || -n "$DEMYX_EXEC_DB" ]]; then
-        DEMYX_EXEC_AS="--user=root"
-    else
-        DEMYX_EXEC_AS="--user=demyx"
-    fi
+        # Execute as root
+        if [[ "$DEMYX_EXEC_FLAG_ROOT" = true ]]; then
+            DEMYX_EXEC_USER="--user=root"
+        else
+            DEMYX_EXEC_USER="--user=demyx"
+        fi
 
-    if [[ "$DEMYX_TARGET" = all ]]; then
-        cd "$DEMYX_WP" || exit
-        for i in *
-        do
-            demyx exec "$DEMYX_EXEC_AS" "$i" "$@"
-        done
-    elif [[ "$DEMYX_APP_TYPE" = wp ]]; then
-        DEMYX_EXEC_CONTAINER="$DEMYX_APP_WP_CONTAINER"
-        [[ -n "$DEMYX_EXEC_DB" ]] && DEMYX_EXEC_CONTAINER="$DEMYX_APP_DB_CONTAINER"
-        [[ -n "$DEMYX_EXEC_NX" ]] && DEMYX_EXEC_CONTAINER="$DEMYX_APP_NX_CONTAINER"
-        docker exec "$DEMYX_EXEC_FLAG" "$DEMYX_EXEC_AS" "$DEMYX_EXEC_CONTAINER" "$@"
-    elif [[ -n "$DEMYX_GET_APP" ]]; then
-        docker exec "$DEMYX_EXEC_FLAG" "$DEMYX_EXEC_AS" "$DEMYX_GET_APP" "$@"
+        if [[ "$DEMYX_EXEC_FLAG_DB" = true ]]; then
+            DEMYX_EXEC_CONTAINER="$DEMYX_APP_DB_CONTAINER"
+        elif [[ "$DEMYX_EXEC_FLAG_NX" = true ]]; then
+            DEMYX_EXEC_CONTAINER="$DEMYX_APP_NX_CONTAINER"
+        else
+            DEMYX_EXEC_CONTAINER="$DEMYX_APP_WP_CONTAINER"
+        fi
+
+        shift
+
+        DEMYX_EXEC="docker exec $DEMYX_EXEC_TTY $DEMYX_EXEC_USER $DEMYX_EXEC_CONTAINER ${*:-bash}"
+
+        if eval "$DEMYX_EXEC" 2>&1 | tee "$DEMYX_TMP"/demyx_execute; then
+            demyx_logger false "docker exec $DEMYX_EXEC" "$(cat < "$DEMYX_TMP"/demyx_execute)"
+        else
+            demyx_logger false "docker exec $DEMYX_EXEC" "$(cat < "$DEMYX_TMP"/demyx_execute)" error
+        fi
     else
-        demyx_die --not-found
+        demyx_help exec
     fi
 }
