@@ -650,79 +650,37 @@ demyx_config_php() {
             "demyx_app_env_update DEMYX_APP_PHP=$DEMYX_CONFIG_FLAG_PHP_VERSION"
     fi
 }
+#
+#   Configures a phpMyAdmin container for an app.
+#
+demyx_config_pma() {
+    # TODO - needs to work with IP address
+    demyx_app_env wp "
+        DEMYX_APP_COMPOSE_PROJECT
+        DEMYX_APP_DOMAIN
+        DEMYX_APP_ID
+        DEMYX_APP_PMA
+        DEMYX_APP_STACK
+        MARIADB_ROOT_PASSWORD
+        WORDPRESS_DB_PASSWORD
+        WORDPRESS_DB_USER
+    "
 
-                demyx compose "$DEMYX_APP_DOMAIN" up -d wp_"$DEMYX_APP_ID"
-            fi
-            if [[ "$DEMYX_CONFIG_PMA" = true ]]; then
-                demyx_app_is_up
+    DEMYX_CONFIG="phpMyAdmin"
+    DEMYX_CONFIG_COMPOSE=true
 
-                DEMYX_CONFIG_PMA_CONTAINER_CHECK="$(echo "$DEMYX_DOCKER_PS" | grep "$DEMYX_APP_COMPOSE_PROJECT"_pma || true)"
-                [[ -n "$DEMYX_CONFIG_PMA_CONTAINER_CHECK" ]] && demyx_die 'phpMyAdmin container is already running'
+    demyx_execute "Setting pma to $DEMYX_CONFIG_FLAG_PMA" \
+        "demyx_app_env_update DEMYX_APP_PMA=${DEMYX_CONFIG_FLAG_PMA}; \
+        demyx_yml $DEMYX_APP_STACK"
 
-                if [[ -n "$DEMYX_CONFIG_EXPOSE" || "$DEMYX_APP_SSL" = false ]]; then
-                    [[ -n "$DEMYX_CONFIG_EXPOSE" ]] && DEMYX_APP_DOMAIN="$DEMYX_SERVER_IP"
-                    DEMYX_CONFIG_PMA_PROTO="http://$DEMYX_APP_DOMAIN"
-                    DEMYX_CONFIG_PMA_LABELS="-l traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-pma.entrypoints=http"
-                else
-                    DEMYX_CONFIG_PMA_PROTO="https://$DEMYX_APP_DOMAIN"
-                    DEMYX_CONFIG_PMA_LABELS="-l traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-pma.entrypoints=https
-                            -l traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-pma.tls.certresolver=demyx"
-                fi
-
-                DEMYX_CONFIG_PMA_ABSOLUTE_URI="$DEMYX_CONFIG_PMA_PROTO"/demyx/pma/
-
-                demyx_echo 'Creating phpMyAdmin container'
-
-                if [[ -n "$DEMYX_CONFIG_EXPOSE" || -n "$(demyx_validate_ip)" ]]; then
-                    DEMYX_CONFIG_PMA_PORT="$(demyx_open_port 8080)"
-                    DEMYX_CONFIG_PMA_ABSOLUTE_URI="$DEMYX_CONFIG_PMA_PROTO":"$DEMYX_CONFIG_PMA_PORT"
-
-                    demyx_execute docker run -d --rm \
-                        --name="$DEMYX_APP_COMPOSE_PROJECT"_pma \
-                        --network=demyx \
-                        --cpus="$DEMYX_CPU" \
-                        --memory="$DEMYX_MEM" \
-                        -p "$DEMYX_CONFIG_PMA_PORT":80 \
-                        -e PMA_HOST=db_"$DEMYX_APP_ID" \
-                        -e MYSQL_ROOT_PASSWORD="$MARIADB_ROOT_PASSWORD" \
-                        -e PMA_ABSOLUTE_URI="$DEMYX_CONFIG_PMA_ABSOLUTE_URI" \
-                        phpmyadmin/phpmyadmin 2>/dev/null
-                else
-                    demyx_execute docker run -d --rm \
-                        --name="$DEMYX_APP_COMPOSE_PROJECT"_pma \
-                        --network=demyx \
-                        --cpus="$DEMYX_CPU" \
-                        --memory="$DEMYX_MEM" \
-                        -p "$DEMYX_CONFIG_PMA_PORT":80 \
-                        -e PMA_HOST=db_"$DEMYX_APP_ID" \
-                        -e MYSQL_ROOT_PASSWORD="$MARIADB_ROOT_PASSWORD" \
-                        -e PMA_ABSOLUTE_URI="$DEMYX_CONFIG_PMA_ABSOLUTE_URI" \
-                        -l "traefik.enable=true" \
-                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-pma.rule=(Host(\`${DEMYX_APP_DOMAIN}\`) && PathPrefix(\`/demyx/pma/\`))" \
-                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-pma.middlewares=${DEMYX_APP_COMPOSE_PROJECT}-pma-prefix" \
-                        -l "traefik.http.middlewares.${DEMYX_APP_COMPOSE_PROJECT}-pma-prefix.stripprefix.prefixes=/demyx/pma/" \
-                        -l "traefik.http.routers.${DEMYX_APP_COMPOSE_PROJECT}-pma.priority=99" \
-                        $DEMYX_CONFIG_PMA_LABELS \
-                        phpmyadmin/phpmyadmin 2>/dev/null
-                fi
-
-                PRINT_TABLE="DEMYX^ PHPMYADMIN\n"
-                PRINT_TABLE+="URL^ $DEMYX_CONFIG_PMA_ABSOLUTE_URI\n"
-                PRINT_TABLE+="USERNAME^ $WORDPRESS_DB_USER\n"
-                PRINT_TABLE+="PASSWORD^ $WORDPRESS_DB_PASSWORD\n"
-                demyx_execute -v demyx_table "$PRINT_TABLE"
-            elif [[ "$DEMYX_CONFIG_PMA" = false ]]; then
-                demyx_app_is_up
-
-                DEMYX_CONFIG_PMA_CONTAINER_CHECK="$(echo "$DEMYX_DOCKER_PS" | grep "$DEMYX_APP_COMPOSE_PROJECT"_pma || true)"
-                [[ -z "$DEMYX_CONFIG_PMA_CONTAINER_CHECK" ]] && demyx_die 'No phpMyAdmin container running'
-
-                demyx_echo 'Stopping phpMyAdmin container'
-                demyx_execute docker stop "$DEMYX_APP_COMPOSE_PROJECT"_pma
-            fi
-            if [[ "$DEMYX_CONFIG_RATE_LIMIT" = true ]]; then
-                demyx_app_is_up
-                demyx_ols_not_supported
+    if [[ "$DEMYX_CONFIG_FLAG_PMA" = true ]]; then
+        {
+            echo "phpMyAdmin        $(demyx_app_proto)://$(demyx_app_domain)/demyx/pma/"
+            echo "Username          $WORDPRESS_DB_USER"
+            echo "Password          $WORDPRESS_DB_PASSWORD"
+        } > "$DEMYX_CONFIG_TRANSIENT"
+    fi
+}
 
                 if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
                     [[ "$DEMYX_APP_RATE_LIMIT" = true ]] && demyx_die 'Rate limit is already turned on'
