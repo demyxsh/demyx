@@ -436,61 +436,78 @@ demyx_config_cache() {
 demyx_config_cache_helper() {
     demyx_wp "$DEMYX_APP_DOMAIN" "option update rt_wp_nginx_helper_options '{\"enable_purge\":\"1\",\"cache_method\":\"enable_fastcgi\",\"purge_method\":\"get_request\",\"enable_map\":null,\"enable_log\":null,\"log_level\":\"INFO\",\"log_filesize\":\"5\",\"enable_stamp\":null,\"purge_homepage_on_edit\":\"1\",\"purge_homepage_on_del\":\"1\",\"purge_archive_on_edit\":\"1\",\"purge_archive_on_del\":\"1\",\"purge_archive_on_new_comment\":\"1\",\"purge_archive_on_deleted_comment\":\"1\",\"purge_page_on_mod\":\"1\",\"purge_page_on_new_comment\":\"1\",\"purge_page_on_deleted_comment\":\"1\",\"redis_hostname\":\"127.0.0.1\",\"redis_port\":\"6379\",\"redis_prefix\":\"nginx-cache:\",\"purge_url\":\"\",\"redis_enabled_by_constant\":0}' --format=json"
 }
+#
+#   Reconfigures an app's MariaDB credentials and reinstall WordPress core files.
+#
+demyx_config_clean() {
+    demyx_app_env wp "
+        DEMYX_APP_CONTAINER
+        DEMYX_APP_DB_CONTAINER
+        DEMYX_APP_DOMAIN
+        DEMYX_APP_ID
+        DEMYX_APP_WP_CONTAINER
+        WORDPRESS_DB_PASSWORD
+        WORDPRESS_DB_USER
+    "
 
-                demyx_echo 'Putting WordPress into maintenance mode'
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "echo '<?php \$upgrading = time(); ?>' > .maintenance"
+    local DEMYX_CONFIG_CLEAN_MARIADB_ROOT_PASSWORD=
+    local DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD=
+    local DEMYX_CONFIG_CLEAN_WORDPRESS_DB_USER=
 
-                demyx_echo 'Exporting database'
-                demyx_execute demyx wp "$DEMYX_APP_DOMAIN" db export "$DEMYX_APP_CONTAINER".sql
+    demyx_config "$DEMYX_APP_DOMAIN" --healthcheck=false
 
-                DEMYX_CONFIG_CLEAN_WORDPRESS_DB_USER="$(demyx util --user --raw)"
-                DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD="$(demyx util --pass --raw)"
-                DEMYX_CONFIG_CLEAN_MARIADB_ROOT_PASSWORD="$(demyx util --pass --raw)"
+    demyx_execute "Putting WordPress into maintenance mode" \
+        "docker exec -t $DEMYX_APP_WP_CONTAINER sh -c \"echo '<?php \\\$upgrading = time(); ?>' > .maintenance\""
 
-                demyx_echo 'Genearting new MariaDB credentials'
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "sed -i 's|$WORDPRESS_DB_USER|$DEMYX_CONFIG_CLEAN_WORDPRESS_DB_USER|g' /demyx/wp-config.php; sed -i 's|$WORDPRESS_DB_PASSWORD|$DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD|g' /demyx/wp-config.php"; \
-                    sed -i "s|$WORDPRESS_DB_USER|$DEMYX_CONFIG_CLEAN_WORDPRESS_DB_USER|g" "$DEMYX_APP_PATH"/.env; \
-                    sed -i "s|$WORDPRESS_DB_PASSWORD|$DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD|g" "$DEMYX_APP_PATH"/.env; \
-                    sed -i "s|$MARIADB_ROOT_PASSWORD|$DEMYX_CONFIG_CLEAN_MARIADB_ROOT_PASSWORD|g" "$DEMYX_APP_PATH"/.env
+    demyx_execute "Exporting database" \
+        "demyx_wp $DEMYX_APP_DOMAIN db export ${DEMYX_APP_CONTAINER}.sql"
 
-                demyx_app_config
+    DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD="$(demyx_utility password -r)"
+    DEMYX_CONFIG_CLEAN_WORDPRESS_DB_USER="$(demyx_utility username -r)"
+    DEMYX_CONFIG_CLEAN_MARIADB_ROOT_PASSWORD="$(demyx_utility password -r)"
 
-                demyx compose "$DEMYX_APP_DOMAIN" db stop
-                demyx compose "$DEMYX_APP_DOMAIN" db rm -f
+    demyx_execute "Genearting new MariaDB credentials" \
+        "docker exec -t $DEMYX_APP_WP_CONTAINER sh -c \"sed -i 's|$WORDPRESS_DB_USER|$DEMYX_CONFIG_CLEAN_WORDPRESS_DB_USER|g' /demyx/wp-config.php; sed -i 's|$WORDPRESS_DB_PASSWORD|$DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD|g' /demyx/wp-config.php\"; \
+        demyx_app_env_update \"
+            WORDPRESS_DB_PASSWORD=$DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD
+            WORDPRESS_DB_USER=$DEMYX_CONFIG_CLEAN_WORDPRESS_DB_USER
+            MARIADB_ROOT_PASSWORD=$DEMYX_CONFIG_CLEAN_MARIADB_ROOT_PASSWORD
+        \""
 
-                demyx_echo 'Deleting old MariaDB volume'
-                demyx_execute docker volume rm wp_"$DEMYX_APP_ID"_db
+    demyx_app_env wp "
+        MARIADB_ROOT_PASSWORD
+        WORDPRESS_DB_PASSWORD
+        WORDPRESS_DB_USER
+    "
 
-                demyx_echo 'Creating new MariaDB volume'
-                demyx_execute docker volume create wp_"$DEMYX_APP_ID"_db
+    demyx_execute "Bringing down MariaDB container" \
+        "docker stop ${DEMYX_APP_DB_CONTAINER}; \
+        docker rm $DEMYX_APP_DB_CONTAINER"
 
-                demyx_echo 'Replacing WordPress core files'
-                demyx_execute demyx wp "$DEMYX_APP_DOMAIN" core download --force
+    demyx_execute "Recreating MariaDB volume" \
+        "docker volume rm wp_${DEMYX_APP_ID}_db; \
+        docker volume create wp_${DEMYX_APP_ID}_db"
 
-                demyx compose "$DEMYX_APP_DOMAIN" db up -d
+    demyx_compose "$DEMYX_APP_DOMAIN" up -d
 
-                demyx_echo 'Initializing MariaDB'
-                demyx_execute demyx_mariadb_ready
+    demyx_execute "Initializing MariaDB" \
+        "demyx_mariadb_ready"
 
-                demyx_echo 'Importing database'
-                demyx_execute demyx wp "$DEMYX_APP_DOMAIN" db import "$DEMYX_APP_CONTAINER".sql
+    demyx_execute "Replacing WordPress core files" \
+        "demyx_wp $DEMYX_APP_DOMAIN core download --force"
 
-                demyx_echo 'Deleting exported database'
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" rm "$DEMYX_APP_CONTAINER".sql
+    demyx_execute "Importing database" \
+        "demyx_wp $DEMYX_APP_DOMAIN db import ${DEMYX_APP_CONTAINER}.sql"
 
-                demyx_echo 'Cleaning salts'
-                demyx_execute demyx wp "$DEMYX_APP_DOMAIN" config shuffle-salts
+    demyx_execute "Refreshing salts" \
+        "demyx_wp $DEMYX_APP_DOMAIN config shuffle-salts"
 
-                demyx_echo 'Removing maintenance mode'
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" rm .maintenance
+    demyx_execute "Cleaning up" \
+        "docker exec -t $DEMYX_APP_WP_CONTAINER sh -c 'rm ${DEMYX_APP_CONTAINER}.sql; rm .maintenance'"
 
-                demyx compose "$DEMYX_APP_DOMAIN" fr
-                demyx maldet "$DEMYX_APP_DOMAIN"
-                demyx config "$DEMYX_APP_DOMAIN" --healthcheck
-            fi
-            if [[ "$DEMYX_CONFIG_DEV" = true ]]; then
-                demyx_app_is_up
-                demyx_source yml
+    demyx_compose "$DEMYX_APP_DOMAIN" fr
+    demyx_config "$DEMYX_APP_DOMAIN" --healthcheck
+}
 
                 [[ -n "$DEMYX_CONFIG_EXPOSE" ]] && demyx_die '--expose is not supported'
 
