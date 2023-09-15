@@ -518,10 +518,17 @@ demyx_source() {
     done
 }
 }
-demyx_certificate_challenge() {
-    if [[ "$DEMYX_APP_CLOUDFLARE" = true ]]; then
-      echo "demyx-cf"
-    else
-      echo "demyx"
+#
+#   Echos WARNING messages.
+#
+demyx_warning() {
+    local DEMYX_WARNING="\e[33m[WARNING]\e[39m ${1:-}"
+    local DEMYX_WARNING_EXIT="${2:-}"
+
+    echo -e "$DEMYX_WARNING"
+    demyx_logger false "demyx_warning" "$DEMYX_WARNING"
+
+    if [[ "$DEMYX_WARNING_EXIT" = true ]]; then
+        exit
     fi
 }
