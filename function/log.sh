@@ -133,5 +133,13 @@ demyx_log_main() {
         tail "$DEMYX_LOG_TAIL_FLAG" "$DEMYX_LOG"/demyx.log
     fi
 }
+#
+#   View traefik logs.
+#
+demyx_log_traefik() {
+    if [[ "$DEMYX_LOG_FLAG_ERROR" = true ]]; then
+        tail "$DEMYX_LOG_TAIL_FLAG" "$DEMYX_LOG"/traefik.error.log
+    else
+        tail "$DEMYX_LOG_TAIL_FLAG" "$DEMYX_LOG"/traefik.access.log
     fi
 }
