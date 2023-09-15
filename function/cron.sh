@@ -4,36 +4,39 @@
 # demyx cron <args>
 #
 demyx_cron() {
-    while :; do
-        case "$1" in
-            daily)
-                DEMYX_CRON=daily
-                ;;
-            hourly)
-                DEMYX_CRON=hourly
-                ;;
-            minute)
-                DEMYX_CRON=minute
-                ;;
-            six-hour)
-                DEMYX_CRON=six-hour
-                ;;
-            weekly)
-                DEMYX_CRON=weekly
-                ;;
-            --)
-                shift
-                break
-                ;;
-            -?*)
-                printf '\e[31m[CRITICAL]\e[39m Unknown option: %s\n' "$1" >&2
-                exit 1
-                ;;
-            *)
-                break
-        esac
-        shift
-    done
+    demyx_source "
+        backup
+        log
+        healthcheck
+        monitor
+        update
+        wp
+    "
+
+    case "$DEMYX_ARG_2" in
+        daily)
+            demyx_cron_daily
+        ;;
+        hourly)
+            demyx_cron_hourly
+        ;;
+        minute)
+            demyx_cron_minute
+        ;;
+        five-minute)
+            demyx_cron_five_minute
+        ;;
+        six-hour)
+            demyx_cron_six_hour
+        ;;
+        weekly)
+            demyx_cron_weekly
+        ;;
+        *)
+            demyx_help cron
+        ;;
+    esac
+}
 
     if [[ "$DEMYX_CRON" = daily ]]; then
         if [[ "$DEMYX_TELEMETRY" = true ]]; then
