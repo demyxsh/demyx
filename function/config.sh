@@ -938,17 +938,16 @@ demyx_config_www() {
         "demyx_app_env_update DEMYX_APP_DOMAIN_WWW=${DEMYX_CONFIG_FLAG_WWW}; \
         demyx_yml $DEMYX_APP_STACK"
 }
+#
+#   Configures an app's xmlrpc setting.
+#
+demyx_config_xmlrpc() {
+    demyx_app_env wp "
+        DEMYX_APP_XMLRPC
+    "
 
-                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_XMLRPC" = false ]] && demyx_die 'WordPress xmlrpc is already turned off'
-                fi
+    DEMYX_CONFIG_COMPOSE=true
 
-                demyx_echo 'Turning off WordPress xmlrpc'
-                demyx_execute docker exec -t "$DEMYX_APP_NX_CONTAINER" sh -c 'mv "$NGINX_CONFIG"/common/xmlrpc.on "$NGINX_CONFIG"/common/xmlrpc.conf; demyx-reload'; \
-                    sed -i "s|DEMYX_APP_XMLRPC=.*|DEMYX_APP_XMLRPC=false|g" "$DEMYX_APP_PATH"/.env
-            fi
-        else
-            demyx_die --not-found
-        fi
-    fi
+    demyx_execute "Setting xmlrpc.php to $DEMYX_CONFIG_FLAG_XMLRPC" \
+        "demyx_app_env_update DEMYX_APP_XMLRPC=$DEMYX_CONFIG_FLAG_XMLRPC"
 }
