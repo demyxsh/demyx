@@ -695,30 +695,35 @@ demyx_config_rate_limit() {
     demyx_execute "Setting rate limit to $DEMYX_CONFIG_FLAG_RATE_LIMIT" \
         "demyx_app_env_update DEMYX_APP_RATE_LIMIT=$DEMYX_CONFIG_FLAG_RATE_LIMIT"
 }
+#
+#   Configure an app's container resources.
+#
+demyx_config_resources() {
+    demyx_app_env wp "
+        DEMYX_APP_DOMAIN
+        DEMYX_APP_DB_CONTAINER
+        DEMYX_APP_WP_CONTAINER
+    "
 
-                demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
-            fi
-            if [[ -n "$DEMYX_CONFIG_RESOURCE" ]]; then
-                if [[ -n "$DEMYX_CONFIG_DB_CPU" ]]; then
-                    demyx_echo "Updating $DEMYX_APP_DOMAIN database CPU"
+    DEMYX_CONFIG_COMPOSE=true
 
-                    if [[ "$DEMYX_CONFIG_DB_CPU" = null ]]; then
-                        demyx_execute sed -i "s|DEMYX_APP_DB_CPU=.*|DEMYX_APP_DB_CPU=|g" "$DEMYX_APP_PATH"/.env
-                    else
-                        demyx_execute sed -i "s|DEMYX_APP_DB_CPU=.*|DEMYX_APP_DB_CPU=$DEMYX_CONFIG_DB_CPU|g" "$DEMYX_APP_PATH"/.env
-                    fi
-                fi
-                if [[ -n "$DEMYX_CONFIG_DB_MEM" ]]; then
-                    demyx_echo "Updating $DEMYX_APP_DOMAIN database MEM"
-
-                    if [[ "$DEMYX_CONFIG_DB_MEM" = null ]]; then
-                        demyx_execute sed -i "s|DEMYX_APP_DB_MEM=.*|DEMYX_APP_DB_MEM=|g" "$DEMYX_APP_PATH"/.env
-                    else
-                        demyx_execute sed -i "s|DEMYX_APP_DB_MEM=.*|DEMYX_APP_DB_MEM=$DEMYX_CONFIG_DB_MEM|g" "$DEMYX_APP_PATH"/.env
-                    fi
-                fi
-                if [[ -n "$DEMYX_CONFIG_WP_CPU" ]]; then
-                    demyx_echo "Updating $DEMYX_APP_DOMAIN CPU"
+    if [[ -n "$DEMYX_CONFIG_FLAG_RESOURCES_DB_CPU" ]]; then
+        demyx_execute "Setting $DEMYX_APP_DB_CONTAINER cpu to $DEMYX_CONFIG_FLAG_RESOURCES_DB_CPU" \
+            "demyx_app_env_update DEMYX_APP_DB_CPU=$DEMYX_CONFIG_FLAG_RESOURCES_DB_CPU"
+    fi
+    if [[ -n "$DEMYX_CONFIG_FLAG_RESOURCES_DB_MEM" ]]; then
+        demyx_execute "Setting $DEMYX_APP_DB_CONTAINER mem to $DEMYX_CONFIG_FLAG_RESOURCES_DB_MEM" \
+            "demyx_app_env_update DEMYX_APP_DB_MEM=$DEMYX_CONFIG_FLAG_RESOURCES_DB_MEM"
+    fi
+    if [[ -n "$DEMYX_CONFIG_FLAG_RESOURCES_WP_CPU" ]]; then
+        demyx_execute "Setting $DEMYX_APP_WP_CONTAINER cpu to $DEMYX_CONFIG_FLAG_RESOURCES_WP_CPU" \
+            "demyx_app_env_update DEMYX_APP_WP_CPU=$DEMYX_CONFIG_FLAG_RESOURCES_WP_CPU"
+    fi
+    if [[ -n "$DEMYX_CONFIG_FLAG_RESOURCES_WP_MEM" ]]; then
+        demyx_execute "Setting $DEMYX_APP_WP_CONTAINER cpu to $DEMYX_CONFIG_FLAG_RESOURCES_WP_MEM" \
+            "demyx_app_env_update DEMYX_APP_WP_MEM=$DEMYX_CONFIG_FLAG_RESOURCES_WP_MEM"
+    fi
+}
 
                     if [[ "$DEMYX_CONFIG_WP_CPU" = null ]]; then
                         demyx_execute sed -i "s|DEMYX_APP_WP_CPU=.*|DEMYX_APP_WP_CPU=|g" "$DEMYX_APP_PATH"/.env
