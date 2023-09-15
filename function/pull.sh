@@ -70,5 +70,19 @@ demyx_pull_all() {
         echo "$DEMYX_PULL_ALL_CHECK"
     done
 }
+#
+#   Pull specific demyx images.
+#
+demyx_pull_image() {
+    local DEMYX_PULL_IMAGE=demyx/"$DEMYX_ARG_2"
+
+    if [[ "$DEMYX_ARG_2" = ctop ]]; then
+        DEMYX_PULL_IMAGE="quay.io/vektorlab/ctop"
+    elif [[   "$DEMYX_ARG_2" = pma ||
+            "$DEMYX_ARG_2" = phpmyadmin ]]; then
+        DEMYX_PULL_IMAGE=phpmyadmin/phpmyadmin
     fi
+
+    demyx_execute false \
+        "docker pull ${DEMYX_PULL_IMAGE}"
 }
