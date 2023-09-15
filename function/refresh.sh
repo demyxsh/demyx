@@ -1,27 +1,45 @@
 # Demyx
 # https://demyx.sh
-# 
-# demyx refresh <app>
+#
+#   demyx refresh <app> <args>
 #
 demyx_refresh() {
+    DEMYX_ARG_2="${1:-$DEMYX_ARG_2}"
+    shift && local DEMYX_REFRESH_ARGS="$*"
+    local DEMYX_REFRESH_FLAG=
+    local DEMYX_REFRESH_FLAG_FORCE=
+    local DEMYX_REFRESH_FLAG_NO_COMPOSE=
+    local DEMYX_REFRESH_FLAG_NO_FORCE_RECREATE=
+    local DEMYX_REFRESH_FLAG_SKIP=
+
+    demyx_source "
+        env
+        backup
+        compose
+        yml
+    "
+
     while :; do
-        case "$3" in
-            -f|--force)
-                DEMYX_REFRESH_FORCE=true
+        DEMYX_REFRESH_FLAG="${1:-}"
+        case "$DEMYX_REFRESH_FLAG" in
+            -f)
+                DEMYX_REFRESH_FLAG_FORCE=true
                 ;;
-            --skip-backup)
-                DEMYX_REFRESH_SKIP_BACKUP=true
-                ;;
-            --skip-checks)
-                DEMYX_REFRESH_SKIP_CHECKS=true
-                ;;
+            -nc)
+                DEMYX_REFRESH_FLAG_NO_COMPOSE=true
+            ;;
+            -nfr)
+                DEMYX_REFRESH_FLAG_NO_FORCE_RECREATE=true
+            ;;
+            -s)
+                DEMYX_REFRESH_FLAG_SKIP=true
+            ;;
             --)
                 shift
                 break
                 ;;
             -?*)
-                printf '\e[31m[CRITICAL]\e[39m Unknown option: %s\n' "$3" >&2
-                exit 1
+                demyx_error flag "$DEMYX_REFRESH_FLAG"
                 ;;
             *)
                 break
@@ -29,15 +47,26 @@ demyx_refresh() {
         shift
     done
 
-    if [[ "$DEMYX_TARGET" = all ]]; then
-        cd "$DEMYX_WP" || exit
-        for i in *
-        do
-            demyx refresh "$i" "$@"
-        done
-    elif [[ "$DEMYX_TARGET" = code ]]; then
-        demyx_source env
-        demyx_source yml
+    case "$DEMYX_ARG_2" in
+        all)
+            demyx_refresh_all
+        ;;
+        code)
+            demyx_refresh_code
+        ;;
+        traefik)
+            demyx_refresh_traefik
+        ;;
+        *)
+            if [[ -n "$DEMYX_ARG_2" ]]; then
+                demyx_arg_valid
+                demyx_refresh_app
+            else
+                demyx_help refresh
+            fi
+        ;;
+    esac
+}
 
         [[ ! -d "$DEMYX_CODE" ]] && mkdir -p "$DEMYX_CODE"
 
