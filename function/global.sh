@@ -24,87 +24,68 @@ demyx_app_domain() {
         echo "$DEMYX_APP_DOMAIN_ARG"
     fi
 }
+#
+#   Get variable from app's .env file.
+#
+demyx_app_env() {
+    local DEMYX_APP_ENV_1="${1:-}"
+    local DEMYX_APP_ENV_2="${2:-}"
+    local DEMYX_APP_FILE=
 
-# Global variables
-DEMYX_GLOBAL_UPDATE_LIST="demyx browsersync code-server docker-compose docker-socket-proxy logrotate mariadb nginx openlitespeed ssh traefik utilities wordpress"
-DEMYX_DOCKER_PS="$(docker ps)"
+    case "$DEMYX_APP_ENV_1" in
+        code)
+            # TODO
+        ;;
+        html)
+            # TODO
+        ;;
+        php)
+            # TODO
+        ;;
+        wp)
+            DEMYX_APP_FILE="$DEMYX_WP"/"$DEMYX_ARG_2"/.env
+        ;;
+    esac
 
-demyx_echo() {
-    DEMYX_ECHO="$1"
-}
-demyx_execute() {
-    while :; do
-        case "$1" in
-            -q)
-                DEMYX_EXECUTE_QUIET=1
-                ;;
-            -v)
-                DEMYX_EXECUTE_VERBOSE=1
-                ;;
-            --)
-                shift
-                break
-                ;;
-            -?*)
-                printf '\e[31m[CRITICAL]\e[39m Unknown option: %s\n' "$1" >&2
-                exit 1
-                ;;
-            *)
-                break
-        esac
-        shift
-    done
+    if [[ -f "$DEMYX_APP_FILE" ]]; then
+        local DEMYX_APP_ENV_GREP="${DEMYX_APP_ENV_2:-}"
+        local DEMYX_APP_ENV_I=
+        local DEMYX_APP_ENV_I_VAL=
+        local DEMYX_APP_ENV_REMOVE_ENV=
+        local DEMYX_APP_ENV_REMOVE_COMPOSE=
 
-    if [[ -n "$DEMYX_EXECUTE_VERBOSE" ]]; then
-        DEMYX_ECHO=""
-        DEMYX_EXECUTE_VERBOSE=""
-
-        # Log wp commands for cron
-        if [[ "$DEMYX_COMMAND" = wp ]]; then
-            DEMYX_EXECUTE=$("$@")
-            echo "$DEMYX_EXECUTE"
-        else
-            "$@"
+        # TEMPORARY
+        DEMYX_APP_ENV_REMOVE_ENV="$(grep DEMYX_APP_AUTH_HTPASSWD "$DEMYX_APP_FILE" || true)"
+        if [[ -n "$DEMYX_APP_ENV_REMOVE_ENV" ]]; then
+            sed -i "/DEMYX_APP_AUTH_HTPASSWD/d" "$DEMYX_WP"/"$DEMYX_ARG_2"/.env
         fi
-    else
-        echo -n "$DEMYX_ECHO ... "
-        DEMYX_EXECUTE=$("$@")
-        echo -en "\e[32mdone\e[39m\n"
-    fi
 
-    [[ "$DEMYX_EXECUTE" == *"WARNING"* ]] && echo -e "\e[33m[WARNING]\e[39m Proceeding without SSL, see \"demyx log\" for more info"
+        # TEMPORARY
+        if [[ -f "$DEMYX_WP"/"$DEMYX_ARG_2"/docker-compose.yml ]]; then
+            DEMYX_APP_ENV_REMOVE_COMPOSE="$(grep DEMYX_APP_AUTH_HTPASSWD "$DEMYX_WP"/"$DEMYX_ARG_2"/docker-compose.yml || true)"
+            if [[ -n "$DEMYX_APP_ENV_REMOVE_COMPOSE" ]]; then
+                sed -i "/DEMYX_APP_AUTH_HTPASSWD/d" "$DEMYX_WP"/"$DEMYX_ARG_2"/docker-compose.yml
+            fi
+        fi
 
-    # Remove passwords from log
-    DEMYX_COMMON_LOG="$(echo -e "[$(date +%F-%T)] ========================================")\n"
-    if [[ "$@" == *"pass"* ]]; then
-        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] DEMYX: $DEMYX_COMMAND $DEMYX_TARGET")\n"
-        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] ECHO: $DEMYX_ECHO")\n"
-        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] COMMAND: ${@%%*pass*=*}")\n"
-        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] STDOUT: $(echo ${DEMYX_EXECUTE%%*pass*=*} | tr -d "\n\r")")\n"
-    elif [[ "$@" == *"PASS"* ]]; then
-        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] DEMYX: $DEMYX_COMMAND $DEMYX_TARGET")\n"
-        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] ECHO: $DEMYX_ECHO")\n"
-        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] COMMAND: $1")\n"
-        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] STDOUT: $(echo ${2%%*PASS*} | tr -d "\n\r")")\n"
-    elif [[ -n "$DEMYX_EXECUTE_QUIET" ]]; then
-        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] DEMYX: $DEMYX_COMMAND $DEMYX_TARGET")\n"
-        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] ECHO: $DEMYX_ECHO")\n"
-        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] EXECUTE: ***")\n"
-        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] STDOUT: ***")\n"
-        DEMYX_EXECUTE_QUIET=
-    elif [[ "$DEMYX_COMMAND" = monitor ]]; then
-        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] DEMYX: $DEMYX_COMMAND $DEMYX_APP_DOMAIN")\n"
-        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] ECHO: $DEMYX_ECHO")\n"
-        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] EXECUTE: $(echo "$@" | tr -d "\n\r")")\n"
-        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] STDOUT: $(echo "$DEMYX_EXECUTE" | tr -d "\n\r")")\n"
+        for DEMYX_APP_ENV_I in $DEMYX_APP_ENV_GREP; do
+            DEMYX_APP_ENV_I_VAL="$(grep -w "$DEMYX_APP_ENV_I" "$DEMYX_APP_FILE" | awk -F '=' '{print $2}' || true)"
+
+            # Refresh app's .env if variable doesn't exist.
+            if [[ -z "$DEMYX_APP_ENV_I_VAL" ]]; then
+                demyx_source env
+                demyx_env
+
+                # Grep again.
+                DEMYX_APP_ENV_I_VAL="$(grep -w "$DEMYX_APP_ENV_I" "$DEMYX_APP_FILE" | awk -F '=' '{print $2}' || true)"
+            fi
+
+            # shellcheck disable=SC2316
+            export local "$DEMYX_APP_ENV_I"="$DEMYX_APP_ENV_I_VAL"
+        done
     else
-        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] DEMYX: $DEMYX_COMMAND $DEMYX_TARGET")\n"
-        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] ECHO: $DEMYX_ECHO")\n"
-        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] EXECUTE: $(echo "$@" | tr -d "\n\r")")\n"
-        DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] STDOUT: $(echo "$DEMYX_EXECUTE" | tr -d "\n\r")")\n"
+        demyx_error custom "Invalid app or missing app's .env"
     fi
-    DEMYX_COMMON_LOG+="$(echo -e "[$(date +%F-%T)] ========================================")"
-    echo -e "$DEMYX_COMMON_LOG" >> /var/log/demyx/demyx.log
 }
 demyx_table() {
     demyx_source table
