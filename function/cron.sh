@@ -37,70 +37,88 @@ demyx_cron() {
         ;;
     esac
 }
+#
+#   Daily cron.
+#
+demyx_cron_daily() {
+    local DEMYX_CRON_DAILY_I=
+    local DEMYX_CRON_DAILY_WP_CHECK=
 
-    if [[ "$DEMYX_CRON" = daily ]]; then
-        if [[ "$DEMYX_TELEMETRY" = true ]]; then
-            echo "[$(date +%F-%T)] CROND DAILY: TELEMETRY"
-            demyx_execute -v curl -s "https://demyx.sh/?action=active&token=V1VpdGNPcWNDVlZSUDFQdFBaR0Zhdz09OjrnA1h6ZbDFJ2T6MHOwg3p4" -o /dev/null
-        fi
+    if [[ "$DEMYX_TELEMETRY" = true ]]; then
+        demyx_execute "[CROND DAILY] Pinging home" \
+            "curl -s \"https://demyx.sh/?action=active&version=${DEMYX_VERSION}&token=V1VpdGNPcWNDVlZSUDFQdFBaR0Zhdz09OjrnA1h6ZbDFJ2T6MHOwg3p4\" -o /dev/null -w \"%{http_code}\""
+    fi
 
-        # Backup demyx system and configs
-        echo "[$(date +%F-%T)] CROND DAILY: BACKING UP DEMYX"
-        demyx_execute -v mkdir -p "$DEMYX_BACKUP"/system; \
-            cp -r "$DEMYX_APP" "$DEMYX_BACKUP"/system; \
-            docker cp demyx_traefik:/demyx "$DEMYX_BACKUP"/system/traefik; \
-            tar -czf "$DEMYX_BACKUP"/system-"$DEMYX_HOST".tgz -C "$DEMYX_BACKUP" system
+    # Backup demyx system and configs
+    demyx_execute "[CROND DAILY] Backing up system" \
+        "mkdir -p ${DEMYX_TMP}/system; \
+        cp -pr $DEMYX_APP ${DEMYX_TMP}/system; \
+        docker cp demyx_traefik:/demyx ${DEMYX_TMP}/system/traefik; \
+        demyx_proper ${DEMYX_TMP}/system; \
+        tar -czf ${DEMYX_BACKUP}/system-${DEMYX_HOSTNAME}.tgz -C ${DEMYX_TMP} system; \
+        rm -rf ${DEMYX_TMP}/system"
 
-        if [[ "$DEMYX_BACKUP_ENABLE" = true ]]; then
-            # Backup WordPress sites at midnight
-            echo "[$(date +%F-%T)] CROND DAILY: WORDPRESS BACKUP"
-            demyx_execute -v demyx backup all
+    if [[ "$DEMYX_BACKUP_ENABLE" = true ]]; then
+        # Backup WordPress sites at midnight
+        demyx_execute "[CROND DAILY] Backing up apps" \
+            "demyx_backup all"
 
-            # Delete backups older than X amounts of days
-            echo "[$(date +%F-%T)] CROND DAILY: DELETING BACKUPS OLDER THAN $DEMYX_BACKUP_LIMIT"
-            demyx_execute -v find "$DEMYX_BACKUP_WP" -type f -mindepth 1 -mtime +"$DEMYX_BACKUP_LIMIT" -delete
-        fi
+        # Delete backups older than X amounts of days
+        demyx_execute "[CROND DAILY] Deleting backups older than $DEMYX_BACKUP_LIMIT days" \
+            "find $DEMYX_BACKUP_WP -name \"*.tgz\" -type f -mtime +${DEMYX_BACKUP_LIMIT} -delete"
+    fi
 
-        # WP auto update
-        echo "[$(date +%F-%T)] CROND DAILY: WORDPRESS UPDATE"
-        cd "$DEMYX_WP"
-        for i in *
-        do
-            source "$DEMYX_WP"/"$i"/.env
-            if [[ "$DEMYX_APP_WP_UPDATE" = true ]]; then
-                if [[ "$DEMYX_APP_STACK" = ols || "$DEMYX_APP_STACK" = nginx-php ]]; then
-                    demyx_execute -v demyx wp "$i" core update; \
-                        demyx wp "$i" theme update --all; \
-                        demyx wp "$i" plugin update --all
+    # WP auto update
+    cd "$DEMYX_WP" || exit
+
+    for DEMYX_CRON_DAILY_I in *; do
+        DEMYX_ARG_2="$DEMYX_CRON_DAILY_I"
+
+        demyx_app_env wp "
+            DEMYX_APP_STACK
+            DEMYX_APP_TYPE
+            DEMYX_APP_WP_CONTAINER
+            DEMYX_APP_WP_UPDATE
+        "
+
+        if [[ "$DEMYX_APP_WP_UPDATE" = true ]]; then
+            if [[ "$DEMYX_APP_STACK" = bedrock || "$DEMYX_APP_STACK" = ols-bedrock ]]; then
+                demyx_execute "[CROND DAILY - ${DEMYX_CRON_DAILY_I}] Executing composer update" \
+                    "docker exec -t $DEMYX_APP_WP_CONTAINER composer update --no-interaction"
+            else
+                demyx_execute "[CROND DAILY - ${DEMYX_CRON_DAILY_I}] Updating WordPress core, themes, and plugins" \
+                    "demyx_wp $DEMYX_CRON_DAILY_I core update; \
+                        demyx_wp $DEMYX_CRON_DAILY_I plugin update --all"
+
+                # A roundabout way to handle wp-cli nonexistent error
+                DEMYX_CRON_DAILY_WP_CHECK="$(docker exec "$DEMYX_APP_WP_CONTAINER" wp theme update --all 2>&1 || true)"
+                if [[ "$DEMYX_CRON_DAILY_WP_CHECK" == *"Success"* || "$DEMYX_CRON_DAILY_WP_CHECK" == *"No themes updated"* ]]; then
+                    demyx_logger "[CROND DAILY - ${DEMYX_CRON_DAILY_I}] Updating WP theme" \
+                        "docker exec $DEMYX_APP_WP_CONTAINER wp theme update --all" \
+                            "$DEMYX_CRON_DAILY_WP_CHECK"
                 else
-                    demyx_execute -v docker exec -t "$DEMYX_APP_WP_CONTAINER" /usr/local/bin/composer update
+                    demyx_logger "[CROND DAILY - ${DEMYX_CRON_DAILY_I}] Updating WP theme" \
+                        "docker exec $DEMYX_APP_WP_CONTAINER wp theme update --all" \
+                            "$DEMYX_CRON_DAILY_WP_CHECK" error
                 fi
             fi
-        done
-        
-        # Execute custom cron
-        if [[ -f /demyx/custom/cron/daily.sh ]]; then
-            echo "[$(date +%F-%T)] CROND DAILY: CUSTOM"
-            demyx_execute -v bash /demyx/custom/cron/daily.sh
         fi
-    elif [[ "$DEMYX_CRON" = hourly ]]; then
-        # Run WP cron
-        echo "[$(date +%F-%T)] CROND HOURLY: WORDPRESS EVENT CRON"
-        demyx_execute -v demyx wp all cron event run --due-now
+    done
 
-        # Execute custom cron
-        if [[ -f /demyx/custom/cron/hourly.sh ]]; then
-            echo "[$(date +%F-%T)] CROND HOURLY: CUSTOM"
-            demyx_execute -v bash /demyx/custom/cron/hourly.sh
-        fi
-    elif [[ "$DEMYX_CRON" = minute ]]; then
-        # Monitor for auto scale
-        echo "[$(date +%F-%T)] CROND MINUTE: MONITOR"
-        demyx_execute -v demyx monitor
+    # Rotate demyx logs
+    demyx_execute "[CROND DAILY] Rotating logs" \
+        "logrotate --log=${DEMYX_LOG}/logrotate.log ${DEMYX_CONFIG}/logrotate.conf"
 
-        # Healthchecks
-        echo "[$(date +%F-%T)] CROND MINUTE: HEALTHCHECK"
-        demyx_execute -v demyx healthcheck
+    # Healthchecks
+    demyx_execute "[CROND MINUTE] Healthcheck - Disk" \
+        "demyx_healthcheck disk"
+
+    # Execute custom cron
+    if [[ -f "$DEMYX"/custom/cron/daily.sh ]]; then
+        demyx_execute "[CROND DAILY] Executing ${DEMYX}/custom/cron/daily.sh" \
+            "bash ${DEMYX}/custom/cron/daily.sh"
+    fi
+}
 
         # Execute custom cron
         if [[ -f /demyx/custom/cron/minute.sh ]]; then
