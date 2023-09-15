@@ -205,22 +205,33 @@ demyx_backup_db() {
             "demyx_wp ${DEMYX_APP_DOMAIN} db export ${DEMYX_APP_CONTAINER}.sql"
     fi
 }
+#
+#   List app's backups.
+#
+demyx_backup_list() {
+    local DEMYX_BACKUP_LIST="$DEMYX_TMP"/demyx_transient
+    local DEMYX_BACKUP_LIST_COUNT=
+    local DEMYX_BACKUP_LIST_TOTAL_SIZE=
+    local DEMYX_BACKUP_LIST_I=
 
-                demyx_echo 'Exporting logs'
-                demyx_execute docker cp "$DEMYX_APP_WP_CONTAINER":/var/log/demyx "$DEMYX_APP_PATH"/demyx-log
+    DEMYX_BACKUP_LIST_COUNT="$(find "$DEMYX_BACKUP_WP"/"$DEMYX_ARG_2" -name "*${DEMYX_ARG_2}.tgz" -type f | wc -l)"
+    DEMYX_BACKUP_LIST_TOTAL_SIZE="$(du -sh "$DEMYX_BACKUP_WP"/"$DEMYX_ARG_2" | cut -f1)"
 
-                demyx_echo 'Archiving directory'
-                demyx_execute tar -czf "$DEMYX_BACKUP_WP"/"$DEMYX_APP_DOMAIN"/"$DEMYX_BACKUP_TODAYS_DATE"-"$DEMYX_APP_DOMAIN".tgz -C "$DEMYX_WP" "$DEMYX_APP_DOMAIN"
+    [[ -f "$DEMYX_BACKUP_LIST" ]] && rm -f "$DEMYX_BACKUP_LIST"
 
-                [[ -n "$DEMYX_BACKUP_PATH" ]] && mv "$DEMYX_BACKUP_WP"/"$DEMYX_APP_DOMAIN"/"$DEMYX_BACKUP_TODAYS_DATE"-"$DEMYX_APP_DOMAIN".tgz "$DEMYX_BACKUP_PATH" && chown demyx:demyx "$DEMYX_BACKUP_PATH"/"$DEMYX_APP_DOMAIN".tgz
-                
-                demyx_echo 'Cleaning up'
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" rm "$DEMYX_APP_CONTAINER".sql; \
-                    rm -rf "$DEMYX_APP_PATH"/demyx-wp; \
-                    rm -rf "$DEMYX_APP_PATH"/demyx-log
+    if [[ "$DEMYX_BACKUP_LIST_COUNT" != 0 ]]; then
+        cd "$DEMYX_BACKUP_WP"/"$DEMYX_ARG_2" || exit
+
+        for DEMYX_BACKUP_LIST_I in *;do
+            if [[ "$DEMYX_BACKUP_LIST_I" == *".tgz" ]]; then
+                {
+                    echo "$DEMYX_BACKUP_LIST_I - $(du -sh "$DEMYX_BACKUP_WP"/"$DEMYX_ARG_2"/"$DEMYX_BACKUP_LIST_I" | cut -f1)"
+                } >> "$DEMYX_BACKUP_LIST"
             fi
-        else
-            demyx_die --not-found
-        fi
+        done
     fi
+
+    demyx_execute false \
+        "demyx_divider_title \"DEMYX - BACKUP\" \"$DEMYX_ARG_2 - Count: $DEMYX_BACKUP_LIST_COUNT - Total Size: $DEMYX_BACKUP_LIST_TOTAL_SIZE\"; \
+            cat < ${DEMYX_BACKUP_LIST}"
 }
