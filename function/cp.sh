@@ -4,46 +4,41 @@
 # demyx cp <app/path>:<path> <app/path>:<path>
 #
 demyx_cp() {
-    demyx_app_is_up
+    DEMYX_ARG_2="${1:-$DEMYX_ARG_2}"
+    # shellcheck disable=SC2153
+    local DEMYX_CP="$DEMYX_TMP"/demyx_transient
 
-    if [[ "$1" = db ]]; then
-        DEMYX_CP_FIRST_ARG="$2"
-        DEMYX_CP_SECOND_ARG="$3"
-        DEMYX_CP_FIRST_ARG_PATH_CHECK="${2:0:1}"
-        DEMYX_CP_SECOND_ARG_PATH_CHECK="${3:0:1}"
+    if [[ -n "$DEMYX_ARG_2" ]]; then
+        demyx_arg_valid
+        demyx_app_env wp "
+            DEMYX_APP_DB_CONTAINER
+            DEMYX_APP_NX_CONTAINER
+            DEMYX_APP_STACK
+            DEMYX_APP_WP_CONTAINER
+        "
+
+        {
+            echo "MariaDB       docker cp <target> ${DEMYX_APP_DB_CONTAINER}:${DEMYX}/<path>"
+            echo "              docker cp ${DEMYX_APP_DB_CONTAINER}:${DEMYX}/<target> <path>"
+
+            if [[ "$DEMYX_APP_STACK" = nginx-php || "$DEMYX_APP_STACK" = nginx-bedrock ]]; then
+                echo
+                echo "Nginx         docker cp <target> ${DEMYX_APP_NX_CONTAINER}:${DEMYX}/<path>"
+                echo "              docker cp ${DEMYX_APP_NX_CONTAINER}:${DEMYX}/<target> <path>"
+            fi
+
+            echo
+            echo "WordPress     docker cp <target> ${DEMYX_APP_WP_CONTAINER}:${DEMYX}/<path>"
+            echo "              docker cp ${DEMYX_APP_WP_CONTAINER}:${DEMYX}/<target> <path>"
+
+        } > "$DEMYX_CP"
+
+        demyx_execute false "demyx_divider_title CP Commands; \
+            cat < $DEMYX_CP"
+
+        # shellcheck disable=2153
+        demyx_logger false "$DEMYX_ARGS" "$(cat < "$DEMYX_TMP"/demyx_transient)"
     else
-        DEMYX_CP_FIRST_ARG="$1"
-        DEMYX_CP_SECOND_ARG="$2"
-        DEMYX_CP_FIRST_ARG_PATH_CHECK="${1:0:1}"
-        DEMYX_CP_SECOND_ARG_PATH_CHECK="${2:0:1}"
+        demyx_error app
     fi
-
-    DEMYX_CP_FIRST_ARG_PARAM_1="$(echo "$DEMYX_CP_FIRST_ARG" | awk -F '[:]' '{print $1}')"
-    DEMYX_CP_FIRST_ARG_PARAM_2="$(echo "$DEMYX_CP_FIRST_ARG" | awk -F '[:]' '{print $2}')"
-    DEMYX_CP_SECOND_ARG_PARAM_1="$(echo "$DEMYX_CP_SECOND_ARG" | awk -F '[:]' '{print $1}')"
-    DEMYX_CP_SECOND_ARG_PARAM_2="$(echo "$DEMYX_CP_SECOND_ARG" | awk -F '[:]' '{print $2}')"
-
-    if [[ "$1" = db ]]; then
-        [[ "$DEMYX_CP_FIRST_ARG_PATH_CHECK" != / ]] && DEMYX_CP_FIRST_ARG_APP_CHECK="$(demyx info "$DEMYX_CP_FIRST_ARG_PARAM_1" --filter=DEMYX_APP_DB_CONTAINER --quiet)"
-        [[ "$DEMYX_CP_SECOND_ARG_PATH_CHECK" != / ]] && DEMYX_CP_SECOND_ARG_APP_CHECK="$(demyx info "$DEMYX_CP_SECOND_ARG_PARAM_1" --filter=DEMYX_APP_DB_CONTAINER --quiet)"
-    else
-        [[ "$DEMYX_CP_FIRST_ARG_PATH_CHECK" != / ]] && DEMYX_CP_FIRST_ARG_APP_CHECK="$(demyx info "$DEMYX_CP_FIRST_ARG_PARAM_1" --filter=DEMYX_APP_WP_CONTAINER --quiet)"
-        [[ "$DEMYX_CP_SECOND_ARG_PATH_CHECK" != / ]] && DEMYX_CP_SECOND_ARG_APP_CHECK="$(demyx info "$DEMYX_CP_SECOND_ARG_PARAM_1" --filter=DEMYX_APP_WP_CONTAINER --quiet)"
-    fi
-
-    if [[ -n "$DEMYX_CP_FIRST_ARG_APP_CHECK" ]]; then
-        DEMYX_CP_FIRST_ARG="$DEMYX_CP_FIRST_ARG_APP_CHECK":"$DEMYX_CP_FIRST_ARG_PARAM_2"
-    else
-        DEMYX_CP_FIRST_ARG="$DEMYX_CP_FIRST_ARG_PARAM_1"
-        [[ -n "$DEMYX_CP_FIRST_ARG_PARAM_2" ]] && DEMYX_CP_FIRST_ARG="$DEMYX_CP_FIRST_ARG_PARAM_1":"$DEMYX_CP_FIRST_ARG_PARAM_2"
-    fi
-
-    if [[ -n "$DEMYX_CP_SECOND_ARG_APP_CHECK" ]]; then
-        DEMYX_CP_SECOND_ARG="$DEMYX_CP_SECOND_ARG_APP_CHECK":"$DEMYX_CP_SECOND_ARG_PARAM_2"
-    else
-        DEMYX_CP_SECOND_ARG="$DEMYX_CP_SECOND_ARG_PARAM_1"
-        [[ -n "$DEMYX_CP_SECOND_ARG_PARAM_2" ]] && DEMYX_CP_SECOND_ARG="$DEMYX_CP_SECOND_ARG_PARAM_1":"$DEMYX_CP_SECOND_ARG_PARAM_2"
-    fi
-
-    docker cp "$DEMYX_CP_FIRST_ARG" "$DEMYX_CP_SECOND_ARG"
 }
