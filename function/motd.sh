@@ -68,22 +68,14 @@ demyx_motd_warning() {
         done
     fi
 }
-demyx_motd() {
-    echo "
-        Demyx
-        https://demyx.sh
+#
+#   Checks if WP apps are installed.
+#
+demyx_motd_wp() {
+    local DEMYX_MOTD_HAS_WP=
+    DEMYX_MOTD_HAS_WP="$(find "$DEMYX_WP" -mindepth 1 -maxdepth 1 -type d | wc -l)"
 
-        Welcome to Demyx! Please report any bugs you see.
-
-        - Help: demyx help
-        - Bugs: github.com/demyxsh/demyx/issues
-        - Changelog: github.com/demyxsh/demyx/blob/master/changelog/${DEMYX_VERSION}.md
-        - Chat: https://webchat.freenode.net/?channel=#demyx
-        - Contact: info@demyx.sh
-        " | sed 's/        //g'
-    
-    demyx info motd
-    demyx_motd_getting_started
-    demyx_motd_stack_check
-    demyx_motd_dev_warning
+    if (( "$DEMYX_MOTD_HAS_WP" > 0 )); then
+        echo true
+    fi
 }
