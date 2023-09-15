@@ -208,14 +208,12 @@ demyx_arg_valid() {
         fi
     fi
 }
-demyx_wp_check_empty() {
-    DEMYX_COMMON_WP_APPS="$(ls "$DEMYX_WP")"
-    if [[ -z "$DEMYX_COMMON_WP_APPS" || ! -d "$DEMYX_WP" ]]; then
-        if [[ "$1" = true ]]; then
-            demyx_die 'There are no WordPress apps installed.'
-        else
-            exit 1
-        fi
+#
+#   Compare versions.
+#
+demyx_compare() {
+    echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }';
+}
     fi
 }
 demyx_validate_ip() {
