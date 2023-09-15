@@ -214,6 +214,14 @@ demyx_arg_valid() {
 demyx_compare() {
     echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }';
 }
+#
+#   Count all WP sites.
+#
+demyx_count_wp() {
+    if [[ -d "$DEMYX_WP" ]]; then
+        find "$DEMYX_WP" -mindepth 1 -maxdepth 1 -type d | wc -l
+    else
+        echo 0
     fi
 }
 demyx_validate_ip() {
