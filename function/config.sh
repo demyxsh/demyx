@@ -1,404 +1,303 @@
 # Demyx
 # https://demyx.sh
 #
-# demyx config <app> <args>
+#   demyx config <app> <args>
 #
 demyx_config() {
+    DEMYX_ARG_2="${1:-$DEMYX_ARG_2}"
+    shift && local DEMYX_CONFIG_ARGS="$*"
+    local DEMYX_CONFIG=
+    local DEMYX_CONFIG_COMPOSE=
+    local DEMYX_CONFIG_FLAG=
+    local DEMYX_CONFIG_FLAG_AUTH=
+    local DEMYX_CONFIG_FLAG_AUTH_WP=
+    local DEMYX_CONFIG_FLAG_BEDROCK=
+    local DEMYX_CONFIG_FLAG_CACHE=
+    local DEMYX_CONFIG_FLAG_CLEAN=
+    local DEMYX_CONFIG_FLAG_DEV=
+    local DEMYX_CONFIG_FLAG_HEALTHCHECK=
+    local DEMYX_CONFIG_FLAG_NO_COMPOSE=
+    local DEMYX_CONFIG_FLAG_OPCACHE=
+    local DEMYX_CONFIG_FLAG_PHP=
+    local DEMYX_CONFIG_FLAG_PHP_MAX_CHILDREN=
+    local DEMYX_CONFIG_FLAG_PHP_MAX_REQUESTS=
+    local DEMYX_CONFIG_FLAG_PHP_MAX_SPARE_SERVERS=
+    local DEMYX_CONFIG_FLAG_PHP_MIN_SPARE_SERVERS=
+    local DEMYX_CONFIG_FLAG_PHP_PM=
+    local DEMYX_CONFIG_FLAG_PHP_PROCESS_IDLE_TIMEOUT=
+    local DEMYX_CONFIG_FLAG_PHP_START_SERVERS=
+    local DEMYX_CONFIG_FLAG_PHP_VERSION=
+    local DEMYX_CONFIG_FLAG_PMA=
+    local DEMYX_CONFIG_FLAG_RATE_LIMIT=
+    local DEMYX_CONFIG_FLAG_RESOURCES=
+    local DEMYX_CONFIG_FLAG_RESOURCES_DB_CPU=
+    local DEMYX_CONFIG_FLAG_RESOURCES_DB_MEM=
+    local DEMYX_CONFIG_FLAG_RESOURCES_WP_CPU=
+    local DEMYX_CONFIG_FLAG_RESOURCES_WP_MEM=
+    local DEMYX_CONFIG_FLAG_RESTART=
+    local DEMYX_CONFIG_FLAG_SFTP=
+    local DEMYX_CONFIG_FLAG_SSL=
+    local DEMYX_CONFIG_FLAG_STACK=
+    local DEMYX_CONFIG_FLAG_WHITELIST=
+    local DEMYX_CONFIG_FLAG_WP_UPDATE=
+    local DEMYX_CONFIG_FLAG_WWW=
+    local DEMYX_CONFIG_FLAG_XMLRPC=
+    local DEMYX_CONFIG_TRANSIENT="$DEMYX_TMP"/demyx_transient
+
+    demyx_source "
+        compose
+        exec
+        maldet
+        utility
+        wp
+        yml
+    "
+
     while :; do
-        case "$3" in
+        DEMYX_CONFIG_FLAG="${1:-}"
+        case "$DEMYX_CONFIG_FLAG" in
             --auth|--auth=true)
-                DEMYX_CONFIG_AUTH=true
-                ;;
+                DEMYX_CONFIG_FLAG_AUTH=true
+            ;;
             --auth=false)
-                DEMYX_CONFIG_AUTH=false
-                ;;
+                DEMYX_CONFIG_FLAG_AUTH=false
+            ;;
             --auth-wp|--auth-wp=true)
-                DEMYX_CONFIG_AUTH_WP=true
-                ;;
+                DEMYX_CONFIG_FLAG_AUTH_WP=true
+            ;;
             --auth-wp=false)
-                DEMYX_CONFIG_AUTH_WP=false
-                ;;
+                DEMYX_CONFIG_FLAG_AUTH_WP=false
+            ;;
             --bedrock|--bedrock=production)
-                DEMYX_CONFIG_BEDROCK=production
-                ;;
+                DEMYX_CONFIG_FLAG_BEDROCK=production
+            ;;
             --bedrock=development)
-                DEMYX_CONFIG_BEDROCK=development
-                ;;
+                DEMYX_CONFIG_FLAG_BEDROCK=development
+            ;;
             --cache|--cache=true)
-                DEMYX_CONFIG_CACHE=true
-                ;;
+                DEMYX_CONFIG_FLAG_CACHE=true
+            ;;
             --cache=false)
-                DEMYX_CONFIG_CACHE=false
-                ;;
-            --cf|--cf=true)
-                DEMYX_CONFIG_CLOUDFLARE=true
-                ;;
-            --cf=false)
-                DEMYX_CONFIG_CLOUDFLARE=false
-                ;;
+                DEMYX_CONFIG_FLAG_CACHE=false
+            ;;
             --clean)
-                DEMYX_CONFIG_CLEAN=1
-                ;;
-            --db-cpu=null|--db-cpu=?*)
-                DEMYX_CONFIG_DB_CPU="${3#*=}"
-                DEMYX_CONFIG_RESOURCE=1
-                ;;
-            --db-cpu=)
-                demyx_die '"--db-cpu" cannot be empty'
-                ;;
-            --db-mem=null|--db-mem=?*)
-                DEMYX_CONFIG_DB_MEM="${3#*=}"
-                DEMYX_CONFIG_RESOURCE=1
-                ;;
-            --db-mem=)
-                demyx_die '"--wp-db" cannot be empty'
-                ;;
+                DEMYX_CONFIG_FLAG_CLEAN=true
+            ;;
+            --db-cpu=0|--db-cpu=?*)
+                DEMYX_CONFIG_FLAG_RESOURCES=true
+                DEMYX_CONFIG_FLAG_RESOURCES_DB_CPU="${DEMYX_CONFIG_FLAG#*=}"
+            ;;
+            --db-mem=0|--db-mem=?*)
+                DEMYX_CONFIG_FLAG_RESOURCES=true
+                DEMYX_CONFIG_FLAG_RESOURCES_DB_MEM="${DEMYX_CONFIG_FLAG#*=}"
+            ;;
             --dev|--dev=true)
-                DEMYX_CONFIG_DEV=true
-                ;;
+                DEMYX_CONFIG_FLAG_DEV=true
+            ;;
             --dev=false)
-                DEMYX_CONFIG_DEV=false
-                ;;
-            --dev-base-path=?*)
-                DEMYX_CONFIG_DEV_BASE_PATH="${3#*=}"
-                ;;
-            --dev-base-path=)
-                demyx_die '"--dev-base-path" cannot be empty'
-                ;;
-            --expose)
-                DEMYX_CONFIG_EXPOSE=1
-                ;;
-            --files=?*)
-                DEMYX_CONFIG_FILES="${3#*=}"
-                ;;
-            --files=)
-                demyx_die '"--files" cannot be empty'
-                ;;
-            -f|--force)
-                DEMYX_CONFIG_FORCE=1
-                ;;
-            --fix-innodb)
-                DEMYX_CONFIG_FIX_INNODB=true
-                ;;
+                DEMYX_CONFIG_FLAG_DEV=false
+            ;;
             --healthcheck|--healthcheck=true)
-                DEMYX_CONFIG_HEALTHCHECK=true
-                ;;
+                DEMYX_CONFIG_FLAG_HEALTHCHECK=true
+            ;;
             --healthcheck=false)
-                DEMYX_CONFIG_HEALTHCHECK=false
-                ;;
+                DEMYX_CONFIG_FLAG_HEALTHCHECK=false
+            ;;
+            --no-compose)
+                DEMYX_CONFIG_FLAG_NO_COMPOSE=true
+            ;;
             --opcache|--opcache=true)
-                DEMYX_CONFIG_OPCACHE=true
-                ;;
+                DEMYX_CONFIG_FLAG_OPCACHE=true
+            ;;
             --opcache=false)
-                DEMYX_CONFIG_OPCACHE=false
-                ;;
+                DEMYX_CONFIG_FLAG_OPCACHE=false
+            ;;
+            --php=8|--php=8.0|--php=8.1)
+                DEMYX_CONFIG_FLAG_PHP=true
+                DEMYX_CONFIG_FLAG_PHP_VERSION="${DEMYX_CONFIG_FLAG#*=}"
+            ;;
             --php-max-children=?*)
-                DEMYX_CONFIG_PHP_MAX_CHILDREN="${3#*=}"
-                DEMYX_CONFIG_PHP=1
-                ;;
-            --php-max-children=)
-                demyx_die '"--php-max-children" cannot be empty'
-                ;;
+                DEMYX_CONFIG_FLAG_PHP=true
+                DEMYX_CONFIG_FLAG_PHP_MAX_CHILDREN="${DEMYX_CONFIG_FLAG#*=}"
+            ;;
             --php-max-requests=?*)
-                DEMYX_CONFIG_PHP_MAX_REQUESTS="${3#*=}"
-                DEMYX_CONFIG_PHP=1
-                ;;
-            --php-max-requests=)
-                demyx_die '"--php-max-requests" cannot be empty'
-                ;;
+                DEMYX_CONFIG_FLAG_PHP=true
+                DEMYX_CONFIG_FLAG_PHP_MAX_REQUESTS="${DEMYX_CONFIG_FLAG#*=}"
+            ;;
             --php-max-spare-servers=?*)
-                DEMYX_CONFIG_PHP_MAX_SPARE_SERVERS="${3#*=}"
-                DEMYX_CONFIG_PHP=1
-                ;;
-            --php-max-spare-servers=)
-                demyx_die '"--php-max-spare-servers" cannot be empty'
-                ;;
+                DEMYX_CONFIG_FLAG_PHP=true
+                DEMYX_CONFIG_FLAG_PHP_MAX_SPARE_SERVERS="${DEMYX_CONFIG_FLAG#*=}"
+            ;;
             --php-min-spare-servers=?*)
-                DEMYX_CONFIG_PHP_MIN_SPARE_SERVERS="${3#*=}"
-                DEMYX_CONFIG_PHP=1
-                ;;
-            --php-min-spare-servers=)
-                demyx_die '"--php-min-spare-servers" cannot be empty'
-                ;;
+                DEMYX_CONFIG_FLAG_PHP=true
+                DEMYX_CONFIG_FLAG_PHP_MIN_SPARE_SERVERS="${DEMYX_CONFIG_FLAG#*=}"
+            ;;
             --php-pm=?*)
-                DEMYX_CONFIG_PHP_PM="${3#*=}"
-                DEMYX_CONFIG_PHP=1
-                ;;
-            --php-pm=)
-                demyx_die '"--php-pm" cannot be empty'
-                ;;
+                DEMYX_CONFIG_FLAG_PHP=true
+                DEMYX_CONFIG_FLAG_PHP_PM="${DEMYX_CONFIG_FLAG#*=}"
+            ;;
             --php-process-idle-timeout=?*)
-                DEMYX_CONFIG_PHP_PROCESS_IDLE_TIMEOUT="${3#*=}"
-                DEMYX_CONFIG_PHP=1
-                ;;
-            --php-process-idle-timeout=)
-                demyx_die '"--php-process-idle-timeout" cannot be empty'
-                ;;
+                DEMYX_CONFIG_FLAG_PHP=true
+                DEMYX_CONFIG_FLAG_PHP_PROCESS_IDLE_TIMEOUT="${DEMYX_CONFIG_FLAG#*=}"
+            ;;
             --php-start-servers=?*)
-                DEMYX_CONFIG_PHP_START_SERVERS="${3#*=}"
-                DEMYX_CONFIG_PHP=1
-                ;;
-            --php-start-servers=)
-                demyx_die '"--php-start-servers" cannot be empty'
-                ;;
+                DEMYX_CONFIG_FLAG_PHP=true
+                DEMYX_CONFIG_FLAG_PHP_START_SERVERS="${DEMYX_CONFIG_FLAG#*=}"
+            ;;
             --pma|--pma=true)
-                DEMYX_CONFIG_PMA=true
-                ;;
+                DEMYX_CONFIG_FLAG_PMA=true
+            ;;
             --pma=false)
-                DEMYX_CONFIG_PMA=false
-                ;;
+                DEMYX_CONFIG_FLAG_PMA=false
+            ;;
             --rate-limit|--rate-limit=true)
-                DEMYX_CONFIG_RATE_LIMIT=true
-                ;;
+                DEMYX_CONFIG_FLAG_RATE_LIMIT=true
+            ;;
             --rate-limit=false)
-                DEMYX_CONFIG_RATE_LIMIT=false
-                ;;
-            --restart=?*)
-                DEMYX_CONFIG_RESTART="${3#*=}"
-                ;;
-            --restart=)
-                demyx_die '"--restart" cannot be empty'
-                ;;
+                DEMYX_CONFIG_FLAG_RATE_LIMIT=false
+            ;;
             --sftp|--sftp=true)
-                DEMYX_CONFIG_SFTP=true
-                ;;
+                DEMYX_CONFIG_FLAG_SFTP=true
+            ;;
             --sftp=false)
-                DEMYX_CONFIG_SFTP=false
-                ;;
-            --skip-checks)
-                DEMYX_CONFIG_SKIP_CHECKS=1
-                ;;
-            --sleep?*)
-                DEMYX_CONFIG_SLEEP="${3#*=}"
-                ;;
-            --sleep=)
-                demyx_die '"--sleep" cannot be empty'
-                ;;
+                DEMYX_CONFIG_FLAG_SFTP=false
+            ;;
             --ssl|--ssl=true)
-                DEMYX_CONFIG_SSL=true
-                ;;
+                DEMYX_CONFIG_FLAG_SSL=true
+            ;;
             --ssl=false)
-                DEMYX_CONFIG_SSL=false
-                ;;
+                DEMYX_CONFIG_FLAG_SSL=false
+            ;;
             --stack=bedrock|--stack=nginx-php|--stack=ols|--stack=ols-bedrock)
-                DEMYX_CONFIG_STACK="${3#*=}"
-                ;;
-            --stack=)
-                demyx_die '"--stack" cannot be empty'
-                ;;
-            --upgrade)
-                DEMYX_CONFIG_UPGRADE=1
-                ;;
-            --whitelist=all|--whitelist=login)
-                DEMYX_CONFIG_WHITELIST="${3#*=}"
-                ;;
+                DEMYX_CONFIG_FLAG_STACK="${DEMYX_CONFIG_FLAG#*=}"
+            ;;
+            --whitelist|--whitelist=all|--whitelist=login)
+                DEMYX_CONFIG_FLAG_WHITELIST="${DEMYX_CONFIG_FLAG#*=}"
+            ;;
             --whitelist=false)
-                DEMYX_CONFIG_WHITELIST=false
-                ;;
-            --wp-cpu=null|--wp-cpu=?*)
-                DEMYX_CONFIG_WP_CPU="${3#*=}"
-                DEMYX_CONFIG_RESOURCE=1
-                ;;
-            --wp-cpu=)
-                demyx_die '"--wp-cpu" cannot be empty'
-                ;;
-            --wp-mem=null|--wp-mem=?*)
-                DEMYX_CONFIG_WP_MEM="${3#*=}"
-                DEMYX_CONFIG_RESOURCE=1
-                ;;
-            --wp-mem=)
-                demyx_die '"--wp-mem" cannot be empty'
-                ;;
+                DEMYX_CONFIG_FLAG_WHITELIST=false
+            ;;
+            --wp-cpu=0|--wp-cpu=?*)
+                DEMYX_CONFIG_FLAG_RESOURCES=true
+                DEMYX_CONFIG_FLAG_RESOURCES_WP_CPU="${DEMYX_CONFIG_FLAG#*=}"
+            ;;
+            --wp-mem=0|--wp-mem=?*)
+                DEMYX_CONFIG_FLAG_RESOURCES=true
+                DEMYX_CONFIG_FLAG_RESOURCES_WP_MEM="${DEMYX_CONFIG_FLAG#*=}"
+            ;;
             --wp-update|--wp-update=true)
-                DEMYX_CONFIG_WP_UPDATE=true
-                ;;
+                DEMYX_CONFIG_FLAG_WP_UPDATE=true
+            ;;
             --wp-update=false)
-                DEMYX_CONFIG_WP_UPDATE=false
-                ;;
+                DEMYX_CONFIG_FLAG_WP_UPDATE=false
+            ;;
+            --www)
+                DEMYX_CONFIG_FLAG_WWW=true
+            ;;
+            --www=false)
+                DEMYX_CONFIG_FLAG_WWW=false
+            ;;
             --xmlrpc|--xmlrpc=true)
-                DEMYX_CONFIG_XMLRPC=true
-                ;;
+                DEMYX_CONFIG_FLAG_XMLRPC=true
+            ;;
             --xmlrpc=false)
-                DEMYX_CONFIG_XMLRPC=false
-                ;;
-            --)
-                shift
+                DEMYX_CONFIG_FLAG_XMLRPC=false
+            ;;
+            --) shift
                 break
-                ;;
+            ;;
             -?*)
-                printf '\e[31m[CRITICAL]\e[39m Unknown option: %s\n' "$3" >&2
-                exit 1
-                ;;
-            *)
-                break
+                demyx_error flag "$DEMYX_CONFIG_FLAG"
+            ;;
+            *) break
         esac
         shift
     done
 
-    if [[ "$DEMYX_TARGET" = all ]]; then
-        cd "$DEMYX_WP" || exit
-        for i in *
-        do
-            if [[ -n "$DEMYX_CONFIG_FIX_INNODB" ]]; then
-                echo -e "\e[34m[INFO]\e[39m Fixing DB errors for $i"
-                demyx config "$i" --fix-innodb
+    case "$DEMYX_ARG_2" in
+        all)
+            demyx_config_all
+        ;;
+        *)
+            if [[ -n "$DEMYX_ARG_2" ]]; then
+                demyx_arg_valid
+
+                if [[ -n "$DEMYX_CONFIG_FLAG_AUTH" ]]; then
+                    demyx_config_auth
+                fi
+                if [[ -n "$DEMYX_CONFIG_FLAG_AUTH_WP" ]]; then
+                    demyx_config_auth_wp
+                fi
+                if [[ -n "$DEMYX_CONFIG_FLAG_BEDROCK" ]]; then
+                    demyx_config_bedrock
+                fi
+                if [[ -n "$DEMYX_CONFIG_FLAG_CACHE" ]]; then
+                    demyx_config_cache
+                fi
+                if [[ -n "$DEMYX_CONFIG_FLAG_CLEAN" ]]; then
+                    demyx_config_clean
+                fi
+                if [[ -n "$DEMYX_CONFIG_FLAG_DEV" ]]; then
+                    demyx_config_dev
+                fi
+                if [[ -n "$DEMYX_CONFIG_FLAG_HEALTHCHECK" ]]; then
+                    demyx_config_healthcheck
+                fi
+                if [[ -n "$DEMYX_CONFIG_FLAG_OPCACHE" ]]; then
+                    demyx_config_opcache
+                fi
+                if [[ -n "$DEMYX_CONFIG_FLAG_PHP" ]]; then
+                    demyx_config_php
+                fi
+                if [[ -n "$DEMYX_CONFIG_FLAG_PMA" ]]; then
+                    demyx_config_pma
+                fi
+                if [[ -n "$DEMYX_CONFIG_FLAG_RATE_LIMIT" ]]; then
+                    demyx_config_rate_limit
+                fi
+                if [[ -n "$DEMYX_CONFIG_FLAG_RESOURCES" ]]; then
+                    demyx_config_resources
+                fi
+                if [[ -n "$DEMYX_CONFIG_FLAG_RESTART" ]]; then
+                    demyx_config_restart
+                fi
+                if [[ -n "$DEMYX_CONFIG_FLAG_SFTP" ]]; then
+                    demyx_config_sftp
+                fi
+                if [[ -n "$DEMYX_CONFIG_FLAG_SSL" ]]; then
+                    demyx_config_ssl
+                fi
+                if [[ -n "$DEMYX_CONFIG_FLAG_STACK" ]]; then
+                    demyx_config_stack
+                fi
+                if [[ -n "$DEMYX_CONFIG_FLAG_WP_UPDATE" ]]; then
+                    demyx_config_wp_update
+                fi
+                if [[ -n "$DEMYX_CONFIG_FLAG_WHITELIST" ]]; then
+                    demyx_config_whitelist
+                fi
+                if [[ -n "$DEMYX_CONFIG_FLAG_WWW" ]]; then
+                    demyx_config_www
+                fi
+                if [[ -n "$DEMYX_CONFIG_FLAG_XMLRPC" ]]; then
+                    demyx_config_xmlrpc
+                fi
+                if [[ -z "$DEMYX_ARG_2" ]]; then
+                    demyx_help config
+                fi
+                if [[ "$DEMYX_CONFIG_COMPOSE" = true && "$DEMYX_CONFIG_FLAG_NO_COMPOSE" != true ]]; then
+                    demyx_compose "$DEMYX_ARG_2" up -d --remove-orphans
+                fi
+                if [[ -n "$DEMYX_CONFIG" ]]; then
+                    demyx_execute false "demyx_divider_title \"DEMYX - CONFIG\" \"${DEMYX_CONFIG}\"; \
+                        cat < $DEMYX_CONFIG_TRANSIENT"
+                fi
+            else
+                demyx_help config
             fi
-            if [[ -n "$DEMYX_CONFIG_RESOURCE" ]]; then
-                echo -e "\e[34m[INFO]\e[39m Setting resources for $i"
-                demyx config "$i" "$@"
-            fi
-            if [[ -n "$DEMYX_CONFIG_RESTART" ]]; then
-                echo -e "\e[34m[INFO]\e[39m Restarting service for $i"
-                demyx config "$i" --restart="$DEMYX_CONFIG_RESTART"
-            fi
-            if [[ -n "$DEMYX_CONFIG_SLEEP" ]]; then
-                demyx_echo "Sleep for $DEMYX_CONFIG_SLEEP"
-                demyx_execute sleep "$DEMYX_CONFIG_SLEEP"
-            fi
-            if [[ -n "$DEMYX_CONFIG_STACK" ]]; then
-                if [[ "$(demyx info "$i" --filter=DEMYX_APP_STACK)" = "$DEMYX_CONFIG_STACK" ]]; then
-                    demyx_warning "$i is already using the $DEMYX_CONFIG_STACK stack"
-                    continue
-                else
-                    demyx config "$i" --stack="$DEMYX_CONFIG_STACK"
-                fi
-            fi
-        done
-    else
-        demyx_app_config
-        if [[ "$DEMYX_APP_TYPE" = wp ]]; then
-            demyx_source env
-
-            cd "$DEMYX_APP_PATH" || exit
-
-            if [[ "$DEMYX_CONFIG_AUTH" = true ]]; then
-                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_AUTH" = true ]] && demyx_die 'Basic Auth is already turned on'
-                fi
-
-                [[ -z "$DEMYX_APP_AUTH_HTPASSWD" ]] && demyx refresh "$DEMYX_APP_DOMAIN"
-
-                demyx_source yml
-
-                demyx_echo 'Turning on basic auth'
-                demyx_execute sed -i "s|DEMYX_APP_AUTH=.*|DEMYX_APP_AUTH=true|g" "$DEMYX_APP_PATH"/.env; \
-                    demyx_yml
-
-                demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
-
-                PRINT_TABLE="DEMYX^ BASIC AUTH\n"
-                PRINT_TABLE+="USERNAME^ $DEMYX_APP_AUTH_USERNAME\n"
-                PRINT_TABLE+="PASSWORD^ $DEMYX_APP_AUTH_PASSWORD"
-                demyx_execute -v demyx_table "$PRINT_TABLE"
-            elif [[ "$DEMYX_CONFIG_AUTH" = false ]]; then
-                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_AUTH" = false ]] && demyx_die 'Basic Auth is already turned off'
-                fi
-
-                demyx_source yml
-
-                demyx_echo 'Turning off basic auth'
-                demyx_execute sed -i "s|DEMYX_APP_AUTH=.*|DEMYX_APP_AUTH=false|g" "$DEMYX_APP_PATH"/.env && demyx_yml
-
-                demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
-            fi
-            if [[ "$DEMYX_CONFIG_AUTH_WP" = true ]]; then
-                demyx_app_is_up
-
-                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_AUTH_WP" != false ]] && demyx_die 'Basic WP Auth is already turned on'
-                fi
-
-                [[ -z "$DEMYX_APP_AUTH_HTPASSWD" ]] && demyx refresh "$DEMYX_APP_DOMAIN"
-
-                demyx_echo "Turning on wp-login.php basic auth"
-
-                if [[ "$DEMYX_APP_WP_IMAGE" = demyx/openlitespeed ]]; then
-                    demyx_execute docker exec -t -e OPENLITESPEED_BASIC_AUTH_WP=true "$DEMYX_APP_WP_CONTAINER" sh -c 'demyx-config; demyx-htpasswd; demyx-lsws restart'; \
-                        sed -i "s|DEMYX_APP_AUTH_WP=.*|DEMYX_APP_AUTH_WP=true|g" "$DEMYX_APP_PATH"/.env
-                else
-                    demyx_execute docker exec -t -e NGINX_BASIC_AUTH=true "$DEMYX_APP_NX_CONTAINER" sh -c "demyx-wp; demyx-reload"; \
-                        sed -i "s|DEMYX_APP_AUTH_WP=.*|DEMYX_APP_AUTH_WP=true|g" "$DEMYX_APP_PATH"/.env
-
-                    demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
-                fi
-
-                PRINT_TABLE="DEMYX^ BASIC AUTH\n"
-                PRINT_TABLE+="USERNAME^ $DEMYX_APP_AUTH_USERNAME\n"
-                PRINT_TABLE+="PASSWORD^ $DEMYX_APP_AUTH_PASSWORD"
-                demyx_execute -v demyx_table "$PRINT_TABLE"
-            elif [[ "$DEMYX_CONFIG_AUTH_WP" = false ]]; then
-                demyx_app_is_up
-
-                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_AUTH_WP" = false ]] && demyx_die 'Basic WP Auth is already turned off'
-                fi
-
-                demyx_echo "Turning off wp-login.php basic auth"
-
-                if [[ "$DEMYX_APP_WP_IMAGE" = demyx/openlitespeed ]]; then
-                    demyx_execute docker exec -t -e OPENLITESPEED_BASIC_AUTH_WP=false "$DEMYX_APP_WP_CONTAINER" sh -c 'demyx-config; demyx-lsws restart'; \
-                        sed -i "s|DEMYX_APP_AUTH_WP=.*|DEMYX_APP_AUTH_WP=false|g" "$DEMYX_APP_PATH"/.env
-                else
-                    demyx_execute demyx_execute docker exec -t -e NGINX_BASIC_AUTH=false "$DEMYX_APP_NX_CONTAINER" sh -c "demyx-wp; demyx-reload"; \
-                        sed -i "s|DEMYX_APP_AUTH_WP=.*|DEMYX_APP_AUTH_WP=false|g" "$DEMYX_APP_PATH"/.env
-
-                    demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
-                fi
-            fi
-            if [[ "$DEMYX_CONFIG_BEDROCK" = production ]]; then
-                demyx_app_is_up
-
-                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_BEDROCK_MODE" = production ]] && demyx_die "Production mode is already set"
-                fi
-
-                demyx_echo 'Setting Bedrock config to production'
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "sed -i 's|WP_ENV=.*|WP_ENV=production|g' /demyx/.env" && \
-                    sed -i "s|DEMYX_APP_BEDROCK_MODE=.*|DEMYX_APP_BEDROCK_MODE=production|g" "$DEMYX_APP_PATH"/.env
-            elif [[ "$DEMYX_CONFIG_BEDROCK" = development ]]; then
-                demyx_app_is_up
-
-                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_BEDROCK_MODE" = development ]] && demyx_die "Development mode is already set"
-                fi
-
-                demyx_echo 'Setting Bedrock config to development'
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "sed -i 's|WP_ENV=.*|WP_ENV=development|g' /demyx/.env" && \
-                    sed -i "s|DEMYX_APP_BEDROCK_MODE=.*|DEMYX_APP_BEDROCK_MODE=development|g" "$DEMYX_APP_PATH"/.env
-            fi
-            if [[ "$DEMYX_CONFIG_CACHE" = true ]]; then
-                demyx_app_is_up
-
-                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_CACHE" = true ]] && demyx_die 'Cache is already turned on'
-                fi
-
-                if [[ "$DEMYX_APP_STACK" = ols ]]; then
-                    DEMYX_CONFIG_LSCACHE_CHECK="$(demyx exec "$DEMYX_APP_DOMAIN" ls wp-content/plugins | grep litespeed-cache || true)"
-
-                    if [[ -n "$DEMYX_CONFIG_LSCACHE_CHECK" ]]; then
-                        demyx_echo 'Activating litespeed-cache'
-                        demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin activate litespeed-cache
-                    else
-                        demyx_echo 'Installing litespeed-cache'
-                        demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin install litespeed-cache --activate
-                    fi
-
-                    demyx_echo 'Configuring lsws'
-                    demyx_execute docker exec -t -e OPENLITESPEED_CACHE=true "$DEMYX_APP_WP_CONTAINER" sh -c 'demyx-config'; \
-                        demyx config "$DEMYX_APP_DOMAIN" --restart=ols
-                elif [[ "$DEMYX_APP_STACK" = ols-bedrock  ]]; then
-                    DEMYX_CONFIG_LSCACHE_CHECK="$(demyx exec "$DEMYX_APP_DOMAIN" ls web/app/plugins | grep litespeed-cache || true)"
-
-                    if [[ -n "$DEMYX_CONFIG_LSCACHE_CHECK" ]]; then
-                        demyx_echo 'Activating litespeed-cache'
-                        demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin activate litespeed-cache
-                    else
-                        demyx_echo 'Installing litespeed-cache'
-                        demyx_execute demyx exec "$DEMYX_APP_DOMAIN" composer require wpackagist-plugin/litespeed-cache; \
-                            demyx wp "$DEMYX_APP_DOMAIN" plugin activate litespeed-cache
-                    fi
+        ;;
+    esac
+}
 
                     demyx_echo 'Configuring lsws'
                     demyx_execute docker exec -t -e OPENLITESPEED_CACHE=true "$DEMYX_APP_WP_CONTAINER" sh -c 'demyx-config'; \
