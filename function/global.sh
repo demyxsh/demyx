@@ -493,6 +493,30 @@ demyx_proper() {
         chown -R demyx:demyx "$DEMYX_LOG"
     fi
 }
+#
+#   Source .env/.sh depending on first argument.
+#
+demyx_source() {
+    local DEMYX_SOURCE=
+    DEMYX_SOURCE="${1:-}"
+    local DEMYX_SOURCE_I=
+
+    for DEMYX_SOURCE_I in $DEMYX_SOURCE; do
+        local DEMYX_SOURCE_APP=
+        DEMYX_SOURCE_APP="$(find "$DEMYX_APP" -name "$DEMYX_SOURCE_I" -type d || true)"
+        local DEMYX_SOURCE_FUNCTION=
+        DEMYX_SOURCE_FUNCTION="$(find "$DEMYX_FUNCTION" -name "$DEMYX_SOURCE_I".sh -type f)"
+
+        if [[ -f "$DEMYX_SOURCE_FUNCTION" ]]; then
+            # Source only if function isn't found.
+            if ! declare -F demyx_"$DEMYX_SOURCE_I" &>/dev/null; then
+                . "$DEMYX_SOURCE_FUNCTION"
+            fi
+        elif [[ -f "$DEMYX_SOURCE_APP"/.env ]]; then
+            . "$DEMYX_SOURCE_APP"/.env
+        fi
+    done
+}
 }
 demyx_certificate_challenge() {
     if [[ "$DEMYX_APP_CLOUDFLARE" = true ]]; then
