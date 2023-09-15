@@ -311,27 +311,31 @@ demyx_config_all() {
         eval demyx_config "$DEMYX_CONFIG_ALL" "$DEMYX_CONFIG_ARGS"
     done
 }
+#
+#   Configures app's basic auth labels.
+#
+demyx_config_auth() {
+    demyx_app_env wp "
+        DEMYX_APP_AUTH
+        DEMYX_APP_AUTH_USERNAME
+        DEMYX_APP_AUTH_PASSWORD
+        DEMYX_APP_STACK
+    "
 
-                    demyx_echo 'Configuring nginx-helper'
-                    demyx_execute demyx wp "$DEMYX_APP_DOMAIN" option update rt_wp_nginx_helper_options '{"enable_purge":"1","cache_method":"enable_fastcgi","purge_method":"get_request","enable_map":null,"enable_log":null,"log_level":"INFO","log_filesize":"5","enable_stamp":null,"purge_homepage_on_edit":"1","purge_homepage_on_del":"1","purge_archive_on_edit":"1","purge_archive_on_del":"1","purge_archive_on_new_comment":"1","purge_archive_on_deleted_comment":"1","purge_page_on_mod":"1","purge_page_on_new_comment":"1","purge_page_on_deleted_comment":"1","redis_hostname":"127.0.0.1","redis_port":"6379","redis_prefix":"nginx-cache:","purge_url":"","redis_enabled_by_constant":0}' --format=json; \
-                        docker exec -t -e NGINX_CACHE=true "$DEMYX_APP_NX_CONTAINER" demyx-wp; \
-                        demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
-                else
-                    DEMYX_CONFIG_NGINX_HELPER_CHECK="$(demyx exec "$DEMYX_APP_DOMAIN" ls wp-content/plugins | grep nginx-helper || true)"
+    DEMYX_CONFIG="Basic Auth"
+    DEMYX_CONFIG_COMPOSE=true
 
-                    if [[ -n "$DEMYX_CONFIG_NGINX_HELPER_CHECK" ]]; then
-                        demyx_echo 'Activating nginx-helper'
-                        demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin activate nginx-helper
-                    else
-                        demyx_echo 'Installing nginx-helper'
-                        demyx_execute demyx wp "$DEMYX_APP_DOMAIN" plugin install nginx-helper --activate
-                    fi
+    demyx_execute "Setting $DEMYX_CONFIG_FLAG_AUTH to basic auth" \
+        "demyx_app_env_update DEMYX_APP_AUTH=${DEMYX_CONFIG_FLAG_AUTH}; \
+        demyx_yml $DEMYX_APP_STACK"
 
-                    demyx_echo 'Configuring nginx-helper'
-                    demyx_execute demyx wp "$DEMYX_APP_DOMAIN" option update rt_wp_nginx_helper_options '{"enable_purge":"1","cache_method":"enable_fastcgi","purge_method":"get_request","enable_map":null,"enable_log":null,"log_level":"INFO","log_filesize":"5","enable_stamp":null,"purge_homepage_on_edit":"1","purge_homepage_on_del":"1","purge_archive_on_edit":"1","purge_archive_on_del":"1","purge_archive_on_new_comment":"1","purge_archive_on_deleted_comment":"1","purge_page_on_mod":"1","purge_page_on_new_comment":"1","purge_page_on_deleted_comment":"1","redis_hostname":"127.0.0.1","redis_port":"6379","redis_prefix":"nginx-cache:","purge_url":"","redis_enabled_by_constant":0}' --format=json; \
-                        docker exec -t -e NGINX_CACHE=true "$DEMYX_APP_NX_CONTAINER" demyx-wp; \
-                        demyx config "$DEMYX_APP_DOMAIN" --restart=nginx
-                fi
+    if [[ "$DEMYX_CONFIG_FLAG_AUTH" = true ]]; then
+        {
+            echo "Username      $DEMYX_APP_AUTH_USERNAME"
+            echo "Password      $DEMYX_APP_AUTH_PASSWORD"
+        } > "$DEMYX_CONFIG_TRANSIENT"
+    fi
+}
 
                 demyx_echo 'Updating configs'
                 demyx_execute sed -i "s|DEMYX_APP_CACHE=.*|DEMYX_APP_CACHE=true|g" "$DEMYX_APP_PATH"/.env
