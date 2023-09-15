@@ -29,24 +29,43 @@ demyx_motd_start() {
         demyx_echo "To see more run options: demyx help run"
     fi
 }
+#
+#   Warns users if certain system functions are disabled.
+#
+demyx_motd_warning() {
+    local DEMYX_MOTD_WARNING_I=
+
+    if [[ "$DEMYX_DOMAIN" = localhost ]]; then
+        demyx_warning "For SSL to work properly, please set a valid domain for DEMYX_DOMAIN: demyx host edit"
     fi
-}
-demyx_motd_getting_started() {
-    if [[ -z "$DEMYX_MOTD_CHECK_WP" ]]; then
-        demyx_execute -v echo -e "\e[34m[INFO]\e[39m To create a WordPress app: demyx run ${DEMYX_DOMAIN:-domain.tld}"
-        demyx_execute -v echo -e "\e[34m[INFO]\e[39m Supported stacks: bedrock, nginx-php, ols, ols-bedrock"
-        demyx_execute -v echo -e "\e[34m[INFO]\e[39m To see more run options: demyx help run"
+
+    if [[ "$DEMYX_EMAIL" = info@localhost ]]; then
+        demyx_warning "For SSL to work properly, please set a valid email for DEMYX_EMAIL: demyx host edit"
     fi
-}
-demyx_motd_stack_check() {
+
     if [[ "$DEMYX_BACKUP_ENABLE" = false ]]; then
-        demyx_execute -v echo -e "\e[33m[WARNING]\e[39m Auto backups are disabled, set DEMYX_HOST_BACKUP to true: demyx host edit"
+        demyx_warning "Auto backups are disabled, set DEMYX_BACKUP_ENABLE to true: demyx host edit"
     fi
-    if [[ "$DEMYX_MONITOR_ENABLE" = false ]]; then
-        demyx_execute -v echo -e "\e[33m[WARNING]\e[39m Global monitors are disabled, set DEMYX_HOST_MONITOR to true: demyx host edit"
+
+    if [[ "$DEMYX_HEALTHCHECK" = false ]]; then
+        demyx_warning "Global healthchecks are disabled, set DEMYX_HEALTHCHECK to true: demyx host edit"
     fi
-    if [[ "$DEMYX_HEALTHCHECK_ENABLE" = false ]]; then
-        demyx_execute -v echo -e "\e[33m[WARNING]\e[39m Global healthchecks are disabled, set DEMYX_HOST_HEALTHCHECK to true: demyx host edit"
+
+    if [[ "$(demyx_motd_wp)" = true ]]; then
+        cd "$DEMYX_WP" || exit
+
+        for DEMYX_MOTD_WARNING_I in *; do
+            # shellcheck disable=2034
+            DEMYX_ARG_2="$DEMYX_MOTD_WARNING_I"
+            demyx_app_env wp "
+                DEMYX_APP_DEV
+                DEMYX_APP_PATH
+            "
+
+            if [[ "$DEMYX_APP_DEV" = true && -f "$DEMYX_APP_PATH"/.env && -f "$DEMYX_APP_PATH"/docker-compose.yml ]]; then
+                demyx_warning "$DEMYX_MOTD_WARNING_I is in development mode"
+            fi
+        done
     fi
 }
 demyx_motd() {
