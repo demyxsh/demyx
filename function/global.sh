@@ -408,12 +408,21 @@ demyx_logger() {
         demyx_notification error "$DEMYX_ARGS"
     fi
 }
-demyx_update_remote() {
-    for i in $DEMYX_GLOBAL_UPDATE_LIST
+#
+#   Loop checks a connection to MariaDB and exits when a connection is successful.
+#
+demyx_mariadb_ready() {
+    demyx_app_env wp "
+        DEMYX_APP_DB_CONTAINER
+        WORDPRESS_DB_PASSWORD
+        WORDPRESS_DB_USER
+    "
+
+    until docker exec -t "$DEMYX_APP_DB_CONTAINER" mysqladmin -u "$WORDPRESS_DB_USER" -p"$WORDPRESS_DB_PASSWORD" status 2>/dev/null
     do
-        curl -sL https://raw.githubusercontent.com/demyxsh/"$i"/master/VERSION -o /tmp/"$i"
-        source /tmp/"$i"
+        sleep 1
     done
+}
 
     echo "DEMYX_REMOTE_VERSION=$DEMYX_VERSION
     DEMYX_REMOTE_CODE_VERSION=$DEMYX_CODE_VERSION
