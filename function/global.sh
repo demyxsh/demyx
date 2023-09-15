@@ -1,48 +1,28 @@
 # Demyx
 # https://demyx.sh
 
-demyx_die() {
-    while :; do
-        case "$1" in
-            --command-not-found)
-                DEMYX_DIE_COMMAND_NOT_FOUND=1
-                ;;
-            --not-found)
-                DEMYX_DIE_NOT_FOUND=1
-                ;;
-            --no-help)
-                DEMYX_DIE_NO_HELP=1
-                ;;
-            --restore-not-found)
-                DEMYX_DIE_RESTORE_NOT_FOUND=1
-                ;;
-            --)
-                shift
-                break
-                ;;
-            -?*)
-                printf '\e[31m[CRITICAL]\e[39m Unknown option: %s\n' "$1" >&2
-                exit 1
-                ;;
-            *)
-                break
-        esac
-        shift
-    done
+#
+#   Checks if main app domain is www or not.
+#
+demyx_app_domain() {
+    local DEMYX_APP_DOMAIN_ARG="${1:-$DEMYX_ARG_2}"
+    local DEMYX_APP_DOMAIN_ARG_FIND=
+    DEMYX_APP_DOMAIN_ARG_FIND="$(find "$DEMYX_APP" -name "$DEMYX_APP_DOMAIN_ARG")"
+    local DEMYX_APP_DOMAIN_ARG_SUBDOMAIN_CHECK=
+    local DEMYX_APP_DOMAIN_ARG_WWW=
+    DEMYX_APP_DOMAIN_ARG_WWW="$(grep DEMYX_APP_DOMAIN_WWW "$DEMYX_APP_DOMAIN_ARG_FIND"/.env | awk -F '=' '{print $2}' || true)"
 
-    if [[ -n "$DEMYX_DIE_NOT_FOUND" ]]; then
-        printf '\e[31m[CRITICAL]\e[39m Not a valid app\n'
-    elif [[ -n "$DEMYX_DIE_COMMAND_NOT_FOUND" ]]; then
-        printf '\e[31m[CRITICAL]\e[39m Not a valid command\n'
-    elif [[ -n "$DEMYX_DIE_RESTORE_NOT_FOUND" ]]; then
-        printf "\e[31m[CRITICAL]\e[39m Directory doesn't exist, try: demyx restore "$DEMYX_TARGET" -f\n"
+    if [[ "$DEMYX_APP_DOMAIN_ARG_WWW" = true ]]; then
+        DEMYX_APP_DOMAIN_ARG_SUBDOMAIN_CHECK="$(awk -F '.' '{print $3}' <<< "$DEMYX_APP_DOMAIN_ARG")"
+
+        if [[ -n "$DEMYX_APP_DOMAIN_ARG_SUBDOMAIN_CHECK" ]]; then
+            echo "${DEMYX_APP_DOMAIN_ARG}"
+        else
+            echo "www.${DEMYX_APP_DOMAIN_ARG}"
+        fi
     else
-        printf '\e[31m[CRITICAL]\e[39m %s\n' "$1" >&2
+        echo "$DEMYX_APP_DOMAIN_ARG"
     fi
-
-    [[ -z "$DEMYX_DIE_NO_HELP" ]] && echo -e "\e[34m[INFO]\e[39m demyx help $DEMYX_COMMAND"
-
-    exit 1
 }
 
 # Global variables
