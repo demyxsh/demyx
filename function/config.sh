@@ -508,54 +508,77 @@ demyx_config_clean() {
     demyx_compose "$DEMYX_APP_DOMAIN" fr
     demyx_config "$DEMYX_APP_DOMAIN" --healthcheck
 }
+#
+#   Configures an app for development mode.
+#
+demyx_config_dev() {
+    demyx_app_env wp "
+        DEMYX_APP_DOMAIN
+        DEMYX_APP_DEV_PASSWORD
+        DEMYX_APP_ID
+        DEMYX_APP_OLS_ADMIN_PASSWORD
+        DEMYX_APP_OLS_ADMIN_USERNAME
+        DEMYX_APP_STACK
+        DEMYX_APP_TYPE
+        DEMYX_APP_WP_CONTAINER
+        WORDPRESS_USER
+        WORDPRESS_USER_PASSWORD
+    "
 
-                [[ -n "$DEMYX_CONFIG_EXPOSE" ]] && demyx_die '--expose is not supported'
+    local DEMYX_CONFIG_DEV_OLD_VOLUME=
+    DEMYX_CONFIG="Development Mode"
+    DEMYX_CONFIG_COMPOSE=true
 
-                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_DEV" = true ]] && demyx_die 'Dev mode is already turned on'
-                fi
+    # TEMPORARY - Import old files to new volume
+    DEMYX_CONFIG_DEV_OLD_VOLUME="$(docker volume ls -q --filter=name=wp_"$DEMYX_APP_ID"_cs_)"
 
-                if [[ "$DEMYX_APP_SSL" = false ]]; then
-                    DEMYX_CONFIG_DEV_PROTO="http://$DEMYX_APP_DOMAIN"
-                else
-                    DEMYX_CONFIG_DEV_PROTO="https://$DEMYX_APP_DOMAIN"
-                fi
+    if [[ -n "$DEMYX_CONFIG_DEV_OLD_VOLUME" && "$DEMYX_CONFIG_FLAG_DEV" = true ]]; then
+        demyx_execute "Transferring old files to new volume" \
+            "docker pull demyx/code-server:wp; \
+            docker volume create ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code; \
+            docker run -t --rm \
+                -v /var/lib/docker/volumes/${DEMYX_CONFIG_DEV_OLD_VOLUME}:/tmp/${DEMYX_CONFIG_DEV_OLD_VOLUME} \
+                -v /var/lib/docker/volumes/${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code:/tmp/${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code \
+                --user=root \
+                --entrypoint=cp \
+                demyx/demyx -rp /tmp/${DEMYX_CONFIG_DEV_OLD_VOLUME}/_data/. /tmp/${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code/_data; \
+            docker run -it --rm \
+                --user=root \
+                --entrypoint=chown \
+                -v ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code:/tmp/demyx \
+                demyx/demyx -R demyx:demyx /tmp/demyx; \
+            docker stop ${DEMYX_APP_WP_CONTAINER}; \
+            docker rm ${DEMYX_APP_WP_CONTAINER}; \
+            docker volume rm $DEMYX_CONFIG_DEV_OLD_VOLUME"
+    fi
 
-                DEMYX_CONFIG_DEV_BASE_PATH="${DEMYX_CONFIG_DEV_BASE_PATH:-/demyx}"
-                DEMYX_CONFIG_DEV_CS_URI="${DEMYX_CONFIG_DEV_PROTO}${DEMYX_CONFIG_DEV_BASE_PATH}/cs/"
-                DEMYX_CONFIG_DEV_BS_URI="${DEMYX_CONFIG_DEV_PROTO}${DEMYX_CONFIG_DEV_BASE_PATH}/bs/"
+    demyx_execute "Setting development mode to $DEMYX_CONFIG_FLAG_DEV" \
+        "demyx_app_env_update DEMYX_APP_DEV=${DEMYX_CONFIG_FLAG_DEV}; \
+        demyx_yml ${DEMYX_APP_STACK}"
 
-                if [ "$DEMYX_CONFIG_FILES" = plugins ]; then
-                    DEMYX_BS_FILES="\"/demyx/wp-content/plugins/**/*\""
-                elif [ "$DEMYX_CONFIG_FILES" = false ]; then
-                    DEMYX_BS_FILES=
-                else
-                    DEMYX_BS_FILES="\"/demyx/wp-content/themes/**/*\""
-                fi
+    if [[ "$DEMYX_CONFIG_FLAG_DEV" = true ]]; then
+        {
+            if [[ "$DEMYX_APP_STACK" = nginx-php || "$DEMYX_APP_STACK" = ols ]]; then
+                echo "Browsersync               $(demyx_app_proto)://$(demyx_app_domain)/demyx/bs/"
+                echo
+            fi
 
-                demyx_echo 'Updating configs'
-                demyx_execute sed -i "s|DEMYX_APP_DEV=.*|DEMYX_APP_DEV=true|g" "$DEMYX_APP_PATH"/.env; \
-                    demyx_yml
+            echo "Code Server               $(demyx_app_proto)://$(demyx_app_domain)/demyx/cs/"
+            echo "Password                  $DEMYX_APP_DEV_PASSWORD"
+            echo
+            echo "WordPress Login           $(demyx_app_login)"
+            echo "WordPress Username        $WORDPRESS_USER"
+            echo "WordPress Password        $WORDPRESS_USER_PASSWORD"
 
-                demyx config "$DEMYX_APP_DOMAIN" --healthcheck=false
-                demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
+            if [[ "$DEMYX_APP_STACK" = ols || "$DEMYX_APP_STACK" = ols-bedrock ]]; then
+                echo
+                echo "OLS Admin Username        $DEMYX_APP_OLS_ADMIN_USERNAME"
+                echo "OLS Admin Password        $DEMYX_APP_OLS_ADMIN_PASSWORD"
+            fi
 
-                PRINT_TABLE="DEMYX^ DEVELOPMENT\n"
-                PRINT_TABLE+="CODE-SERVER^ $DEMYX_CONFIG_DEV_CS_URI\n"
-                PRINT_TABLE+="BROWSERSYNC^ $DEMYX_CONFIG_DEV_BS_URI\n"
-                PRINT_TABLE+="PASSWORD^ $(demyx_dev_password)"
-                demyx_execute -v demyx_table "$PRINT_TABLE"
-            elif [[ "$DEMYX_CONFIG_DEV" = false ]]; then
-                demyx_app_is_up
-                demyx_source yml
-
-                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_DEV" = false ]] && demyx_die 'Dev mode is already turned off'
-                fi
-
-                demyx_echo 'Cleaning up'
-
-                if [[ "$DEMYX_APP_STACK" = bedrock || "$DEMYX_APP_STACK" = ols-bedrock ]]; then
+        } > "$DEMYX_CONFIG_TRANSIENT"
+    fi
+}
                     demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "rm -f \${CODE_SERVER_ROOT}/web/app/mu-plugins/bs.php"
                     demyx config "$DEMYX_APP_DOMAIN" --bedrock=production -f
                 elif [[ "$DEMYX_APP_STACK" = nginx-php ]]; then
