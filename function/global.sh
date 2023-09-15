@@ -182,13 +182,31 @@ demyx_app_proto() {
 
     echo "$DEMYX_APP_PROTO"
 }
-demyx_generate_password() {
-    DEMYX_PASSWORD_1="$(uuidgen | awk -F '[-]' '{print $5}' | head -c $(( ( RANDOM % 10 )  + 4 )) | sed -e 's/\r//g')"
-    DEMYX_PASSWORD_2="$(uuidgen | awk -F '[-]' '{print $5}' | head -c $(( ( RANDOM % 10 )  + 4 )) | sed -e 's/\r//g')"
-    DEMYX_PASSWORD_3="$(uuidgen | awk -F '[-]' '{print $5}' | head -c $(( ( RANDOM % 10 )  + 4 )) | sed -e 's/\r//g')"
-    DEMYX_PASSWORD_4="$(uuidgen | awk -F '[-]' '{print $5}' | head -c $(( ( RANDOM % 10 )  + 4 )) | sed -e 's/\r//g')"
+#
+#   Validates $DEMYX_ARG_2.
+#
+demyx_arg_valid() {
+    if [[ "$DEMYX_ARG_2" == *"://"* ]]; then
+        demyx_error custom "${DEMYX_ARG_2//:\/\/*/}:// is not allowed"
+    fi
 
-    echo "${DEMYX_PASSWORD_1}-${DEMYX_PASSWORD_2}-${DEMYX_PASSWORD_3}-${DEMYX_PASSWORD_4}"
+    if [[ "$DEMYX_ARG_2" == "www."* ]]; then
+        demyx_error custom "www. is not allowed"
+    fi
+
+    if [[ "$DEMYX_ARG_2" == "code."* || "$DEMYX_ARG_2" == "traefik."* ]]; then
+        demyx_error custom "That domain is reserved"
+    fi
+
+    local DEMYX_ARG_PATH_CHECK=
+    DEMYX_ARG_PATH_CHECK="$(find "$DEMYX_APP" -name "$DEMYX_ARG_2" || true)"
+
+    # shellcheck disable=SC2153
+    if [[ "$DEMYX_ARG_1" != run && "$DEMYX_ARG_1" != restore ]]; then
+        if [[ ! -d "$DEMYX_ARG_PATH_CHECK" && ! -f "$DEMYX_ARG_PATH_CHECK"/.env && ! -f "$DEMYX_ARG_PATH_CHECK"/docker-compose.yml ]]; then
+            demyx_error app
+        fi
+    fi
 }
 demyx_wp_check_empty() {
     DEMYX_COMMON_WP_APPS="$(ls "$DEMYX_WP")"
