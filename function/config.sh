@@ -800,121 +800,85 @@ demyx_config_ssl() {
         "demyx_app_env_update DEMYX_APP_SSL=${DEMYX_CONFIG_FLAG_SSL}; \
         demyx_yml $DEMYX_APP_STACK"
 }
+#
+#   Configures an app's stack switching.
+#
+demyx_config_stack() {
+    demyx_app_env wp "
+        DEMYX_APP_CACHE
+        DEMYX_APP_DOMAIN
+        DEMYX_APP_OLS_ADMIN_PASSWORD
+        DEMYX_APP_OLS_ADMIN_USERNAME
+        DEMYX_APP_STACK
+        WORDPRESS_USER
+        WORDPRESS_USER_PASSWORD
+    "
 
-                demyx_source yml
+    DEMYX_CONFIG=Stack
+    DEMYX_CONFIG_COMPOSE=true
+    local DEMYX_CONFIG_STACK_CACHE=
+    #local DEMYX_CONFIG_STACK_IMAGE=
 
-                demyx_echo 'Updating .env'
-                demyx_execute sed -i "s|DEMYX_APP_SSL=.*|DEMYX_APP_SSL=true|g" "$DEMYX_APP_PATH"/.env
+    case "$DEMYX_CONFIG_FLAG_STACK" in
+        bedrock)
+            #DEMYX_CONFIG_STACK_IMAGE=demyx/wordpress:bedrock
 
-                demyx_echo 'Turning on SSL'
-                demyx_execute demyx_app_config; demyx_yml
-
-                demyx_echo 'Replacing URLs to HTTPS'
-                demyx_execute demyx wp "$DEMYX_APP_DOMAIN" search-replace http://"$DEMYX_APP_DOMAIN" https://"$DEMYX_APP_DOMAIN"
-
-                demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
-            elif [[ "$DEMYX_CONFIG_SSL" = false ]]; then
-                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_SSL" = false ]] && demyx_die 'SSL is already turned off'
-                fi
-
-                demyx_source yml
-
-                demyx_echo 'Updating .env'
-                demyx_execute sed -i "s|DEMYX_APP_SSL=.*|DEMYX_APP_SSL=false|g" "$DEMYX_APP_PATH"/.env
-
-                demyx_echo 'Turning off SSL'
-                demyx_execute demyx_app_config; demyx_yml
-
-                demyx_echo 'Replacing URLs to HTTP'
-                demyx_execute demyx wp "$DEMYX_APP_DOMAIN" search-replace https://"$DEMYX_APP_DOMAIN" http://"$DEMYX_APP_DOMAIN"
-
-                demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
+            if [[ "$DEMYX_APP_STACK" = nginx-php || "$DEMYX_APP_STACK" = ols ]]; then
+                demyx_error custom "$DEMYX_APP_DOMAIN is using $DEMYX_APP_STACK and can't be converted to $DEMYX_CONFIG_FLAG_STACK"
             fi
-            if [[ -n "$DEMYX_CONFIG_STACK" ]]; then
-                [[ "$DEMYX_APP_STACK" = "$DEMYX_CONFIG_STACK" ]] && demyx_die "$DEMYX_APP_DOMAIN is already using the $DEMYX_CONFIG_STACK stack"
+        ;;
+        nginx-php)
+            #DEMYX_CONFIG_STACK_IMAGE=demyx/wordpress
 
-                if [[ "$DEMYX_APP_CACHE" = true ]]; then
-                    DEMYX_CONFIG_STACK_CACHE=true
-                    demyx config "$DEMYX_APP_DOMAIN" --cache=false
-                fi
-
-                demyx_echo "Converting $DEMYX_APP_DOMAIN to the $DEMYX_CONFIG_STACK stack"
-
-                if [[ "$DEMYX_CONFIG_STACK" = bedrock ]]; then
-                    [[ "$DEMYX_APP_STACK" = nginx-php || "$DEMYX_APP_STACK" = ols ]] && demyx_die "$DEMYX_APP_DOMAIN can't be converted"
-                    demyx_execute sed -i "s|DEMYX_APP_WP_IMAGE=.*|DEMYX_APP_WP_IMAGE=demyx/wordpress:bedrock|g" "$DEMYX_APP_PATH"/.env; \
-                        sed -i "s|DEMYX_APP_STACK=.*|DEMYX_APP_STACK=bedrock|g" "$DEMYX_APP_PATH"/.env
-                elif [[ "$DEMYX_CONFIG_STACK" = nginx-php ]]; then
-                    [[ "$DEMYX_APP_STACK" = bedrock || "$DEMYX_APP_STACK" = ols-bedrock ]] && demyx_die "$DEMYX_APP_DOMAIN can't be converted"
-                    demyx_execute sed -i "s|DEMYX_APP_WP_IMAGE=.*|DEMYX_APP_WP_IMAGE=demyx/wordpress|g" "$DEMYX_APP_PATH"/.env; \
-                        sed -i "s|DEMYX_APP_STACK=.*|DEMYX_APP_STACK=nginx-php|g" "$DEMYX_APP_PATH"/.env
-                elif [[ "$DEMYX_CONFIG_STACK" = ols ]]; then
-                    [[ "$DEMYX_APP_STACK" = bedrock || "$DEMYX_APP_STACK" = ols-bedrock ]] && demyx_die "$DEMYX_APP_DOMAIN can't be converted"
-                    demyx_execute sed -i "s|DEMYX_APP_WP_IMAGE=.*|DEMYX_APP_WP_IMAGE=demyx/openlitespeed|g" "$DEMYX_APP_PATH"/.env; \
-                        sed -i "s|DEMYX_APP_STACK=.*|DEMYX_APP_STACK=ols|g" "$DEMYX_APP_PATH"/.env
-                elif [[ "$DEMYX_CONFIG_STACK" = ols-bedrock ]]; then
-                    [[ "$DEMYX_APP_STACK" = nginx-php || "$DEMYX_APP_STACK" = ols ]] && demyx_die "$DEMYX_APP_DOMAIN can't be converted"
-                    demyx_execute sed -i "s|DEMYX_APP_WP_IMAGE=.*|DEMYX_APP_WP_IMAGE=demyx/openlitespeed:bedrock|g" "$DEMYX_APP_PATH"/.env; \
-                        sed -i "s|DEMYX_APP_STACK=.*|DEMYX_APP_STACK=ols-bedrock|g" "$DEMYX_APP_PATH"/.env
-                fi
-
-                demyx refresh "$DEMYX_APP_DOMAIN"
-                [[ "$DEMYX_CONFIG_STACK_CACHE" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --cache
+            if [[ "$DEMYX_APP_STACK" = bedrock || "$DEMYX_APP_STACK" = ols-bedrock ]]; then
+                demyx_error custom "$DEMYX_APP_DOMAIN is using $DEMYX_APP_STACK and can't be converted to $DEMYX_CONFIG_FLAG_STACK"
             fi
-            if [[ -n "$DEMYX_CONFIG_UPGRADE" ]]; then
-                demyx_app_is_up
+        ;;
+        ols)
+            #DEMYX_CONFIG_STACK_IMAGE=demyx/openlitespeed
 
-                DEMYX_CHECK_APP_IMAGE="$(demyx info "$DEMYX_APP_DOMAIN" --filter=DEMYX_APP_WP_IMAGE)"
-                [[ "$DEMYX_CHECK_APP_IMAGE" = demyx/wordpress || "$DEMYX_CHECK_APP_IMAGE" = demyx/wordpress:bedrock ]] && demyx_die 'Already upgraded.'
-
-                demyx config "$DEMYX_APP_DOMAIN" --healthcheck=false
-
-                demyx_echo "Upgrading $DEMYX_APP_DOMAIN"
-                if [[ "$DEMYX_CHECK_APP_IMAGE" = demyx/nginx-php-wordpress ]]; then
-                    demyx_execute sed -i "s|DEMYX_APP_WP_IMAGE=.*|DEMYX_APP_WP_IMAGE=demyx/wordpress|g" "$DEMYX_APP_PATH"/.env; \
-                        docker run --rm --user=root --volumes-from="$DEMYX_APP_WP_CONTAINER" demyx/utilities "chown -R demyx:demyx /demyx; chown -R demyx:demyx /var/log/demyx"
-                elif [[ "$DEMYX_CHECK_APP_IMAGE" = demyx/nginx-php-wordpress:bedrock ]]; then
-                    demyx_execute sed -i "s|DEMYX_APP_WP_IMAGE=.*|DEMYX_APP_WP_IMAGE=demyx/wordpress:bedrock|g" "$DEMYX_APP_PATH"/.env; \
-                        docker run --rm --user=root --volumes-from="$DEMYX_APP_WP_CONTAINER" demyx/utilities "chown -R demyx:demyx /demyx; chown -R demyx:demyx /var/log/demyx"
-                fi
-
-                demyx refresh "$DEMYX_APP_DOMAIN"
-                demyx config "$DEMYX_APP_DOMAIN" --healthcheck
-
-                if [[ -n "$(demyx_upgrade_apps)" ]]; then
-                    demyx_execute -v echo -e '\n\e[33m[WARNING]\e[39m These sites needs upgrading:'; \
-                        demyx_upgrade_apps
-                fi
+            if [[ "$DEMYX_APP_STACK" = bedrock || "$DEMYX_APP_STACK" = ols-bedrock ]]; then
+                demyx_error custom "$DEMYX_APP_DOMAIN is using $DEMYX_APP_STACK and can't be converted to $DEMYX_CONFIG_FLAG_STACK"
             fi
-            if [[ "$DEMYX_CONFIG_WP_UPDATE" = true ]]; then
-                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_WP_UPDATE" = true ]] && demyx_die 'WordPress auto update is already turned on'
-                fi
+        ;;
+        ols-bedrock)
+            #DEMYX_CONFIG_STACK_IMAGE=demyx/openlitespeed:bedrock
 
-                demyx_echo 'Turning on WordPress auto update'
-                demyx_execute sed -i "s|DEMYX_APP_WP_UPDATE=.*|DEMYX_APP_WP_UPDATE=true|g" "$DEMYX_APP_PATH"/.env
-            elif [[ "$DEMYX_CONFIG_WP_UPDATE" = false ]]; then
-                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_WP_UPDATE" = false ]] && demyx_die 'WordPress auto update is already turned off'
-                fi
-
-                demyx_echo 'Turning off WordPress auto update'
-                demyx_execute sed -i "s|DEMYX_APP_WP_UPDATE=.*|DEMYX_APP_WP_UPDATE=false|g" "$DEMYX_APP_PATH"/.env
+            if [[ "$DEMYX_APP_STACK" = nginx-php || "$DEMYX_APP_STACK" = ols ]]; then
+                demyx_error custom "$DEMYX_APP_DOMAIN is using $DEMYX_APP_STACK and can't be converted to $DEMYX_CONFIG_FLAG_STACK"
             fi
-            if [[ -n "$DEMYX_CONFIG_WHITELIST" ]]; then
-                demyx_source yml
+        ;;
+    esac
 
-                # TEMPORARY CODE
-                if [[ -z "$DEMYX_APP_IP_WHITELIST" ]]; then
-                    demyx_echo "Updating .env and .yml"
-                    demyx_execute demyx_source env; \
-                        demyx_env
-                fi
+    if [[ "$DEMYX_APP_CACHE" = true ]]; then
+        DEMYX_CONFIG_STACK_CACHE=true
+        demyx_config "$DEMYX_APP_DOMAIN" --cache=false --no-compose
+    fi
 
-                demyx_echo "Setting whitelist type to $DEMYX_CONFIG_WHITELIST"
-                demyx_execute sed -i "s|DEMYX_APP_IP_WHITELIST=.*|DEMYX_APP_IP_WHITELIST=$DEMYX_CONFIG_WHITELIST|g" "$DEMYX_APP_PATH"/.env; \
-                    demyx_yml
+    # TODO
+    #demyx_execute "Updating app's image to $DEMYX_CONFIG_STACK_IMAGE" \
+    #    "demyx_app_env_update DEMYX_APP_WP_IMAGE=$DEMYX_CONFIG_STACK_IMAGE"
+
+    demyx_execute "Setting stack to $DEMYX_CONFIG_FLAG_STACK" \
+        "demyx_app_env_update DEMYX_APP_STACK=$DEMYX_CONFIG_FLAG_STACK &&
+        demyx_yml $DEMYX_CONFIG_FLAG_STACK"
+
+    if [[ "$DEMYX_CONFIG_STACK_CACHE" = true ]]; then
+        demyx_config "$DEMYX_APP_DOMAIN" --cache --no-compose
+    fi
+
+    {
+        echo "WordPress Login           $(demyx_app_login)"
+        echo "WordPress Username        $WORDPRESS_USER"
+        echo "WordPress Password        $WORDPRESS_USER_PASSWORD"
+
+        if [[ "$DEMYX_APP_STACK" = ols || "$DEMYX_APP_STACK" = ols-bedrock ]]; then
+            echo
+            echo "OLS Admin Username        $DEMYX_APP_OLS_ADMIN_USERNAME"
+            echo "OLS Admin Password        $DEMYX_APP_OLS_ADMIN_PASSWORD"
+        fi
+    } > "$DEMYX_CONFIG_TRANSIENT"
+}
 
                 demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
             elif [[ "$DEMYX_CONFIG_WHITELIST" = false ]]; then
