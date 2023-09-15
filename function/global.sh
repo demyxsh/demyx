@@ -116,18 +116,20 @@ demyx_app_env_update() {
         sed -i "s|${DEMYX_APP_ENV_UPDATE_I_VAR}=.*|${DEMYX_APP_ENV_UPDATE_I_VAR}=${DEMYX_APP_ENV_UPDATE_I_VAL}|g" "$DEMYX_APP_PATH"/.env
     done
 }
-demyx_permission() {
-    chown -R demyx:demyx "$DEMYX"
-}
-demyx_app_config() {
-    DEMYX_GET_APP="$(find "$DEMYX_APP" -name "$DEMYX_TARGET" | head -1)"
-    [[ -f "$DEMYX_GET_APP"/.env ]] && source "$DEMYX_GET_APP"/.env
-}
+#
+#   Check if a WordPress or MariaDB container is running.
+#
 demyx_app_is_up() {
-    DEMYX_APP_IS_UP_CHECK_DB="$(echo "$DEMYX_DOCKER_PS" | grep "$DEMYX_APP_DB_CONTAINER")"
-    DEMYX_APP_IS_UP_CHECK_WP="$(echo "$DEMYX_DOCKER_PS" | grep "$DEMYX_APP_WP_CONTAINER")"
+    local DEMYX_APP_IS_UP=
+    DEMYX_APP_IS_UP="$(demyx_ps)"
+
+    local DEMYX_APP_IS_UP_CHECK_DB=
+    DEMYX_APP_IS_UP_CHECK_DB="$(echo "$DEMYX_APP_IS_UP" | grep "${DEMYX_APP_DB_CONTAINER:-}" || true)"
+    local DEMYX_APP_IS_UP_CHECK_WP=
+    DEMYX_APP_IS_UP_CHECK_WP="$(echo "$DEMYX_APP_IS_UP" | grep "${DEMYX_APP_WP_CONTAINER:-}" || true)"
+
     if [[ -z "$DEMYX_APP_IS_UP_CHECK_DB" || -z "$DEMYX_APP_IS_UP_CHECK_WP" ]]; then
-        demyx_die "$DEMYX_APP_DOMAIN isn't running"
+        demyx_error "$DEMYX_APP_DOMAIN isn't running"
     fi
 }
 demyx_open_port() {
