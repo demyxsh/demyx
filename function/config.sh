@@ -773,25 +773,33 @@ demyx_config_sftp() {
         #fi
     fi
 }
+#
+#   Configures an app's SSL.
+#
+demyx_config_ssl() {
+    demyx_app_env wp "
+        DEMYX_APP_DOMAIN
+        DEMYX_APP_SSL
+        DEMYX_APP_STACK
+    "
 
-                PRINT_TABLE="DEMYX^ SFTP\n"
-                PRINT_TABLE+="SFTP^ $DEMYX_APP_DOMAIN\n"
-                PRINT_TABLE+="SFTP USER^ demyx\n"
-                PRINT_TABLE+="SFTP PORT^ $DEMYX_SFTP_PORT\n"
-                demyx_execute -v demyx_table "$PRINT_TABLE"
-            elif [[ "$DEMYX_CONFIG_SFTP" = false ]]; then
-                demyx_app_is_up
+    DEMYX_CONFIG_COMPOSE=true
 
-                DEMYX_SFTP_CONTAINER_CHECK="$(echo "$DEMYX_DOCKER_PS" | grep "$DEMYX_APP_COMPOSE_PROJECT"_sftp || true)"
-                [[ -z "$DEMYX_SFTP_CONTAINER_CHECK" ]] && demyx_die 'No SFTP container running'
+    case "$DEMYX_CONFIG_FLAG_SSL" in
+        false)
+            demyx_execute "Replacing URLs to HTTP" \
+                "demyx_wp $DEMYX_APP_DOMAIN search-replace --precise --all-tables https://${DEMYX_APP_DOMAIN} http://${DEMYX_APP_DOMAIN}"
+        ;;
+        true)
+            demyx_execute "Replacing URLs to HTTPS" \
+                "demyx_wp $DEMYX_APP_DOMAIN search-replace --precise --all-tables http://${DEMYX_APP_DOMAIN} https://${DEMYX_APP_DOMAIN}"
+        ;;
+    esac
 
-                demyx_echo 'Stopping SFTP container'
-                demyx_execute docker stop "$DEMYX_APP_COMPOSE_PROJECT"_sftp
-            fi
-            if [[ "$DEMYX_CONFIG_SSL" = true ]]; then
-                if [[ -z "$DEMYX_CONFIG_FORCE" ]]; then
-                    [[ "$DEMYX_APP_SSL" = true ]] && demyx_die 'SSL is already turned on'
-                fi
+    demyx_execute "Setting SSL to $DEMYX_CONFIG_FLAG_SSL" \
+        "demyx_app_env_update DEMYX_APP_SSL=${DEMYX_CONFIG_FLAG_SSL}; \
+        demyx_yml $DEMYX_APP_STACK"
+}
 
                 demyx_source yml
 
