@@ -141,7 +141,12 @@ demyx_name_adjectives() {
     DEMYX_NAME_ADJECTIVES_RANDOM="$(demyx_name_randomizer "${DEMYX_NAME_ADJECTIVES[@]}")"
 	echo "$DEMYX_NAME_ADJECTIVES_RANDOM"
 }
-
+#
+#	Main random function.
+#
+demyx_name_randomizer() {
+	printf "%s\0" "$@" | shuf -z -n1 | tr -d '\0'
+}
 demyx_name_sur() {
     IFS=$'\r\n' GLOBIGNORE='*' command eval 'DEMYX_NAME_SUR=(albattani
 		allen
