@@ -196,66 +196,82 @@ demyx_info_apps() {
         fi
     fi
 }
+#
+#   Display basic information of demyx system.
+#
+demyx_info_system() {
+    local DEMYX_INFO_SYSTEM_CONTAINER_DEAD=
+    DEMYX_INFO_SYSTEM_CONTAINER_DEAD="$(docker ps -q --filter "status=exited" | wc -l)"
+    local DEMYX_INFO_SYSTEM_CONTAINER_RUNNING=
+    DEMYX_INFO_SYSTEM_CONTAINER_RUNNING="$(docker ps -q | wc -l)"
+    local DEMYX_INFO_SYSTEM_DF=
+    DEMYX_INFO_SYSTEM_DF="$(df -h /demyx | sed '1d')"
+    local DEMYX_INFO_SYSTEM_DISK_PERCENTAGE=
+    DEMYX_INFO_SYSTEM_DISK_PERCENTAGE="$(echo "$DEMYX_INFO_SYSTEM_DF" | awk '{print $5}')"
+    local DEMYX_INFO_SYSTEM_DISK_TOTAL=
+    DEMYX_INFO_SYSTEM_DISK_TOTAL="$(echo "$DEMYX_INFO_SYSTEM_DF" | awk '{print $2}')"
+    local DEMYX_INFO_SYSTEM_DISK_USED=
+    DEMYX_INFO_SYSTEM_DISK_USED="$(echo "$DEMYX_INFO_SYSTEM_DF" | awk '{print $3}')"
+    local DEMYX_INFO_SYSTEM_LOAD_AVERAGE=
+    DEMYX_INFO_SYSTEM_LOAD_AVERAGE="$(cat < /proc/loadavg | awk '{print $1 " " $2 " " $3}')"
+    local DEMYX_INFO_SYSTEM_MEMORY=
+    DEMYX_INFO_SYSTEM_MEMORY="$(free -m)"
+    local DEMYX_INFO_SYSTEM_MEMORY_TOTAL=
+    DEMYX_INFO_SYSTEM_MEMORY_TOTAL="$(echo "$DEMYX_INFO_SYSTEM_MEMORY" | grep Mem | awk '{print $2}')"
+    local DEMYX_INFO_SYSTEM_MEMORY_USED=
+    DEMYX_INFO_SYSTEM_MEMORY_USED="$(echo "$DEMYX_INFO_SYSTEM_MEMORY" | grep Mem | awk '{print $3}')"
+    local DEMYX_INFO_SYSTEM_UPTIME=
+    DEMYX_INFO_SYSTEM_UPTIME="$(uptime | awk -F '[,]' '{print $1}' | awk -F '[up]' '{print $3}' | sed 's|^.||')"
+    local DEMYX_INFO_SYSTEM_WP_BACKUPS=
+    DEMYX_INFO_SYSTEM_WP_BACKUPS="$([[ -d "$DEMYX_BACKUP_WP" ]] && du -sh "$DEMYX_BACKUP_WP" | awk '{print $1}' || echo 0)"
+    local DEMYX_INFO_SYSTEM_WP_COUNT=
+    DEMYX_INFO_SYSTEM_WP_COUNT="$(find "$DEMYX_WP" -mindepth 1 -maxdepth 1 -type d | wc -l)"
 
-            if [[ -n "$DEMYX_INFO_JSON" ]]; then
-                echo '{
-                    "path": "'$DEMYX_APP_PATH'",
-                    "wp_user": "'$WORDPRESS_USER'",
-                    "wp_password": "'$WORDPRESS_USER_PASSWORD'",
-                    "nx_container": "'$DEMYX_APP_NX_CONTAINER'",
-                    "wp_container": "'$DEMYX_APP_WP_CONTAINER'",
-                    "db_container": "'$DEMYX_APP_DB_CONTAINER'",
-                    "wp_volume": "'$DEMYX_INFO_DATA_VOLUME'",
-                    "db_volume": "'$DEMYX_INFO_DB_VOLUME'",
-                    "wp_cpu": "'$DEMYX_APP_WP_CPU'",
-                    "wp_mem": "'$DEMYX_APP_WP_MEM'",
-                    "db_cpu": "'$DEMYX_APP_DB_CPU'",
-                    "db_mem": "'$DEMYX_APP_DB_MEM'",
-                    "ssl": "'$DEMYX_APP_SSL'",
-                    "cache": "'$DEMYX_APP_CACHE'",
-                    "cdn": "'$DEMYX_APP_CDN'",
-                    "auth": "'$DEMYX_APP_AUTH'",
-                    "auth_wp": "'$DEMYX_APP_AUTH_WP'",
-                    "dev": "'$DEMYX_APP_DEV'",
-                    "healthcheck": "'$DEMYX_APP_HEALTHCHECK'"' | sed 's/                    /    /g'
-                echo '}'
-            else
-                [[ -z "$DEMYX_APP_AUTH_WP" ]] && DEMYX_APP_AUTH_WP=false
-                PRINT_TABLE="DEMYX^ INFO\n"
-                PRINT_TABLE+="DOMAIN^ $DEMYX_APP_DOMAIN\n"
-                PRINT_TABLE+="PATH^ $DEMYX_APP_PATH\n"
-                PRINT_TABLE+="BASIC AUTH USERNAME^ $DEMYX_APP_AUTH_USERNAME\n"
-                PRINT_TABLE+="BASIC AUTH PASSWORD^ $DEMYX_APP_AUTH_PASSWORD\n"
-                PRINT_TABLE+="OPENLITESPEED ADMIN USERNAME^ $DEMYX_APP_OLS_ADMIN_USERNAME\n"
-                PRINT_TABLE+="OPENLITESPEED ADMIN PASSWORD^ $DEMYX_APP_OLS_ADMIN_PASSWORD\n"
-                PRINT_TABLE+="CODE-SERVER PASSWORD^ $DEMYX_APP_DEV_PASSWORD\n"
-                PRINT_TABLE+="WP USER^ $WORDPRESS_USER\n"
-                PRINT_TABLE+="WP PASSWORD^ $WORDPRESS_USER_PASSWORD\n"
-                PRINT_TABLE+="DB ROOT PASSWORD^ $MARIADB_ROOT_PASSWORD\n"
-                PRINT_TABLE+="NX CONTAINER^ $DEMYX_APP_NX_CONTAINER\n"
-                PRINT_TABLE+="WP CONTAINER^ $DEMYX_APP_WP_CONTAINER\n"
-                PRINT_TABLE+="DB CONTAINER^ $DEMYX_APP_DB_CONTAINER\n"
-                PRINT_TABLE+="WP VOLUME^ $DEMYX_INFO_DATA_VOLUME\n"
-                PRINT_TABLE+="DB VOLUME^ $DEMYX_INFO_DB_VOLUME\n"
-                PRINT_TABLE+="WP CPU^ $DEMYX_APP_WP_CPU\n"
-                PRINT_TABLE+="WP MEM^ $DEMYX_APP_WP_MEM\n"
-                PRINT_TABLE+="DB CPU^ $DEMYX_APP_DB_CPU\n"
-                PRINT_TABLE+="DB MEM^ $DEMYX_APP_DB_MEM\n"
-                PRINT_TABLE+="UPLOAD LIMIT^ $DEMYX_APP_UPLOAD_LIMIT\n"
-                PRINT_TABLE+="PHP MEMORY^ $DEMYX_APP_PHP_MEMORY\n"
-                PRINT_TABLE+="PHP MAX EXECUTION TIME^ $DEMYX_APP_PHP_MAX_EXECUTION_TIME\n"
-                PRINT_TABLE+="PHP OPCACHE^ $DEMYX_APP_PHP_OPCACHE\n"
-                PRINT_TABLE+="SSL^ $DEMYX_APP_SSL\n"
-                PRINT_TABLE+="CACHE^ $DEMYX_APP_CACHE\n"
-                PRINT_TABLE+="AUTH^ $DEMYX_APP_AUTH\n"
-                PRINT_TABLE+="WP AUTH^ $DEMYX_APP_AUTH_WP\n"
-                PRINT_TABLE+="DEV^ $DEMYX_APP_DEV\n"
-                PRINT_TABLE+="HEALTHCHECK^ $DEMYX_APP_HEALTHCHECK\n"
-                PRINT_TABLE+="WP AUTO UPDATE^ $DEMYX_APP_WP_UPDATE\n"
-                demyx_execute -v demyx_table "$PRINT_TABLE"
-            fi
-        fi
+    if [[ "$DEMYX_INFO_FLAG_JSON" = true ]]; then
+        {
+            echo "{"
+            echo "\"build\":\"$DEMYX_BUILD\","
+            echo "\"version\":\"$DEMYX_VERSION\","
+            echo "\"hostname\":\"$DEMYX_HOSTNAME\","
+            echo "\"ip\":\"$DEMYX_SERVER_IP\","
+            echo "\"wp_count\":\"$DEMYX_INFO_SYSTEM_WP_COUNT\","
+            echo "\"wp_backups\":\"$DEMYX_INFO_SYSTEM_WP_BACKUPS\","
+            echo "\"disk_used\":\"$DEMYX_INFO_SYSTEM_DISK_USED\","
+            echo "\"disk_total\":\"$DEMYX_INFO_SYSTEM_DISK_TOTAL\","
+            echo "\"disk_total_percentage\":\"$DEMYX_INFO_SYSTEM_DISK_PERCENTAGE\","
+            echo "\"memory_used\":\"$DEMYX_INFO_SYSTEM_MEMORY_USED\","
+            echo "\"memory_total\":\"$DEMYX_INFO_SYSTEM_MEMORY_TOTAL\","
+            echo "\"uptime\":\"$DEMYX_INFO_SYSTEM_UPTIME\","
+            echo "\"load_average\":\"$DEMYX_INFO_SYSTEM_LOAD_AVERAGE\","
+            echo "\"container_running\":\"$DEMYX_INFO_SYSTEM_CONTAINER_RUNNING\","
+            echo "\"container_dead\":\"$DEMYX_INFO_SYSTEM_CONTAINER_DEAD\""
+            echo "}"
+        } > "$DEMYX_INFO_TRANSIENT"
+
+        demyx_execute false \
+            "sed -i ':a;N;\$!ba;s/\n/ /g' $DEMYX_INFO_TRANSIENT; \
+                cat < $DEMYX_INFO_TRANSIENT"
     else
-        [[ -z "$DEMYX_INFO_QUIET" ]] && demyx_die --not-found
+        {
+            echo "Build                     $DEMYX_BUILD"
+            echo "Version                   $DEMYX_VERSION"
+            echo "Hostname                  $DEMYX_HOSTNAME"
+            echo "IP                        $DEMYX_SERVER_IP"
+            echo "Apps                      $DEMYX_INFO_SYSTEM_WP_COUNT"
+            echo "Backups                   $DEMYX_INFO_SYSTEM_WP_BACKUPS"
+            echo "Disk Used                 $DEMYX_INFO_SYSTEM_DISK_USED"
+            echo "Disk Total                $DEMYX_INFO_SYSTEM_DISK_TOTAL"
+            echo "Disk Total %              $DEMYX_INFO_SYSTEM_DISK_PERCENTAGE"
+            echo "Memory Used               $DEMYX_INFO_SYSTEM_MEMORY_USED"
+            echo "Memory Total              $DEMYX_INFO_SYSTEM_MEMORY_TOTAL"
+            echo "Uptime                    $DEMYX_INFO_SYSTEM_UPTIME"
+            echo "Load Average              $DEMYX_INFO_SYSTEM_LOAD_AVERAGE"
+            echo "Running Containers        $DEMYX_INFO_SYSTEM_CONTAINER_RUNNING"
+            echo "Dead Containers           $DEMYX_INFO_SYSTEM_CONTAINER_DEAD"
+        } > "$DEMYX_INFO_TRANSIENT"
+
+        demyx_execute false \
+            "demyx_divider_title \"$DEMYX_INFO\" \"System Information\"; \
+                cat < $DEMYX_INFO_TRANSIENT"
     fi
 }
