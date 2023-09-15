@@ -117,15 +117,21 @@ demyx_log_app() {
 demyx_log_cron() {
     tail "$DEMYX_LOG_TAIL_FLAG" "$DEMYX_LOG"/cron.log
 }
+#
+#   View demyx logs.
+#
+demyx_log_main() {
+    if [[ "$DEMYX_LOG_FLAG_ERROR" = true ]]; then
+        if [[ -f "$DEMYX_LOG"/error.log ]]; then
+            tail "$DEMYX_LOG_TAIL_FLAG" "$DEMYX_LOG"/error.log
         else
-            DEMYX_LOG_WP=access
-            if [[ -n "$DEMYX_LOG_DATABASE" ]]; then
-                docker exec -it "$DEMYX_APP_DB_CONTAINER" tail -200 $DEMYX_LOG_FOLLOW /var/log/demyx/"$DEMYX_APP_DOMAIN".mariadb.log
-            elif [[ -n "$DEMYX_LOG_ERROR" ]]; then
-                docker exec -it "$DEMYX_APP_WP_CONTAINER" tail -200 $DEMYX_LOG_FOLLOW /var/log/demyx/"$DEMYX_APP_DOMAIN".error.log
-            else
-                docker exec -it "$DEMYX_APP_WP_CONTAINER" tail -200 $DEMYX_LOG_FOLLOW /var/log/demyx/"$DEMYX_APP_DOMAIN".access.log
-            fi
+            demyx_warning "Error log file hasn't been created yet, exiting ..."
         fi
+    elif [[ "$DEMYX_LOG_STDOUT_FLAG" = true ]]; then
+        eval docker logs demyx "$DEMYX_LOG_FLAG_FOLLOW"
+    else
+        tail "$DEMYX_LOG_TAIL_FLAG" "$DEMYX_LOG"/demyx.log
+    fi
+}
     fi
 }
