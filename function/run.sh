@@ -236,61 +236,84 @@ demyx_run_directory() {
         ;;
     esac
 }
+#
+#   Initialize commands before main run function.
+#
+demyx_run_init() {
+    local DEMYX_APP_RUN_INIT_CHECK
+    DEMYX_APP_RUN_INIT_CHECK="$(demyx_app_path "$DEMYX_ARG_2")"
+    local DEMYX_RUN_APP_INIT_CONFIRM=
 
-            demyx_echo 'Cloning files'
-            demyx_execute docker cp "$DEMYX_RUN_CLONE_APP":/demyx "$DEMYX_APP_PATH"
+    # Define stack.
+    case "$DEMYX_RUN_FLAG_STACK" in
+        bedrock)
+            DEMYX_APP_STACK=bedrock
+            DEMYX_RUN_FLAG_STACK=bedrock
+        ;;
+        ols)
+            DEMYX_APP_STACK=ols
+            DEMYX_RUN_FLAG_STACK=ols
+        ;;
+        ols-bedrock)
+            DEMYX_APP_STACK=ols-bedrock
+            DEMYX_RUN_FLAG_STACK=ols-bedrock
+        ;;
+        *)
+            DEMYX_APP_STACK=nginx-php
+            DEMYX_RUN_FLAG_STACK=nginx-php
+        ;;
+    esac
 
-            demyx_echo 'Removing exported clone database'
-            demyx_execute docker exec -t "$DEMYX_RUN_CLONE_APP" rm /demyx/clone.sql
-        fi
+    # Define SSL.
+    DEMYX_APP_SSL="${DEMYX_RUN_FLAG_SSL:-false}"
 
-        demyx_echo 'Creating WordPress volume'
-        demyx_execute docker volume create wp_"$DEMYX_APP_ID"
+    # Define type.
+    DEMYX_APP_TYPE="${DEMYX_RUN_FLAG_TYPE:-wp}"
 
-        demyx_echo 'Creating MariaDB volume'
-        demyx_execute docker volume create wp_"$DEMYX_APP_ID"_db
+    # Define basic auth.
+    DEMYX_APP_AUTH="${DEMYX_RUN_FLAG_AUTH:-false}"
 
-        demyx_echo 'Creating log volume'
-        demyx_execute docker volume create wp_"$DEMYX_APP_ID"_log
+    # Define cache.
+    DEMYX_APP_CACHE="${DEMYX_RUN_FLAG_CACHE:-false}"
 
-        demyx compose "$DEMYX_APP_DOMAIN" up -d db_"$DEMYX_APP_ID"
+    # Define whitelist.
+    DEMYX_APP_IP_WHITELIST="${DEMYX_RUN_FLAG_WHITELIST:-false}"
 
-        if [[ -z "$DEMYX_RUN_SKIP_INIT" ]]; then
-            demyx_echo 'Initializing MariaDB'
-            demyx_execute demyx_mariadb_ready
-        fi
+    # Define php version.
+    DEMYX_APP_PHP="${DEMYX_RUN_FLAG_PHP:-8.0}"
 
-        if [[ -n "$DEMYX_RUN_CLONE" ]]; then
-            demyx_echo 'Creating temporary container'
-            demyx_execute docker run -dt --rm \
-                --name "$DEMYX_APP_ID" \
-                --network demyx \
-                -v wp_"$DEMYX_APP_ID":/demyx \
-                demyx/utilities sh
+    # Define WordPress admin credentials.
+    WORDPRESS_USER="${WORDPRESS_USER:-$DEMYX_RUN_FLAG_USERNAME}"
+    WORDPRESS_USER_EMAIL="${WORDPRESS_USER_EMAIL:-$DEMYX_RUN_FLAG_EMAIL}"
+    WORDPRESS_USER_PASSWORD="${WORDPRESS_USER_PASSWORD:-$DEMYX_RUN_FLAG_PASSWORD}"
 
-            if [[ "$DEMYX_RUN_CLONE_STACK" = nginx-php || "$DEMYX_RUN_CLONE_STACK" = ols ]]; then
-                demyx_echo 'Removing old wp-config.php'
-                demyx_execute rm -f "$DEMYX_APP_PATH"/demyx/wp-config.php
+    if [[ "$DEMYX_RUN_FLAG_WWW" = true ]]; then
+        # shellcheck disable=2034
+        DEMYX_APP_DOMAIN_WWW=true
+    fi
+
+    # Can't clone itself
+    if [[ "$DEMYX_ARG_2" = "$DEMYX_RUN_FLAG_CLONE" ]]; then
+        demyx_error custom "You can't clone itself"
+    fi
+
+    # Prompt user to delete.
+    if [[ -d "$DEMYX_APP_RUN_INIT_CHECK" ]]; then
+        if [[ "$DEMYX_RUN_FLAG_FORCE" = true ]]; then
+            demyx_rm "$DEMYX_ARG_2" -f
+        else
+            echo -en "\e[33m"
+            read -rep "[WARNING] Delete $DEMYX_ARG_2? [yY]: " DEMYX_RUN_APP_INIT_CONFIRM
+            echo -en "\e[39m"
+
+            if [[ "$DEMYX_RUN_APP_INIT_CONFIRM" != [yY] ]]; then
+                demyx_error cancel
+            else
+                demyx_rm "$DEMYX_ARG_2" -f
             fi
-
-            demyx_echo 'Copying files'
-            demyx_execute docker cp "$DEMYX_APP_PATH"/demyx "$DEMYX_APP_ID":/
-
-            demyx_echo 'Stopping temporary container'
-            demyx_execute docker stop "$DEMYX_APP_ID"
         fi
-
-        if [[ -n "$DEMYX_RUN_ARCHIVE" ]]; then
-            demyx_echo 'Extracting archive'
-            demyx_execute tar -xzf "$DEMYX_BACKUP_WP"/"$DEMYX_TARGET"/"$DEMYX_RUN_TODAYS_DATE"-"$DEMYX_RUN_ARCHIVE".tgz -C "$DEMYX_BACKUP_WP"/"$DEMYX_APP_DOMAIN"
-
-            demyx_echo 'Creating temporary container'
-            demyx_execute docker run -dt --rm \
-                --name "$DEMYX_APP_ID" \
-                --network demyx \
-                -v wp_"$DEMYX_APP_ID":/demyx \
-                -v wp_"$DEMYX_APP_ID"_log:/var/log/demyx \
-                demyx/utilities sh
+    fi
+}
 
             demyx_echo 'Copying files'
             demyx_execute docker cp "$DEMYX_BACKUP_WP"/"$DEMYX_APP_DOMAIN"/"$DEMYX_RUN_ARCHIVE"/demyx-wp/. "$DEMYX_APP_ID":/demyx; \
