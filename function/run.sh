@@ -314,47 +314,30 @@ demyx_run_init() {
         fi
     fi
 }
+#
+#   Execute extra commands.
+#
+demyx_run_extras() {
+    local DEMYX_RUN_EXTRAS=
 
-            demyx_echo 'Copying files'
-            demyx_execute docker cp "$DEMYX_BACKUP_WP"/"$DEMYX_APP_DOMAIN"/"$DEMYX_RUN_ARCHIVE"/demyx-wp/. "$DEMYX_APP_ID":/demyx; \
-                docker cp "$DEMYX_BACKUP_WP"/"$DEMYX_APP_DOMAIN"/"$DEMYX_RUN_ARCHIVE"/demyx-log/. "$DEMYX_APP_ID":/var/log/demyx
+    if [[ "$DEMYX_RUN_FLAG_AUTH" = true ]]; then
+        DEMYX_RUN_EXTRAS+="--auth "
+    fi
 
-            demyx_echo 'Finalizing extraction'
-            demyx_execute docker exec -t --user=root "$DEMYX_APP_ID" sh -c "rm /demyx/wp-config.php; chown -R demyx:demyx /demyx"
+    if [[ "$DEMYX_RUN_FLAG_CACHE" = true ]]; then
+        DEMYX_RUN_EXTRAS+="--cache "
+    fi
 
-            demyx_echo 'Stopping temporary container'
-            demyx_execute docker stop "$DEMYX_APP_ID"
-        fi
+    if [[ -n "$DEMYX_RUN_FLAG_WHITELIST" ]]; then
+        DEMYX_RUN_EXTRAS+="--whitelist=$DEMYX_RUN_FLAG_WHITELIST "
+    fi
 
-        demyx compose "$DEMYX_APP_DOMAIN" up -d
+    eval demyx_config "$DEMYX_APP_DOMAIN" --no-compose "$DEMYX_RUN_EXTRAS"
 
-        if [[ -n "$DEMYX_RUN_CLONE" ]]; then
-            if [[ "$DEMYX_RUN_CLONE_STACK" = nginx-php || "$DEMYX_RUN_CLONE_STACK" = ols ]]; then
-                demyx_echo 'Generating new wp-config.php'
-                demyx_execute demyx wp "$DEMYX_APP_DOMAIN" config create \
-                    --dbhost="$WORDPRESS_DB_HOST" \
-                    --dbname="$WORDPRESS_DB_NAME" \
-                    --dbuser="$WORDPRESS_DB_USER" \
-                    --dbpass="$WORDPRESS_DB_PASSWORD" \
-                    --force
-
-                demyx_echo 'Installing WordPress'
-                demyx_execute demyx wp "$DEMYX_APP_DOMAIN" core install \
-                    --url="$DEMYX_RUN_PROTO" \
-                    --title="$DEMYX_APP_DOMAIN" \
-                    --admin_user="$WORDPRESS_USER" \
-                    --admin_password="$WORDPRESS_USER_PASSWORD" \
-                    --admin_email="$WORDPRESS_USER_EMAIL" \
-                    --skip-email
-
-                demyx_echo 'Configuring reverse proxy'
-                demyx_execute docker run -t --rm \
-                    --volumes-from="$DEMYX_APP_WP_CONTAINER" \
-                    demyx/utilities demyx-proxy
-            else
-                demyx_echo 'Installing Bedrock'
-                demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" sh -c "rm -f /demyx/.env; demyx-install"
-            fi
+    if [[ -n "$DEMYX_RUN_EXTRAS" ]]; then
+        demyx_compose "$DEMYX_APP_DOMAIN" up -d
+    fi
+}
 
             demyx_echo 'Importing clone database'
             demyx_execute demyx wp "$DEMYX_APP_DOMAIN" db import /demyx/clone.sql
