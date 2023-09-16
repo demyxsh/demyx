@@ -80,29 +80,49 @@ demyx_refresh_all() {
         eval demyx_refresh "$DEMYX_REFRESH_ALL" "$DEMYX_REFRESH_ARGS"
     done
 }
+#
+#   Main refresh function.
+#
+demyx_refresh_app() {
+    demyx_app_env wp "
+        DEMYX_APP_DEV
+        DEMYX_APP_DOMAIN
+        DEMYX_APP_PATH
+        DEMYX_APP_STACK
+    "
 
-        demyx compose code up -d --remove-orphans
-    elif [[ "$DEMYX_TARGET" = traefik ]]; then
-        demyx_source yml
+    if [[ -z "$DEMYX_REFRESH_FLAG_SKIP" ]]; then
+        demyx_backup "$DEMYX_APP_DOMAIN" -c
+    fi
 
-        # TEMPORARY CODE
-        if [[ ! -d "$DEMYX_TRAEFIK" ]]; then
-            demyx_echo 'Traefik directory not found, creating now'
-            demyx_execute mkdir -p "$DEMYX_TRAEFIK"; \
-                docker pull demyx/traefik; \
-                docker stop demyx_traefik; \
-                docker rm demyx_traefik
-        fi
-        
-        demyx_echo 'Backing up traefik directory as /demyx/backup/traefik.tgz'
-        demyx_execute tar -czf /demyx/backup/traefik.tgz -C /demyx/app traefik
-
-        demyx_echo 'Refreshing traefik'
-        demyx_execute demyx_traefik_yml
-
-        demyx compose traefik up -d --remove-orphans
+    if [[ "$DEMYX_REFRESH_FLAG_FORCE" = true ]]; then
+        demyx_execute "Force refreshing configs" \
+            "sed -i '/# START REFRESHABLE VARIABLES/,/# END REFRESHABLE VARIABLES/d' ${DEMYX_APP_PATH}/.env; \
+            demyx_env; \
+            demyx_yml $DEMYX_APP_STACK"
     else
-        [[ ! -d "$DEMYX_WP"/"$DEMYX_TARGET" || -z "$DEMYX_TARGET" ]] && demyx_die --not-found
+        demyx_execute "Refreshing configs" \
+            "demyx_env; \
+            demyx_yml $DEMYX_APP_STACK"
+    fi
+
+    # TODO
+    #if [[ -z "$DEMYX_REFRESH_SKIP_CHECKS" ]]; then
+    #    [[ "$DEMYX_APP_RATE_LIMIT" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --rate-limit -f
+    #    [[ "$DEMYX_APP_CACHE" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --cache -f
+    #    [[ "$DEMYX_APP_AUTH" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --auth -f
+    #    [[ "$DEMYX_APP_AUTH_WP" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --auth-wp -f
+    #    [[ "$DEMYX_APP_HEALTHCHECK" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --healthcheck -f
+    #fi
+
+    if [[ -z "$DEMYX_REFRESH_FLAG_NO_COMPOSE" ]]; then
+        if [[ "$DEMYX_REFRESH_FLAG_NO_FORCE_RECREATE" = true ]]; then
+            demyx_compose "$DEMYX_APP_DOMAIN" up -d
+        else
+            demyx_compose "$DEMYX_APP_DOMAIN" fr
+        fi
+    fi
+}
 
         demyx_app_config
 
