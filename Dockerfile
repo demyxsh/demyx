@@ -68,12 +68,16 @@ ENV TZ                                  America/Los_Angeles
 # Install custom packages
 RUN set -ex; \
     apk add --no-cache --update \
+    apache2-utils \
     bash \
     bind-tools \
+    docker-compose \
     curl \
     jq \
     htop \
+    logrotate \
     nano \
+    ssmtp \
     sudo \
     tzdata \
     util-linux
