@@ -476,6 +476,17 @@ demyx_yml_nginx_basic_auth() {
               - NGINX_BASIC_AUTH_HTPASSWD=$(demyx_utility htpasswd -r "$DEMYX_APP_AUTH_USERNAME" "$DEMYX_APP_AUTH_PASSWORD" | sed "s|\\$|\$$|g")"
     fi
 }
+#
+#   NGINX whitelist environment variables.
+#
+demyx_yml_nginx_whitelist() {
+    demyx_app_env wp DEMYX_APP_IP_WHITELIST
+
+    if [[ "$DEMYX_APP_IP_WHITELIST" != false ]]; then
+        echo "- NGINX_WHITELIST=\${DEMYX_APP_IP_WHITELIST}
+              - NGINX_WHITELIST_IP=$DEMYX_IP"
+    fi
+}
           demyx:
             name: demyx
           demyx_log:
