@@ -1013,6 +1013,45 @@ demyx_yml_service_pma() {
             restart: unless-stopped"
     fi
 }
+#
+#   YAML template for the SFTP service.
+#
+demyx_yml_service_sftp() {
+    demyx_app_env wp "
+        DEMYX_APP_COMPOSE_PROJECT
+        DEMYX_APP_DOMAIN
+        DEMYX_APP_ID
+        DEMYX_APP_SFTP
+        DEMYX_APP_SFTP_PASSWORD
+        DEMYX_APP_SFTP_USERNAME
+        DEMYX_APP_TYPE
+    "
+
+    if [[ "$DEMYX_APP_SFTP" = true ]]; then
+        local DEMYX_YML_SERVICE_SFTP_PORTS=
+        # shellcheck disable=2153
+        DEMYX_YML_SERVICE_SFTP_PORTS="$(cat < "$DEMYX_TMP"/"$DEMYX_APP_DOMAIN"_sftp)"
+
+        echo "sftp_${DEMYX_APP_ID}:
+            cpus: \${DEMYX_APP_DB_CPU}
+            environment:
+              - DEMYX_DOMAIN=\${DEMYX_APP_DOMAIN}
+              - DEMYX_PASSWORD=\${DEMYX_APP_SFTP_PASSWORD}
+              - TZ=$TZ
+            hostname: \${DEMYX_APP_COMPOSE_PROJECT}_sftp
+            image: demyx/ssh
+            mem_limit: \${DEMYX_APP_DB_MEM}
+            networks:
+              - demyx
+            ports:
+              - ${DEMYX_YML_SERVICE_SFTP_PORTS}:2222
+            restart: unless-stopped
+            volumes:
+              - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}:/demyx
+              - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_log:/var/log/demyx
+              - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_sftp:/home"
+    fi
+}
 
     if [[ "$DEMYX_TRAEFIK_DASHBOARD" = true ]]; then
         DEMYX_YML_LABEL_TRAEFIK="labels:
