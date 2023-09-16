@@ -34,14 +34,21 @@ demyx_yml() {
         ;;
     esac
 }
+#
+#   Basic auth label.
+#
+demyx_yml_auth_label() {
+    demyx_app_env wp "
+        DEMYX_APP_AUTH
+        DEMYX_APP_AUTH_PASSWORD
+        DEMYX_APP_AUTH_USERNAME
+    "
 
-demyx_yml() {
-    demyx_app_config
-    
-    if [[ "$DEMYX_APP_TYPE" = wp ]]; then
-        if [[ "$DEMYX_APP_SSL" = true ]]; then
-            DEMYX_YML_SUBDOMAIN_CHECK="$(dig +short "$DEMYX_APP_DOMAIN" | sed -e '1d')"
-            DEMYX_YML_CLOUDFLARE_CHECK="$(curl -m 10 -svo /dev/null "$DEMYX_APP_DOMAIN" 2>&1 | grep cloudflare || true)"
+    if [[ "$DEMYX_APP_AUTH" = true ]]; then
+        echo "- \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-$(demyx_app_proto).middlewares=\${DEMYX_APP_COMPOSE_PROJECT}-auth\"
+              - \"traefik.http.middlewares.\${DEMYX_APP_COMPOSE_PROJECT}-auth.basicauth.users=$(demyx_utility htpasswd -r "$DEMYX_APP_AUTH_USERNAME" "$DEMYX_APP_AUTH_PASSWORD" | sed "s|\\$|\$$|g")\""
+    fi
+}
 
             if [[ -n "$DEMYX_YML_SUBDOMAIN_CHECK" ]]; then
                 DEMYX_DOMAIN_IP="$DEMYX_YML_SUBDOMAIN_CHECK"
