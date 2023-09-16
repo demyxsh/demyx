@@ -461,6 +461,21 @@ demyx_yml_nginx_php() {
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_sftp
         " | sed "s|        ||g" > "$DEMYX_APP_PATH"/docker-compose.yml
 }
+#
+#   NGINX basic auth environment variables.
+#
+demyx_yml_nginx_basic_auth() {
+    demyx_app_env wp "
+        DEMYX_APP_AUTH_WP
+        DEMYX_APP_AUTH_PASSWORD
+        DEMYX_APP_AUTH_USERNAME
+    "
+
+    if [[ "$DEMYX_APP_AUTH_WP" = true ]]; then
+        echo "- NGINX_BASIC_AUTH=\${DEMYX_APP_AUTH_WP}
+              - NGINX_BASIC_AUTH_HTPASSWD=$(demyx_utility htpasswd -r "$DEMYX_APP_AUTH_USERNAME" "$DEMYX_APP_AUTH_PASSWORD" | sed "s|\\$|\$$|g")"
+    fi
+}
           demyx:
             name: demyx
           demyx_log:
