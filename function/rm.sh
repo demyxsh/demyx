@@ -1,24 +1,30 @@
 # Demyx
 # https://demyx.sh
-# 
-# demyx rm <app> <args>
+#
+#   demyx rm <app> <args>
 #
 demyx_rm() {
+    DEMYX_ARG_2="${1:-$DEMYX_ARG_2}"
+    local DEMYX_RM_FLAG=
+    local DEMYX_RM_FLAG_FORCE=
+
+    demyx_source "
+        config
+        compose
+    "
+
     while :; do
-        case "$3" in
-            -f|--force)
-                DEMYX_RM_FORCE=1
-                ;;
-            --wp)
-                DEMYX_RM_WP=1
+        DEMYX_RM_FLAG="${2:-}"
+        case "$DEMYX_RM_FLAG" in
+            -f)
+                DEMYX_RM_FLAG_FORCE=true
                 ;;
             --)
                 shift
                 break
                 ;;
             -?*)
-                printf '\e[31m[CRITICAL]\e[39m Unknown option: %s\n' "$3" >&2
-                exit 1
+                demyx_error flag "$DEMYX_RM_FLAG"
                 ;;
             *)
                 break
@@ -26,7 +32,19 @@ demyx_rm() {
         shift
     done
 
-    demyx_app_config
+    case "$DEMYX_ARG_2" in
+        all)
+            demyx_rm_all
+        ;;
+        *)
+            if [[ -n "$DEMYX_ARG_2" ]]; then
+                demyx_rm_app
+            else
+                demyx_help rm
+            fi
+        ;;
+    esac
+}
 
     if [[ "$DEMYX_TARGET" = all ]]; then
         if [[ -n "$DEMYX_RM_WP" ]]; then
