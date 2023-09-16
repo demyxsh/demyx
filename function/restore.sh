@@ -198,20 +198,79 @@ demyx_restore_config() {
 
     demyx_compose "$DEMYX_ARG_2" up -d --remove-orphans
 }
+#
+#   Restore app's database only.
+#
+demyx_restore_db() {
+    demyx_app_env wp "
+        DEMYX_APP_CONTAINER
+        DEMYX_APP_DOMAIN
+        DEMYX_APP_DB_CONTAINER
+        DEMYX_APP_ID
+        DEMYX_APP_NX_CONTAINER
+        DEMYX_APP_STACK
+        DEMYX_APP_WP_CONTAINER
+    "
 
-            demyx_echo 'Stopping temporary container'
-            demyx_execute docker stop "$DEMYX_APP_WP_CONTAINER"
+    local DEMYX_RESTORE_DB_CHECK=
+    local DEMYX_RESTORE_DB_CHECK_BACKUP=
+    local DEMYX_RESTORE_DB_CHECK_WP=
 
-            demyx compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
-            demyx config "$DEMYX_APP_DOMAIN" --healthcheck
-
-            demyx_echo 'Cleaning up'
-            demyx_execute rm -rf "$DEMYX_APP_PATH"/demyx-wp; \
-                rm -rf "$DEMYX_APP_PATH"/demyx-log
-
-            demyx info "$DEMYX_APP_DOMAIN"
+    if [[ -z "$DEMYX_RESTORE_FLAG_FORCE" ]]; then
+        DEMYX_RESTORE_DB_CHECK_WP="$(docker exec "$DEMYX_APP_WP_CONTAINER" wp core is-installed 2>&1 || true)"
+        if [[ "$DEMYX_RESTORE_DB_CHECK_WP" == *"Error"* ||
+                "$DEMYX_RESTORE_DB_CHECK_WP" == *"error"* ]]; then
+            demyx_logger "Backing up database of $DEMYX_APP_DOMAIN" "demyx_backup $DEMYX_APP_DOMAIN $DEMYX_RESTORE_FLAG" "$DEMYX_RESTORE_DB_CHECK_WP" error
+            demyx_error custom "$DEMYX_ARG_2 has one or more errors. Please check error log."
         fi
-    else
-        demyx_die --restore-not-found
     fi
+
+    DEMYX_RESTORE_DB_CHECK="$(docker exec "$DEMYX_APP_WP_CONTAINER" ls | grep "${DEMYX_APP_CONTAINER}.sql" || true)"
+
+    if [[ -z "$DEMYX_RESTORE_DB_CHECK" ]]; then
+        DEMYX_RESTORE_DB_CHECK_BACKUP="$(find "$DEMYX_BACKUP_WP"/"$DEMYX_APP_DOMAIN" -type f -name "*${DEMYX_APP_DOMAIN}.tgz" | sort -r | head -n1)"
+
+        demyx_echo "No database found, using latest backup ..."
+
+        if [[ -f "$DEMYX_RESTORE_DB_CHECK_BACKUP" ]]; then
+            demyx_execute "File found, extracting" \
+                "tar -xzf $DEMYX_RESTORE_DB_CHECK_BACKUP -C $DEMYX_TMP; \
+                    demyx_proper ${DEMYX_TMP}/${DEMYX_APP_DOMAIN}"
+
+            demyx_execute "Copying database" \
+                "docker cp ${DEMYX_TMP}/${DEMYX_APP_DOMAIN}/demyx-wp/${DEMYX_APP_CONTAINER}.sql ${DEMYX_APP_WP_CONTAINER}:/demyx; \
+                    rm -rf ${DEMYX_TMP}/${DEMYX_APP_DOMAIN}"
+        fi
+    fi
+
+    if [[ "$DEMYX_APP_STACK" = nginx-php || "$DEMYX_APP_STACK" = openlitespeed ]]; then
+        demyx_execute "Putting WordPress into maintenance mode" \
+            "docker exec -t $DEMYX_APP_WP_CONTAINER sh -c \"echo '<?php \\\$upgrading = time(); ?>' > .maintenance\""
+    elif [[ "$DEMYX_APP_STACK" = bedrock || "$DEMYX_APP_STACK" = ols-bedrock ]]; then
+        demyx_execute "Putting WordPress into maintenance mode" \
+            "docker exec -t $DEMYX_APP_WP_CONTAINER sh -c \"echo '<?php \\\$upgrading = time(); ?>' > web/wp/.maintenance\""
+    fi
+
+    demyx_config "$DEMYX_APP_DOMAIN" --healthcheck=false
+
+    demyx_execute "Deleting old database" \
+        "docker stop ${DEMYX_APP_DB_CONTAINER}; \
+            docker rm ${DEMYX_APP_DB_CONTAINER}; \
+            docker volume rm wp_${DEMYX_APP_ID}_db"
+
+    demyx_compose "$DEMYX_APP_DOMAIN" -d up -d
+
+    demyx_execute "Installing MariaDB" \
+        "demyx_mariadb_ready"
+
+    demyx_execute "Importing database" \
+        "demyx_wp $DEMYX_APP_DOMAIN db import ${DEMYX_APP_CONTAINER}.sql"
+
+    #demyx_execute "Importing database" \
+    #    "docker exec -t $DEMYX_APP_WP_CONTAINER wp db import ${DEMYX_APP_CONTAINER}.sql"
+
+    demyx_config "$DEMYX_APP_DOMAIN" --healthcheck
+
+    demyx_execute "Cleaning up" \
+        "docker exec $DEMYX_APP_WP_CONTAINER rm -f ${DEMYX_APP_CONTAINER}.sql .maintenance"
 }
