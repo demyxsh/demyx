@@ -406,9 +406,18 @@ demyx_run_table() {
         "demyx_divider_title \"$DEMYX_RUN\" \"App Credentials\"; \
             cat < $DEMYX_RUN_TRANSIENT"
 }
+#
+#   Create app's volumes.
+#
+demyx_run_volumes() {
+    demyx_app_env wp "
+        DEMYX_APP_ID
+        DEMYX_APP_STACK
+    "
 
-        PRINT_TABLE+="WP CONTAINER^ $DEMYX_APP_WP_CONTAINER\n"
-        PRINT_TABLE+="DB CONTAINER^ $DEMYX_APP_DB_CONTAINER\n"
-        demyx_execute -v demyx_table "$PRINT_TABLE"
-    fi
+    docker volume create "$DEMYX_APP_TYPE"_"$DEMYX_APP_ID"
+    docker volume create "$DEMYX_APP_TYPE"_"$DEMYX_APP_ID"_code
+    docker volume create "$DEMYX_APP_TYPE"_"$DEMYX_APP_ID"_db
+    docker volume create "$DEMYX_APP_TYPE"_"$DEMYX_APP_ID"_log
+    docker volume create "$DEMYX_APP_TYPE"_"$DEMYX_APP_ID"_sftp
 }
