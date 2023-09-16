@@ -172,3 +172,7 @@ WORKDIR "$DEMYX"
 USER demyx
 
 ENTRYPOINT ["sudo", "-E", "demyx-entrypoint"]
+
+# Build date
+ARG DEMYX_BUILD
+ENV DEMYX_BUILD "$DEMYX_BUILD"
