@@ -975,10 +975,44 @@ demyx_yml_service_mariadb() {
               - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_db:/demyx
               - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_log:/var/log/demyx"
 }
+#
+#   YAML template for the phpMyAdmin service.
+#
+demyx_yml_service_pma() {
+    demyx_app_env wp "
+        DEMYX_APP_ID
+        DEMYX_APP_PMA
+    "
+
+    if [[ "$(demyx_app_proto)" = https ]]; then
+        DEMYX_YML_SERVICE_PMA_LABELS="- \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-pma.entrypoints=$(demyx_app_proto)\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-pma.tls.certresolver=$(demyx_yml_resolver)\""
+    else
+        DEMYX_YML_SERVICE_PMA_LABELS="- \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-pma.entrypoints=http\""
     fi
 
-    # Copy .env from /demyx/.env
-    [[ -f "$DEMYX"/.env ]] && cp -f "$DEMYX"/.env "$DEMYX_TRAEFIK"
+    if [[ "$DEMYX_APP_PMA" = true ]]; then
+        echo "pma_${DEMYX_APP_ID}:
+            cpus: \${DEMYX_APP_DB_CPU}
+            environment:
+              - MYSQL_ROOT_PASSWORD=\${MARIADB_ROOT_PASSWORD}
+              - PMA_ABSOLUTE_URI=$(demyx_app_proto)://\${DEMYX_APP_DOMAIN}/demyx/pma/
+              - PMA_HOST=db_\${DEMYX_APP_ID}
+              - TZ=$TZ
+            image: phpmyadmin/phpmyadmin
+            labels:
+              - \"traefik.enable=true\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-pma.rule=(Host(\`$(demyx_app_domain)\`) && PathPrefix(\`/demyx/pma/\`))\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-pma.middlewares=\${DEMYX_APP_COMPOSE_PROJECT}-pma-prefix\"
+              - \"traefik.http.middlewares.\${DEMYX_APP_COMPOSE_PROJECT}-pma-prefix.stripprefix.prefixes=/demyx/pma/\"
+              $DEMYX_YML_SERVICE_PMA_LABELS
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-pma.priority=99\"
+            mem_limit: \${DEMYX_APP_DB_MEM}
+            networks:
+              - demyx
+            restart: unless-stopped"
+    fi
+}
 
     if [[ "$DEMYX_TRAEFIK_DASHBOARD" = true ]]; then
         DEMYX_YML_LABEL_TRAEFIK="labels:
