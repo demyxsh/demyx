@@ -1,12 +1,39 @@
 # Demyx
 # https://demyx.sh
 
-# Set resolver
-if [[ "$DEMYX_EMAIL" != false && "$DEMYX_CF_KEY" != false ]]; then
-    DEMYX_YML_RESOLVER=demyx-cf
-else
-    DEMYX_YML_RESOLVER=demyx
-fi
+#
+#   Main function for yml generation.
+#
+demyx_yml() {
+    local DEMYX_YML="${1:-}"
+    local DEMYX_YML_RESOLVER=
+
+    demyx_source utility
+
+    case "$DEMYX_YML" in
+        bedrock)
+            demyx_yml_bedrock
+        ;;
+        code)
+            demyx_yml_code
+        ;;
+        nginx-php)
+            demyx_yml_nginx_php
+        ;;
+        ols)
+            demyx_yml_ols
+        ;;
+        ols-bedrock)
+            demyx_yml_ols_bedrock
+        ;;
+        traefik)
+            demyx_yml_traefik
+        ;;
+        *)
+            demyx_error args
+        ;;
+    esac
+}
 
 demyx_yml() {
     demyx_app_config
