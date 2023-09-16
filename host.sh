@@ -119,18 +119,32 @@ demyx_host_compose() {
         -e DOCKER_HOST= \
         demyx/docker-compose "$@"
 }
+#
+#   Removes specific dangling images.
+#
+demyx_host_dangling_images() {
+    local DEMYX_HOST_DANGLING_IMAGES=
+    local DEMYX_HOST_DANGLING_IMAGES_CHECK_CTOP=
+    local DEMYX_HOST_DANGLING_IMAGES_CHECK_PMA=
+    local DEMYX_HOST_DANGLING_IMAGES_I=
+    DEMYX_HOST_DANGLING_IMAGES="$(docker images "demyx/*" --filter=dangling=true -q)"
 
-    # Source udpated configs
-    demyx_config
-
-    # Begin prompts
-    if [[ "$DEMYX_HOST_DOMAIN" = domain.tld ]]; then
-        echo -e "\n\e[34m[INFO]\e[39m Enter a valid main domain"
-        read -rep "(Default: domain.tld): " DEMYX_HOST_INSTALL_DOMAIN
-        sed -i "s|DEMYX_HOST_DOMAIN=.*|DEMYX_HOST_DOMAIN=${DEMYX_HOST_INSTALL_DOMAIN:-domain.tld}|g" "$DEMYX_HOST_CONFIG"
-    else
-        DEMYX_HOST_INSTALL_DOMAIN="$DEMYX_HOST_EMAIL"
+    if [[ -n "$DEMYX_HOST_DANGLING_IMAGES" ]]; then
+        echo "$DEMYX_HOST_DANGLING_IMAGES" | xargs docker rmi || true
     fi
+
+    # Remove third party dangling images
+    DEMYX_HOST_DANGLING_IMAGES="$(docker images --filter=dangling=true -q)"
+    for DEMYX_HOST_DANGLING_IMAGES_I in $DEMYX_HOST_DANGLING_IMAGES; do
+        DEMYX_HOST_DANGLING_IMAGES_CHECK_CTOP="$(docker inspect "$DEMYX_HOST_DANGLING_IMAGES_I" | grep ctop || true)"
+        DEMYX_HOST_DANGLING_IMAGES_CHECK_PMA="$(docker inspect "$DEMYX_HOST_DANGLING_IMAGES_I" | grep phpmyadmin || true)"
+
+        if [[ -n "$DEMYX_HOST_DANGLING_IMAGES_CHECK_CTOP" ||
+                -n "$DEMYX_HOST_DANGLING_IMAGES_CHECK_PMA" ]]; then
+            docker image rm "$DEMYX_HOST_DANGLING_IMAGES_I" || true
+        fi
+    done
+}
 
     if [[ "$DEMYX_HOST_EMAIL" = info@domain.tld ]]; then
         echo -e "\n\e[34m[INFO]\e[39m Enter a valid email address for Lets Encrypt"
