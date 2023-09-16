@@ -91,12 +91,23 @@ demyx_host() {
     demyx_host_update
     demyx_host_error
 }
-demyx_compose() {
-    docker run -t --rm \
-    --workdir=/demyx \
-    -v /var/run/docker.sock:/var/run/docker.sock:ro \
-    -v demyx:/demyx \
-    demyx/docker-compose "$@"
+#
+#   Checks if database needs upgrading.
+#
+demyx_host_app_upgrade() {
+    local DEMYX_HOST_APP_UPGRADE_I=
+    local DEMYX_HOST_APP_UPGRADE_LIST=
+    DEMYX_HOST_APP_UPGRADE_LIST="$(demyx_host_exec info apps -r | sed 's/\r//g')"
+
+    if [[ "$DEMYX_HOST_UPDATE_IMAGES" == *"mariadb"* ]]; then
+        for DEMYX_HOST_APP_UPGRADE_I in $DEMYX_HOST_APP_UPGRADE_LIST; do
+            demyx_host_exec backup "$DEMYX_HOST_APP_UPGRADE_I"
+            demyx_host_exec backup "$DEMYX_HOST_APP_UPGRADE_I" -d
+            demyx_host_exec restore "$DEMYX_HOST_APP_UPGRADE_I" -d -f
+            demyx_host_exec refresh "$DEMYX_HOST_APP_UPGRADE_I" -nfr
+        done
+    fi
+}
 }
 demyx_config() {
     [[ -f "$DEMYX_HOST_CONFIG" ]] && source "$DEMYX_HOST_CONFIG"
