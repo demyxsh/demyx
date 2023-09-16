@@ -831,6 +831,19 @@ demyx_yml_ols_bedrock() {
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_sftp
         " | sed "s|        ||g" > "$DEMYX_APP_PATH"/docker-compose.yml
 }
+#
+#   Traefik resolver.
+#
+demyx_yml_resolver() {
+    local DEMYX_YML_RESOLVER=
+
+    if [[ "$DEMYX_EMAIL" != false && "$DEMYX_CF_KEY" != false ]]; then
+        DEMYX_YML_RESOLVER=demyx-cf
+    else
+        DEMYX_YML_RESOLVER=demyx
+    fi
+
+    echo "$DEMYX_YML_RESOLVER"
 }
 demyx_traefik_yml() {
     # TEMPORARY CODE
