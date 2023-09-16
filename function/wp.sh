@@ -52,18 +52,50 @@ demyx_wp_all() {
         fi
     done
 }
+#
+#   Main WP-CLI function.
+#
+demyx_wp_app() {
+    local DEMYX_WP_APP=
+    local DEMYX_WP_APP_COUNT
+    DEMYX_WP_APP_COUNT="$(demyx_count_wp)"
+    local DEMYX_WP_APP_CHECK=
+    local DEMYX_WP_APP_MEM=
+    DEMYX_WP_APP_MEM="$(echo "$DEMYX_MEM" | tr '[:lower:]' '[:upper:]')"
+    local DEMYX_WP_APP_WORKDIR=/demyx
 
-        if [[ "$*" == "help"* ]]; then
-            docker run -it --rm -e PAGER=more demyx/wordpress:cli "$@"
-        else
-            demyx_execute -v docker run -t --rm \
-                --network=demyx \
-                --volumes-from="$DEMYX_APP_WP_CONTAINER" \
-                --workdir="$DEMYX_WP_WORKDIR" \
-                demyx/wordpress:cli "$@"
+    demyx_app_env wp "
+        DEMYX_APP_DOMAIN
+        DEMYX_APP_STACK
+        DEMYX_APP_TYPE
+        DEMYX_APP_WP_CONTAINER
+    "
+
+    if (( "$DEMYX_WP_APP_COUNT" > 0 )); then
+        demyx_arg_valid
+
+        if [[ "$DEMYX_APP_TYPE" = wp ]]; then
+            DEMYX_WP_APP_CHECK="$(docker exec -t "$DEMYX_APP_WP_CONTAINER" which wp || true)"
+
+            # PREP for next version.
+            if [[ -n "$DEMYX_WP_APP_CHECK" ]]; then
+                demyx_execute false \
+                    "docker exec -t $DEMYX_APP_WP_CONTAINER wp --no-color $DEMYX_WP_ARGS"
+            else
+                DEMYX_WP_APP="docker run -t --rm \
+                    --network=demyx \
+                    --volumes-from=$DEMYX_APP_WP_CONTAINER \
+                    --workdir=$DEMYX_WP_APP_WORKDIR \
+                    --entrypoint=php \
+                    demyx/wordpress:cli -d memory_limit=$DEMYX_WP_APP_MEM /usr/local/bin/wp --no-color $DEMYX_WP_ARGS"
+
+                # shellcheck disable=2153
+                if [[ "$DEMYX_ARG_1" = wp ]]; then
+                    demyx_execute false "$DEMYX_WP_APP"
+                else
+                    eval "$DEMYX_WP_APP"
+                fi
+            fi
         fi
-
-    else
-        demyx_die --not-found
     fi
 }
