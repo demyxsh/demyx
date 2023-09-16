@@ -62,63 +62,27 @@ demyx_utility() {
         ;;
     esac
 }
+#
+#   Generates credentials.
+#
+demyx_utility_credentials() {
+    local DEMYX_UTILITY_CREDENTIALS_USERNAME
+    DEMYX_UTILITY_CREDENTIALS_USERNAME="$(demyx_utility username -r)"
+    local DEMYX_UTILITY_CREDENTIALS_PASSWORD
+    DEMYX_UTILITY_CREDENTIALS_PASSWORD="$(demyx_utility password -r)"
+    local DEMYX_UTILITY_CREDENTIALS
+    DEMYX_UTILITY_CREDENTIALS="$(demyx_utility htpasswd -r "$DEMYX_UTILITY_CREDENTIALS_USERNAME" "$DEMYX_UTILITY_CREDENTIALS_PASSWORD")"
 
-        if [[ -n "$DEMYX_UTILITY_RAW" ]]; then
-            demyx_execute -v echo "$DEMYX_UTILITY_USER"
-            demyx_execute -v -q echo "$DEMYX_UTILITY_PASS"
-            demyx_execute -v -q echo "$DEMYX_UTILITY_HTPASSWD_OUTPUT"
-        else
-            demyx_execute -v demyx_table "$PRINT_TABLE"
-        fi
-    elif [[ -n "$DEMYX_UTILITY_HTPASSWD" ]]; then
-        [[ -z "$DEMYX_UTILITY_USER" ]] && demyx_die 'Missing --user'
-        DEMYX_UTILITY_HTPASSWD_OUTPUT="$(demyx util htpasswd -nb "$DEMYX_UTILITY_USER $DEMYX_UTILITY_HTPASSWD" | sed -e 's/\r//g')"
-        PRINT_TABLE="DEMYX^ UTILITY\n"
-        PRINT_TABLE+="HTPASSWD^ $DEMYX_UTILITY_HTPASSWD_OUTPUT"
-        
-        if [[ -n "$DEMYX_UTILITY_RAW" ]]; then
-            demyx_execute -v -q echo "$DEMYX_UTILITY_HTPASSWD_OUTPUT"
-        else
-            demyx_execute -v demyx_table "$PRINT_TABLE"
-        fi
-    elif [[ -n "$DEMYX_UTILITY_ID" ]]; then
-        DEMYX_UTILITY_ID="$(uuidgen | head -c 8 | sed -e 's/\r//g')"
-        PRINT_TABLE="DEMYX^ UTILITY\n"
-        PRINT_TABLE+="ID^ $DEMYX_UTILITY_ID"
-        
-        if [[ -n "$DEMYX_UTILITY_RAW" ]]; then
-            demyx_execute -v -q echo "$DEMYX_UTILITY_ID"
-        else
-            demyx_execute -v demyx_table "$PRINT_TABLE"
-        fi
-    elif [[ -n "$DEMYX_UTILITY_PASS" ]]; then
-        DEMYX_UTILITY_PASS="$(demyx_generate_password)"
-        PRINT_TABLE="DEMYX^ UTILITY\n"
-        PRINT_TABLE+="PASSWORD^ $DEMYX_UTILITY_PASS"
-    
-        if [[ -n "$DEMYX_UTILITY_RAW" ]]; then
-            demyx_execute -v -q echo "$DEMYX_UTILITY_PASS"
-        else
-            demyx_execute -v demyx_table "$PRINT_TABLE"
-        fi
-    elif [[ -n "$DEMYX_UTILITY_USER" ]]; then
-        demyx_source name
-        DEMYX_UTILITY_USER="$(demyx_name)"
-        PRINT_TABLE="DEMYX^ UTILITY\n"
-        PRINT_TABLE+="USERNAME^ $DEMYX_UTILITY_USER"
-        
-        if [[ -n "$DEMYX_UTILITY_RAW" ]]; then
-            demyx_execute -v echo "$DEMYX_UTILITY_USER"
-        else
-            demyx_execute -v demyx_table "$PRINT_TABLE"
-        fi
-    elif [[ -n "$DEMYX_UTILITY_KILL" ]]; then
-        DEMYX_UTILITIES_CHECK="$(echo "$DEMYX_DOCKER_PS" | grep -s demyx/utilities | awk '{print $1}' | awk 'BEGIN { ORS = " " } { print }')"
-        for i in "$DEMYX_UTILITIES_CHECK"
-        do
-            demyx_echo "Killing demyx/utility $i"
-            demyx_execute docker kill "$i"
-        done
+    {
+        echo "Username      $DEMYX_UTILITY_CREDENTIALS_USERNAME"
+        echo "Password      $DEMYX_UTILITY_CREDENTIALS_PASSWORD"
+        echo "Htpasswd      $DEMYX_UTILITY_CREDENTIALS"
+    } > "$DEMYX_UTILITY_TRANSIENT"
+
+    demyx_execute false \
+        "demyx_divider_title \"${DEMYX_UTILITY}\" \"Credentials\"; \
+            cat < $DEMYX_UTILITY_TRANSIENT"
+}
     else
         shift
         DEMYX_UTILITY_EXEC="$@"
