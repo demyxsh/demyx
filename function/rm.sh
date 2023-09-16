@@ -107,34 +107,58 @@ demyx_rm_all() {
         demyx_warning "No apps found in $DEMYX_WP, skipping ..."
     fi
 }
+#
+#   Main rm function.
+#
+demyx_rm_app() {
+    local DEMYX_RM_APP_CONFIRM=
+    local DEMYX_RM_APP_PATH=
+    DEMYX_RM_APP_PATH="$(demyx_app_path "$DEMYX_ARG_2")"
+    local DEMYX_RM_APP_STRAGGLER=
+    local DEMYX_RM_APP_STRAGGLERS=
+    local DEMYX_RM_APP_VOLUME=
+    local DEMYX_RM_APP_VOLUMES=
 
-        DEMYX_RM_VOLUMES="$(docker volume ls | grep "$DEMYX_APP_ID" | awk '{print $2}' | awk 'BEGIN { ORS = " " } { print }')"
+    demyx_arg_valid
+    demyx_app_env wp "
+        DEMYX_APP_DOMAIN
+        DEMYX_APP_ID
+        DEMYX_APP_PATH
+    "
 
-        cd "$DEMYX_APP_PATH" || exit
+    if [[ -d "$DEMYX_APP_PATH" && -z "$DEMYX_RM_FLAG_FORCE" ]]; then
+        echo -en "\e[33m"
+        read -rep "[WARNING] Delete $DEMYX_ARG_2? [yY]: " DEMYX_RM_APP_CONFIRM
+        echo -en "\e[39m"
 
-        demyx config "$DEMYX_APP_DOMAIN" --healthcheck=false
-        demyx compose "$DEMYX_APP_DOMAIN" down
+        if [[ "$DEMYX_RM_APP_CONFIRM" != [yY] ]]; then
+            if [[ -d "$DEMYX_TMP"/"$DEMYX_APP_DOMAIN" ]]; then
+                demyx_execute "Cleaning up" \
+                    "rm -rf ${DEMYX_TMP}/${DEMYX_APP_DOMAIN}"
+            fi
 
-        DEMYX_RM_STRAGGLERS="$(docker ps | grep "$DEMYX_APP_COMPOSE_PROJECT" | awk '{print $(NF)}' | awk '$1 ~ /^'"${DEMYX_APP_COMPOSE_PROJECT}"'/')"
-
-        if [[ -n "$DEMYX_RM_STRAGGLERS" ]]; then
-            for i in $DEMYX_RM_STRAGGLERS
-            do
-                demyx_echo "Killing $i"
-                demyx_execute docker kill "$i"
-            done
+            demyx_error cancel
         fi
-
-        for i in $DEMYX_RM_VOLUMES
-        do
-            demyx_echo "Deleting $i"
-            demyx_execute docker volume rm "$i"
-            
-        done
-
-        demyx_echo "Deleting $DEMYX_APP_DOMAIN"
-        demyx_execute rm -rf "$DEMYX_APP_PATH"
-    else
-        demyx_die --not-found
     fi
+
+    demyx_config "$DEMYX_APP_DOMAIN" --healthcheck=false
+    demyx_compose "$DEMYX_APP_DOMAIN" kill
+    demyx_compose "$DEMYX_APP_DOMAIN" rm -f
+
+    DEMYX_RM_APP_STRAGGLERS="$(docker ps -q --filter="name=$DEMYX_APP_ID")"
+    if [[ -n "$DEMYX_RM_APP_STRAGGLERS" ]]; then
+        for DEMYX_RM_APP_STRAGGLER in $DEMYX_RM_APP_STRAGGLERS; do
+            demyx_execute "Killing $DEMYX_RM_APP_STRAGGLER" \
+                "docker kill $DEMYX_RM_APP_STRAGGLER"
+        done
+    fi
+
+    DEMYX_RM_APP_VOLUMES="$(docker volume ls -q --filter="name=$DEMYX_APP_ID")"
+    for DEMYX_RM_APP_VOLUME in $DEMYX_RM_APP_VOLUMES; do
+        demyx_execute "Deleting $DEMYX_RM_APP_VOLUME" \
+            "docker volume rm $DEMYX_RM_APP_VOLUME"
+    done
+
+    demyx_execute "Deleting $DEMYX_ARG_2" \
+        "rm -rf $DEMYX_RM_APP_PATH"
 }
