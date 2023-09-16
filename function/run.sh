@@ -107,33 +107,29 @@ demyx_run() {
         demyx_help run
     fi
 }
+#
+#   Main run function.
+#
+demyx_run_app() {
+    demyx_execute "Creating app" \
+        "demyx_run_directory; \
+        demyx_env; \
+        demyx_yml ${DEMYX_APP_STACK}; \
+        demyx_run_volumes"
 
-    DEMYX_RUN_TYPE="${DEMYX_RUN_TYPE:-wp}"
-    DEMYX_RUN_RATE_LIMIT="${DEMYX_RUN_RATE_LIMIT:-false}"
-    DEMYX_RUN_CACHE="${DEMYX_RUN_CACHE:-false}"
-    DEMYX_RUN_AUTH="${DEMYX_RUN_AUTH:-false}"
-    DEMYX_RUN_CLOUDFLARE="${DEMYX_RUN_CLOUDFLARE:-false}"
-    DEMYX_RUN_WHITELIST="${DEMYX_RUN_WHITELIST:-false}"
+    demyx_app_env wp DEMYX_APP_DOMAIN
 
-    [[ -n "$DEMYX_RUN_CLONE" ]] && DEMYX_RUN_CLONE_APP="$(demyx info "$DEMYX_RUN_CLONE" --filter=DEMYX_APP_WP_CONTAINER)"
+    demyx_config "$DEMYX_APP_DOMAIN" --healthcheck=false
+    demyx_compose "$DEMYX_APP_DOMAIN" -d up -d
 
-    if [[ "$DEMYX_RUN_STACK" = bedrock ]]; then
-        DEMYX_APP_WP_IMAGE=demyx/wordpress:bedrock
-    elif [[ "$DEMYX_RUN_STACK" = ols ]]; then
-        DEMYX_APP_WP_IMAGE=demyx/openlitespeed
-    elif [[ "$DEMYX_RUN_STACK" = ols-bedrock ]]; then
-        DEMYX_APP_WP_IMAGE=demyx/openlitespeed:bedrock
-    else
-        DEMYX_APP_WP_IMAGE=demyx/wordpress
-        DEMYX_RUN_STACK=nginx-php
+    if [[ -z "$DEMYX_RUN_FLAG_SKIP_INIT" ]]; then
+        demyx_execute "Installing MariaDB" \
+            "demyx_mariadb_ready"
     fi
 
-    if [[ "$DEMYX_RUN_SSL" = true ]]; then
-        DEMYX_RUN_SSL=true
-        DEMYX_RUN_PROTO="https://$DEMYX_TARGET"
-    elif [[ "$DEMYX_RUN_SSL" = false ]]; then
-        DEMYX_RUN_SSL=false
-        DEMYX_RUN_PROTO="$DEMYX_TARGET"
+    demyx_compose "$DEMYX_APP_DOMAIN" up -d
+    demyx_config "$DEMYX_APP_DOMAIN" --healthcheck
+}
     else
         [[ -z "$DEMYX_RUN_SSL" ]] && DEMYX_RUN_SSL=true
         DEMYX_RUN_PROTO="https://$DEMYX_TARGET"
