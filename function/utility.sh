@@ -1,63 +1,67 @@
 # Demyx
 # https://demyx.sh
-# 
-# demyx util <args>
+#
+#   demyx util <type> <args>
 #
 demyx_utility() {
+    DEMYX_ARG_2="${1:-$DEMYX_ARG_2}"
+    local DEMYX_UTILITY="DEMYX - UTILITY"
+    local DEMYX_UTILITY_FLAG=
+    local DEMYX_UTILITY_FLAG_RAW=
+    local DEMYX_UTILITY_TRANSIENT="$DEMYX_TMP"/demyx_transient
+
+    demyx_source name
+
     while :; do
-        case "$2" in
-            --cred)
-                DEMYX_UTILITY_CREDENTIALS=1
-                ;;
-            --htpasswd=?*)
-                DEMYX_UTILITY_HTPASSWD="${2#*=}"
-                ;;
-            --htpasswd=)
-                demyx_die '"--htpasswd" cannot be empty.'
-                ;;
-            --id)
-                DEMYX_UTILITY_ID=1
-                ;;
-            --kill)
-                DEMYX_UTILITY_KILL=1
-                ;;
-            --pass)
-                DEMYX_UTILITY_PASS=1
-                ;;
-            --raw)
-                DEMYX_UTILITY_RAW=1
-                ;;
-            --user)
-                DEMYX_UTILITY_USER=1
-                ;;
-            --user=?*)
-                DEMYX_UTILITY_USER="${2#*=}"
-                ;;
-            --user=)
-                demyx_die '"--user" cannot be empty.'
-                ;;
+        DEMYX_UTILITY_FLAG="${2:-}"
+        [[ -z "$DEMYX_ARG_2" ]] && break
+        case "$DEMYX_UTILITY_FLAG" in
+            -r)
+                DEMYX_UTILITY_FLAG_RAW=true
+            ;;
             --)
                 shift
                 break
-                ;;
+            ;;
             -?*)
-                printf '\e[31m[CRITICAL]\e[39m Unknown option: %s\n' "$2" >&2
-                exit 1
-                ;;
+                demyx_error flag "$DEMYX_UTILITY_FLAG"
+            ;;
             *)
                 break
         esac
         shift
     done
 
-    if [[ -n "$DEMYX_UTILITY_CREDENTIALS" ]]; then
-        DEMYX_UTILITY_USER="$(demyx util --user --raw)"
-        DEMYX_UTILITY_PASS="$(demyx_generate_password)"
-        DEMYX_UTILITY_HTPASSWD_OUTPUT="$(demyx util htpasswd -nb "$DEMYX_UTILITY_USER" "$DEMYX_UTILITY_PASS" | sed -e 's/\r//g')"
-        PRINT_TABLE="DEMYX^ UTILITY\n"
-        PRINT_TABLE+="USERNAME^ $DEMYX_UTILITY_USER\n"
-        PRINT_TABLE+="PASSWORD^ $DEMYX_UTILITY_PASS\n"
-        PRINT_TABLE+="HTPASSWD^ $DEMYX_UTILITY_HTPASSWD_OUTPUT"
+    case "$DEMYX_ARG_2" in
+        cred|credentials)
+            demyx_execute false \
+                "demyx_utility_credentials"
+        ;;
+        htpasswd) shift
+            demyx_execute false \
+                "demyx_utility_htpasswd $*"
+        ;;
+        id) shift
+            demyx_execute false \
+                "demyx_utility_id $*"
+        ;;
+        pass|password) shift
+            demyx_execute false \
+                "demyx_utility_password $*"
+        ;;
+        sh|shell) shift
+            demyx_execute false \
+                "docker run -it --rm demyx/utilities $*"
+        ;;
+        user|username)
+            demyx_execute false \
+                "demyx_utility_username"
+        ;;
+        *)
+            demyx_help utility
+        ;;
+    esac
+}
 
         if [[ -n "$DEMYX_UTILITY_RAW" ]]; then
             demyx_execute -v echo "$DEMYX_UTILITY_USER"
