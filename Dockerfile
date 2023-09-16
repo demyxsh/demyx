@@ -171,4 +171,4 @@ WORKDIR "$DEMYX"
 
 USER demyx
 
-ENTRYPOINT ["demyx-init"]
+ENTRYPOINT ["sudo", "-E", "demyx-entrypoint"]
