@@ -204,52 +204,33 @@ demyx_host_help() {
     echo "              upgrade         Pull relevant images, refresh app configs, and delete old images"
     echo
 }
+#
+#   Create a script to execute demyx motd when ssh-ing to server.
+#
+demyx_host_motd() {
+    local DEMYX_HOST_MOTD_CHECK=
 
-    if [[ -n "${DEMYX_HOST_INSTALL_IP:-}" || "$DEMYX_HOST_IP" != false ]]; then
-        echo -e "\n\e[34m[INFO]\e[39m Enable Traefik dashboard? true/false (IP whitelist and basic auth protected)"
-        read -rep "(Default: false): " DEMYX_HOST_INSTALL_TRAEFIK_DASHBOARD
-        sed -i "s|DEMYX_HOST_TRAEFIK_DASHBOARD=.*|DEMYX_HOST_TRAEFIK_DASHBOARD=${DEMYX_HOST_INSTALL_TRAEFIK_DASHBOARD:-false}|g" "$DEMYX_HOST_CONFIG"
+    if [[ -f /etc/profile.d/demyx-motd.sh ]]; then
+        docker run -t --rm \
+            -v /etc/profile.d:/tmp \
+            --user=root \
+            --entrypoint=bash \
+            demyx/demyx -c "rm -f /tmp/demyx-motd.sh"
+    fi
 
-        if [[ "$DEMYX_HOST_INSTALL_TRAEFIK_DASHBOARD" = true ]]; then
-            echo -e "\n\e[34m[INFO]\e[39m Enter subdomain for Traefik dashboard, please do not add the .${DEMYX_HOST_INSTALL_DOMAIN} part"
-            read -rep "(Default: traefik): " DEMYX_HOST_INSTALL_TRAEFIK_DASHBOARD_DOMAIN
-            sed -i "s|DEMYX_HOST_TRAEFIK_DASHBOARD_DOMAIN=.*|DEMYX_HOST_TRAEFIK_DASHBOARD_DOMAIN=${DEMYX_HOST_INSTALL_TRAEFIK_DASHBOARD_DOMAIN:-traefik}|g" "$DEMYX_HOST_CONFIG"
-        fi
-
-        echo -e "\n\e[34m[INFO]\e[39m Enable code-server as the demyx file browser? true/false (IP whitelist protected)"
-        read -rep "(Default: false): " DEMYX_HOST_INSTALL_CODE
-        sed -i "s|DEMYX_HOST_CODE=.*|DEMYX_HOST_CODE=${DEMYX_HOST_INSTALL_CODE:-false}|g" "$DEMYX_HOST_CONFIG"
-
-        if [[ "$DEMYX_HOST_INSTALL_CODE" = true ]]; then
-            echo -e "\n\e[34m[INFO]\e[39m Enter subdomain for code-server, please do not add the .${DEMYX_HOST_INSTALL_DOMAIN} part"
-            read -rep "(Default: code): " DEMYX_HOST_INSTALL_CODE_DOMAIN
-            sed -i "s|DEMYX_HOST_CODE_DOMAIN=.*|DEMYX_HOST_CODE_DOMAIN=${DEMYX_HOST_INSTALL_CODE_DOMAIN:-code}|g" "$DEMYX_HOST_CONFIG"
+    if [[ -f ~/.bashrc ]]; then
+        DEMYX_HOST_MOTD_CHECK="$(grep "demyx motd" ~/.bashrc || true)"
+        if [[ -z "$DEMYX_HOST_MOTD_CHECK" ]]; then
+            echo "demyx motd" >> ~/.bashrc
         fi
     fi
 
-    echo -e "\n\e[34m[INFO]\e[39m Enter your local timezone"
-    read -rep "(Default: America/Los_Angeles): " DEMYX_HOST_INSTALL_TZ
-    sed -i "s|DEMYX_HOST_TZ=.*|DEMYX_HOST_TZ=${DEMYX_HOST_INSTALL_TZ:-America/Los_Angeles}|g" "$DEMYX_HOST_CONFIG"
-
-    echo -e "\n\e[34m[INFO]\e[39m Enter true or false to enable/disable telemetry"
-    read -rep "(Default: true): " DEMYX_HOST_INSTALL_TELEMETRY
-    sed -i "s|DEMYX_HOST_TELEMETRY=.*|DEMYX_HOST_TELEMETRY=${DEMYX_HOST_INSTALL_TELEMETRY:-true}|g" "$DEMYX_HOST_CONFIG"
-
-    # Set install to false
-    sed -i "s|DEMYX_HOST_INSTALL=.*|DEMYX_HOST_INSTALL=false|g" "$DEMYX_HOST_CONFIG"
-
-    # Update source config for the last time
-    demyx_config
-
-    echo -e "\n\e[34m[INFO]\e[39m Demyx config has been updated! To see or edit more demyx config, run: demyx host config"
-    echo -e "\n\e[34m[INFO]\e[39m Basic auth username: $DEMYX_HOST_AUTH_USERNAME"
-    echo -e "\e[34m[INFO]\e[39m Basic auth password: $DEMYX_HOST_AUTH_PASSWORD"
-    [[ "$DEMYX_HOST_TRAEFIK_DASHBOARD" = true ]] && echo -e "\e[34m[INFO]\e[39m Traefik dashboard: https://${DEMYX_HOST_TRAEFIK_DASHBOARD_DOMAIN}.${DEMYX_HOST_DOMAIN}"
-    [[ "$DEMYX_HOST_CODE" = true ]] && echo -e "\e[34m[INFO]\e[39m code-server: https://${DEMYX_HOST_CODE_DOMAIN}.${DEMYX_HOST_DOMAIN}"
-    [[ "$DEMYX_HOST_CODE" = true ]] && echo -e "\e[34m[INFO]\e[39m code-server password: $DEMYX_HOST_CODE_PASSWORD"
-
-    # Restart demyx container to accept new changes
-    demyx_run
+    if [[ -f ~/.zshrc ]]; then
+        DEMYX_HOST_MOTD_CHECK="$(grep "demyx motd" ~/.zshrc || true)"
+        if [[ -z "$DEMYX_HOST_MOTD_CHECK" ]]; then
+            echo "demyx motd" >> ~/.zshrc
+        fi
+    fi
 }
 demyx_rm() {
     if [[ "${1:-}" = all ]]; then
