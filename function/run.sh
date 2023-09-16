@@ -220,6 +220,22 @@ demyx_run_clone() {
 
     demyx_config "$DEMYX_APP_DOMAIN" --healthcheck
 }
+#
+#   Create app directory based on --type.
+#
+demyx_run_directory() {
+    case "$DEMYX_APP_TYPE" in
+        html)
+            mkdir -p "$DEMYX_HTML"/"$DEMYX_ARG_2"
+        ;;
+        php)
+            mkdir -p "$DEMYX_PHP"/"$DEMYX_ARG_2"
+        ;;
+        *)
+            mkdir -p "$DEMYX_WP"/"$DEMYX_ARG_2"
+        ;;
+    esac
+}
 
             demyx_echo 'Cloning files'
             demyx_execute docker cp "$DEMYX_RUN_CLONE_APP":/demyx "$DEMYX_APP_PATH"
