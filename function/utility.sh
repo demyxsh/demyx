@@ -83,6 +83,38 @@ demyx_utility_credentials() {
         "demyx_divider_title \"${DEMYX_UTILITY}\" \"Credentials\"; \
             cat < $DEMYX_UTILITY_TRANSIENT"
 }
+#
+#   Generates htpasswd.
+#
+demyx_utility_htpasswd() {
+    local DEMYX_UTILITY_HTPASSWD_USERNAME="${1:-}"
+    local DEMYX_UTILITY_HTPASSWD_PASSWORD="${2:-}"
+    local DEMYX_UTILITY_HTPASSWD=
+    local DEMYX_UTILITY_HTPASSWD_CHECK=
+    DEMYX_UTILITY_HTPASSWD_CHECK="$(which htpasswd 2>&1 || true)"
+
+    if [[ "$DEMYX_UTILITY_HTPASSWD_CHECK" == *"not found"* || -z "$DEMYX_UTILITY_HTPASSWD_CHECK" ]]; then
+        DEMYX_UTILITY_HTPASSWD="$(docker run -it --rm demyx/utilities bash -c "htpasswd -nb '$DEMYX_UTILITY_HTPASSWD_USERNAME' '$DEMYX_UTILITY_HTPASSWD_PASSWORD'" | sed 's|\r||g')"
+    else
+        DEMYX_UTILITY_HTPASSWD="$(htpasswd -nb "$DEMYX_UTILITY_HTPASSWD_USERNAME" "$DEMYX_UTILITY_HTPASSWD_PASSWORD")"
+    fi
+
+    if [[ -z "$DEMYX_UTILITY_HTPASSWD_USERNAME" || -z "$DEMYX_UTILITY_HTPASSWD_PASSWORD" ]]; then
+        demyx_error custom "Missing username and/or password"
+    fi
+
+    if [[ "$DEMYX_UTILITY_FLAG_RAW" = true ]]; then
+        echo "$DEMYX_UTILITY_HTPASSWD"
+    else
+        {
+            echo "$DEMYX_UTILITY_HTPASSWD"
+        } > "$DEMYX_UTILITY_TRANSIENT"
+
+        demyx_execute false \
+            "demyx_divider_title \"${DEMYX_UTILITY}\" \"Htpasswd\"; \
+                cat < $DEMYX_UTILITY_TRANSIENT"
+    fi
+}
     else
         shift
         DEMYX_UTILITY_EXEC="$@"
