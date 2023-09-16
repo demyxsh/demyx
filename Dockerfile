@@ -82,6 +82,11 @@ RUN set -ex; \
     tzdata \
     util-linux
 
+# Copy files and binaries
+COPY . /etc/demyx
+COPY --from=demyx_api /app/shell2http /usr/local/bin/shell2http
+COPY --from=demyx_docker /usr/local/bin/docker /usr/local/bin/docker
+
 # Configure Demyx
 RUN set -ex; \
     addgroup -g 1000 -S demyx; \
