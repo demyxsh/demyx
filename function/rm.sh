@@ -45,28 +45,68 @@ demyx_rm() {
         ;;
     esac
 }
+#
+#   Loop for demyx_rm_app.
+#
+demyx_rm_all() {
+    local DEMYX_RM_ALL=
+    local DEMYX_RM_ALL_APP_CONFIRM=
+    local DEMYX_RM_ALL_HTML=
+    local DEMYX_RM_ALL_PHP=
+    local DEMYX_RM_ALL_WP=
 
-    if [[ "$DEMYX_TARGET" = all ]]; then
-        if [[ -n "$DEMYX_RM_WP" ]]; then
-            if [[ -z "$DEMYX_RM_FORCE" ]]; then
-                echo -en "\e[33m"
-                read -rep "[WARNING] Delete all WordPress sites? [yY]: " DEMYX_RM_CONFIRM
-                echo -en "\e[39m"    
-                [[ "$DEMYX_RM_CONFIRM" != [yY] ]] && demyx_die 'Cancelled deletion'
+    if [[ -z "$DEMYX_RM_FLAG_FORCE" ]]; then
+        echo -en "\e[33m"
+        read -rep "[WARNING] Delete all demyx apps? [yY]: " DEMYX_RM_ALL_APP_CONFIRM
+        echo -en "\e[39m"
+        [[ "$DEMYX_RM_ALL_APP_CONFIRM" != [yY] ]] && demyx_error cancel
+    fi
+
+    DEMYX_RM_ALL_HTML="$(ls -A "$DEMYX_HTML")"
+    if [[ -n "$DEMYX_RM_ALL_HTML" ]]; then
+        cd "$DEMYX_HTML" || exit
+
+        for DEMYX_RM_ALL in *; do
+            if [[   -f "$DEMYX_HTML"/"$DEMYX_RM_ALL"/.env &&
+                    -f "$DEMYX_HTML"/"$DEMYX_RM_ALL"/docker-compose.yml ]]; then
+                demyx_echo "Removing $DEMYX_RM_ALL"
+                eval demyx_rm "$DEMYX_RM_ALL" -f
             fi
-            cd "$DEMYX_WP" || exit
-            for i in *
-            do
-                demyx rm "$i" -f
-            done
-        fi
-    elif [[ "$DEMYX_APP_TYPE" = wp ]]; then
-        if [[ -z "$DEMYX_RM_FORCE" ]]; then
-            echo -en "\e[33m"
-            read -rep "[WARNING] Delete $DEMYX_TARGET? [yY]: " DEMYX_RM_CONFIRM
-            echo -en "\e[39m"    
-            [[ "$DEMYX_RM_CONFIRM" != [yY] ]] && demyx_die 'Cancelled deletion'
-        fi
+        done
+    else
+        demyx_warning "No apps found in $DEMYX_HTML, skipping ..."
+    fi
+
+    DEMYX_RM_ALL_PHP="$(ls -A "$DEMYX_PHP")"
+    if [[ -n "$DEMYX_RM_ALL_PHP" ]]; then
+        cd "$DEMYX_PHP" || exit
+
+        for DEMYX_RM_ALL in *; do
+            if [[   -f "$DEMYX_PHP"/"$DEMYX_RM_ALL"/.env &&
+                    -f "$DEMYX_PHP"/"$DEMYX_RM_ALL"/docker-compose.yml ]]; then
+                demyx_echo "Removing $DEMYX_RM_ALL"
+                eval demyx_rm "$DEMYX_RM_ALL" -f
+            fi
+        done
+    else
+        demyx_warning "No apps found in $DEMYX_PHP, skipping ..."
+    fi
+
+    DEMYX_RM_ALL_WP="$(ls -A "$DEMYX_WP")"
+    if [[ -n "$DEMYX_RM_ALL_WP" ]]; then
+        cd "$DEMYX_WP" || exit
+
+        for DEMYX_RM_ALL in *; do
+            if [[   -f "$DEMYX_WP"/"$DEMYX_RM_ALL"/.env &&
+                    -f "$DEMYX_WP"/"$DEMYX_RM_ALL"/docker-compose.yml ]]; then
+                demyx_echo "Removing $DEMYX_RM_ALL"
+                eval demyx_rm "$DEMYX_RM_ALL" -f
+            fi
+        done
+    else
+        demyx_warning "No apps found in $DEMYX_WP, skipping ..."
+    fi
+}
 
         DEMYX_RM_VOLUMES="$(docker volume ls | grep "$DEMYX_APP_ID" | awk '{print $2}' | awk 'BEGIN { ORS = " " } { print }')"
 
