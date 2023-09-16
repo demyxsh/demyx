@@ -115,6 +115,27 @@ demyx_utility_htpasswd() {
                 cat < $DEMYX_UTILITY_TRANSIENT"
     fi
 }
+#
+#   Generates ID.
+#
+demyx_utility_id() {
+    local DEMYX_UTILITY_ID="${1:-"5"}"
+    local DEMYX_UTILITY_ID_DEFAULT="a-z0-9"
+    local DEMYX_UTILITY_ID_GEN=
+    DEMYX_UTILITY_ID_GEN="$(head /dev/urandom | tr -dc "$DEMYX_UTILITY_ID_DEFAULT" | head -c "$DEMYX_UTILITY_ID" && echo)"
+
+    if [[ "$DEMYX_UTILITY_FLAG_RAW" = true ]]; then
+        echo "$DEMYX_UTILITY_ID_GEN"
+    else
+        {
+            echo "$DEMYX_UTILITY_ID_GEN"
+        } > "$DEMYX_UTILITY_TRANSIENT"
+
+        demyx_execute false \
+            "demyx_divider_title \"${DEMYX_UTILITY}\" \"ID\"; \
+                cat < $DEMYX_UTILITY_TRANSIENT"
+    fi
+}
     else
         shift
         DEMYX_UTILITY_EXEC="$@"
