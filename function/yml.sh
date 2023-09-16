@@ -320,25 +320,147 @@ demyx_yml_http_labels() {
       - \"traefik.http.services.\${DEMYX_APP_COMPOSE_PROJECT}-http-port.loadbalancer.server.port=80\""
     fi
 }
+#
+#   YAML template for the nginx-php stack.
+#
+demyx_yml_nginx_php() {
+    demyx_app_env wp "
+        DEMYX_APP_DOMAIN
+        DEMYX_APP_DEV
+        DEMYX_APP_ID
+        DEMYX_APP_PATH
+        DEMYX_APP_TYPE
+    "
+
+    local DEMYX_YML_NGINX_PHP_DEV_LABELS=
+    local DEMYX_YML_NGINX_PHP_DEV_ENTRYPOINTS=
+    local DEMYX_YML_NGINX_PHP_DEV_PASSWORD=
+    local DEMYX_YML_NGINX_PHP_DEV_VOLUME=
+    local DEMYX_YML_NGINX_PHP_IMAGE=demyx/wordpress
+
+    if [[ "$DEMYX_APP_DEV" = true ]]; then
+        DEMYX_YML_NGINX_PHP_DEV_PASSWORD="- DEMYX_CODE_PASSWORD=\${DEMYX_APP_DEV_PASSWORD}"
+        DEMYX_YML_NGINX_PHP_DEV_VOLUME="- \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_code:/home/demyx"
+        DEMYX_YML_NGINX_PHP_IMAGE=demyx/code-server:wp
+
+        if [[ "$(demyx_app_proto)" = https ]]; then
+            DEMYX_YML_NGINX_PHP_DEV_ENTRYPOINTS="- \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-cs.entrypoints=https\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-cs.tls.certresolver=$(demyx_yml_resolver)\""
+        else
+            DEMYX_YML_NGINX_PHP_DEV_ENTRYPOINTS="- \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-cs.entrypoints=http\""
+        fi
+
+        DEMYX_YML_NGINX_PHP_DEV_LABELS="labels:
+              - \"traefik.enable=true\"
+              $DEMYX_YML_NGINX_PHP_DEV_ENTRYPOINTS
+              - \"traefik.http.middlewares.\${DEMYX_APP_COMPOSE_PROJECT}-cs-prefix.stripprefix.prefixes=/demyx/cs/\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-cs.middlewares=\${DEMYX_APP_COMPOSE_PROJECT}-cs-prefix\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-cs.priority=99\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-cs.rule=Host(\`$(demyx_app_domain)\`) && PathPrefix(\`/demyx/cs/\`)\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-cs.service=\${DEMYX_APP_COMPOSE_PROJECT}-cs-port\"
+              - \"traefik.http.services.\${DEMYX_APP_COMPOSE_PROJECT}-cs-port.loadbalancer.server.port=8080\""
+    fi
+
+    echo "# DEMYX $DEMYX_VERSION
+        networks:
+          demyx:
+            name: demyx
+        services:
+          $(demyx_yml_service_bs)
+          $(demyx_yml_service_mariadb)
+          nx_${DEMYX_APP_ID}:
+            cpus: \${DEMYX_APP_WP_CPU}
+            depends_on:
+              - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}
             environment:
-              - PASSWORD=$DEMYX_CODE_PASSWORD
+              $(demyx_yml_nginx_basic_auth)
+              $(demyx_yml_nginx_whitelist)
+              - NGINX_CACHE=\${DEMYX_APP_CACHE}
+              - NGINX_DOMAIN=\${DEMYX_APP_DOMAIN}
+              - NGINX_RATE_LIMIT=\${DEMYX_APP_RATE_LIMIT}
+              - NGINX_UPLOAD_LIMIT=\${DEMYX_APP_UPLOAD_LIMIT}
+              - NGINX_XMLRPC=\${DEMYX_APP_XMLRPC}
               - TZ=$TZ
+              - WORDPRESS=true
+              - WORDPRESS_CONTAINER=\${DEMYX_APP_WP_CONTAINER}
+            image: demyx/nginx
             labels:
               - \"traefik.enable=true\"
-              - \"traefik.http.routers.demyx-code-http.rule=Host(\`${DEMYX_CODE_DOMAIN}.${DEMYX_DOMAIN}\`)\"
-              - \"traefik.http.routers.demyx-code-http.entrypoints=http\"
-              - \"traefik.http.routers.demyx-code-http.service=demyx-code-http-port\"
-              - \"traefik.http.services.demyx-code-http-port.loadbalancer.server.port=8080\"
-              - \"traefik.http.routers.demyx-code-http.middlewares=demyx-code-redirect\"
-              - \"traefik.http.middlewares.demyx-code-redirect.redirectscheme.scheme=https\"
-              - \"traefik.http.routers.demyx-code-https.rule=Host(\`${DEMYX_CODE_DOMAIN}.${DEMYX_DOMAIN}\`)\"
-              - \"traefik.http.routers.demyx-code-https.entrypoints=https\"
-              - \"traefik.http.routers.demyx-code-https.tls.certresolver=${DEMYX_YML_RESOLVER}\"
-              - \"traefik.http.routers.demyx-code-https.service=demyx-code-https-port\"
-              - \"traefik.http.services.demyx-code-https-port.loadbalancer.server.port=8080\"
-              - \"traefik.http.routers.demyx-code-https.middlewares=demyx-code-whitelist\"
-              - \"traefik.http.middlewares.demyx-code-whitelist.ipwhitelist.sourcerange=${DEMYX_IP}\"
+              $(demyx_yml_auth_label)
+              $(demyx_yml_http_labels)
+            mem_limit: \${DEMYX_APP_WP_MEM}
+            networks:
+              - demyx
+            restart: unless-stopped
+            volumes:
+              - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}:/demyx
+              - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_log:/var/log/demyx
+          $(demyx_yml_service_pma)
+          $(demyx_yml_service_sftp)
+          ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}:
+            cpus: \${DEMYX_APP_WP_CPU}
+            depends_on:
+              - db_\${DEMYX_APP_ID}
+            environment:
+              - DEMYX_CRON=\${DEMYX_APP_CRON}
+              - DEMYX_CRON_WP_INTERVAL=\"\${DEMYX_APP_CRON_WP_INTERVAL}\"
+              - DEMYX_CRON_LOGROTATE_INTERVAL=\"\${DEMYX_APP_CRON_LOGROTATE_INTERVAL}\"
+              - DEMYX_DB_HOST=\${WORDPRESS_DB_HOST}
+              - DEMYX_DB_NAME=\${WORDPRESS_DB_NAME}
+              - DEMYX_DB_PASSWORD=\${WORDPRESS_DB_PASSWORD}
+              - DEMYX_DB_USERNAME=\${WORDPRESS_DB_USER}
+              - DEMYX_DOMAIN=$(demyx_app_domain)
+              - DEMYX_LOGROTATE=\${DEMYX_APP_LOGROTATE}
+              - DEMYX_LOGROTATE_INTERVAL=\${DEMYX_APP_LOGROTATE_INTERVAL}
+              - DEMYX_LOGROTATE_SIZE=\${DEMYX_APP_LOGROTATE_SIZE}
+              - DEMYX_EMERGENCY_RESTART_INTERVAL=\${DEMYX_APP_PHP_EMERGENCY_RESTART_INTERVAL}
+              - DEMYX_EMERGENCY_RESTART_THRESHOLD=\${DEMYX_APP_PHP_EMERGENCY_RESTART_THRESHOLD}
+              - DEMYX_MAX_EXECUTION_TIME=\${DEMYX_APP_PHP_MAX_EXECUTION_TIME}
+              - DEMYX_MEMORY=\${DEMYX_APP_PHP_MEMORY}
+              - DEMYX_OPCACHE=\${DEMYX_APP_PHP_OPCACHE}
+              - DEMYX_OPCACHE_ENABLE=\${DEMYX_APP_PHP_OPCACHE_ENABLE}
+              - DEMYX_OPCACHE_ENABLE_CLI=\${DEMYX_APP_PHP_OPCACHE_ENABLE_CLI}
+              - DEMYX_PHP=\${DEMYX_APP_PHP}
+              - DEMYX_PM=\${DEMYX_APP_PHP_PM}
+              - DEMYX_PM_MAX_CHILDREN=\${DEMYX_APP_PHP_PM_MAX_CHILDREN}
+              - DEMYX_PM_MAX_REQUESTS=\${DEMYX_APP_PHP_PM_MAX_REQUESTS}
+              - DEMYX_PM_MAX_SPARE_SERVERS=\${DEMYX_APP_PHP_PM_MAX_SPARE_SERVERS}
+              - DEMYX_PM_MIN_SPARE_SERVERS=\${DEMYX_APP_PHP_PM_MIN_SPARE_SERVERS}
+              - DEMYX_PM_PROCESS_IDLE_TIMEOUT=\${DEMYX_APP_PHP_PM_PROCESS_IDLE_TIMEOUT}
+              - DEMYX_PM_START_SERVERS=\${DEMYX_APP_PHP_PM_START_SERVERS}
+              - DEMYX_PROCESS_CONTROL_TIMEOUT=\${DEMYX_APP_PHP_PROCESS_CONTROL_TIMEOUT}
+              - DEMYX_PROTO=$(demyx_app_proto)
+              - DEMYX_UPLOAD_LIMIT=\${DEMYX_APP_UPLOAD_LIMIT}
+              - DEMYX_WP_EMAIL=\${WORDPRESS_USER_EMAIL}
+              - DEMYX_WP_PASSWORD=\${WORDPRESS_USER_PASSWORD}
+              - DEMYX_WP_USERNAME=\${WORDPRESS_USER}
+              - TZ=$TZ
+              $DEMYX_YML_NGINX_PHP_DEV_PASSWORD
+            hostname: \${DEMYX_APP_COMPOSE_PROJECT}
+            image: $DEMYX_YML_NGINX_PHP_IMAGE
+            $DEMYX_YML_NGINX_PHP_DEV_LABELS
+            mem_limit: \${DEMYX_APP_WP_MEM}
+            networks:
+              - demyx
+            restart: unless-stopped
+            volumes:
+              - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}:/demyx
+              - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_log:/var/log/demyx
+              $DEMYX_YML_NGINX_PHP_DEV_VOLUME
+        version: \"$DEMYX_DOCKER_COMPOSE\"
         volumes:
+          ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}:
+            name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}
+          ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code:
+            name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_code
+          ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_db:
+            name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_db
+          ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_log:
+            name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_log
+          ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_sftp:
+            name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_sftp
+        " | sed "s|        ||g" > "$DEMYX_APP_PATH"/docker-compose.yml
+}
           demyx:
             name: demyx
           demyx_log:
