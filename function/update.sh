@@ -90,4 +90,150 @@ demyx_update_local() {
 
     sed -i 's/[[:blank:]]//g' "$DEMYX_UPDATE_FILE_LOCAL"
 }
+#
+#   Generates demyx updater's images that needs to be updated.
+#
+demyx_update_image() {
+    local DEMYX_LOCAL_BROWSERSYNC_VERSION=
+    local DEMYX_LOCAL_CODE_VERSION=
+    local DEMYX_LOCAL_DOCKER_VERSION=
+    local DEMYX_LOCAL_DOCKER_COMPOSE_VERSION=
+    local DEMYX_LOCAL_HAPROXY_VERSION=
+    local DEMYX_LOCAL_MARIADB_VERSION=
+    local DEMYX_LOCAL_NGINX_VERSION=
+    local DEMYX_LOCAL_OPENLITESPEED_LSPHP_LATEST_VERSION=
+    local DEMYX_LOCAL_OPENLITESPEED_LSPHP_VERSION=
+    local DEMYX_LOCAL_OPENLITESPEED_VERSION=
+    local DEMYX_LOCAL_OPENSSH_VERSION=
+    local DEMYX_LOCAL_TRAEFIK_VERSION=
+    local DEMYX_LOCAL_UTILITIES_VERSION=
+    local DEMYX_LOCAL_VERSION=
+    local DEMYX_LOCAL_WORDPRESS_BEDROCK_VERSION=
+    local DEMYX_LOCAL_WORDPRESS_PHP_LATEST_VERSION=
+    local DEMYX_LOCAL_WORDPRESS_PHP_VERSION=
+    local DEMYX_LOCAL_WORDPRESS_VERSION=
+    local DEMYX_REMOTE_BROWSERSYNC_VERSION=
+    local DEMYX_REMOTE_CODE_VERSION=
+    local DEMYX_REMOTE_DOCKER_VERSION=
+    local DEMYX_REMOTE_DOCKER_COMPOSE_VERSION=
+    local DEMYX_REMOTE_HAPROXY_VERSION=
+    local DEMYX_REMOTE_MARIADB_VERSION=
+    local DEMYX_REMOTE_NGINX_VERSION=
+    local DEMYX_REMOTE_OPENLITESPEED_LSPHP_LATEST_VERSION=
+    local DEMYX_REMOTE_OPENLITESPEED_LSPHP_VERSION=
+    local DEMYX_REMOTE_OPENLITESPEED_VERSION=
+    local DEMYX_REMOTE_OPENSSH_VERSION=
+    local DEMYX_REMOTE_TRAEFIK_VERSION=
+    local DEMYX_REMOTE_UTILITIES_VERSION=
+    local DEMYX_REMOTE_VERSION=
+    local DEMYX_REMOTE_WORDPRESS_BEDROCK_VERSION=
+    local DEMYX_REMOTE_WORDPRESS_PHP_LATEST_VERSION=
+    local DEMYX_REMOTE_WORDPRESS_PHP_VERSION=
+    local DEMYX_REMOTE_WORDPRESS_VERSION=
+
+    . "$DEMYX_UPDATE_FILE_LOCAL"
+    . "$DEMYX_UPDATE_FILE_REMOTE"
+
+    touch "$DEMYX_UPDATE_FILE_IMAGE"
+
+    if [[ -n "$DEMYX_LOCAL_VERSION" && -n "$DEMYX_REMOTE_VERSION" ]]; then
+        if [[ "$(demyx_compare "$DEMYX_LOCAL_VERSION")" -lt "$(demyx_compare "$DEMYX_REMOTE_VERSION")" ]]; then
+            echo "demyx" > "$DEMYX_UPDATE_FILE_IMAGE"
+        fi
+    fi
+
+    if [[ -n "$DEMYX_LOCAL_DOCKER_VERSION" && -n "$DEMYX_REMOTE_DOCKER_VERSION" ]]; then
+        if [[ "$(demyx_compare "$DEMYX_LOCAL_DOCKER_VERSION")" -lt "$(demyx_compare "$DEMYX_REMOTE_DOCKER_VERSION")" ]]; then
+            echo "demyx" > "$DEMYX_UPDATE_FILE_IMAGE"
+        fi
+    fi
+
+    if [[ -n "$DEMYX_LOCAL_DOCKER_COMPOSE_VERSION" && -n "$DEMYX_REMOTE_DOCKER_COMPOSE_VERSION" ]]; then
+        if [[ "$(demyx_compare "$DEMYX_LOCAL_DOCKER_COMPOSE_VERSION")" -lt "$(demyx_compare "$DEMYX_REMOTE_DOCKER_COMPOSE_VERSION")" ]]; then
+            echo "demyx" > "$DEMYX_UPDATE_FILE_IMAGE"
+        fi
+    fi
+
+    if [[ -n "$DEMYX_LOCAL_BROWSERSYNC_VERSION" && -n "$DEMYX_REMOTE_BROWSERSYNC_VERSION" ]]; then
+        if [[ "$(demyx_compare "$DEMYX_LOCAL_BROWSERSYNC_VERSION")" -lt "$(demyx_compare "$DEMYX_REMOTE_BROWSERSYNC_VERSION")" ]]; then
+            echo "browsersync" >> "$DEMYX_UPDATE_FILE_IMAGE"
+        fi
+    fi
+
+    if [[ -n "$DEMYX_LOCAL_CODE_VERSION" && -n "$DEMYX_REMOTE_CODE_VERSION" ]]; then
+        if [[ "$(demyx_compare "$DEMYX_LOCAL_CODE_VERSION")" -lt "$(demyx_compare "$DEMYX_REMOTE_CODE_VERSION")" ]]; then
+            echo "code-server" >> "$DEMYX_UPDATE_FILE_IMAGE"
+        fi
+    fi
+
+    if [[ -n "$DEMYX_LOCAL_HAPROXY_VERSION" && -n "$DEMYX_REMOTE_HAPROXY_VERSION" ]]; then
+        if [[ "$(demyx_compare "$DEMYX_LOCAL_HAPROXY_VERSION")" -lt "$(demyx_compare "$DEMYX_REMOTE_HAPROXY_VERSION")" ]]; then
+            echo "docker-socket-proxy" >> "$DEMYX_UPDATE_FILE_IMAGE"
+        fi
+    fi
+
+    if [[ -n "$DEMYX_LOCAL_MARIADB_VERSION" && -n "$DEMYX_REMOTE_MARIADB_VERSION" ]]; then
+        if [[ "$(demyx_compare "$DEMYX_LOCAL_MARIADB_VERSION")" -lt "$(demyx_compare "$DEMYX_REMOTE_MARIADB_VERSION")" ]]; then
+            echo "mariadb" >> "$DEMYX_UPDATE_FILE_IMAGE"
+        fi
+    fi
+
+    if [[ -n "$DEMYX_LOCAL_NGINX_VERSION" && -n "$DEMYX_REMOTE_NGINX_VERSION" ]]; then
+        if [[ "$(demyx_compare "$DEMYX_LOCAL_NGINX_VERSION")" -lt "$(demyx_compare "$DEMYX_REMOTE_NGINX_VERSION")" ]]; then
+            echo "nginx" >> "$DEMYX_UPDATE_FILE_IMAGE"
+        fi
+    fi
+
+    if [[ -n "$DEMYX_LOCAL_OPENLITESPEED_VERSION" && -n "$DEMYX_REMOTE_OPENLITESPEED_VERSION" ]]; then
+        if [[ "$(demyx_compare "$DEMYX_LOCAL_OPENLITESPEED_VERSION")" -lt "$(demyx_compare "$DEMYX_REMOTE_OPENLITESPEED_VERSION")" ]]; then
+            echo "openlitespeed" >> "$DEMYX_UPDATE_FILE_IMAGE"
+        fi
+
+        if [[ "$(demyx_compare "$DEMYX_LOCAL_OPENLITESPEED_LSPHP_LATEST_VERSION")" -lt "$(demyx_compare "$DEMYX_REMOTE_OPENLITESPEED_LSPHP_LATEST_VERSION")" ]]; then
+            echo "openlitespeed" >> "$DEMYX_UPDATE_FILE_IMAGE"
+        fi
+
+        if [[ "$(demyx_compare "$DEMYX_LOCAL_OPENLITESPEED_LSPHP_VERSION")" -lt "$(demyx_compare "$DEMYX_REMOTE_OPENLITESPEED_LSPHP_VERSION")" ]]; then
+            echo "openlitespeed" >> "$DEMYX_UPDATE_FILE_IMAGE"
+        fi
+    fi
+
+    if [[ -n "$DEMYX_LOCAL_OPENSSH_VERSION" && -n "$DEMYX_REMOTE_OPENSSH_VERSION" ]]; then
+        if [[ "$(demyx_compare "$DEMYX_LOCAL_OPENSSH_VERSION")" -lt "$(demyx_compare "$DEMYX_REMOTE_OPENSSH_VERSION")" ]]; then
+            echo "ssh" >> "$DEMYX_UPDATE_FILE_IMAGE"
+        fi
+    fi
+
+    if [[ -n "$DEMYX_LOCAL_TRAEFIK_VERSION" && -n "$DEMYX_REMOTE_TRAEFIK_VERSION" ]]; then
+        if [[ "$(demyx_compare "$DEMYX_LOCAL_TRAEFIK_VERSION")" -lt "$(demyx_compare "$DEMYX_REMOTE_TRAEFIK_VERSION")" ]]; then
+            echo "traefik" >> "$DEMYX_UPDATE_FILE_IMAGE"
+        fi
+    fi
+
+    if [[ -n "$DEMYX_LOCAL_UTILITIES_VERSION" && -n "$DEMYX_REMOTE_UTILITIES_VERSION" ]]; then
+        if [[ "$(demyx_compare "$DEMYX_LOCAL_UTILITIES_VERSION")" -lt "$(demyx_compare "$DEMYX_REMOTE_UTILITIES_VERSION")" ]]; then
+            echo "utilities" >> "$DEMYX_UPDATE_FILE_IMAGE"
+        fi
+    fi
+
+    if [[ -n "$DEMYX_LOCAL_WORDPRESS_VERSION" && -n "$DEMYX_REMOTE_WORDPRESS_VERSION" ]]; then
+        if [[ "$(demyx_compare "$DEMYX_LOCAL_WORDPRESS_VERSION")" -lt "$(demyx_compare "$DEMYX_REMOTE_WORDPRESS_VERSION")" ]]; then
+            echo "wordpress" >> "$DEMYX_UPDATE_FILE_IMAGE"
+        fi
+
+        if [[ "$(demyx_compare "$DEMYX_LOCAL_WORDPRESS_PHP_LATEST_VERSION")" -lt "$(demyx_compare "$DEMYX_REMOTE_WORDPRESS_PHP_LATEST_VERSION")" ]]; then
+            echo "wordpress" >> "$DEMYX_UPDATE_FILE_IMAGE"
+        fi
+
+        if [[ "$(demyx_compare "$DEMYX_LOCAL_WORDPRESS_PHP_VERSION")" -lt "$(demyx_compare "$DEMYX_REMOTE_WORDPRESS_PHP_VERSION")" ]]; then
+            echo "wordpress" >> "$DEMYX_UPDATE_FILE_IMAGE"
+        fi
+    fi
+
+    if [[ -n "$DEMYX_LOCAL_WORDPRESS_BEDROCK_VERSION" && -n "$DEMYX_REMOTE_WORDPRESS_BEDROCK_VERSION" ]]; then
+        if [[ "$(demyx_compare "$DEMYX_LOCAL_WORDPRESS_BEDROCK_VERSION")" -lt "$(demyx_compare "$DEMYX_REMOTE_WORDPRESS_BEDROCK_VERSION")" ]]; then
+            echo "wordpress:bedrock" >> "$DEMYX_UPDATE_FILE_IMAGE"
+        fi
+    fi
+}
 }
