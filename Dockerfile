@@ -1,5 +1,4 @@
 FROM msoap/shell2http as demyx_api
-FROM quay.io/vektorlab/ctop:0.7.1 as demyx_ctop
 FROM docker as demyx_docker
 FROM alpine:3.17
 
@@ -158,11 +157,14 @@ RUN set -ex; \
     chmod o-x /usr/bin/nano; \
     chmod o-x /usr/local/bin/docker; \
     \
-    # demyx-init
-    mv "$DEMYX_CONFIG"/bin/demyx-init.sh /usr/local/bin/demyx-init; \
-    chmod +x /usr/local/bin/demyx-init; \
+    # Copy custom directory
+    cp -r "$DEMYX_CONFIG"/custom "$DEMYX"; \
+    \
+    # Entrypoint
+    mv "$DEMYX_CONFIG"/bin/demyx-entrypoint.sh /usr/local/bin/demyx-entrypoint; \
     \
     # Set ownership
+    chown -R demyx:demyx "$DEMYX"; \
     chown -R root:root /usr/local/bin
 
 EXPOSE 8080

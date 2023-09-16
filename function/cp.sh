@@ -1,7 +1,9 @@
 # Demyx
 # https://demyx.sh
-# 
-# demyx cp <app/path>:<path> <app/path>:<path>
+# shellcheck shell=bash
+# TODO
+#
+#   demyx cp <app> <args> <target|path> <target|path>
 #
 demyx_cp() {
     DEMYX_ARG_2="${1:-$DEMYX_ARG_2}"

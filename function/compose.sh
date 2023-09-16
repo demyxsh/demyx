@@ -1,5 +1,7 @@
 # Demyx
 # https://demyx.sh
+# shellcheck shell=bash
+
 #
 #   demyx compose <app> <args> <docker-compose args>
 #

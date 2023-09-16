@@ -1,7 +1,9 @@
 # Demyx
 # https://demyx.sh
-# 
-# demyx cron <args>
+# shellcheck shell=bash
+
+#
+#   demyx cron <args>
 #
 demyx_cron() {
     demyx_source "

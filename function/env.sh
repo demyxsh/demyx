@@ -1,5 +1,6 @@
 # Demyx
 # https://demyx.sh
+# shellcheck shell=bash
 
 #
 #   Main template for app's .env file.

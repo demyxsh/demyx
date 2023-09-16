@@ -1,5 +1,7 @@
 # Demyx
 # https://demyx.sh
+# shellcheck shell=bash
+
 #
 #   demyx config <app> <args>
 #
@@ -34,7 +36,7 @@ demyx_config() {
     local DEMYX_CONFIG_FLAG_RESOURCES_DB_MEM=
     local DEMYX_CONFIG_FLAG_RESOURCES_WP_CPU=
     local DEMYX_CONFIG_FLAG_RESOURCES_WP_MEM=
-    local DEMYX_CONFIG_FLAG_RESTART=
+    #local DEMYX_CONFIG_FLAG_RESTART=
     local DEMYX_CONFIG_FLAG_SFTP=
     local DEMYX_CONFIG_FLAG_SSL=
     local DEMYX_CONFIG_FLAG_STACK=
@@ -156,6 +158,10 @@ demyx_config() {
             --rate-limit=false)
                 DEMYX_CONFIG_FLAG_RATE_LIMIT=false
             ;;
+            # TODO
+            #--restart=nginx-php|--restart=nginx|--restart=ols|--restart=php)
+            #    DEMYX_CONFIG_FLAG_RESTART="${DEMYX_CONFIG_FLAG#*=}"
+            #;;
             --sftp|--sftp=true)
                 DEMYX_CONFIG_FLAG_SFTP=true
             ;;
@@ -258,9 +264,10 @@ demyx_config() {
                 if [[ -n "$DEMYX_CONFIG_FLAG_RESOURCES" ]]; then
                     demyx_config_resources
                 fi
-                if [[ -n "$DEMYX_CONFIG_FLAG_RESTART" ]]; then
-                    demyx_config_restart
-                fi
+                # TODO
+                #if [[ -n "$DEMYX_CONFIG_FLAG_RESTART" ]]; then
+                #    demyx_config_restart
+                #fi
                 if [[ -n "$DEMYX_CONFIG_FLAG_SFTP" ]]; then
                     demyx_config_sftp
                 fi
@@ -724,7 +731,49 @@ demyx_config_resources() {
             "demyx_app_env_update DEMYX_APP_WP_MEM=$DEMYX_CONFIG_FLAG_RESOURCES_WP_MEM"
     fi
 }
+#
+#   # TODO - Configures an app's restart process without bringing down the container.
+#
+demyx_config_restart() {
+    demyx_app_env wp "
+        DEMYX_APP_DOMAIN
+        DEMYX_APP_NX_CONTAINER
+        DEMYX_APP_STACK
+        DEMYX_APP_WP_CONTAINER
+    "
 
+    case "$DEMYX_CONFIG_FLAG_RESTART" in
+        nginx-php)
+            if [[ "$DEMYX_APP_STACK" = ols || "$DEMYX_APP_STACK" = ols-bedrock ]]; then
+                demyx_error custom "This app isn't using an ols or ols-bedrock stack"
+            fi
+            demyx_execute "Restarting NGINX and PHP" \
+                "docker exec -t --user=root $DEMYX_APP_NX_CONTAINER bash -c 'rm -rf /tmp/nginx-cache && sudo -E demyx-reload'; \
+                docker exec -t --user=root $DEMYX_APP_WP_CONTAINER bash -c 'kill -9 \$(pidof php-fpm)'"
+        ;;
+        nginx)
+            if [[ "$DEMYX_APP_STACK" = ols || "$DEMYX_APP_STACK" = ols-bedrock ]]; then
+                demyx_error custom "This app isn't using an ols or ols-bedrock stack"
+            fi
+            demyx_execute "Restarting NGINX" \
+                "docker exec -t --user=root $DEMYX_APP_NX_CONTAINER bash -c 'rm -rf /tmp/nginx-cache && sudo -E demyx-reload'"
+        ;;
+        ols)
+            if [[ "$DEMYX_APP_STACK" = bedrock || "$DEMYX_APP_STACK" = nginx-php ]]; then
+                demyx_error custom "This app isn't using an ols or ols-bedrock stack"
+            fi
+            demyx_execute "Restarting OLS" \
+                "docker exec -t --user=root $DEMYX_APP_WP_CONTAINER demyx-lsws restart"
+        ;;
+        php)
+            if [[ "$DEMYX_APP_STACK" = ols || "$DEMYX_APP_STACK" = ols-bedrock ]]; then
+                demyx_error custom "This app isn't using an ols or ols-bedrock stack"
+            fi
+            demyx_execute "Restarting PHP" \
+                "docker exec -t --user=root $DEMYX_APP_WP_CONTAINER bash -c 'kill -9 \$(pidof php-fpm)'"
+        ;;
+    esac
+}
 #
 #   Configures an SFTP container for an app.
 #
@@ -817,6 +866,7 @@ demyx_config_stack() {
     DEMYX_CONFIG=Stack
     DEMYX_CONFIG_COMPOSE=true
     local DEMYX_CONFIG_STACK_CACHE=
+    # TODO
     #local DEMYX_CONFIG_STACK_IMAGE=
 
     case "$DEMYX_CONFIG_FLAG_STACK" in

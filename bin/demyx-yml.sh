@@ -1,6 +1,7 @@
 #!/bin/bash
 # Demyx
 # https://demyx.sh
+set -euo pipefail
 #
 #   Main.
 #

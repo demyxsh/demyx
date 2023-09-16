@@ -1,5 +1,6 @@
 # Demyx
 # https://demyx.sh
+# shellcheck shell=bash
 
 #
 #   Main motd function.

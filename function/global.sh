@@ -1,5 +1,6 @@
 # Demyx
 # https://demyx.sh
+# shellcheck shell=bash
 
 #
 #   Checks if main app domain is www or not.
@@ -517,6 +518,16 @@ demyx_source() {
         fi
     done
 }
+#
+#   TODO
+#   Validates IP addresses.
+#
+demyx_validate_ip() {
+    local DEMYX_VALIDATE_IP="${1:-}"
+    echo "$DEMYX_VALIDATE_IP" |
+    grep -E '(([0-9]{1,3})\.){3}([0-9]{1,3}){1}' |
+    grep -vE '25[6-9]|2[6-9][0-9]|[3-9][0-9][0-9]' |
+    grep -Eo '(([0-9]{1,2}|1[0-9]{1,2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]{1,2}|1[0-9]{1,2}|2[0-4][0-9]|25[0-5]){1}'
 }
 #
 #   Echos WARNING messages.

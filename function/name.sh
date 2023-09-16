@@ -1,6 +1,7 @@
 # Demyx
 # https://demyx.sh
-# 
+# shellcheck shell=bash
+#
 # Docker container naming scheme
 # https://github.com/moby/moby/blob/master/pkg/namesgenerator/names-generator.go
 #
