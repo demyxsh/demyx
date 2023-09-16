@@ -139,20 +139,15 @@ RUN set -ex; \
         0 0 * * 0 demyx cron weekly\n\
     " | sed "s|    ||g" > /etc/crontabs/demyx; \
     \
-    echo '#!/bin/bash' >> /usr/local/bin/demyx-reset; \
-    echo 'sudo -E /etc/demyx/bin/demyx-reset.sh' >> /usr/local/bin/demyx-reset; \
-    chmod +x /etc/demyx/bin/demyx-reset.sh; \
-    chmod +x /usr/local/bin/demyx-reset; \
-    \
-    echo '#!/bin/bash' >> /usr/local/bin/demyx-skel; \
-    echo 'sudo -E /etc/demyx/bin/demyx-skel.sh' >> /usr/local/bin/demyx-skel; \
-    chmod +x /etc/demyx/bin/demyx-skel.sh; \
-    chmod +x /usr/local/bin/demyx-skel; \
-    \
-    echo '#!/bin/bash' >> /usr/local/bin/demyx-yml; \
-    echo 'sudo -E /etc/demyx/bin/demyx-yml.sh "$@"' >> /usr/local/bin/demyx-yml; \
-    chmod +x /etc/demyx/bin/demyx-yml.sh; \
-    chmod +x /usr/local/bin/demyx-yml
+    echo -e "${DEMYX_LOG}/*.log {\n\
+        missingok\n\
+        notifempty\n\
+        ${DEMYX_LOGROTATE}\n\
+        rotate ${DEMYX_LOGROTATE_INTERVAL}\n\
+        compress\n\
+        delaycompress\n\
+        size ${DEMYX_LOGROTATE_SIZE}\n\
+    }" | sed "s|    ||g" > "$DEMYX_CONFIG"/logrotate.conf
 
 # Finalize
 RUN set -ex; \
