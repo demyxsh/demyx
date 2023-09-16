@@ -268,12 +268,25 @@ demyx_host_run() {
 
     demyx_host_compose up -d
 }
-demyx_update() {
-    if [[ -n "$DEMYX_HOST_IMAGES" ]]; then
-        echo -e "\e[32m[UPDATE]\e[39m $DEMYX_HOST_IMAGES_COUNT update(s) available!"
-        echo -e "\e[32m[UPDATE]\e[39m View update(s): demyx update show"
-        echo -e "\e[32m[UPDATE]\e[39m Start upgrade: demyx host upgrade"
-    fi
+#
+#   Stops and removes demyx container or all demyx services.
+#
+demyx_host_remove() {
+    local DEMYX_HOST_RM="${1:-}"
+
+    case "$DEMYX_HOST_RM" in
+        all)
+            demyx_host_exec compose code down
+            demyx_host_exec compose traefik down
+            demyx_host_compose stop
+            demyx_host_compose rm -f
+        ;;
+        *)
+            docker stop demyx
+            docker rm demyx
+        ;;
+    esac
+}
 }
 
 # Generate or source config
