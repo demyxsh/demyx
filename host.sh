@@ -299,109 +299,51 @@ demyx_host_update() {
         fi
     fi
 }
+#
+#   Upgrade function.
+#
+demyx_host_upgrade() {
+    local DEMYX_HOST_UPGRADE_FORCE=
+    DEMYX_HOST_UPGRADE_FORCE="$(echo "$DEMYX_HOST_ARGS" | grep -e "-f" || true)"
 
-# Generate or source config
-demyx_config
-
-# Prompt install if true
-[[ "$DEMYX_HOST_INSTALL" = true ]] && demyx_install
-
-if [[ "$DEMYX_HOST" = shell ]]; then
-    shift 1
-    if [[ -z "${1:-}" ]]; then
-        docker exec -it --user=root demyx bash
-    else
-        docker exec -it --user=root demyx "$@"
+    # Exit if no updates are available
+    if [[ "$DEMYX_HOST_UPDATE_IMAGES_COUNT" = 0 ]]; then
+        echo -e "\e[34m[INFO]\e[39m No updates available"
+        exit
     fi
-elif [[ "$DEMYX_HOST" = host ]]; then
-    if [[ "$DEMYX_HOST_COMMAND" = edit ]]; then
-        # Check for default editor first
-        if [[ -n "${EDITOR:-}" ]]; then
-            "$EDITOR" "$DEMYX_HOST_CONFIG"
-        elif [[ -f "$(which nano)" ]]; then
-            nano "$DEMYX_HOST_CONFIG"
-        elif [[ -f "$(which vi)" ]]; then
-            vi "$DEMYX_HOST_CONFIG"
-        else
-            echo -en "\e[33m[WARNING]\e[39m No suitable text editors found, using demyx default ..."
 
-            docker run -it --rm \
-                --user=root \
-                --entrypoint=nano \
-                -v "$DEMYX_HOST_CONFIG":/tmp/.demyx \
-                demyx/demyx /tmp/.demyx
-        fi
-    elif [[ "$DEMYX_HOST_COMMAND" = help ]]; then
-        demyx_help
-    elif [[ "$DEMYX_HOST_COMMAND" = install ]]; then
-        demyx_install
-    elif [[ "$DEMYX_HOST_COMMAND" = remove || "$DEMYX_HOST_COMMAND" = rm ]]; then
-        demyx_rm "${3:-}"
-    elif [[ "$DEMYX_HOST_COMMAND" = restart || "$DEMYX_HOST_COMMAND" = rs ]]; then
-        if [[ -n "$DEMYX_HOST_DEMYX_CHECK" ]]; then
-            demyx_rm "${3:-}"
-            demyx_run
-        else
-            demyx_run
-        fi
-        demyx_exec motd
-    elif [[ "$DEMYX_HOST_COMMAND" = update ]]; then
-        docker exec -t demyx demyx list update
-    elif [[ "$DEMYX_HOST_COMMAND" = upgrade ]]; then
-        # Exit if no updates are available
-        [[ -z "$DEMYX_HOST_IMAGES" ]] && echo "No updates available." && exit
-
+    if [[ -z "$DEMYX_HOST_UPGRADE_FORCE" ]]; then
         echo -en "\e[33m"
         read -rep "[WARNING] Depending on the update, services may temporarily disrupt. Continue? [yY]: " DEMYX_HOST_CONFIRM
         echo -en "\e[39m"
 
-        [[ "$DEMYX_HOST_CONFIRM" != [yY] ]] && echo 'Update cancelled!' && exit 1
-
-        DEMYX_HOST_IMAGE_WP_UPDATE=
-
-        for i in $DEMYX_HOST_IMAGES
-        do
-            # Pull relevant tags
-            if [[ "$i" = code-server ]]; then
-                docker pull demyx/code-server:browse
-                [[ -n "$(docker images demyx/code-server:bedrock -q)" ]] && docker pull demyx/code-server:bedrock
-                [[ -n "$(docker images demyx/code-server:openlitespeed -q)" ]] && docker pull demyx/code-server:openlitespeed
-                [[ -n "$(docker images demyx/code-server:openlitespeed-bedrock -q)" ]] &&  docker pull demyx/code-server:openlitespeed-bedrock
-                [[ -n "$(docker images demyx/code-server:wp -q)" ]] && docker pull demyx/code-server:wp
-            else
-                docker pull demyx/"$i"
-            fi
-
-            [[ "$i" = wordpress && -n "$(docker images demyx/wordpress:bedrock -q)" ]] && docker pull demyx/wordpress:bedrock
-
-            # Set variable to true if there's an update for the following images: mariadb, nginx, and wordpress/wordpress:bedrock
-            [[ "$i" = mariadb || "$i" = nginx || "$i" = wordpress ]] && DEMYX_HOST_IMAGE_WP_UPDATE=true
-        done
-
-        demyx_compose up -d --remove-orphans
-
-        # Force update cache
-        demyx_exec update
-
-        # Update WordPress services if true
-        [[ "$DEMYX_HOST_IMAGE_WP_UPDATE" = true ]] && docker exec demyx demyx compose all --check-db up -d
-
-        # Empty out this variable to suppress update message
-        DEMYX_HOST_IMAGES=
-
-        echo -e "\e[32m[SUCCESS]\e[39m Successfully updated!"
-
-        demyx_exec motd
-    else
-        demyx_help
+        if [[ "$DEMYX_HOST_CONFIRM" != [yY] ]]; then
+            echo -e "\e[31m[ERROR]\e[39m Update cancelled"
+            exit 1
+        fi
     fi
-else
-    if [[ -z "$DEMYX_HOST_DEMYX_CHECK" ]]; then
-        demyx_run
-        demyx_exec "$@"
-    else
-        demyx_exec "$@"
-    fi
-fi
 
-demyx_update
+    # Pull core/relevant images
+    demyx_host_exec pull all
+
+    # Use new images for core services
+    demyx_host_exec refresh traefik
+    demyx_host_exec refresh code
+    demyx_host_compose up -d --remove-orphans
+
+    # Upgrade database if needed
+    demyx_host_app_upgrade
+
+    # Remove old images
+    demyx_host_dangling_images
+
+    # Update cache
+    demyx_host_exec update
+
+    # Empty out this variable to suppress update message
+    DEMYX_HOST_UPDATE_IMAGES_COUNT=0
+
+    demyx_host_exec motd
+
+    echo -e "\e[32m[SUCCESS]\e[39m Successfully updated!"
+}
