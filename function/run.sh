@@ -1,131 +1,112 @@
 # Demyx
 # https://demyx.sh
 #
-# demyx run <app> <args>
+#   demyx run <app> <args>
 #
 demyx_run() {
-    # Make sure domain isn't a flag
-    if [[ "$2" == *"--"*"="* ]]; then
-        demyx_die "$2 isn't a valid domain"
-    fi
+    DEMYX_ARG_2="${1:-$DEMYX_ARG_2}"
+    local DEMYX_RUN="DEMYX - RUN"
+    local DEMYX_RUN_FLAG=
+    local DEMYX_RUN_FLAG_AUTH=
+    local DEMYX_RUN_FLAG_CACHE=
+    local DEMYX_RUN_FLAG_CLONE=
+    local DEMYX_RUN_FLAG_EMAIL=
+    local DEMYX_RUN_FLAG_FORCE=
+    local DEMYX_RUN_FLAG_PASSWORD=
+    local DEMYX_RUN_FLAG_PHP=
+    local DEMYX_RUN_FLAG_SKIP_INIT=
+    local DEMYX_RUN_FLAG_SSL=
+    local DEMYX_RUN_FLAG_STACK=
+    local DEMYX_RUN_FLAG_TYPE=
+    local DEMYX_RUN_FLAG_USERNAME=
+    local DEMYX_RUN_FLAG_WHITELIST=
+    local DEMYX_RUN_FLAG_WWW=
+    local DEMYX_RUN_TRANSIENT="$DEMYX_TMP"/demyx_transient
+
+    demyx_source "
+        compose
+        config
+        env
+        rm
+        yml
+    "
 
     while :; do
-        case "$3" in
-            --archive=?*)
-                DEMYX_RUN_ARCHIVE="${3#*=}"
-                ;;
-            --archive=)
-                demyx_die '"--archive" cannot be empty'
-                ;;
+        DEMYX_RUN_FLAG="${2:-}"
+        case "$DEMYX_RUN_FLAG" in
             --auth)
-                DEMYX_RUN_AUTH=true
-                ;;
+                DEMYX_RUN_FLAG_AUTH=true
+            ;;
             --cache)
-                DEMYX_RUN_CACHE=true
-                ;;
-            --cf)
-                DEMYX_RUN_CLOUDFLARE=true
-                ;;
+                DEMYX_RUN_FLAG_CACHE=true
+            ;;
             --clone=?*)
-                DEMYX_RUN_CLONE="${3#*=}"
-                ;;
-            --clone=)
-                demyx_die '"--clone" cannot be empty'
-                ;;
+                DEMYX_RUN_FLAG_CLONE="${DEMYX_RUN_FLAG#*=}"
+            ;;
             --email=?*)
-                DEMYX_RUN_EMAIL="${3#*=}"
-                ;;
-            --email=)
-                demyx_die '"--email" cannot be empty'
-                ;;
-            -f|--force)
-                DEMYX_RUN_FORCE=true
-                ;;
-            --pass=?*)
-                DEMYX_RUN_PASSWORD="${3#*=}"
-                ;;
-            --pass=)
-                demyx_die '"--password" cannot be empty'
-                ;;
-            --rate-limit|--rate-limit=true)
-                DEMYX_RUN_RATE_LIMIT=true
-                ;;
-            --rate-limit=false)
-                DEMYX_RUN_RATE_LIMIT=false
-                ;;
+                DEMYX_RUN_FLAG_EMAIL="${DEMYX_RUN_FLAG#*=}"
+            ;;
+            -f)
+                DEMYX_RUN_FLAG_FORCE=true
+            ;;
+            --pass=?*|--password=?*)
+                DEMYX_RUN_FLAG_PASSWORD="${DEMYX_RUN_FLAG#*=}"
+            ;;
+            --php=8|--php=8.0|--php=8.1)
+                DEMYX_RUN_FLAG_PHP="${DEMYX_RUN_FLAG#*=}"
+            ;;
             --skip-init)
-                DEMYX_RUN_SKIP_INIT=true
-                ;;
+                DEMYX_RUN_FLAG_SKIP_INIT=true
+            ;;
             --ssl|--ssl=true)
-                DEMYX_RUN_SSL=true
-                ;;
+                DEMYX_RUN_FLAG_SSL=true
+            ;;
             --ssl=false)
-                DEMYX_RUN_SSL=false
-                ;;
+                DEMYX_RUN_FLAG_SSL=false
+            ;;
             --stack=bedrock|--stack=nginx-php|--stack=ols|--stack=ols-bedrock)
-                DEMYX_RUN_STACK="${3#*=}"
-                ;;
-            --stack=)
-                demyx_die '"--stack" cannot be empty'
-                ;;
+                DEMYX_RUN_FLAG_STACK="${DEMYX_RUN_FLAG#*=}"
+            ;;
             --type=wp|--type=php|--type=html)
-                DEMYX_RUN_TYPE="${3#*=}"
-                ;;
-            --type=)
-                demyx_die '"--type" cannot be empty'
-                ;;
-            --user=?*)
-                DEMYX_RUN_USER="${3#*=}"
-                ;;
-            --user=)
-                demyx_die '"--user" cannot be empty'
-                ;;
+                DEMYX_RUN_FLAG_TYPE="${DEMYX_RUN_FLAG#*=}"
+            ;;
+            --user=?*|--username=?*)
+                DEMYX_RUN_FLAG_USERNAME="${DEMYX_RUN_FLAG#*=}"
+            ;;
             --whitelist=all|--whitelist=login)
-                DEMYX_RUN_WHITELIST="${3#*=}"
-                ;;
-            --)
-                shift
+                DEMYX_RUN_FLAG_WHITELIST="${DEMYX_RUN_FLAG#*=}"
+            ;;
+            --www)
+                DEMYX_RUN_FLAG_WWW=true
+            ;;
+            --) shift
                 break
-                ;;
+            ;;
             -?*)
-                printf '\e[31m[CRITICAL]\e[39m Unknown option: %s\n' "$3" >&2
-                exit 1
-                ;;
-            *)
-                break
+                demyx_error flag "$DEMYX_RUN_FLAG"
+            ;;
+            *) break
         esac
         shift
     done
 
-    DEMYX_RUN_CHECK="$(find "$DEMYX_APP" -name "$DEMYX_TARGET" || true)"
-    DEMYX_RUN_TODAYS_DATE="$(date +%Y-%m-%d)"
+    if [[ -n "$DEMYX_ARG_2" ]]; then
+        demyx_arg_valid
+        demyx_run_soon
+        demyx_run_init
 
-    if [[ ! -f "$DEMYX_BACKUP_WP"/"$DEMYX_TARGET"/"$DEMYX_RUN_TODAYS_DATE"-"$DEMYX_RUN_ARCHIVE".tgz && -n "$DEMYX_RUN_ARCHIVE" ]]; then
-        demyx_die "${DEMYX_BACKUP_WP}/${DEMYX_TARGET}/${DEMYX_RUN_TODAYS_DATE}-${DEMYX_RUN_ARCHIVE}.tgz doesn't exist"
-    fi
-
-    if [[ -n "$DEMYX_RUN_CLONE" ]]; then
-        DEMYX_RUN_CLONE_CHECK="$(find "$DEMYX_APP" -name "$DEMYX_RUN_CLONE" || true)"
-        [[ -z "$DEMYX_RUN_CLONE_CHECK" ]] && demyx_die "App doesn't exist"
-    fi
-
-    if [[ -n "$DEMYX_RUN_CHECK" ]]; then
-        if [[ -n "$DEMYX_RUN_FORCE" ]]; then
-            DEMYX_RM_CONFIRM=y
+        if [[ -n "$DEMYX_RUN_FLAG_CLONE" ]]; then
+            demyx_run_clone
         else
-            echo -en "\e[33m"
-            read -rep "[WARNING] Delete $DEMYX_TARGET? [yY]: " DEMYX_RM_CONFIRM
-            echo -en "\e[39m"
+            demyx_run_app
         fi
-        if [[ "$DEMYX_RM_CONFIRM" != [yY] ]]; then
-            demyx_die 'Cancel deletion'
-        else
-            demyx rm "$DEMYX_TARGET" -f
-        fi
-        if [[ -n "$DEMYX_RUN_CLOUDFLARE" && -z "$DEMYX_EMAIL" && -z "$DEMYX_CF_KEY" ]]; then
-            demyx_die 'Missing Cloudflare key and/or email, please run demyx help stack'
-        fi
+
+        demyx_run_extras
+        demyx_run_table
+    else
+        demyx_help run
     fi
+}
 
     DEMYX_RUN_TYPE="${DEMYX_RUN_TYPE:-wp}"
     DEMYX_RUN_RATE_LIMIT="${DEMYX_RUN_RATE_LIMIT:-false}"
