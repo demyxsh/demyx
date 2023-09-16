@@ -187,6 +187,23 @@ demyx_host_gatekeeper() {
         fi
     fi
 }
+#
+#   Help menu.
+#
+#
+demyx_host_help() {
+    echo
+    echo "demyx host    <args>          Demyx helper commands"
+    echo "      shell                   Execute commands to the demyx container, leave <arg> empty to open a bash shell"
+    echo "              all             Targets both demyx and demyx_socket container, works with remove and restart"
+    echo "              ctop            htop but for contaienrs"
+    echo "              edit            Edit Demyx config (~/.demyx) on the host"
+    echo "              install         Prompt users to enter details for ~/.demyx"
+    echo "              rm|remove       Stops and removes demyx container"
+    echo "              rs|restart      Stops, removes, and starts demyx container"
+    echo "              upgrade         Pull relevant images, refresh app configs, and delete old images"
+    echo
+}
 
     if [[ -n "${DEMYX_HOST_INSTALL_IP:-}" || "$DEMYX_HOST_IP" != false ]]; then
         echo -e "\n\e[34m[INFO]\e[39m Enable Traefik dashboard? true/false (IP whitelist and basic auth protected)"
