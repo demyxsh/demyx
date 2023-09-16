@@ -67,11 +67,19 @@ demyx_refresh() {
         ;;
     esac
 }
+#
+#   Loop for demyx_backup_app.
+#
+demyx_refresh_all() {
+    local DEMYX_REFRESH_ALL=
 
-        [[ ! -d "$DEMYX_CODE" ]] && mkdir -p "$DEMYX_CODE"
+    cd "$DEMYX_WP" || exit
 
-        demyx_echo 'Refreshing code-server'
-        demyx_execute demyx_code_yml
+    for DEMYX_REFRESH_ALL in *; do
+        demyx_echo "Refreshing $DEMYX_REFRESH_ALL"
+        eval demyx_refresh "$DEMYX_REFRESH_ALL" "$DEMYX_REFRESH_ARGS"
+    done
+}
 
         demyx compose code up -d --remove-orphans
     elif [[ "$DEMYX_TARGET" = traefik ]]; then
