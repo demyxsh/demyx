@@ -218,40 +218,69 @@ demyx_yml_bedrock() {
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_sftp
         " | sed "s|        ||g" > "$DEMYX_APP_PATH"/docker-compose.yml
 }
+#
+#   YAML template for code-server.
+#
+demyx_yml_code() {
+    local DEMYX_YML_CODE_LABELS=
+    local DEMYX_YML_CODE_WHITELIST=
 
-        if [[ "$(echo "$DEMYX_APP_DOMAIN" | awk -F '[.]' '{print $1}')" = www ]]; then
-            DEMYX_YML_HOST_RULE='Host(`'"$(echo "$DEMYX_APP_DOMAIN" | sed 's|www.||g')"'`) || Host(`${DEMYX_APP_DOMAIN}`)'
-            DEMYX_YML_REGEX=www.
-        else
-            DEMYX_YML_HOST_RULE='Host(`${DEMYX_APP_DOMAIN}`) || Host(`www.${DEMYX_APP_DOMAIN}`)'
-            DEMYX_YML_REGEX=
-        fi
-
-        if [[ "$DEMYX_APP_DEV" = true ]]; then
-            demyx_source yml-"$DEMYX_APP_STACK"-dev
-        else
-            demyx_source yml-"$DEMYX_APP_STACK"
-        fi
+    if [[ "$DEMYX_IP" != false ]]; then
+        DEMYX_YML_CODE_WHITELIST="- \"traefik.http.routers.demyx-code-https.middlewares=demyx-code-whitelist\"
+              - \"traefik.http.middlewares.demyx-code-whitelist.ipwhitelist.sourcerange=${DEMYX_IP}\""
     fi
-}
-demyx_code_yml() {
-    echo "# AUTO GENERATED
-        version: \"$DEMYX_DOCKER_COMPOSE\"
+
+    if [[ "$DEMYX_CODE_SSL" = true ]]; then
+        DEMYX_YML_CODE_LABELS="- \"traefik.http.routers.demyx-code-http.middlewares=demyx-code-redirect\"
+              - \"traefik.http.middlewares.demyx-code-redirect.redirectscheme.scheme=https\"
+              - \"traefik.http.routers.demyx-code-https.rule=Host(\`${DEMYX_CODE_DOMAIN}.${DEMYX_DOMAIN}\`)\"
+              - \"traefik.http.routers.demyx-code-https.entrypoints=https\"
+              - \"traefik.http.routers.demyx-code-https.tls.certresolver=$(demyx_yml_resolver)\"
+              - \"traefik.http.routers.demyx-code-https.service=demyx-code-https-port\"
+              - \"traefik.http.services.demyx-code-https-port.loadbalancer.server.port=8080\""
+    fi
+
+    echo "# DEMYX $DEMYX_VERSION
+        networks:
+          demyx:
+            name: demyx
+          demyx_socket:
+            name: demyx_socket
         services:
           code:
-            image: demyx/code-server:browse
-            cpus: ${DEMYX_CPU}
-            mem_limit: ${DEMYX_MEM}
             container_name: demyx_code
-            restart: unless-stopped
+            cpus: $DEMYX_CPU
+            environment:
+              - PASSWORD=$DEMYX_CODE_PASSWORD
+              - TZ=$TZ
             hostname: code-${DEMYX_HOSTNAME}
+            image: demyx/code-server:browse
+            labels:
+              - \"traefik.enable=true\"
+              - \"traefik.http.routers.demyx-code-http.rule=Host(\`${DEMYX_CODE_DOMAIN}.${DEMYX_DOMAIN}\`)\"
+              - \"traefik.http.routers.demyx-code-http.entrypoints=http\"
+              - \"traefik.http.routers.demyx-code-http.service=demyx-code-http-port\"
+              - \"traefik.http.services.demyx-code-http-port.loadbalancer.server.port=8080\"
+              $DEMYX_YML_CODE_LABELS
+              $DEMYX_YML_CODE_WHITELIST
+            mem_limit: $DEMYX_MEM
             networks:
               - demyx
               - demyx_socket
+            restart: unless-stopped
             volumes:
               - demyx:/demyx
               - demyx_user:/home/demyx
               - demyx_log:/var/log/demyx
+        version: \"$DEMYX_DOCKER_COMPOSE\"
+        volumes:
+          demyx:
+            name: demyx
+          demyx_log:
+            name: demyx_log
+          demyx_user:
+            name: demyx_user" | sed "s|        ||g" > "$DEMYX_CODE"/docker-compose.yml
+}
             environment:
               - PASSWORD=$DEMYX_CODE_PASSWORD
               - TZ=$TZ
