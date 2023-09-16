@@ -130,40 +130,96 @@ demyx_run_app() {
     demyx_compose "$DEMYX_APP_DOMAIN" up -d
     demyx_config "$DEMYX_APP_DOMAIN" --healthcheck
 }
+#
+#   Main run clone function.
+#
+demyx_run_clone() {
+    local DEMYX_RUN_CLONE_APP=
+    DEMYX_RUN_CLONE_APP="$(find "$DEMYX_APP" -name "$DEMYX_RUN_FLAG_CLONE")"
+    local DEMYX_RUN_CLONE_WP_CONTAINER=
+
+    if [[ -n "$DEMYX_RUN_CLONE_APP" ]]; then
+        DEMYX_RUN_CLONE_WP_CONTAINER="$(grep DEMYX_APP_WP_CONTAINER "$DEMYX_RUN_CLONE_APP"/.env | awk -F '=' '{print $2}')"
     else
-        [[ -z "$DEMYX_RUN_SSL" ]] && DEMYX_RUN_SSL=true
-        DEMYX_RUN_PROTO="https://$DEMYX_TARGET"
+        demyx_error app "$DEMYX_RUN_FLAG_CLONE"
     fi
 
-    demyx_source env
-    demyx_source yml
+    demyx_execute "Creating app" \
+        "demyx_run_directory; \
+        demyx_env; \
+        demyx_yml ${DEMYX_APP_STACK}; \
+        demyx_run_volumes"
 
-    if [[ "$DEMYX_RUN_TYPE" = wp ]]; then
-        demyx_echo 'Creating directory'
-        demyx_execute mkdir -p "$DEMYX_WP"/"$DEMYX_TARGET"
+    demyx_app_env wp "
+        DEMYX_APP_DOMAIN
+        DEMYX_APP_DOMAIN_WWW
+        DEMYX_APP_ID
+        DEMYX_APP_DB_CONTAINER
+        DEMYX_APP_NX_CONTAINER
+        DEMYX_APP_WP_CONTAINER
+        WORDPRESS_DB_HOST
+        WORDPRESS_DB_NAME
+        WORDPRESS_DB_PASSWORD
+        WORDPRESS_DB_USER
+        WORDPRESS_URL
+        WORDPRESS_USER
+        WORDPRESS_USER_EMAIL
+        WORDPRESS_USER_PASSWORD
+    "
 
-        demyx_echo 'Creating .env'
-        demyx_execute demyx_env
+    demyx_config "$DEMYX_APP_DOMAIN" --healthcheck=false
+    demyx_compose "$DEMYX_APP_DOMAIN" -d up -d
 
-        if [[ -n "$DEMYX_RUN_CLONE" ]]; then
-            DEMYX_RUN_CLONE_STACK="$(grep DEMYX_APP_STACK "$DEMYX_RUN_CLONE_CHECK"/.env | awk -F '[=]' '{print $2}')"
-            demyx_execute -v sed -i "s|DEMYX_APP_STACK=.*|DEMYX_APP_STACK=${DEMYX_RUN_CLONE_STACK}|g" "$DEMYX_RUN_CHECK"/.env
-        fi
+    if [[ -z "$DEMYX_RUN_FLAG_SKIP_INIT" ]]; then
+        demyx_execute "Installing MariaDB" \
+            "demyx_mariadb_ready"
+    fi
 
-        demyx_app_config
+    demyx_execute "Cloning app" \
+        "docker run -dt --rm \
+            --entrypoint=bash \
+            --name=$DEMYX_APP_WP_CONTAINER \
+            --network=demyx \
+            -v wp_${DEMYX_APP_ID}:/demyx \
+            demyx/wordpress; \
+        demyx_wp $DEMYX_RUN_FLAG_CLONE db export /demyx/${DEMYX_APP_ID}.sql; \
+        mkdir -p ${DEMYX_TMP}/run-${DEMYX_APP_ID}; \
+        docker cp ${DEMYX_RUN_CLONE_WP_CONTAINER}:/demyx ${DEMYX_TMP}/run-${DEMYX_APP_ID}; \
+        docker cp ${DEMYX_TMP}/run-${DEMYX_APP_ID}/demyx ${DEMYX_APP_WP_CONTAINER}:/; \
+        demyx_wp $DEMYX_APP_DOMAIN config create \
+            --dbhost=$WORDPRESS_DB_HOST \
+            --dbname=$WORDPRESS_DB_NAME \
+            --dbuser=$WORDPRESS_DB_USER \
+            --dbpass=$WORDPRESS_DB_PASSWORD \
+            --force; \
+        docker stop $DEMYX_APP_WP_CONTAINER"
 
-        demyx config "$DEMYX_APP_DOMAIN" --healthcheck=false
+    demyx_compose "$DEMYX_APP_DOMAIN" up -d
 
-        demyx_echo 'Creating .yml'
-        demyx_execute demyx_yml
+    demyx_execute "Installing WordPress" \
+        "demyx_wp $DEMYX_APP_DOMAIN core install \
+            --admin_email=$WORDPRESS_USER_EMAIL \
+            --admin_password=$WORDPRESS_USER_PASSWORD \
+            --admin_user=$WORDPRESS_USER \
+            --skip-email \
+            --title=$DEMYX_APP_DOMAIN \
+            --url=$(demyx_app_proto)://$(demyx_app_domain); \
+        docker run -t --rm \
+            --volumes-from=$DEMYX_APP_WP_CONTAINER \
+            demyx/utilities demyx-proxy; \
+        demyx_wp $DEMYX_APP_DOMAIN db import /demyx/${DEMYX_APP_ID}.sql; \
+        demyx_wp $DEMYX_APP_DOMAIN user create $WORDPRESS_USER $WORDPRESS_USER_EMAIL \
+            --role=administrator \
+            --user_pass=${WORDPRESS_USER_PASSWORD}; \
+        demyx_wp $DEMYX_APP_DOMAIN search-replace --precise --all-tables $(demyx_app_domain "$DEMYX_RUN_FLAG_CLONE") $(demyx_app_domain "$DEMYX_APP_DOMAIN"); \
+        demyx_wp $DEMYX_APP_DOMAIN rewrite structure '/%category%/%postname%/'"
 
-        # Recheck SSL
-        DEMYX_RUN_SSL_RECHECK="$(grep DEMYX_APP_SSL "$DEMYX_APP_PATH"/.env | awk -F '[=]' '{print $2}')"
-        [[ "$DEMYX_RUN_SSL_RECHECK" = false ]] && DEMYX_RUN_PROTO="http://$DEMYX_TARGET"
+    demyx_execute "Cleaning up" \
+        "docker exec -t $DEMYX_RUN_CLONE_WP_CONTAINER rm -f /demyx/${DEMYX_APP_ID}.sql; \
+        rm -rf ${DEMYX_TMP}/run-*"
 
-        if [[ -n "$DEMYX_RUN_CLONE" ]]; then
-            demyx_echo 'Cloning database'
-            demyx_execute demyx wp "$DEMYX_RUN_CLONE" db export /demyx/clone.sql
+    demyx_config "$DEMYX_APP_DOMAIN" --healthcheck
+}
 
             demyx_echo 'Cloning files'
             demyx_execute docker cp "$DEMYX_RUN_CLONE_APP":/demyx "$DEMYX_APP_PATH"
