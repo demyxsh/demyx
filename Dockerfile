@@ -115,7 +115,15 @@ RUN set -ex; \
 
 # Configure sudo
 RUN set -ex; \
-    echo -e "demyx ALL=(ALL) NOPASSWD:SETENV: /etc/demyx/demyx.sh, /etc/demyx/bin/demyx-yml.sh, /etc/demyx/bin/demyx-reset.sh, /etc/demyx/bin/demyx-skel.sh, /usr/sbin/crond" > /etc/sudoers.d/demyx; \
+    echo -e "demyx ALL=(ALL) NOPASSWD:SETENV: /etc/demyx/bin/demyx.sh, /usr/local/bin/demyx-entrypoint, /etc/demyx/bin/demyx-yml.sh" > /etc/sudoers.d/demyx; \
+    \
+    echo '#!/bin/bash' > /usr/local/bin/demyx; \
+    echo 'sudo -E /etc/demyx/bin/demyx.sh "$@"' >> /usr/local/bin/demyx; \
+    chmod +x /usr/local/bin/demyx; \
+    \
+    echo '#!/bin/bash' > /usr/local/bin/demyx-yml; \
+    echo 'sudo -E /etc/demyx/bin/demyx-yml.sh "$@"' >> /usr/local/bin/demyx-yml; \
+    chmod +x /usr/local/bin/demyx-yml; \
     \
     # Supresses the sudo warning for now
     echo "Set disable_coredump false" > /etc/sudo.conf
