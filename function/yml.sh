@@ -281,6 +281,45 @@ demyx_yml_code() {
           demyx_user:
             name: demyx_user" | sed "s|        ||g" > "$DEMYX_CODE"/docker-compose.yml
 }
+#
+#   YAML template for traefik http labels.
+#
+demyx_yml_http_labels() {
+    demyx_app_env wp "
+        DEMYX_APP_DOMAIN
+        DEMYX_APP_DOMAIN_WWW
+        DEMYX_APP_ID
+    "
+
+    local DEMYX_YML_HTTP_LABELS_RULE=
+    DEMYX_YML_HTTP_LABELS_RULE="Host(\`\${DEMYX_APP_DOMAIN}\`)"
+    local DEMYX_YML_HTTP_LABELS_REGEX=
+
+    if [[ "$DEMYX_APP_DOMAIN_WWW" = true ]]; then
+        DEMYX_YML_HTTP_LABELS_REGEX=www.
+    fi
+
+    if [[ "$(demyx_app_proto)" = https ]]; then
+        echo "- \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-http.rule=${DEMYX_YML_HTTP_LABELS_RULE}\"
+      - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-http.entrypoints=http\"
+      - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-http.service=\${DEMYX_APP_COMPOSE_PROJECT}-http-port\"
+      - \"traefik.http.services.\${DEMYX_APP_COMPOSE_PROJECT}-http-port.loadbalancer.server.port=80\"
+      - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-http.middlewares=\${DEMYX_APP_COMPOSE_PROJECT}-redirect\"
+      - \"traefik.http.middlewares.\${DEMYX_APP_COMPOSE_PROJECT}-redirect.redirectregex.regex="'^https?:\\/\\/(?:www\\.)?(.+)'"\"
+      - \"traefik.http.middlewares.\${DEMYX_APP_COMPOSE_PROJECT}-redirect.redirectregex.replacement=https://${DEMYX_YML_HTTP_LABELS_REGEX}\$\${1}\"
+      - \"traefik.http.middlewares.\${DEMYX_APP_COMPOSE_PROJECT}-redirect.redirectregex.permanent=true\"
+      - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-https.rule=${DEMYX_YML_HTTP_LABELS_RULE}\"
+      - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-https.entrypoints=https\"
+      - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-https.tls.certresolver=$(demyx_yml_resolver)\"
+      - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-https.service=\${DEMYX_APP_COMPOSE_PROJECT}-https-port\"
+      - \"traefik.http.services.\${DEMYX_APP_COMPOSE_PROJECT}-https-port.loadbalancer.server.port=80\""
+    else
+        echo "- \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-http.rule=${DEMYX_YML_HTTP_LABELS_RULE}\"
+      - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-http.entrypoints=http\"
+      - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-http.service=\${DEMYX_APP_COMPOSE_PROJECT}-http-port\"
+      - \"traefik.http.services.\${DEMYX_APP_COMPOSE_PROJECT}-http-port.loadbalancer.server.port=80\""
+    fi
+}
             environment:
               - PASSWORD=$DEMYX_CODE_PASSWORD
               - TZ=$TZ
