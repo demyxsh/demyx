@@ -145,12 +145,20 @@ demyx_host_dangling_images() {
         fi
     done
 }
+#
+#   Warns users for new error log entries.
+#
+demyx_host_error() {
+    local DEMYX_HOST_ERROR=
+    DEMYX_HOST_ERROR="$(docker exec -t --user=root demyx bash -c "[[ -f /demyx/tmp/demyx_log_error ]] && echo true" || true)"
+    # shellcheck disable=2001
+    DEMYX_HOST_ERROR="$(echo "$DEMYX_HOST_ERROR" | sed 's|\r$||g')"
 
-    if [[ "$DEMYX_HOST_EMAIL" = info@domain.tld ]]; then
-        echo -e "\n\e[34m[INFO]\e[39m Enter a valid email address for Lets Encrypt"
-        read -rep "(Default: info@domain.tld): " DEMYX_HOST_INSTALL_EMAIL
-        sed -i "s|DEMYX_HOST_EMAIL=.*|DEMYX_HOST_EMAIL=${DEMYX_HOST_INSTALL_EMAIL:-info@domain.tld}|g" "$DEMYX_HOST_CONFIG"
+    if [[ "$DEMYX_HOST_ERROR" = true ]]; then
+        echo -e "\e[31m[ERROR]\e[39m New error(s): please run: demyx log main -e"
+        docker exec -t --user=root demyx bash -c "rm -f /demyx/tmp/demyx_log_error"
     fi
+}
 
     if [[ "$DEMYX_HOST_AUTH_USERNAME" = demyx ]]; then
         echo -e "\n\e[34m[INFO]\e[39m Enter a username for basic auth"
