@@ -21,12 +21,37 @@ demyx_wp() {
         ;;
     esac
 }
+#
+#   Loop for demyx_wp_app.
+#
+demyx_wp_all() {
+    local DEMYX_WP_ALL=
+    local DEMYX_WP_ALL_CHECK=
+    local DEMYX_WP_ALL_CHECK_WP=
 
-        if [[ "$DEMYX_APP_STACK" = bedrock || "$DEMYX_APP_STACK" = ols-bedrock ]]; then
-            DEMYX_WP_WORKDIR=/demyx/web
-        else
-            DEMYX_WP_WORKDIR=/demyx
+    cd "$DEMYX_WP" || exit
+
+    for DEMYX_WP_ALL in *; do
+        DEMYX_ARG_2="$DEMYX_WP_ALL"
+        DEMYX_WP_ALL_CHECK=0
+
+        demyx_app_env wp DEMYX_APP_WP_CONTAINER
+
+        DEMYX_WP_ALL_CHECK_WP="$(docker exec "$DEMYX_APP_WP_CONTAINER" wp core is-installed 2>&1 || true)"
+        if [[ "$DEMYX_WP_ALL_CHECK_WP" == *"Error"* ||
+                "$DEMYX_WP_ALL_CHECK_WP" == *"error"* ]]; then
+            DEMYX_WP_ALL_CHECK=1
+            demyx_logger "Executing WP-CLI for $DEMYX_WP_ALL" "demyx_wp $DEMYX_WP_ALL $DEMYX_WP_ARGS" "$DEMYX_WP_ALL_CHECK_WP" error
         fi
+
+        if [[ "$DEMYX_WP_ALL_CHECK" = 1 ]]; then
+            demyx_warning "$DEMYX_ARG_2 has one or more errors. Please check error log, skipping ..."
+            continue
+        else
+            eval demyx_wp "$DEMYX_WP_ALL" "$DEMYX_WP_ARGS"
+        fi
+    done
+}
 
         if [[ "$*" == "help"* ]]; then
             docker run -it --rm -e PAGER=more demyx/wordpress:cli "$@"
