@@ -182,16 +182,22 @@ demyx_restore_app() {
 
     demyx_info "$DEMYX_APP_DOMAIN" -l
 }
+#
+#   Restore app's directory only.
+#
+demyx_restore_config() {
+    local DEMYX_RESTORE_CONFIG_FILE=
+    DEMYX_RESTORE_CONFIG_FILE="$(find "$DEMYX_BACKUP"/config -type f -name "${DEMYX_ARG_2}.tgz")"
 
-            demyx_echo 'Restoring files'
-            demyx_execute docker cp demyx-wp/. "$DEMYX_APP_WP_CONTAINER":/demyx; \
-                docker cp demyx-log/. "$DEMYX_APP_WP_CONTAINER":/var/log/demyx
+    if [[ -n "$DEMYX_RESTORE_CONFIG_FILE" ]]; then
+        demyx_execute "Restoring configs" \
+            "tar -xzf $DEMYX_RESTORE_CONFIG_FILE -C $DEMYX_WP"
+    else
+        demyx_error file "$DEMYX_RESTORE_CONFIG_FILE"
+    fi
 
-            demyx_echo 'Restoring database'
-            demyx_execute demyx wp "$DEMYX_APP_DOMAIN" db import "$DEMYX_APP_CONTAINER".sql
-            
-            demyx_echo 'Removing backup database'
-            demyx_execute docker exec -t "$DEMYX_APP_WP_CONTAINER" rm -f /demyx/"$DEMYX_APP_CONTAINER".sql
+    demyx_compose "$DEMYX_ARG_2" up -d --remove-orphans
+}
 
             demyx_echo 'Stopping temporary container'
             demyx_execute docker stop "$DEMYX_APP_WP_CONTAINER"
