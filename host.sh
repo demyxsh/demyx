@@ -232,13 +232,13 @@ demyx_host_motd() {
         fi
     fi
 }
-demyx_rm() {
-    if [[ "${1:-}" = all ]]; then
-        demyx_compose stop
-        demyx_compose rm -f
-    else
-        docker stop demyx
-        docker rm demyx
+#
+#   Notify user demyx container isn't running.
+#
+demyx_host_not_running() {
+    if [[ "$DEMYX_HOST_DEMYX_PS" != *"demyx/demyx"* ]]; then
+        echo -e "\e[31m[ERROR]\e[39m Demyx isn't running, please run: demyx host restart"
+        exit 1
     fi
 }
 demyx_run() {
