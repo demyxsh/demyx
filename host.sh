@@ -108,60 +108,17 @@ demyx_host_app_upgrade() {
         done
     fi
 }
+#
+#   Run demyx container to execute docker-compose.
+#
+demyx_host_compose() {
+    docker run -it --rm \
+        --entrypoint=docker-compose \
+        -v /var/run/docker.sock:/var/run/docker.sock:ro \
+        -v demyx:/demyx \
+        -e DOCKER_HOST= \
+        demyx/docker-compose "$@"
 }
-demyx_config() {
-    [[ -f "$DEMYX_HOST_CONFIG" ]] && source "$DEMYX_HOST_CONFIG"
-    echo "DEMYX_HOST_API=${DEMYX_HOST_API:-false}
-        DEMYX_HOST_AUTH_USERNAME=${DEMYX_HOST_AUTH_USERNAME:-demyx}
-        DEMYX_HOST_AUTH_PASSWORD=${DEMYX_HOST_AUTH_PASSWORD:-$(docker run -t --rm demyx/utilities head /dev/urandom | tr -dc a-z0-9 | head -c 10 && echo)}
-        DEMYX_HOST_BACKUP=${DEMYX_HOST_BACKUP:-true}
-        DEMYX_HOST_BACKUP_LIMIT=${DEMYX_HOST_BACKUP_LIMIT:-30}
-        DEMYX_HOST_CODE=${DEMYX_HOST_CODE:-false}
-        DEMYX_HOST_CODE_DOMAIN=${DEMYX_HOST_CODE_DOMAIN:-code}
-        DEMYX_HOST_CODE_PASSWORD=${DEMYX_HOST_CODE_PASSWORD:-$(docker run -t --rm demyx/utilities head /dev/urandom | tr -dc a-z0-9 | head -c 10 && echo)}
-        DEMYX_HOST_CF_KEY=${DEMYX_HOST_CF_KEY:-false}
-        DEMYX_HOST_CPU=${DEMYX_HOST_CPU:-.50}
-        DEMYX_HOST_DOMAIN=${DEMYX_HOST_DOMAIN:-domain.tld}
-        DEMYX_HOST_EMAIL=${DEMYX_HOST_EMAIL:-info@domain.tld}
-        DEMYX_HOST_IMAGE_VERSION=${DEMYX_HOST_IMAGE_VERSION:-latest}
-        DEMYX_HOST_INSTALL=${DEMYX_HOST_INSTALL:-true}
-        DEMYX_HOST_IP=${DEMYX_HOST_IP:-false}
-        DEMYX_HOST_HEALTHCHECK=${DEMYX_HOST_HEALTHCHECK:-true}
-        DEMYX_HOST_HEALTHCHECK_TIMEOUT=${DEMYX_HOST_HEALTHCHECK_TIMEOUT:-30}
-        DEMYX_HOST_HOSTNAME=${DEMYX_HOST_HOSTNAME:-$(hostname)}
-        DEMYX_HOST_MEM=${DEMYX_HOST_MEM:-512m}
-        DEMYX_HOST_MONITOR=${DEMYX_HOST_MONITOR:-true}
-        DEMYX_HOST_SERVER_IP=${DEMYX_HOST_SERVER_IP:-$(docker run -t --rm --user=root --entrypoint=curl demyx/demyx -s https://ipecho.net/plain)}
-        DEMYX_HOST_TELEMETRY=${DEMYX_HOST_TELEMETRY:-true}
-        DEMYX_HOST_TRAEFIK_DASHBOARD=${DEMYX_HOST_TRAEFIK_DASHBOARD:-false}
-        DEMYX_HOST_TRAEFIK_DASHBOARD_DOMAIN=${DEMYX_HOST_TRAEFIK_DASHBOARD_DOMAIN:-traefik}
-        DEMYX_HOST_TRAEFIK_LOG=${DEMYX_HOST_TRAEFIK_LOG:-INFO}
-        DEMYX_HOST_TZ=${DEMYX_HOST_TZ:-America/Los_Angeles}" | sed "s|        ||g" > "$DEMYX_HOST_CONFIG"
-
-        # Source again to prevent unbound variable
-        source "$DEMYX_HOST_CONFIG"
-}
-demyx_help() {
-    echo
-    echo "demyx host <args>          Demyx helper commands"
-    echo "           all             Targets both demyx and demyx_socket container, works with remove and restart"
-    echo "           config           Edit Demyx config on the host (~/.demyx)"
-    echo "           help            Demyx helper help menu"
-    echo "           install         Prompt users to enter details for ~/.demyx"
-    echo "           remove|rm       Stops and removes demyx container"
-    echo "           restart|rs      Stops, removes, and starts demyx container"
-    echo "           update          List available updates"
-    echo "           upgrade         Upgrade the demyx stack"
-    echo
-}
-demyx_install() {
-    # Execute migrate script
-    docker run -t --rm \
-    --user=root \
-    --entrypoint=bash \
-    -v "$HOME":/tmp \
-    -v demyx:/demyx \
-    demyx/demyx /etc/demyx/bin/demyx-migrate.sh
 
     # Source udpated configs
     demyx_config
