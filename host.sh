@@ -347,3 +347,7 @@ demyx_host_upgrade() {
 
     echo -e "\e[32m[SUCCESS]\e[39m Successfully updated!"
 }
+#
+#   Init.
+#
+demyx_host "$@"
