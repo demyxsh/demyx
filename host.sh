@@ -171,13 +171,22 @@ demyx_host_exec() {
         docker exec -t -e DEMYX_STTY="$(stty size | awk -F ' ' '{print $2}')" demyx demyx motd
     fi
 }
+#
+#   Checks for proper permissions.
+#
+demyx_host_gatekeeper() {
+    local DEMYX_HOST_CHECK_ID=
+    DEMYX_HOST_CHECK_ID="$(id | grep docker || true)"
 
-    if [[ "$DEMYX_HOST_IP" = false ]]; then
-        echo -e "\n\e[34m[INFO]\e[39m Enter IP address for whitelisting or else you won't be able to access code-server, traefik dashboard, and other URLs"
-        echo -e "\e[34m[INFO]\e[39m For multiple IP addresses, please use commas to separate them"
-        read -rep "(Default: false): " DEMYX_HOST_INSTALL_IP
-        sed -i "s|DEMYX_HOST_IP=.*|DEMYX_HOST_IP=${DEMYX_HOST_INSTALL_IP:-false}|g" "$DEMYX_HOST_CONFIG"
+    # Check if user is in docker group first
+    if [[ -z "$DEMYX_HOST_CHECK_ID" ]]; then
+        # Fallback check for root/sudo
+        if [[ "$(id -u)" != 0 ]]; then
+            echo -e "\e[31m[ERROR]\e[39m Must be ran as root/sudo or add user to the docker group"
+            exit 1
+        fi
     fi
+}
 
     if [[ -n "${DEMYX_HOST_INSTALL_IP:-}" || "$DEMYX_HOST_IP" != false ]]; then
         echo -e "\n\e[34m[INFO]\e[39m Enable Traefik dashboard? true/false (IP whitelist and basic auth protected)"
