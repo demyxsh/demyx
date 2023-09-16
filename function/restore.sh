@@ -67,43 +67,121 @@ demyx_restore() {
         demyx_help restore
     fi
 }
+#
+#   Main restore function.
+#
+demyx_restore_app() {
+    local DEMYX_RESTORE_APP_CHECK=
+    DEMYX_RESTORE_APP_CHECK="$(demyx_app_path "$DEMYX_ARG_2")"
+    local DEMYX_RESTORE_APP_DATE=
+    DEMYX_RESTORE_APP_DATE="$(date +%Y-%m-%d)"
+    local DEMYX_RESTORE_APP_FIND_DATE=
+    local DEMYX_RESTORE_APP_FIND_FILE=
+    local DEMYX_RESTORE_APP_FIND_PATH=
 
-            if [[ -n "$DEMYX_RESTORE_DATE" ]]; then
-                demyx_echo "Extracting archive from $DEMYX_RESTORE_DATE"
-                demyx_execute tar -xzf "$DEMYX_BACKUP_WP"/"$DEMYX_TARGET"/"$DEMYX_RESTORE_DATE"-"$DEMYX_TARGET".tgz -C "$DEMYX_WP"
-            else
-                demyx_echo 'Extracting archive'
-                demyx_execute tar -xzf "$DEMYX_BACKUP_WP"/"$DEMYX_TARGET"/"$DEMYX_RESTORE_TODAYS_DATE"-"$DEMYX_TARGET".tgz -C "$DEMYX_WP"
-            fi
+    if [[ -n "$DEMYX_RESTORE_FLAG_DATE" ]]; then
+        DEMYX_RESTORE_APP_FIND_FILE="${DEMYX_RESTORE_FLAG_DATE}-${DEMYX_ARG_2}.tgz"
+    else
+        DEMYX_RESTORE_APP_FIND_FILE="${DEMYX_RESTORE_APP_DATE}-${DEMYX_ARG_2}.tgz"
+    fi
 
-            demyx_app_config
+    DEMYX_RESTORE_APP_FIND_DATE="$(find "$DEMYX_BACKUP" -type f -name "$DEMYX_RESTORE_APP_FIND_FILE")"
 
-            demyx config "$DEMYX_APP_DOMAIN" --healthcheck=false
+    if [[ -f "$DEMYX_RESTORE_APP_FIND_DATE" ]]; then
+        if [[ "$DEMYX_RESTORE_FLAG_FORCE" = true && -n "$DEMYX_RESTORE_APP_CHECK" ]]; then
+            demyx_rm "$DEMYX_ARG_2" -f
+        elif [[ -n "$DEMYX_RESTORE_APP_CHECK" ]]; then
+            demyx_rm "$DEMYX_ARG_2"
+        fi
 
-            demyx_echo 'Creating WordPress volume'
-            demyx_execute docker volume create wp_"$DEMYX_APP_ID"
+        demyx_execute "Extracting $DEMYX_RESTORE_APP_FIND_DATE" \
+            "tar -xzf $DEMYX_RESTORE_APP_FIND_DATE -C ${DEMYX_TMP}; \
+            demyx_proper"
 
-            demyx_echo 'Creating MariaDB volume'
-            demyx_execute docker volume create wp_"$DEMYX_APP_ID"_db
+        DEMYX_RESTORE_APP_FIND_PATH="$(grep DEMYX_APP_PATH "$DEMYX_TMP"/"$DEMYX_ARG_2"/.env | awk -F '=' '{print $2}')"
 
-            demyx_echo 'Creating log volume'
-            demyx_execute docker volume create wp_"$DEMYX_APP_ID"_log
+        demyx_execute false \
+            "mv ${DEMYX_TMP}/${DEMYX_ARG_2} $DEMYX_RESTORE_APP_FIND_PATH"
+    else
+        demyx_backup "$DEMYX_ARG_2" -l
+        demyx_error file "$DEMYX_RESTORE_APP_FIND_FILE"
+    fi
 
-            cd "$DEMYX_APP_PATH" || exit
+    demyx_app_env wp "
+        DEMYX_APP_CONTAINER
+        DEMYX_APP_DOMAIN
+        DEMYX_APP_ID
+        DEMYX_APP_PATH
+        DEMYX_APP_TYPE
+        DEMYX_APP_DB_CONTAINER
+        DEMYX_APP_WP_CONTAINER
+        WORDPRESS_DB_PASSWORD
+        WORDPRESS_DB_USER
+    "
 
-            demyx compose "$DEMYX_APP_DOMAIN" db up -d --remove-orphans
+    demyx_config "$DEMYX_APP_DOMAIN" --healthcheck=false
 
-            demyx_echo 'Initializing MariaDB'
-            demyx_execute demyx_mariadb_ready
+    demyx_execute "Creating volumes" \
+        "docker volume create ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}; \
+        docker volume create ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code; \
+        docker volume create ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_db; \
+        docker volume create ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_log; \
+        docker volume create ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_sftp"
 
-            demyx_echo 'Creating temporary container'
-            demyx_execute docker run -dit --rm \
-                --name "$DEMYX_APP_WP_CONTAINER" \
-                --network=demyx \
-                --entrypoint=sh \
-                -v wp_"$DEMYX_APP_ID":/demyx \
-                -v wp_"$DEMYX_APP_ID"_log:/var/log/demyx \
-                demyx/wordpress
+    if [[ -d "$DEMYX_APP_PATH"/demyx-code ]]; then
+        demyx_execute "Restoring ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code" \
+            "docker run -t \
+                --rm \
+                --entrypoint=bash \
+                --user=root \
+                -v demyx:$DEMYX \
+                -v ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code:/${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code \
+                demyx/demyx -c 'cp -rp ${DEMYX_APP_PATH}/demyx-code/. /${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code'"
+    fi
+
+    if [[ -d "$DEMYX_APP_PATH"/demyx-sftp ]]; then
+        demyx_execute "Restoring ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_sftp" \
+            "docker run -t \
+                --rm \
+                --entrypoint=bash \
+                --user=root \
+                -v demyx:$DEMYX \
+                -v ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_sftp:/${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_sftp \
+                demyx/demyx -c 'cp -rp ${DEMYX_APP_PATH}/demyx-sftp/. /${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_sftp'"
+    fi
+
+    demyx_compose "$DEMYX_APP_DOMAIN" -d up -d
+
+    demyx_execute "Initializing MariaDB" \
+        "demyx_mariadb_ready"
+
+    demyx_execute "Restoring app" \
+        "docker run -dit --rm \
+            --name=$DEMYX_APP_WP_CONTAINER \
+            --network=demyx \
+            --entrypoint=bash \
+            -v wp_${DEMYX_APP_ID}:/demyx \
+            -v wp_${DEMYX_APP_ID}_log:/var/log/demyx \
+            demyx/wordpress; \
+        docker cp ${DEMYX_APP_PATH}/demyx-wp/. ${DEMYX_APP_WP_CONTAINER}:/demyx; \
+        docker cp ${DEMYX_APP_PATH}/demyx-log/. ${DEMYX_APP_WP_CONTAINER}:/var/log/demyx; \
+        demyx_wp $DEMYX_APP_DOMAIN db import ${DEMYX_APP_CONTAINER}.sql
+        docker exec -t $DEMYX_APP_CONTAINER rm -f /demyx/${DEMYX_APP_CONTAINER}.sql; \
+        docker stop $DEMYX_APP_WP_CONTAINER"
+
+    demyx_compose "$DEMYX_APP_DOMAIN" up -d
+    demyx_config "$DEMYX_APP_DOMAIN" --healthcheck
+
+    demyx_execute "Cleaning up" \
+        "rm -rf ${DEMYX_APP_PATH}/demyx-wp; \
+        rm -rf ${DEMYX_APP_PATH}/demyx-log; \
+        rm -rf ${DEMYX_APP_PATH}/demyx-code; \
+        rm -rf ${DEMYX_APP_PATH}/demyx-sftp; \
+        rm -rf ${DEMYX_TMP}/${DEMYX_APP_DOMAIN}; \
+        docker exec -t $DEMYX_APP_WP_CONTAINER rm -f /demyx/${DEMYX_APP_CONTAINER}.sql"
+
+    demyx_info "$DEMYX_APP_DOMAIN" -l
+}
 
             demyx_echo 'Restoring files'
             demyx_execute docker cp demyx-wp/. "$DEMYX_APP_WP_CONTAINER":/demyx; \
