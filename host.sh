@@ -159,12 +159,18 @@ demyx_host_error() {
         docker exec -t --user=root demyx bash -c "rm -f /demyx/tmp/demyx_log_error"
     fi
 }
+#
+#   Send commands to demyx container.
+#
+demyx_host_exec() {
+    local DEMYX_HOST_EXEC="${1:-}"
 
-    if [[ "$DEMYX_HOST_AUTH_USERNAME" = demyx ]]; then
-        echo -e "\n\e[34m[INFO]\e[39m Enter a username for basic auth"
-        read -rep "(Default: demyx): " DEMYX_HOST_INSTALL_AUTH_USERNAME
-        sed -i "s|DEMYX_HOST_AUTH_USERNAME=.*|DEMYX_HOST_AUTH_USERNAME=${DEMYX_HOST_INSTALL_AUTH_USERNAME:-demyx}|g" "$DEMYX_HOST_CONFIG"
+    if [[ -n "$DEMYX_HOST_EXEC" ]]; then
+        docker exec -it demyx demyx "$@"
+    else
+        docker exec -t -e DEMYX_STTY="$(stty size | awk -F ' ' '{print $2}')" demyx demyx motd
     fi
+}
 
     if [[ "$DEMYX_HOST_IP" = false ]]; then
         echo -e "\n\e[34m[INFO]\e[39m Enter IP address for whitelisting or else you won't be able to access code-server, traefik dashboard, and other URLs"
