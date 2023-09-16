@@ -142,15 +142,15 @@ demyx_refresh_code() {
         fi
     fi
 }
+#
+#   Refresh traefik.
+#
+demyx_refresh_traefik() {
+    demyx_execute "Backing up traefik directory to ${DEMYX_BACKUP}/traefik.tgz" \
+        "tar -czf ${DEMYX_BACKUP}/traefik.tgz -C $DEMYX_APP traefik"
 
-        demyx compose "$DEMYX_APP_DOMAIN" fr
+    demyx_execute "Refreshing traefik" \
+        "demyx_yml_traefik"
 
-        if [[ -z "$DEMYX_REFRESH_SKIP_CHECKS" ]]; then
-            [[ "$DEMYX_APP_RATE_LIMIT" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --rate-limit -f
-            [[ "$DEMYX_APP_CACHE" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --cache -f
-            [[ "$DEMYX_APP_AUTH" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --auth -f
-            [[ "$DEMYX_APP_AUTH_WP" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --auth-wp -f
-            [[ "$DEMYX_APP_HEALTHCHECK" = true ]] && demyx config "$DEMYX_APP_DOMAIN" --healthcheck -f
-        fi
-    fi
+    demyx_compose traefik up -d --remove-orphans
 }
