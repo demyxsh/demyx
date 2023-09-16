@@ -241,43 +241,32 @@ demyx_host_not_running() {
         exit 1
     fi
 }
-demyx_run() {
-    docker run -t --rm \
-    --hostname="$DEMYX_HOST_HOSTNAME" \
-    --user=root \
-    --entrypoint=demyx-yml \
-    --workdir=/demyx \
-    -v /var/run/docker.sock:/var/run/docker.sock:ro \
-    -v demyx:/demyx \
-    -e DEMYX_API="$DEMYX_HOST_API" \
-    -e DEMYX_AUTH_USERNAME="$DEMYX_HOST_AUTH_USERNAME" \
-    -e DEMYX_AUTH_PASSWORD="$DEMYX_HOST_AUTH_PASSWORD" \
-    -e DEMYX_BACKUP_ENABLE="$DEMYX_HOST_BACKUP" \
-    -e DEMYX_BACKUP_LIMIT="$DEMYX_HOST_BACKUP_LIMIT" \
-    -e DEMYX_CODE_DOMAIN="$DEMYX_HOST_CODE_DOMAIN" \
-    -e DEMYX_CODE_ENABLE="$DEMYX_HOST_CODE" \
-    -e DEMYX_CODE_PASSWORD="$DEMYX_HOST_CODE_PASSWORD" \
-    -e DEMYX_CF_KEY="$DEMYX_HOST_CF_KEY" \
-    -e DEMYX_CPU="$DEMYX_HOST_CPU" \
-    -e DEMYX_DOMAIN="$DEMYX_HOST_DOMAIN" \
-    -e DEMYX_EMAIL="$DEMYX_HOST_EMAIL" \
-    -e DEMYX_HEALTHCHECK_ENABLE="$DEMYX_HOST_HEALTHCHECK" \
-    -e DEMYX_HEALTHCHECK_TIMEOUT="$DEMYX_HOST_HEALTHCHECK_TIMEOUT" \
-    -e DEMYX_HOSTNAME="$DEMYX_HOST_HOSTNAME" \
-    -e DEMYX_IMAGE_VERSION="$DEMYX_HOST_IMAGE_VERSION" \
-    -e DEMYX_IP="$DEMYX_HOST_IP" \
-    -e DEMYX_MEM="$DEMYX_HOST_MEM" \
-    -e DEMYX_MONITOR_ENABLE="$DEMYX_HOST_MONITOR" \
-    -e DEMYX_SERVER_IP="$DEMYX_HOST_SERVER_IP" \
-    -e DEMYX_TELEMETRY="$DEMYX_HOST_TELEMETRY" \
-    -e DEMYX_TRAEFIK_DASHBOARD="$DEMYX_HOST_TRAEFIK_DASHBOARD" \
-    -e DEMYX_TRAEFIK_DASHBOARD_DOMAIN="$DEMYX_HOST_TRAEFIK_DASHBOARD_DOMAIN" \
-    -e DEMYX_TRAEFIK_LOG="$DEMYX_HOST_TRAEFIK_LOG" \
-    -e DOCKER_HOST="" \
-    -e TZ="$DEMYX_HOST_TZ" \
-    demyx/demyx
+#
+#   Generate main demyx yml and run all services.
+#
+demyx_host_run() {
+    if [[ -f ~/.demyx ]]; then
+        docker run -t --rm \
+            --netwwork=host \
+            --hostname="$DEMYX_HOST_HOSTNAME" \
+            --user=root \
+            --entrypoint=demyx-yml \
+            -v demyx:/demyx \
+            -v "$HOME"/.demyx:/tmp/.demyx \
+            demyx/demyx
 
-    demyx_compose up -d
+        mv ~/.demyx ~/.demyx.bak
+    else
+        docker run -t --rm \
+            --network=host \
+            --hostname="$DEMYX_HOST_HOSTNAME" \
+            --user=root \
+            --entrypoint=demyx-yml \
+            -v demyx:/demyx \
+            demyx/demyx
+    fi
+
+    demyx_host_compose up -d
 }
 demyx_update() {
     if [[ -n "$DEMYX_HOST_IMAGES" ]]; then
