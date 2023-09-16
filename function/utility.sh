@@ -136,10 +136,26 @@ demyx_utility_id() {
                 cat < $DEMYX_UTILITY_TRANSIENT"
     fi
 }
+#
+#   Generates password.
+#
+demyx_utility_password() {
+    local DEMYX_UTILITY_PASSWORD="${1:-"20"}"
+    local DEMYX_UTILITY_PASSWORD_DEFAULT="A-Za-z0-9"
+    local DEMYX_UTILITY_PWGEN=
+    DEMYX_UTILITY_PWGEN="$(head /dev/urandom | tr -dc "$DEMYX_UTILITY_PASSWORD_DEFAULT" | head -c "$DEMYX_UTILITY_PASSWORD" && echo)"
+
+    if [[ "$DEMYX_UTILITY_FLAG_RAW" = true ]]; then
+        echo "$DEMYX_UTILITY_PWGEN"
     else
-        shift
-        DEMYX_UTILITY_EXEC="$@"
-        [[ -z "$DEMYX_UTILITY_EXEC" ]] && demyx_die 'demyx util needs a command'
-        docker run -it --rm demyx/utilities sh -c "$DEMYX_UTILITY_EXEC"
+        {
+            echo "$DEMYX_UTILITY_PWGEN"
+        } > "$DEMYX_UTILITY_TRANSIENT"
+
+        demyx_execute false \
+            "demyx_divider_title \"${DEMYX_UTILITY}\" \"Password\"; \
+                cat < $DEMYX_UTILITY_TRANSIENT"
+    fi
+}
     fi
 }
