@@ -1,64 +1,72 @@
 # Demyx
 # https://demyx.sh
-# 
-# demyx restore <app> <args>
+#
+#   demyx restore <app> <args>
 #
 demyx_restore() {
+    DEMYX_ARG_2="${1:-$DEMYX_ARG_2}"
+    local DEMYX_RESTORE_CHECK=
+    local DEMYX_RESTORE_FLAG=
+    local DEMYX_RESTORE_FLAG_CONFIG=
+    local DEMYX_RESTORE_FLAG_DATE=
+    local DEMYX_RESTORE_FLAG_DB=
+    local DEMYX_RESTORE_FLAG_FORCE=
+
+    demyx_source "
+        backup
+        config
+        compose
+        info
+        rm
+        wp
+    "
+
     while :; do
-        case "$3" in
-            -f|--force)
-                DEMYX_RESTORE_FORCE=1
-                ;;
-            --config)
-                DEMYX_RESTORE_CONFIG=1
-                ;;
+        DEMYX_RESTORE_FLAG="${2:-}"
+        case "$DEMYX_RESTORE_FLAG" in
+            -c)
+                DEMYX_RESTORE_FLAG_CONFIG=true
+            ;;
             --date=?*)
-                DEMYX_RESTORE_DATE="${3#*=}"
-                ;;
-            --date=)
-                demyx_die '"--date" cannot be empty'
-                ;;
+                DEMYX_RESTORE_FLAG_DATE="${DEMYX_RESTORE_FLAG#*=}"
+            ;;
+            -d)
+                DEMYX_RESTORE_FLAG_DB=true
+            ;;
+            -f)
+                DEMYX_RESTORE_FLAG_FORCE=true
+            ;;
             --)
                 shift
                 break
                 ;;
             -?*)
-                printf '\e[31m[CRITICAL]\e[39m Unknown option: %s\n' "$3" >&2
-                exit 1
-                ;;
+                demyx_error flag "$DEMYX_RESTORE_FLAG"
+            ;;
             *)
                 break
         esac
-        DEMYX_LOG_PARAM+="$3 "
         shift
     done
 
-    DEMYX_RESTORE_TODAYS_DATE="$(date +%Y-%m-%d)"
+    DEMYX_RESTORE_CHECK="$(find "$DEMYX_BACKUP" -type f -name "*${DEMYX_ARG_2}*.tgz" )"
 
-    demyx_app_config
-    
-    if [[ -n "$DEMYX_RESTORE_DATE" ]]; then
-        [[ ! -f "$DEMYX_BACKUP_WP"/"$DEMYX_TARGET"/"$DEMYX_RESTORE_DATE"-"$DEMYX_TARGET".tgz ]] && demyx_die 'No file found'
-    else
-        [[ ! -f "$DEMYX_BACKUP_WP"/"$DEMYX_TARGET"/"$DEMYX_RESTORE_TODAYS_DATE"-"$DEMYX_TARGET".tgz ]] && demyx_die 'No file found'
-    fi
-
-    if [[ "$DEMYX_APP_TYPE" = wp || -n "$DEMYX_RESTORE_FORCE" ]]; then
-        if [[ -n "$DEMYX_RESTORE_CONFIG" ]]; then
-            demyx_echo 'Restoring configs'
-            demyx_execute rm -rf "$DEMYX_WP"/"$DEMYX_TARGET"; \
-                tar -xzf "$DEMYX_BACKUP"/config/"$DEMYX_APP_DOMAIN".tgz -C "$DEMYX_WP"
-        else
-            if [[ -d "$DEMYX_APP_PATH" && -z "$DEMYX_RESTORE_FORCE" ]]; then
-                echo -en "\e[33m"
-                read -rep "[WARNING] $DEMYX_TARGET exits, delete? [yY]: " DEMYX_RM_CONFIRM
-                echo -en "\e[39m"
-                if [[ "$DEMYX_RM_CONFIRM" = [yY] ]]; then
-                    demyx rm "$DEMYX_TARGET" -f
-                else
-                    demyx_die 'Cancelling restoration'
-                fi
+    if [[ -n "$DEMYX_ARG_2" ]]; then
+        if [[ "$DEMYX_RESTORE_FLAG_DB" = true ]]; then
+            demyx_restore_db
+        elif [[ -n "$DEMYX_RESTORE_CHECK" ]]; then
+            if [[ "$DEMYX_RESTORE_FLAG_CONFIG" = true ]]; then
+                demyx_restore_config
+            else
+                demyx_restore_app
             fi
+        else
+            demyx_error custom "No backups found for $DEMYX_ARG_2"
+        fi
+    else
+        demyx_help restore
+    fi
+}
 
             if [[ -n "$DEMYX_RESTORE_DATE" ]]; then
                 demyx_echo "Extracting archive from $DEMYX_RESTORE_DATE"
