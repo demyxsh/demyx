@@ -131,25 +131,13 @@ RUN set -ex; \
 # Set cron and log
 RUN set -ex; \
     echo -e "SHELL=/bin/bash\n\
-        * * * * * /usr/local/bin/demyx cron minute\n\
-        0 * * * * /usr/local/bin/demyx cron hourly\n\
-        0 */6 * * * /usr/local/bin/demyx cron six-hour\n\
-        0 0 * * * /usr/local/bin/demyx cron daily\n\
-        0 0 * * 0 /usr/local/bin/demyx cron weekly\n\
-    " | sed "s|        ||g" > /etc/crontabs/demyx
-
-# Copy files and binaries
-COPY . /etc/demyx
-COPY --from=demyx_api /app/shell2http /usr/local/bin/shell2http
-COPY --from=demyx_ctop /ctop /usr/local/bin/ctop
-COPY --from=demyx_docker /usr/local/bin/docker /usr/local/bin/docker
-
-# Sudo wrappers
-RUN set -ex; \
-    echo '#!/bin/bash' >> /usr/local/bin/demyx; \
-    echo 'sudo -E /etc/demyx/demyx.sh "$@"' >> /usr/local/bin/demyx; \
-    chmod +x /etc/demyx/demyx.sh; \
-    chmod +x /usr/local/bin/demyx; \
+        * * * * * demyx cron minute\n\
+        */5 * * * * demyx cron five-minute\n\
+        0 * * * * demyx cron hourly\n\
+        0 */6 * * * demyx cron six-hour\n\
+        0 0 * * * demyx cron daily\n\
+        0 0 * * 0 demyx cron weekly\n\
+    " | sed "s|    ||g" > /etc/crontabs/demyx; \
     \
     echo '#!/bin/bash' >> /usr/local/bin/demyx-reset; \
     echo 'sudo -E /etc/demyx/bin/demyx-reset.sh' >> /usr/local/bin/demyx-reset; \
