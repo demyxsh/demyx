@@ -845,17 +845,87 @@ demyx_yml_resolver() {
 
     echo "$DEMYX_YML_RESOLVER"
 }
-demyx_traefik_yml() {
-    # TEMPORARY CODE
-    if [[ -f "$DEMYX_APP"/stack/.env ]]; then
-        source "$DEMYX_APP"/stack/.env
-        DEMYX_TRAEFIK_YML="- CF_API_EMAIL=$DEMYX_STACK_ACME_EMAIL
-              - CF_API_KEY=$DEMYX_STACK_CLOUDFLARE_KEY
-              - DEMYX_ACME_EMAIL=$DEMYX_STACK_ACME_EMAIL"
-    else
-        DEMYX_TRAEFIK_YML="- CF_API_EMAIL=$DEMYX_EMAIL
-              - CF_API_KEY=$DEMYX_CF_KEY
-              - DEMYX_ACME_EMAIL=$DEMYX_EMAIL"
+#
+#   YAML template for the browser-sync service.
+#
+demyx_yml_service_bs() {
+    demyx_app_env wp "
+        DEMYX_APP_COMPOSE_PROJECT
+        DEMYX_APP_DOMAIN
+        DEMYX_APP_ID
+        DEMYX_APP_NX_CONTAINER
+        DEMYX_APP_STACK
+        DEMYX_APP_WP_CONTAINER
+    "
+
+    if [[ "$DEMYX_APP_DEV" = true ]]; then
+        local DEMYX_YML_SERVICE_BS=
+        local DEMYX_YML_SERVICE_BS_PROXY=
+        local DEMYX_YML_SERVICE_BS_SOCKET=
+        local DEMYX_YML_SERVICE_BS_TYPE=
+        DEMYX_YML_SERVICE_BS_TYPE=${DEMYX_CONFIG_FLAG_DEV_WATCH:-}
+        local DEMYX_YML_SERVICE_BS_WATCH=
+
+        if [[ "$DEMYX_YML_SERVICE_BS_TYPE" = plugins ]]; then
+            DEMYX_YML_SERVICE_BS_WATCH="\"/demyx/wp-content/plugins/**/*\""
+        elif [[ "$DEMYX_YML_SERVICE_BS_TYPE" = false ]]; then
+            DEMYX_YML_SERVICE_BS_WATCH=
+        else
+            DEMYX_YML_SERVICE_BS_WATCH="\"/demyx/wp-content/themes/**/*\""
+        fi
+
+        if [[ "$(demyx_app_proto)" = https ]]; then
+            DEMYX_YML_SERVICE_BS="- \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-bs.entrypoints=https\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-bs.tls.certresolver=$(demyx_yml_resolver)\""
+            DEMYX_YML_SERVICE_BS_SOCKET="- \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-socket.entrypoints=https\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-socket.tls.certresolver=$(demyx_yml_resolver)\""
+        else
+            DEMYX_YML_SERVICE_BS="- \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-bs.entrypoints=http\""
+            DEMYX_YML_SERVICE_BS_SOCKET="- \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-socket.entrypoints=http\""
+        fi
+
+        if [[ "$DEMYX_APP_STACK" = ols || "$DEMYX_APP_STACK" = ols-bedrock ]]; then
+            DEMYX_YML_SERVICE_BS_PROXY="\${DEMYX_APP_WP_CONTAINER}"
+        else
+            DEMYX_YML_SERVICE_BS_PROXY="\${DEMYX_APP_NX_CONTAINER}"
+        fi
+
+        echo "bs_${DEMYX_APP_ID}:
+            cpus: \${DEMYX_APP_WP_CPU}
+            depends_on:
+              - db_${DEMYX_APP_ID}
+            environment:
+              - DEMYX_DOMAIN_MATCH=$(demyx_app_domain)
+              - DEMYX_DOMAIN_RETURN=$(demyx_app_domain)
+              - DEMYX_DOMAIN_SOCKET=$(demyx_app_domain)
+              - DEMYX_FILES=$DEMYX_YML_SERVICE_BS_WATCH
+              - DEMYX_PATH=/demyx
+              - DEMYX_PROXY=$DEMYX_YML_SERVICE_BS_PROXY
+              - TZ=$TZ
+            image: demyx/browsersync
+            labels:
+              - \"traefik.enable=true\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-bs.rule=(Host(\`$(demyx_app_domain)\`) && PathPrefix(\`/demyx/bs/\`))\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-bs.middlewares=\${DEMYX_APP_COMPOSE_PROJECT}-bs-prefix\"
+              - \"traefik.http.middlewares.\${DEMYX_APP_COMPOSE_PROJECT}-bs-prefix.stripprefix.prefixes=/demyx/bs/\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-bs.service=\${DEMYX_APP_COMPOSE_PROJECT}-bs\"
+              - \"traefik.http.services.\${DEMYX_APP_COMPOSE_PROJECT}-bs.loadbalancer.server.port=3000\"
+              $DEMYX_YML_SERVICE_BS
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-bs.priority=99\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-socket.rule=(Host(\`$(demyx_app_domain)\`) && PathPrefix(\`/browser-sync/socket.io/\`))\"
+              - \"traefik.http.middlewares.\${DEMYX_APP_COMPOSE_PROJECT}-socket-prefix.stripprefix.prefixes=/demyx/bs/browser-sync/socket.io/\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-socket.service=\${DEMYX_APP_COMPOSE_PROJECT}-socket\"
+              - \"traefik.http.services.\${DEMYX_APP_COMPOSE_PROJECT}-socket.loadbalancer.server.port=3000\"
+              $DEMYX_YML_SERVICE_BS_SOCKET
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-socket.priority=99\"
+            mem_limit: \${DEMYX_APP_WP_MEM}
+            networks:
+              - demyx
+            restart: unless-stopped
+            volumes:
+              - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}:/demyx"
+    fi
+}
     fi
 
     # Copy .env from /demyx/.env
