@@ -93,8 +93,16 @@ RUN set -ex; \
     adduser -u 1000 -D -S -G demyx demyx; \
     \
     install -d -m 0755 -o demyx -g demyx "$DEMYX"; \
+    install -d -m 0755 -o demyx -g demyx "$DEMYX_BACKUP"; \
+    install -d -m 0755 -o demyx -g demyx "$DEMYX_BACKUP_WP"; \
+    install -d -m 0755 -o demyx -g demyx "$DEMYX_CODE"; \
     install -d -m 0755 -o demyx -g demyx "$DEMYX_CONFIG"; \
+    install -d -m 0755 -o demyx -g demyx "$DEMYX_HTML"; \
     install -d -m 0755 -o demyx -g demyx "$DEMYX_LOG"; \
+    install -d -m 0755 -o demyx -g demyx "$DEMYX_PHP"; \
+    install -d -m 0755 -o demyx -g demyx "$DEMYX_TMP"; \
+    install -d -m 0755 -o demyx -g demyx "$DEMYX_TRAEFIK"; \
+    install -d -m 0755 -o demyx -g demyx "$DEMYX_WP"; \
     \
     # Update .bashrc
     echo 'PS1="$(whoami)@\h:\w \$ "' > /home/demyx/.bashrc; \
