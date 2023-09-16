@@ -2,39 +2,94 @@
 # Demyx
 # https://demyx.sh
 set -euo pipefail
+#
+#   Main.
+#
+demyx_host() {
+    demyx_host_gatekeeper
 
-# Check if user is in docker group first
-if [[ -z "$(id | grep docker)" ]]; then
-    # Fallback check for root/sudo
-    if [[ "$(id -u)" != 0 ]]; then
-        echo -e "\e[31m[CRITICAL]\e[39m Must be ran as root/sudo or add user to the docker group"
-        exit 1
+    # Set default variables
+    local DEMYX_HOST_ARG_1="${1:-}"
+    local DEMYX_HOST_ARG_2="${2:-}"
+    local DEMYX_HOST_ARG_3="${3:-}"
+    local DEMYX_HOST_ARGS="$*"
+    local DEMYX_HOST_CONFIRM=
+    local DEMYX_HOST_HOSTNAME=
+    DEMYX_HOST_HOSTNAME="$(hostname)"
+    local DEMYX_HOST_DEMYX_PS=
+    DEMYX_HOST_DEMYX_PS="$(docker ps)"
+    local DEMYX_HOST_UPDATE_IMAGES=
+    [[ "$DEMYX_HOST_DEMYX_PS" == *"demyx/demyx"* ]] && \
+        DEMYX_HOST_UPDATE_IMAGES="$(docker exec -t --user=root demyx bash -c "[[ -f /demyx/.update_image ]] && cat /demyx/.update_image | sed 's|\r$||g' || true")"
+    local DEMYX_HOST_UPDATE_IMAGES_COUNT=0
+
+    if [[ -n "$DEMYX_HOST_UPDATE_IMAGES" ]]; then
+        DEMYX_HOST_UPDATE_IMAGES_COUNT="$(echo "$DEMYX_HOST_UPDATE_IMAGES" | wc -l)"
     fi
-fi
 
-# Set default variables
-DEMYX_HOST="${1:-}"
-DEMYX_HOST_COMMAND="${2:-}"
-DEMYX_HOST_CONFIG="$HOME"/.demyx
-DEMYX_HOST_DOCKER_PS="$(docker ps)"
-DEMYX_HOST_DEMYX_CHECK="$(echo "$DEMYX_HOST_DOCKER_PS" | grep demyx-init | grep Up || true)"
-#DEMYX_HOST_SOCKET_CHECK="$(echo "$DEMYX_HOST_DOCKER_PS" | awk '{print $NF}' | grep -w demyx_socket || true)"
+    case "$DEMYX_HOST_ARG_1" in
+        shell) shift
+            demyx_host_not_running
 
-# Update check
-if [[ -n "$DEMYX_HOST_DEMYX_CHECK" ]]; then
-    DEMYX_HOST_IMAGES="$(docker exec -t --user=root demyx bash -c "[[ -f /demyx/.update_image ]] && cat /demyx/.update_image || true" | sed 's/\r//g')"
-    DEMYX_HOST_IMAGES_COUNT="$(echo "$DEMYX_HOST_IMAGES" | wc -l)"
-else
-    DEMYX_HOST_IMAGES=
-    DEMYX_HOST_IMAGES_COUNT=
-fi
+            if [[ -z "$DEMYX_HOST_ARG_2" ]]; then
+                docker exec -it --user=root demyx bash
+            else
+                docker exec -it --user=root demyx "$@"
+            fi
+        ;;
+        host)
+            case "$DEMYX_HOST_ARG_2" in
+                ctop)
+                    if docker inspect demyx_ctop >/dev/null 2>&1; then
+                        docker exec -it demyx_ctop /ctop
+                    else
+                        docker run -it --rm \
+                            --name=demyx_ctop \
+                            --volume /var/run/docker.sock:/var/run/docker.sock:ro \
+                            quay.io/vektorlab/ctop
+                    fi
+                ;;
+                edit)
+                    # shellcheck disable=2153
+                    docker run -it --rm \
+                        --user=root \
+                        --entrypoint=nano \
+                        -v demyx:/demyx \
+                        demyx/demyx .env
 
-demyx_exec() {
-    if [[ -n "${DEMYX_HOST:-}" ]]; then
-        docker exec -it demyx demyx "$@"
-    else
-        docker exec demyx demyx motd
-    fi
+                    demyx_host_remove
+                    demyx_host_run
+                ;;
+                help)
+                    demyx_host_help
+                ;;
+                rm|remove)
+                    demyx_host_remove "$DEMYX_HOST_ARG_3"
+                ;;
+                rs|restart)
+                    demyx_host_remove
+                    demyx_host_run
+                ;;
+                upgrade)
+                    demyx_host_not_running
+                    demyx_host_upgrade
+                ;;
+            esac
+
+        ;;
+        *)
+            if [[ "$DEMYX_HOST_DEMYX_PS" != *"demyx/demyx"* ]]; then
+                demyx_host_run
+                demyx_host_exec "$@"
+            else
+                demyx_host_exec "$@"
+            fi
+        ;;
+    esac
+
+    demyx_host_motd
+    demyx_host_update
+    demyx_host_error
 }
 demyx_compose() {
     docker run -t --rm \
