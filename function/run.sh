@@ -338,6 +338,14 @@ demyx_run_extras() {
         demyx_compose "$DEMYX_APP_DOMAIN" up -d
     fi
 }
+#
+#   Feature coming soon.
+#
+demyx_run_soon() {
+    if [[ "$DEMYX_RUN_FLAG_TYPE" = html || "$DEMYX_RUN_FLAG_TYPE" = php ]]; then
+        demyx_error custom "Coming Soon™"
+    fi
+}
 
             demyx_echo 'Importing clone database'
             demyx_execute demyx wp "$DEMYX_APP_DOMAIN" db import /demyx/clone.sql
