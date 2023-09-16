@@ -1052,59 +1052,94 @@ demyx_yml_service_sftp() {
               - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_sftp:/home"
     fi
 }
+#
+#   YAML template for traefik.
+#
+demyx_yml_traefik() {
+    local DEMYX_YML_TRAEFIK_DASHBOARD=
+    local DEMYX_YML_TRAEFIK_LABELS=
+    local DEMYX_YML_TRAEFIK_SECURITY=
 
-    if [[ "$DEMYX_TRAEFIK_DASHBOARD" = true ]]; then
-        DEMYX_YML_LABEL_TRAEFIK="labels:
-              - \"traefik.enable=true\"
-              - \"traefik.http.routers.traefik-http.rule=Host(\`${DEMYX_TRAEFIK_DASHBOARD_DOMAIN}.${DEMYX_DOMAIN}\`)\"
-              - \"traefik.http.routers.traefik-http.entrypoints=http\"
-              - \"traefik.http.routers.traefik-http.service=traefik-http-port\"
-              - \"traefik.http.services.traefik-http-port.loadbalancer.server.port=8080\"
-              - \"traefik.http.routers.traefik-http.middlewares=traefik-redirect\"
-              - \"traefik.http.middlewares.traefik-redirect.redirectscheme.scheme=https\"
-              - \"traefik.http.routers.traefik-https.service=api@internal\"
-              - \"traefik.http.routers.traefik-https.rule=Host(\`${DEMYX_TRAEFIK_DASHBOARD_DOMAIN}.${DEMYX_DOMAIN}\`)\"
-              - \"traefik.http.routers.traefik-https.entrypoints=https\"
-              - \"traefik.http.routers.traefik-https.tls.certresolver=${DEMYX_YML_RESOLVER}\"
-              - \"traefik.http.routers.traefik-https.service=traefik-https-port\"
-              - \"traefik.http.services.traefik-https-port.loadbalancer.server.port=8080\"
-              - \"traefik.http.routers.traefik-https.middlewares=traefik-auth,traefik-whitelist\"
-              - \"traefik.http.middlewares.traefik-auth.basicauth.users=\${DEMYX_YML_AUTH}\"
-              - \"traefik.http.middlewares.traefik-whitelist.ipwhitelist.sourcerange=${DEMYX_IP}\""
+    if [[ -f "$DEMYX"/.env && ! -L "$DEMYX_TRAEFIK"/.env ]]; then
+        ln -sf "$DEMYX"/.env "$DEMYX_TRAEFIK"/.env
     fi
 
-    echo "# AUTO GENERATED
-        version: \"$DEMYX_DOCKER_COMPOSE\"
+    if [[ "$DEMYX_TRAEFIK_DASHBOARD" = true ]]; then
+        DEMYX_YML_TRAEFIK_DASHBOARD="labels:
+              - \"traefik.enable=true\"
+              - \"traefik.http.routers.traefik-http.entrypoints=http\"
+              - \"traefik.http.routers.traefik-http.rule=Host(\`${DEMYX_TRAEFIK_DASHBOARD_DOMAIN}.${DEMYX_DOMAIN}\`)\"
+              - \"traefik.http.routers.traefik-http.service=traefik-http-port\"
+              - \"traefik.http.services.traefik-http-port.loadbalancer.server.port=8080\""
+
+        if [[ "$DEMYX_TRAEFIK_SSL" = true ]]; then
+            DEMYX_YML_TRAEFIK_LABELS="  - \"traefik.http.routers.traefik-http.middlewares=traefik-redirect\"
+              - \"traefik.http.middlewares.traefik-redirect.redirectscheme.scheme=https\"
+              - \"traefik.http.routers.traefik-https.entrypoints=https\"
+              - \"traefik.http.routers.traefik-https.rule=Host(\`${DEMYX_TRAEFIK_DASHBOARD_DOMAIN}.${DEMYX_DOMAIN}\`)\"
+              - \"traefik.http.routers.traefik-https.service=api@internal\"
+              - \"traefik.http.routers.traefik-https.service=traefik-https-port\"
+              - \"traefik.http.routers.traefik-https.tls.certresolver=$(demyx_yml_resolver)\"
+              - \"traefik.http.services.traefik-https-port.loadbalancer.server.port=8080\""
+
+            if [[ "$DEMYX_IP" != false ]]; then
+                DEMYX_YML_TRAEFIK_SECURITY="  - \"traefik.http.middlewares.traefik-whitelist.ipwhitelist.sourcerange=${DEMYX_IP}\"
+              - \"traefik.http.routers.traefik-https.middlewares=traefik-whitelist\""
+            else
+                DEMYX_YML_TRAEFIK_SECURITY="  - \"traefik.http.middlewares.traefik-auth.basicauth.users=\${DEMYX_YML_AUTH}\"
+              - \"traefik.http.routers.traefik-https.middlewares=traefik-auth\""
+            fi
+        else
+            if [[ "$DEMYX_IP" != false ]]; then
+                DEMYX_YML_TRAEFIK_SECURITY="  - \"traefik.http.middlewares.traefik-whitelist.ipwhitelist.sourcerange=${DEMYX_IP}\"
+              - \"traefik.http.routers.traefik-http.middlewares=traefik-whitelist\""
+            else
+                DEMYX_YML_TRAEFIK_SECURITY="  - \"traefik.http.middlewares.traefik-auth.basicauth.users=\${DEMYX_YML_AUTH}\"
+              - \"traefik.http.routers.traefik-http.middlewares=traefik-auth\""
+            fi
+        fi
+    fi
+
+    if [[ ! -d "$DEMYX_TRAEFIK" ]]; then
+        mkdir -p "$DEMYX_TRAEFIK"
+    fi
+
+    echo "# DEMYX $DEMYX_VERSION
+        networks:
+          demyx:
+            name: demyx
+          demyx_socket:
+            name: demyx_socket
         services:
           traefik:
-            image: demyx/traefik
-            cpus: ${DEMYX_CPU}
-            mem_limit: ${DEMYX_MEM}
             container_name: demyx_traefik
-            restart: unless-stopped
+            cpus: $DEMYX_CPU
+            environment:
+              - CF_API_EMAIL=$DEMYX_EMAIL
+              - CF_API_KEY=$DEMYX_CF_KEY
+              - DEMYX_ACME_EMAIL=$DEMYX_EMAIL
+              - DEMYX_TRAEFIK_LOG=$DEMYX_TRAEFIK_LOG
+              - TRAEFIK_PROVIDERS_DOCKER_ENDPOINT=$DOCKER_HOST
+              - TZ=$TZ
+            image: demyx/traefik
+            $DEMYX_YML_TRAEFIK_DASHBOARD
+            $DEMYX_YML_TRAEFIK_LABELS
+            $DEMYX_YML_TRAEFIK_SECURITY
+            mem_limit: $DEMYX_MEM
             networks:
               - demyx
               - demyx_socket
             ports:
               - 80:8081
               - 443:8082
+            restart: unless-stopped
             volumes:
-              - demyx_traefik:/demyx
               - demyx_log:/var/log/demyx
-            environment:
-              $DEMYX_TRAEFIK_YML
-              - DEMYX_TRAEFIK_LOG=$DEMYX_TRAEFIK_LOG
-              - TRAEFIK_PROVIDERS_DOCKER_ENDPOINT=$DOCKER_HOST
-              - TZ=$TZ
-            $DEMYX_YML_LABEL_TRAEFIK
+              - demyx_traefik:/demyx
+        version: \"$DEMYX_DOCKER_COMPOSE\"
         volumes:
-          demyx_traefik:
-            name: demyx_traefik
           demyx_log:
             name: demyx_log
-        networks:
-          demyx:
-            name: demyx
-          demyx_socket:
-            name: demyx_socket" | sed "s|        ||g" > "$DEMYX_TRAEFIK"/docker-compose.yml
+          demyx_traefik:
+            name: demyx_traefik" | sed "s|        ||g" > "$DEMYX_TRAEFIK"/docker-compose.yml
 }
