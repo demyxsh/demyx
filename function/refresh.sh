@@ -123,27 +123,25 @@ demyx_refresh_app() {
         fi
     fi
 }
-
-        demyx_app_config
-
-        if [[ -z "$DEMYX_REFRESH_SKIP_BACKUP" ]]; then
-            demyx backup "$DEMYX_APP_DOMAIN" --config
+#
+#   Refresh code-server.
+#
+demyx_refresh_code() {
+    if [[ "$DEMYX_CODE_ENABLE" = true ]]; then
+        if [[ ! -d "$DEMYX_CODE" ]]; then
+            mkdir -p "$DEMYX_CODE"
         fi
 
-        demyx_source env
-        demyx_source yml
+        demyx_execute "Refreshing code-server" \
+            "demyx_yml_code"
 
-        demyx_echo 'Refreshing .env'
-        demyx_execute demyx_env
-
-        if [[ -n "$DEMYX_REFRESH_FORCE" ]]; then
-            demyx_execute -v echo "$(cat "$DEMYX_APP_PATH"/.env | head -n 45)" > "$DEMYX_APP_PATH"/.env
-            demyx_echo 'Force refreshing the non-essential variables'
-            demyx_execute demyx_env
+        demyx_compose code up -d --remove-orphans
+    else
+        if docker inspect demyx_code >/dev/null 2>&1; then
+            demyx_compose code down
         fi
-
-        demyx_echo 'Refreshing .yml'
-        demyx_execute demyx_yml
+    fi
+}
 
         demyx compose "$DEMYX_APP_DOMAIN" fr
 
