@@ -157,5 +157,22 @@ demyx_utility_password() {
                 cat < $DEMYX_UTILITY_TRANSIENT"
     fi
 }
+#
+#   Generates username.
+#
+demyx_utility_username() {
+    local DEMYX_UTILITY_USERNAME
+    DEMYX_UTILITY_USERNAME="$(demyx_name)"
+
+    if [[ "$DEMYX_UTILITY_FLAG_RAW" = true ]]; then
+        echo "$DEMYX_UTILITY_USERNAME"
+    else
+        {
+            echo "$DEMYX_UTILITY_USERNAME"
+        } > "$DEMYX_UTILITY_TRANSIENT"
+
+        demyx_execute false \
+            "demyx_divider_title \"${DEMYX_UTILITY}\" \"Username\"; \
+                cat < $DEMYX_UTILITY_TRANSIENT"
     fi
 }
