@@ -287,6 +287,17 @@ demyx_host_remove() {
         ;;
     esac
 }
+#
+#   Notify user of updates.
+#
+demyx_host_update() {
+    if [[ "$DEMYX_HOST_DEMYX_PS" == *"demyx/demyx"* ]]; then
+        if [[ "$DEMYX_HOST_UPDATE_IMAGES_COUNT" != 0 ]]; then
+            echo -e "\e[32m[UPDATE]\e[39m $DEMYX_HOST_UPDATE_IMAGES_COUNT update(s) available!"
+            echo -e "\e[32m[UPDATE]\e[39m View update(s): demyx update -l"
+            echo -e "\e[32m[UPDATE]\e[39m Start upgrade: demyx host upgrade"
+        fi
+    fi
 }
 
 # Generate or source config
