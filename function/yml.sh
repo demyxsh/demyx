@@ -644,11 +644,193 @@ demyx_yml_ols() {
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_sftp
         " | sed "s|        ||g" > "$DEMYX_APP_PATH"/docker-compose.yml
 }
+#
+#   YAML template for the ols-bedrock stack.
+#
+demyx_yml_ols_bedrock() {
+    demyx_app_env wp "
+        DEMYX_APP_DOMAIN
+        DEMYX_APP_DEV
+        DEMYX_APP_ID
+        DEMYX_APP_PATH
+        DEMYX_APP_TYPE
+    "
+
+    local DEMYX_YML_OLS_DEV_ENTRYPOINTS=
+    local DEMYX_YML_OLS_DEV_LABELS=
+    local DEMYX_YML_OLS_DEV_PASSWORD=
+    local DEMYX_YML_OLS_DEV_VOLUME=
+    local DEMYX_YML_OLS_IMAGE=demyx/openlitespeed:bedrock
+    local DEMYX_YML_OLS_LABEL_ADMIN=
+    local DEMYX_YML_OLS_LABEL_ASSETS=
+    local DEMYX_YML_OLS_PORT=8080
+
+    if [[ "$DEMYX_APP_DEV" = true ]]; then
+        DEMYX_YML_OLS_DEV_PASSWORD="- DEMYX_CODE_PASSWORD=\${DEMYX_APP_DEV_PASSWORD}"
+        DEMYX_YML_OLS_DEV_VOLUME="- \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_code:/home/demyx"
+        DEMYX_YML_OLS_IMAGE=demyx/code-server:openlitespeed-bedrock
+        DEMYX_YML_OLS_PORT=8081
+
+        if [[ "$(demyx_app_proto)" = https ]]; then
+            DEMYX_YML_OLS_DEV_ENTRYPOINTS="- \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-cs.entrypoints=https\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-cs.tls.certresolver=$(demyx_yml_resolver)\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-js.entrypoints=https\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-js.tls.certresolver=$(demyx_yml_resolver)\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-json.entrypoints=https\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-json.tls.certresolver=$(demyx_yml_resolver)\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-webpack.entrypoints=https\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-webpack.tls.certresolver=$(demyx_yml_resolver)\""
+        else
+            DEMYX_YML_OLS_DEV_ENTRYPOINTS="- \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-cs.entrypoints=http\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-js.entrypoints=http\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-json.entrypoints=http\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-webpack.entrypoints=http\""
+        fi
+
+        DEMYX_YML_OLS_DEV_LABELS="- \"traefik.http.middlewares.\${DEMYX_APP_COMPOSE_PROJECT}-cs-prefix.stripprefix.prefixes=/demyx/cs/\"
+              - \"traefik.http.middlewares.\${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-js-prefix.stripprefix.prefixes=/app.[a-z0-9].hot-update.js\"
+              - \"traefik.http.middlewares.\${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-json-prefix.stripprefix.prefixes=/app.[a-z0-9].hot-update.json\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-cs.middlewares=\${DEMYX_APP_COMPOSE_PROJECT}-cs-prefix\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-cs.priority=99\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-cs.rule=Host(\`$(demyx_app_domain)\`) && PathPrefix(\`/demyx/cs/\`)\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-cs.service=\${DEMYX_APP_COMPOSE_PROJECT}-cs-port\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-js.middlewares=\${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-js-prefix\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-js.priority=99\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-js.rule=(Host(\`$(demyx_app_domain)\`) && PathPrefix(\`/app.{hash:[a-z.0-9]+}.hot-update.js\`))\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-js.service=\${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-js\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-json.middlewares=\${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-json-prefix\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-json.priority=99\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-json.rule=(Host(\`$(demyx_app_domain)\`) && PathPrefix(\`/app.{hash:[a-z.0-9]+}.hot-update.json\`))\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-json.service=\${DEMYX_APP_COMPOSE_PROJECT}-json\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-webpack.priority=99\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-webpack.rule=(Host(\`$(demyx_app_domain)\`) && PathPrefix(\`/__bud/hmr\`))\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-webpack.service=\${DEMYX_APP_COMPOSE_PROJECT}-webpack\"
+              - \"traefik.http.services.\${DEMYX_APP_COMPOSE_PROJECT}-cs-port.loadbalancer.server.port=8080\"
+              - \"traefik.http.services.\${DEMYX_APP_COMPOSE_PROJECT}-hotupdate-js.loadbalancer.server.port=3000\"
+              - \"traefik.http.services.\${DEMYX_APP_COMPOSE_PROJECT}-json.loadbalancer.server.port=3000\"
+              - \"traefik.http.services.\${DEMYX_APP_COMPOSE_PROJECT}-webpack.loadbalancer.server.port=3000\"
+              $DEMYX_YML_OLS_DEV_ENTRYPOINTS"
+    fi
+
+    if [[ "$(demyx_app_proto)" = https ]]; then
+        DEMYX_YML_OLS_LABEL_ADMIN="- \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-ols.entrypoints=https\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-ols.tls.certresolver=$(demyx_yml_resolver)\""
+        DEMYX_YML_OLS_LABEL_ASSETS="- \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-ols-assets.entrypoints=https\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-ols-assets.tls.certresolver=$(demyx_yml_resolver)\""
+    else
+        DEMYX_YML_OLS_LABEL_ADMIN="- \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-ols.entrypoints=http\""
+        DEMYX_YML_OLS_LABEL_ASSETS="- \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-ols-assets.entrypoints=http\""
+    fi
+
+    echo "# DEMYX $DEMYX_VERSION
         networks:
           demyx:
             name: demyx
-          demyx_socket:
-            name: demyx_socket" | sed "s|        ||g" > "$DEMYX_CODE"/docker-compose.yml
+        services:
+          $(demyx_yml_service_mariadb)
+          ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}:
+            cpus: \${DEMYX_APP_WP_CPU}
+            depends_on:
+              - db_\${DEMYX_APP_ID}
+            environment:
+              - DEMYX_ADMIN_IP=\${DEMYX_APP_OLS_ADMIN_IP}
+              - DEMYX_ADMIN_PASSWORD=\${DEMYX_APP_OLS_ADMIN_PASSWORD}
+              - DEMYX_ADMIN_USERNAME=\${DEMYX_APP_OLS_ADMIN_USERNAME}
+              - DEMYX_BASIC_AUTH_PASSWORD=\${DEMYX_APP_AUTH_PASSWORD}
+              - DEMYX_BASIC_AUTH_USERNAME=\${DEMYX_APP_AUTH_USERNAME}
+              - DEMYX_BASIC_AUTH_WP=\${DEMYX_APP_AUTH_WP}
+              - DEMYX_BEDROCK=true
+              - DEMYX_BEDROCK_MODE=\${DEMYX_APP_BEDROCK_MODE}
+              - DEMYX_CACHE=\${DEMYX_APP_CACHE}
+              - DEMYX_CLIENT_THROTTLE_BANDWIDTH_IN=\${DEMYX_APP_OLS_CLIENT_THROTTLE_BANDWIDTH_IN}
+              - DEMYX_CLIENT_THROTTLE_BANDWIDTH_OUT=\${DEMYX_APP_OLS_CLIENT_THROTTLE_BANDWIDTH_OUT}
+              - DEMYX_CLIENT_THROTTLE_BAN_PERIOD=\${DEMYX_APP_OLS_CLIENT_THROTTLE_BAN_PERIOD}
+              - DEMYX_CLIENT_THROTTLE_BLOCK_BAD_REQUEST=\${DEMYX_APP_OLS_CLIENT_THROTTLE_BLOCK_BAD_REQUEST}
+              - DEMYX_CLIENT_THROTTLE_DYNAMIC=\${DEMYX_APP_OLS_CLIENT_THROTTLE_DYNAMIC}
+              - DEMYX_CLIENT_THROTTLE_GRACE_PERIOD=\${DEMYX_APP_OLS_CLIENT_THROTTLE_GRACE_PERIOD}
+              - DEMYX_CLIENT_THROTTLE_HARD_LIMIT=\${DEMYX_APP_OLS_CLIENT_THROTTLE_HARD_LIMIT}
+              - DEMYX_CLIENT_THROTTLE_SOFT_LIMIT=\${DEMYX_APP_OLS_CLIENT_THROTTLE_SOFT_LIMIT}
+              - DEMYX_CLIENT_THROTTLE_STATIC=\${DEMYX_APP_OLS_CLIENT_THROTTLE_STATIC}
+              - DEMYX_CRON=\${DEMYX_APP_CRON}
+              - DEMYX_CRON_LOGROTATE_INTERVAL=\"\${DEMYX_APP_CRON_LOGROTATE_INTERVAL}\"
+              - DEMYX_CRON_WP_INTERVAL=\"\${DEMYX_APP_CRON_WP_INTERVAL}\"
+              - DEMYX_DB_HOST=\${WORDPRESS_DB_HOST}
+              - DEMYX_DB_NAME=\${WORDPRESS_DB_NAME}
+              - DEMYX_DB_PASSWORD=\${WORDPRESS_DB_PASSWORD}
+              - DEMYX_DB_USERNAME=\${WORDPRESS_DB_USER}
+              - DEMYX_DOMAIN=$(demyx_app_domain)
+              - DEMYX_LOGROTATE=\${DEMYX_APP_LOGROTATE}
+              - DEMYX_LOGROTATE_INTERVAL=\${DEMYX_APP_LOGROTATE_INTERVAL}
+              - DEMYX_LOGROTATE_SIZE=\${DEMYX_APP_LOGROTATE_SIZE}
+              - DEMYX_LSAPI_CHILDREN=\${DEMYX_APP_OLS_PHP_LSAPI_CHILDREN}
+              - DEMYX_LSPHP=\${DEMYX_APP_OLS_LSPHP}
+              - DEMYX_MAX_EXECUTION_TIME=\${DEMYX_APP_PHP_MAX_EXECUTION_TIME}
+              - DEMYX_MEMORY=\${DEMYX_APP_PHP_MEMORY}
+              - DEMYX_OPCACHE=\${DEMYX_APP_PHP_OPCACHE}
+              - DEMYX_PROTO=$(demyx_app_proto)
+              - DEMYX_RECAPTCHA_CONNECTION_LIMIT=\${DEMYX_APP_OLS_RECAPTCHA_CONNECTION_LIMIT}
+              - DEMYX_RECAPTCHA_ENABLE=\${DEMYX_APP_OLS_RECAPTCHA_ENABLE}
+              - DEMYX_RECAPTCHA_TYPE=\${DEMYX_APP_OLS_RECAPTCHA_TYPE}
+              - DEMYX_TUNING_CONNECTION_TIMEOUT=\${DEMYX_APP_OLS_TUNING_CONNECTION_TIMEOUT}
+              - DEMYX_TUNING_KEEP_ALIVE_TIMEOUT=\${DEMYX_APP_OLS_TUNING_KEEP_ALIVE_TIMEOUT}
+              - DEMYX_TUNING_MAX_CONNECTIONS=\${DEMYX_APP_OLS_TUNING_MAX_CONNECTIONS}
+              - DEMYX_TUNING_MAX_KEEP_ALIVE=\${DEMYX_APP_OLS_TUNING_MAX_KEEP_ALIVE}
+              - DEMYX_TUNING_SMART_KEEP_ALIVE=\${DEMYX_APP_OLS_TUNING_SMART_KEEP_ALIVE}
+              - DEMYX_UPLOAD_LIMIT=\${DEMYX_APP_UPLOAD_LIMIT}
+              - DEMYX_WP_EMAIL=\${WORDPRESS_USER_EMAIL}
+              - DEMYX_WP_PASSWORD=\${WORDPRESS_USER_PASSWORD}
+              - DEMYX_WP_USERNAME=\${WORDPRESS_USER}
+              - DEMYX_XMLRPC=\${DEMYX_APP_XMLRPC}
+              $DEMYX_YML_OLS_DEV_PASSWORD
+              - TZ=$TZ
+              - WORDPRESS_DB_HOST=\${WORDPRESS_DB_HOST}
+              - WORDPRESS_DB_NAME=\${WORDPRESS_DB_NAME}
+              - WORDPRESS_DB_PASSWORD=\${WORDPRESS_DB_PASSWORD}
+              - WORDPRESS_DB_USER=\${WORDPRESS_DB_USER}
+            hostname: \${DEMYX_APP_COMPOSE_PROJECT}
+            image: ${DEMYX_YML_OLS_IMAGE}
+            labels:
+              - \"traefik.enable=true\"
+              $(demyx_yml_auth_label)
+              $(demyx_yml_http_labels)
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-ols.rule=Host(\`$(demyx_app_domain)\`) && PathPrefix(\`/demyx/ols/\`)\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-ols.middlewares=\${DEMYX_APP_COMPOSE_PROJECT}-ols-prefix\"
+              - \"traefik.http.middlewares.\${DEMYX_APP_COMPOSE_PROJECT}-ols-prefix.stripprefix.prefixes=/demyx/ols/\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-ols.service=\${DEMYX_APP_COMPOSE_PROJECT}-ols-port\"
+              - \"traefik.http.services.\${DEMYX_APP_COMPOSE_PROJECT}-ols-port.loadbalancer.server.port=${DEMYX_YML_OLS_PORT}\"
+              $DEMYX_YML_OLS_LABEL_ADMIN
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-ols.priority=99\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-ols-assets.rule=Host(\`$(demyx_app_domain)\`) && PathPrefix(\`/res/\`)\"
+              - \"traefik.http.middlewares.\${DEMYX_APP_COMPOSE_PROJECT}-ols-assets-prefix.stripprefix.prefixes=/demyx/ols/\"
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-ols-assets.service=\${DEMYX_APP_COMPOSE_PROJECT}-ols-assets-port\"
+              - \"traefik.http.services.\${DEMYX_APP_COMPOSE_PROJECT}-ols-assets-port.loadbalancer.server.port=${DEMYX_YML_OLS_PORT}\"
+              $DEMYX_YML_OLS_LABEL_ASSETS
+              - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-ols-assets.priority=99\"
+              $DEMYX_YML_OLS_DEV_LABELS
+            mem_limit: \${DEMYX_APP_WP_MEM}
+            networks:
+              - demyx
+            restart: unless-stopped
+            volumes:
+              - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}:/demyx
+              - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_log:/var/log/demyx
+              $DEMYX_YML_OLS_DEV_VOLUME
+          $(demyx_yml_service_pma)
+          $(demyx_yml_service_sftp)
+        version: \"$DEMYX_DOCKER_COMPOSE\"
+        volumes:
+          ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}:
+            name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}
+          ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code:
+            name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_code
+          ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_db:
+            name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_db
+          ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_log:
+            name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_log
+          ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_sftp:
+            name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_sftp
+        " | sed "s|        ||g" > "$DEMYX_APP_PATH"/docker-compose.yml
+}
 }
 demyx_traefik_yml() {
     # TEMPORARY CODE
