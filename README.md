@@ -4,6 +4,8 @@
 
 Demyx is a Docker image that automates and manages WordPress installations. Traefik for reverse proxy with Lets Encrypt SSL/TLS. WordPress sites are powered by OpenLiteSpeed/NGINX-PHP and MariaDB.
 
+<a href="https://demyx.sh/discussions" target="_blank">Discussions</a> | <a href="https://demyx.sh/discord" target="_blank">Discord</a> | <a href="https://demyx.sh/irc" target="_blank">IRC</a>
+
 [![Code Size](https://img.shields.io/github/languages/code-size/demyxsh/demyx?style=flat&color=blue)](https://github.com/demyxsh/demyx)
 [![Repository Size](https://img.shields.io/github/repo-size/demyxsh/demyx?style=flat&color=blue)](https://github.com/demyxsh/demyx)
 [![Watches](https://img.shields.io/github/watchers/demyxsh/demyx?style=flat&color=blue)](https://github.com/demyxsh/demyx)
