@@ -8,7 +8,7 @@ set -euo pipefail
 demyx_yml() {
     # TODO - Generate .env
     if [[ ! -f "$DEMYX"/.env ]]; then
-        echo "# DEMYX HOST CONFIG - AUTO GENERATED
+        echo "# DEMYX ENV - AUTO GENERATED
 
             # HTTP AUTH
             DEMYX_AUTH_USERNAME=$(demyx utility username -r)
@@ -72,7 +72,7 @@ demyx_yml() {
 
     # TODO - TEMPORARY
     if [[ -f /tmp/.demyx ]]; then
-        echo "# DEMYX HOST CONFIG - AUTO GENERATED
+        echo "# DEMYX ENV - AUTO GENERATED
 
             # HTTP AUTH
             DEMYX_AUTH_USERNAME=$(demyx_yml_env DEMYX_HOST_AUTH_USERNAME /tmp/.demyx)
