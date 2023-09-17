@@ -25,18 +25,6 @@ demyx_pull() {
 #   Smart pull all demyx images.
 #
 demyx_pull_all() {
-    if [[ -f "$DEMYX"/.update_local ]]; then
-        . "$DEMYX"/.update_local
-    fi
-
-    if [[ -f "$DEMYX"/.update_remote ]]; then
-        . "$DEMYX"/.update_remote
-    fi
-
-    if [[ "${DEMYX_LOCAL_VERSION:-}" = "${DEMYX_REMOTE_VERSION:-}" ]]; then
-        DEMYX_VERSION=latest
-    fi
-
     local DEMYX_PULL_ALL="
         demyx/browsersync
         demyx/code-server:bedrock
@@ -44,7 +32,7 @@ demyx_pull_all() {
         demyx/code-server:openlitespeed
         demyx/code-server:openlitespeed-bedrock
         demyx/code-server:wp
-        demyx/demyx:${DEMYX_VERSION}
+        demyx/demyx:${DEMYX_IMAGE_VERSION}
         demyx/docker-socket-proxy
         demyx/mariadb
         demyx/nginx
