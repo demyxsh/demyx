@@ -2,10 +2,7 @@
 **
 
 # Only allow
-!/.config
-!/demyx.sh
 !/host.sh
 !/bin/**
-!/example/**
+!/custom/**
 !/function/**
-!/skel/**
