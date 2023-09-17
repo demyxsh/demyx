@@ -10,11 +10,12 @@ demyx_motd() {
     demyx_divider_title "DEMYX" "https://demyx.sh" "${DEMYX_STTY:-}"
     echo "Welcome to Demyx! Please report any bugs you see."
     echo
-    echo "- Docs: https://demyx.sh/kb"
-    echo "- Bugs: https://github.com/demyxsh/demyx/issues"
-    echo "- Changelog: https://github.com/demyxsh/demyx/blob/master/CHANGELOG.md"
-    echo "- Discussions: https://github.com/demyxsh/demyx/discussions"
-    echo "- Chat: https://web.libera.chat/?channel=#demyx"
+    echo "- Docs            https://demyx.sh/kb"
+    echo "- Bugs            https://demyx.sh/issues"
+    echo "- Changelog       https://demyx.sh/changelog"
+    echo "- Discussions     https://demyx.sh/discussions"
+    echo "- IRC             https://demyx.sh/irc"
+    echo "- Discord         https://demyx.sh/discord"
     demyx_info system
     echo
     demyx_motd_warning
