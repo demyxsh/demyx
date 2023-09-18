@@ -211,7 +211,7 @@ services:
       - DEMYX_TRAEFIK_DASHBOARD_DOMAIN=\${DEMYX_TRAEFIK_DASHBOARD_DOMAIN}
       - DEMYX_TRAEFIK_LOG=\${DEMYX_TRAEFIK_LOG}
       - DEMYX_TRAEFIK_SSL=\${DEMYX_TRAEFIK_SSL}
-      - TZ=\${TZ}
+      - TZ=\${DEMYX_TZ}
 volumes:
   demyx:
     name: demyx
