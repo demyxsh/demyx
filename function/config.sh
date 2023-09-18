@@ -329,7 +329,6 @@ demyx_config_auth() {
         DEMYX_APP_STACK
     "
 
-    DEMYX_CONFIG="Basic Auth"
     DEMYX_CONFIG_COMPOSE=true
 
     demyx_execute "Setting $DEMYX_CONFIG_FLAG_AUTH to basic auth" \
@@ -337,6 +336,7 @@ demyx_config_auth() {
         demyx_yml $DEMYX_APP_STACK"
 
     if [[ "$DEMYX_CONFIG_FLAG_AUTH" = true ]]; then
+        DEMYX_CONFIG="Basic Auth"
         {
             echo "Username      $DEMYX_APP_AUTH_USERNAME"
             echo "Password      $DEMYX_APP_AUTH_PASSWORD"
@@ -354,7 +354,6 @@ demyx_config_auth_wp() {
         DEMYX_APP_STACK
     "
 
-    DEMYX_CONFIG="WordPress Login Basic Auth"
     DEMYX_CONFIG_COMPOSE=true
 
     demyx_execute "Setting $DEMYX_CONFIG_FLAG_AUTH_WP to WordPress basic auth" \
@@ -362,6 +361,7 @@ demyx_config_auth_wp() {
         demyx_yml $DEMYX_APP_STACK"
 
     if [[ "$DEMYX_CONFIG_FLAG_AUTH_WP" = true ]]; then
+        DEMYX_CONFIG="WordPress Login Basic Auth"
         {
             echo "Username      $DEMYX_APP_AUTH_USERNAME"
             echo "Password      $DEMYX_APP_AUTH_PASSWORD"
@@ -540,7 +540,6 @@ demyx_config_dev() {
     "
 
     local DEMYX_CONFIG_DEV_OLD_VOLUME=
-    DEMYX_CONFIG="Development Mode"
     DEMYX_CONFIG_COMPOSE=true
 
     # TEMPORARY - Import old files to new volume
@@ -571,6 +570,7 @@ demyx_config_dev() {
         demyx_yml ${DEMYX_APP_STACK}"
 
     if [[ "$DEMYX_CONFIG_FLAG_DEV" = true ]]; then
+        DEMYX_CONFIG="Development Mode"
         {
             if [[ "$DEMYX_APP_STACK" = nginx-php || "$DEMYX_APP_STACK" = ols ]]; then
                 echo "Browsersync               $(demyx_app_proto)://$(demyx_app_domain)/demyx/bs/"
@@ -680,7 +680,6 @@ demyx_config_pma() {
         WORDPRESS_DB_USER
     "
 
-    DEMYX_CONFIG="phpMyAdmin"
     DEMYX_CONFIG_COMPOSE=true
 
     demyx_execute "Setting pma to $DEMYX_CONFIG_FLAG_PMA" \
@@ -688,6 +687,7 @@ demyx_config_pma() {
         demyx_yml $DEMYX_APP_STACK"
 
     if [[ "$DEMYX_CONFIG_FLAG_PMA" = true ]]; then
+        DEMYX_CONFIG="phpMyAdmin"
         {
             echo "phpMyAdmin        $(demyx_app_proto)://$(demyx_app_domain)/demyx/pma/"
             echo "Username          $WORDPRESS_DB_USER"
@@ -798,7 +798,6 @@ demyx_config_sftp() {
 
     # TODO
     #local DEMYX_CONFIG_SFTP_VOLUME=
-    DEMYX_CONFIG=SFTP
     DEMYX_CONFIG_COMPOSE=true
 
     demyx_execute "Setting SFTP to $DEMYX_CONFIG_FLAG_SFTP" \
@@ -806,6 +805,8 @@ demyx_config_sftp() {
         demyx_yml $DEMYX_APP_STACK"
 
     if [[ "$DEMYX_CONFIG_FLAG_SFTP" = true ]]; then
+        DEMYX_CONFIG=SFTP
+
         demyx_execute "Configuring SFTP container" \
             "demyx_open_port"
 
