@@ -27,14 +27,14 @@ demyx_info() {
             -j)
                 DEMYX_INFO_FLAG_JSON=true
             ;;
-            -r)
-                DEMYX_INFO_FLAG_RAW=true
-            ;;
             -l)
                 DEMYX_INFO_FLAG_LOGIN=true
             ;;
             -nv)
                 DEMYX_INFO_FLAG_NO_VOLUME=true
+            ;;
+            -r)
+                DEMYX_INFO_FLAG_RAW=true
             ;;
             --)
                 shift
