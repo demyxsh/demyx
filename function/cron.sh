@@ -19,14 +19,14 @@ demyx_cron() {
         daily)
             demyx_cron_daily
         ;;
+        five-minute)
+            demyx_cron_five_minute
+        ;;
         hourly)
             demyx_cron_hourly
         ;;
         minute)
             demyx_cron_minute
-        ;;
-        five-minute)
-            demyx_cron_five_minute
         ;;
         six-hour)
             demyx_cron_six_hour
