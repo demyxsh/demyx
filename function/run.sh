@@ -16,7 +16,6 @@ demyx_run() {
     local DEMYX_RUN_FLAG_FORCE=
     local DEMYX_RUN_FLAG_PASSWORD=
     local DEMYX_RUN_FLAG_PHP=
-    local DEMYX_RUN_FLAG_SKIP_INIT=
     local DEMYX_RUN_FLAG_SSL=
     local DEMYX_RUN_FLAG_STACK=
     local DEMYX_RUN_FLAG_TYPE=
@@ -56,9 +55,6 @@ demyx_run() {
             ;;
             --php=8|--php=8.0|--php=8.1)
                 DEMYX_RUN_FLAG_PHP="${DEMYX_RUN_FLAG#*=}"
-            ;;
-            --skip-init)
-                DEMYX_RUN_FLAG_SKIP_INIT=true
             ;;
             --ssl|--ssl=true)
                 DEMYX_RUN_FLAG_SSL=true
@@ -124,10 +120,8 @@ demyx_run_app() {
     demyx_config "$DEMYX_APP_DOMAIN" --healthcheck=false
     demyx_compose "$DEMYX_APP_DOMAIN" -d up -d
 
-    if [[ -z "$DEMYX_RUN_FLAG_SKIP_INIT" ]]; then
-        demyx_execute "Installing MariaDB" \
-            "demyx_mariadb_ready"
-    fi
+    demyx_execute "Installing MariaDB" \
+        "demyx_mariadb_ready"
 
     demyx_compose "$DEMYX_APP_DOMAIN" up -d
     demyx_config "$DEMYX_APP_DOMAIN" --healthcheck
@@ -172,10 +166,8 @@ demyx_run_clone() {
     demyx_config "$DEMYX_APP_DOMAIN" --healthcheck=false
     demyx_compose "$DEMYX_APP_DOMAIN" -d up -d
 
-    if [[ -z "$DEMYX_RUN_FLAG_SKIP_INIT" ]]; then
-        demyx_execute "Installing MariaDB" \
-            "demyx_mariadb_ready"
-    fi
+    demyx_execute "Installing MariaDB" \
+        "demyx_mariadb_ready"
 
     demyx_execute "Cloning app" \
         "docker run -dt --rm \

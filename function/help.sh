@@ -193,7 +193,6 @@ demyx_help() {
             echo "                -f                    Force delete if exists"
             echo "                --pass                Override password generation"
             echo "                --php                 Set PHP version, accepts: 8, 8.0, 8.1"
-            echo "                --skip-init           Skip the initializing checks, useful if the run command hangs"
             echo "                --ssl                 Run with ssl on/off"
             echo "                --stack               Create a WordPress app using preferred stack: bedrock, nginx-php (default), ols, ols-bedrock"
             echo "                --type                Run app type as html, php, wp (default)"
