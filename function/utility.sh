@@ -3,7 +3,7 @@
 # shellcheck shell=bash
 
 #
-#   demyx util <type> <args>
+#   demyx utility <type> <args>
 #
 demyx_utility() {
     DEMYX_ARG_2="${1:-$DEMYX_ARG_2}"

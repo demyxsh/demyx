@@ -75,7 +75,7 @@ demyx() {
         update) shift
             demyx_update "$@"
         ;;
-        util|utility) shift
+        utility) shift
             demyx_utility "$@"
         ;;
         -v|--version|version)
