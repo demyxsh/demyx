@@ -24,7 +24,6 @@ wget https://demyx.sh/install; bash install --no-ping
 [![Docker Pulls](https://img.shields.io/docker/pulls/demyx/demyx?style=flat&color=blue)](https://hub.docker.com/r/demyx/demyx)
 [![Architecture](https://img.shields.io/badge/linux-amd64-important?style=flat&color=blue)](https://hub.docker.com/r/demyx/demyx)
 [![Alpine](https://img.shields.io/badge/dynamic/json?url=https://github.com/demyxsh/demyx/raw/master/version.json&label=alpine&query=$.alpine&color=blue)](https://hub.docker.com/r/demyx/demyx)
-[![ctop](https://img.shields.io/badge/dynamic/json?url=https://github.com/demyxsh/demyx/raw/master/version.json&label=ctop&query=$.ctop&color=blue)](https://hub.docker.com/r/demyx/demyx)
 [![Docker Client](https://img.shields.io/badge/dynamic/json?url=https://github.com/demyxsh/demyx/raw/master/version.json&label=docker&query=$.docker&color=blue)](https://hub.docker.com/r/demyx/demyx)
 [![Docker Compose](https://img.shields.io/badge/dynamic/json?url=https://github.com/demyxsh/demyx/raw/master/version.json&label=docker-compose&query=$.docker_compose&color=blue)](https://hub.docker.com/r/demyx/demyx)
 [![Buy Me A Coffee](https://img.shields.io/badge/buy_me_coffee-$5-informational?style=flat&color=blue)](https://www.buymeacoffee.com/VXqkQK5tb)
