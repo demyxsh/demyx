@@ -30,9 +30,8 @@ jobs:
           docker pull demyx/traefik
           docker pull demyx/utilities
           docker pull demyx/wordpress
-          docker pull demyx/wordpress:cli
-          docker pull alpine
-          docker build -t demyx/${{ env.DEMYX_REPOSITORY }} -t demyx/${{ env.DEMYX_REPOSITORY }}:${{ env.DEMYX_VERSION }} .
+          docker pull alpine:3.17
+          docker build --build-arg DEMYX_BUILD="$(date +%F-%T)" -t demyx/${{ env.DEMYX_REPOSITORY }} -t demyx/${{ env.DEMYX_REPOSITORY }}:${{ env.DEMYX_VERSION }} .
       - name: Test
         id: test
         shell: 'script -q -e -c "bash {0}"'
@@ -40,19 +39,13 @@ jobs:
           sudo cp host.sh /usr/local/bin/demyx
           sudo chmod +x /usr/local/bin/demyx
 
-          echo "DEMYX_HOST_DOMAIN=demyx.app
-          DEMYX_HOST_EMAIL=info@demyx.app
-          DEMYX_HOST_AUTH_USERNAME=demyx
-          DEMYX_HOST_IP=127.0.0.1
-          DEMYX_HOST_INSTALL=false" > "$HOME"/.demyx
-
           demyx motd
           demyx run demyx.app
           demyx wp demyx.app core is-installed
 
-          DEMYX_TEST="$(demyx exec demyx.app nx wget -qO- http://localhost 2>&1)"
+          DEMYX_TEST="$(demyx exec demyx.app -n wget -qO- http://localhost 2>&1)"
           if [[ "$DEMYX_TEST" == *"Hello world"* ]]; then
-            echo "All good."
+            echo "Passed."
           else
             echo "$DEMYX_TEST"
             exit 1
@@ -61,13 +54,15 @@ jobs:
         run: |
           DEMYX_ALPINE_VERSION="$(docker exec --user=root ${{ env.DEMYX_REPOSITORY }} cat /etc/os-release | grep VERSION_ID | cut -c 12-)"
           DEMYX_DOCKER_VERSION="$(docker exec --user=root ${{ env.DEMYX_REPOSITORY }} docker version | grep Version: | head -n 1 | awk -F ' ' '{print $2}')"
-          DEMYX_JQ="$(jq ".alpine = \"$DEMYX_ALPINE_VERSION\" | .demyx = \"$DEMYX_VERSION\" | .docker = \"$DEMYX_DOCKER_VERSION\"" version.json)"
+          DEMYX_DOCKER_COMPOSE_VERSION="$(docker exec --user=root ${{ env.DEMYX_REPOSITORY }} docker-compose -v | awk -F ' ' '{print $3}' | sed 's|,||g')"
+          DEMYX_JQ="$(jq ".alpine = \"$DEMYX_ALPINE_VERSION\" | .demyx = \"$DEMYX_VERSION\" | .docker = \"$DEMYX_DOCKER_VERSION\" | .docker_compose = \"$DEMYX_DOCKER_COMPOSE_VERSION\"" version.json)"
 
           # Update versions
           echo "$DEMYX_JQ" > version.json
           echo "DEMYX_ALPINE_VERSION=$DEMYX_ALPINE_VERSION
           DEMYX_VERSION=$DEMYX_VERSION
-          DEMYX_DOCKER_VERSION=$DEMYX_DOCKER_VERSION" > VERSION
+          DEMYX_DOCKER_VERSION=$DEMYX_DOCKER_VERSION
+          DEMYX_DOCKER_COMPOSE_VERSION=$DEMYX_DOCKER_COMPOSE_VERSION" > VERSION
       - name: Push
         run: |
           # Not sure why this is being created?
