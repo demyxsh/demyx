@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.4.0] - 2023-09-15
+## [1.4.0] - 2023-09-19
 ### Highlights
   - The whole script is now in masochist mode: set -euo pipefail
   - Refactored 99% of functions using localize variables and internal functions
@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Several new environment variables for more control
   - Functions/commands will now go through a main function that checks for errors
   - Several flags are now 1 letter
+
 ### Added
 - Entrypoint script
 - SMTP script
