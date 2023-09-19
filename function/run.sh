@@ -59,9 +59,6 @@ demyx_run() {
             --ssl|--ssl=true)
                 DEMYX_RUN_FLAG_SSL=true
             ;;
-            --ssl=false)
-                DEMYX_RUN_FLAG_SSL=false
-            ;;
             --stack=bedrock|--stack=nginx-php|--stack=ols|--stack=ols-bedrock)
                 DEMYX_RUN_FLAG_STACK="${DEMYX_RUN_FLAG#*=}"
             ;;
