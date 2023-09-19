@@ -10,6 +10,7 @@ demyx_utility() {
     local DEMYX_UTILITY="DEMYX - UTILITY"
     local DEMYX_UTILITY_FLAG=
     local DEMYX_UTILITY_FLAG_RAW=
+    local DEMYX_UTILITY_SHELL=
     local DEMYX_UTILITY_TRANSIENT="$DEMYX_TMP"/demyx_transient
 
     demyx_source name
@@ -52,8 +53,14 @@ demyx_utility() {
                 "demyx_utility_password $*"
         ;;
         sh|shell) shift
+            if [[ -z "$*" ]]; then
+                DEMYX_UTILITY_SHELL=bash
+            else
+                DEMYX_UTILITY_SHELL="$*"
+            fi
+
             demyx_execute false \
-                "docker run -it --rm demyx/utilities $*"
+                "docker run -it --rm demyx/utilities $DEMYX_UTILITY_SHELL"
         ;;
         user|username)
             demyx_execute false \
