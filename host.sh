@@ -73,6 +73,9 @@ demyx_host() {
                     demyx_host_remove
                     demyx_host_run
                 ;;
+                env)
+                    docker exec --user=root demyx cat .env
+                ;;
                 help)
                     demyx_host_help
                 ;;
@@ -214,6 +217,7 @@ demyx_host_help() {
     echo "              ctop            htop but for contaienrs"
     echo "              dev             Developer mode, value: <true|false>"
     echo "              edit            Edit Demyx config (~/.demyx) on the host"
+    echo "              env             Prints the content of .env inside Demyx container"
     echo "              install         Prompt users to enter details for ~/.demyx"
     echo "              rm|remove       Stops and removes demyx container"
     echo "              rs|restart      Stops, removes, and starts demyx container"
