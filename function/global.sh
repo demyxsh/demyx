@@ -328,7 +328,9 @@ demyx_execute() {
 
     if [[ "$DEMYX_EXECUTE_LOG" = error ]]; then
         if [[ "$DEMYX_EXECUTE_ECHO" != false ]]; then
-            cat < "$DEMYX_TMP"/demyx_execute
+            if [[ -f "$DEMYX_TMP"/demyx_execute ]]; then
+                cat < "$DEMYX_TMP"/demyx_execute
+            fi
         fi
 
         exit 1
