@@ -14,6 +14,7 @@ demyx_host() {
     local DEMYX_HOST_ARG_3="${3:-}"
     local DEMYX_HOST_ARGS="$*"
     local DEMYX_HOST_CONFIRM=
+    local DEMYX_HOST_DEV=
     local DEMYX_HOST_HOSTNAME=
     DEMYX_HOST_HOSTNAME="$(hostname)"
     local DEMYX_HOST_DEMYX_PS=
@@ -47,6 +48,18 @@ demyx_host() {
                             --name=demyx_ctop \
                             --volume /var/run/docker.sock:/var/run/docker.sock:ro \
                             quay.io/vektorlab/ctop
+                    fi
+                ;;
+                dev)
+                    shift 2
+                    DEMYX_HOST_DEV="${1:-false}"
+
+                    if [[ "$DEMYX_HOST_DEV" = true ]]; then
+                        echo -e "\e[33m[WARNING]\e[39m Enabling developer mode"
+                        docker exec --user=root demyx bash -c 'sed -i "s|-euo|-euox|g" /etc/demyx/bin/demyx.sh'
+                    elif [[ "$DEMYX_HOST_DEV" = false ]]; then
+                        echo -e "\e[34m[INFO]\e[39m  Disabling developer mode"
+                        docker exec --user=root demyx bash -c 'sed -i "s|-euox|-euo|g" /etc/demyx/bin/demyx.sh'
                     fi
                 ;;
                 edit)
@@ -199,6 +212,7 @@ demyx_host_help() {
     echo "      shell                   Execute commands to the demyx container, leave <arg> empty to open a bash shell"
     echo "              all             Targets both demyx and demyx_socket container, works with remove and restart"
     echo "              ctop            htop but for contaienrs"
+    echo "              dev             Developer mode, value: <true|false>"
     echo "              edit            Edit Demyx config (~/.demyx) on the host"
     echo "              install         Prompt users to enter details for ~/.demyx"
     echo "              rm|remove       Stops and removes demyx container"
