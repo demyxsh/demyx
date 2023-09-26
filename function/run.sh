@@ -72,6 +72,9 @@ demyx_run() {
             --user=?*|--username=?*)
                 DEMYX_RUN_FLAG_USERNAME="${DEMYX_RUN_FLAG#*=}"
             ;;
+            --whitelist)
+                DEMYX_RUN_FLAG_WHITELIST=all
+            ;;
             --whitelist=all|--whitelist=login)
                 DEMYX_RUN_FLAG_WHITELIST="${DEMYX_RUN_FLAG#*=}"
             ;;
