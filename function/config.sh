@@ -441,14 +441,12 @@ demyx_config_cache() {
 #   Option updater for nginx-helper plugin.
 #
 demyx_config_cache_helper() {
-    demyx_app_env wp DEMYX_APP_DOMAIN
+    demyx_app_env wp "
+        DEMYX_APP_DOMAIN
+        DEMYX_APP_WP_CONTAINER
+    "
 
-    local DEMYX_CONFIG_CACHE_HELPER=
-    DEMYX_CONFIG_CACHE_HELPER="$(demyx_wp "$DEMYX_APP_DOMAIN" option get rt_wp_nginx_helper_options || true)"
-
-    if [[ "$DEMYX_CONFIG_CACHE_HELPER" == *"Does it exist"* ]]; then
-        demyx_wp "$DEMYX_APP_DOMAIN" "option update rt_wp_nginx_helper_options '{\"enable_purge\":\"1\",\"cache_method\":\"enable_fastcgi\",\"purge_method\":\"get_request\",\"enable_map\":null,\"enable_log\":null,\"log_level\":\"INFO\",\"log_filesize\":\"5\",\"enable_stamp\":null,\"purge_homepage_on_edit\":\"1\",\"purge_homepage_on_del\":\"1\",\"purge_archive_on_edit\":\"1\",\"purge_archive_on_del\":\"1\",\"purge_archive_on_new_comment\":\"1\",\"purge_archive_on_deleted_comment\":\"1\",\"purge_page_on_mod\":\"1\",\"purge_page_on_new_comment\":\"1\",\"purge_page_on_deleted_comment\":\"1\",\"redis_hostname\":\"127.0.0.1\",\"redis_port\":\"6379\",\"redis_prefix\":\"nginx-cache:\",\"purge_url\":\"\",\"redis_enabled_by_constant\":0}' --format=json"
-    fi
+    demyx_wp "$DEMYX_APP_DOMAIN" "option update rt_wp_nginx_helper_options '{\"enable_purge\":\"1\",\"cache_method\":\"enable_fastcgi\",\"purge_method\":\"get_request\",\"enable_map\":null,\"enable_log\":null,\"log_level\":\"INFO\",\"log_filesize\":\"5\",\"enable_stamp\":null,\"purge_homepage_on_edit\":\"1\",\"purge_homepage_on_del\":\"1\",\"purge_archive_on_edit\":\"1\",\"purge_archive_on_del\":\"1\",\"purge_archive_on_new_comment\":\"1\",\"purge_archive_on_deleted_comment\":\"1\",\"purge_page_on_mod\":\"1\",\"purge_page_on_new_comment\":\"1\",\"purge_page_on_deleted_comment\":\"1\",\"redis_hostname\":\"127.0.0.1\",\"redis_port\":\"6379\",\"redis_prefix\":\"nginx-cache:\",\"purge_url\":\"\",\"redis_enabled_by_constant\":0}' --format=json"
 }
 #
 #   Reconfigures an app's MariaDB credentials and reinstall WordPress core files.
