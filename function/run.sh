@@ -366,13 +366,17 @@ demyx_run_soon() {
 #
 demyx_run_table() {
     demyx_app_env wp "
+        DEMYX_APP_AUTH
+        DEMYX_APP_CACHE
         DEMYX_APP_DB_CONTAINER
+        DEMYX_APP_IP_WHITELIST
         DEMYX_APP_NX_CONTAINER
         DEMYX_APP_OLS_ADMIN_PASSWORD
         DEMYX_APP_OLS_ADMIN_USERNAME
         DEMYX_APP_OLS_LSPHP
         DEMYX_APP_PHP
         DEMYX_APP_REDIS
+        DEMYX_APP_SSL
         DEMYX_APP_WP_CONTAINER
         WORDPRESS_USER
         WORDPRESS_USER_EMAIL
