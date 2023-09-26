@@ -91,7 +91,6 @@ demyx_host() {
                     demyx_host_upgrade
                 ;;
             esac
-
         ;;
         *)
             if [[ "$DEMYX_HOST_DEMYX_PS" != *"demyx/demyx"* ]]; then
