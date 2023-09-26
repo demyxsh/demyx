@@ -4,7 +4,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.5.0] - 2023-09-26
+### New
+- All Demyx app stacks now supports Redis, either by `demyx run` or `demyx config` [08b6589](https://github.com/demyxsh/demyx/commit/08b65899ba34c06d4ef46c384edce7d5f3924420)
+- New flag `--whitelist` for `demyx run` [c093346](https://github.com/demyxsh/demyx/commit/c0933462e54ccc42bf64d1c9b7841871dc974fa9)
+- Host helper script can now print Demyx environment variables [bc78886](https://github.com/demyxsh/demyx/commit/bc7888600a65bbd4ffd16cf6b77c3a72f6245a05)
+- Debugger mode (breaks demyx, use with caution) [3aa8af3](https://github.com/demyxsh/demyx/commit/3aa8af3afe7a7e8165f64fd11a8669256dd0c70b)
+- Automatically adjust php-fpm values based on container memory [93cde6e](https://github.com/demyxsh/demyx/commit/93cde6e1e79588b87cdc2a1b0e8723e4032815a6)
+
+### Fixes
+- Fix www issues for Traefik labels [bb090cc](https://github.com/demyxsh/demyx/commit/bb090ccf3318bcb57634d55d814bb66a5c3d40d7)
+- Fix cloning issue [344b0bd](https://github.com/demyxsh/demyx/commit/344b0bdf1ed3d1e99e3c6130e184b76fdd145b3a)
+- Prevent file not found error [7768c06](https://github.com/demyxsh/demyx/commit/7768c069e8781e31c2d77589a6989e66d5b6a692)
+
+### Changes
+- Remove linebreak [c613013](https://github.com/demyxsh/demyx/commit/c613013bae135c4f54e26efd6592e0737bd56e91)
+- Use values from `demyx_app_env` [280a7d7](https://github.com/demyxsh/demyx/commit/280a7d7a946949b665d28d42d980d1d0ff2d2643)
+- Make sure to disable docker-compose binary for non-root user [ef59bf6](https://github.com/demyxsh/demyx/commit/ef59bf64aaaa41915cd5cbbe6dd6e054b64556f5)
+- Reverting change [a97c853](https://github.com/demyxsh/demyx/commit/a97c8537fd7d52af6501003adad537dc6d5e28cb)
 
 ## [1.4.0] - 2023-09-19
 ### Highlights
@@ -525,7 +542,7 @@ Yml
 - Switch to nginx-php as the default stack
 - Add hostname key and use app ID as part of volume name
 
-[Unreleased]: https://github.com/demyxsh/demyx/compare/1.0.0...HEAD
+[1.5.0]: https://github.com/demyxsh/demyx/compare/1.4.0...1.5.0
 [1.4.0]: https://github.com/demyxsh/demyx/compare/1.3.1...1.4.0
 [1.3.1]: https://github.com/demyxsh/demyx/compare/1.3.0...1.3.1
 [1.3.0]: https://github.com/demyxsh/demyx/compare/1.2.4...1.3.0
