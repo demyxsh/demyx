@@ -49,6 +49,7 @@ demyx_help() {
             echo "                   --php-max-spare-servers            Update PHP's pm.max_spare_servers"
             echo "                   --php-min-spare-servers            Update PHP's pm.min_spare_servers"
             echo "                   --php-pm                           Update PHP's pm"
+            echo "                   --php-pm-calc                      Automatically adjust php-fpm values based on container memory"
             echo "                   --php-process-idle-timeout         Update PHP's pm.process_idle_timeout"
             echo "                   --php-start-servers                Update PHP's pm.start_servers"
             echo "                   --pma                              Activate/deactivate phpMyAdmin container"

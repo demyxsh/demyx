@@ -483,6 +483,60 @@ demyx_open_port() {
     echo "$DEMYX_OPEN_PORT" > "$DEMYX_TMP"/"$DEMYX_ARG_2"_sftp
 }
 #
+#   Calculates php-fpm's pm values based on app container's memory.
+#   Reference: https://chrismoore.ca/2018/10/finding-the-correct-pm-max-children-settings-for-php-fpm/
+#
+demyx_pm_calc() {
+    demyx_source "
+        exec
+        utility
+    "
+
+    demyx_app_env wp "
+        DEMYX_APP_DOMAIN
+        DEMYX_APP_PHP_PM
+        DEMYX_APP_WP_CONTAINER
+    "
+
+    local DEMYX_PM_CALC="${1:-}"
+    local DEMYX_PM_CALC_AVERAGE=
+    local DEMYX_PM_CALC_FILE="$DEMYX_TMP"/demyx_pm_calc
+    local DEMYX_PM_CALC_MEMORY=
+    DEMYX_PM_CALC_MEMORY="$(docker inspect "$DEMYX_APP_WP_CONTAINER" | jq '.[].HostConfig.Memory' | awk '{ byte =$1 /1024/1024; print byte }')"
+    local DEMYX_PM_CALC_MEMORY_BUFFER=
+    DEMYX_PM_CALC_MEMORY_BUFFER="$(echo "${DEMYX_PM_CALC_MEMORY}*10/100" | bc)"
+    DEMYX_PM_CALC_MEMORY="$(echo "${DEMYX_PM_CALC_MEMORY}-${DEMYX_PM_CALC_MEMORY_BUFFER}" | bc)"
+
+    case "$DEMYX_PM_CALC" in
+        max-children)
+            # Loop until php-fpm child process is spawned
+            while true; do
+                curl -sL http://"$DEMYX_APP_DOMAIN"/wp-admin/?demyx-"$(demyx_utility id -r)" -o /dev/null || true
+                docker exec "$DEMYX_APP_WP_CONTAINER" ps -o rss,args > "$DEMYX_TMP"/demyx_pm_calc_ps
+                DEMYX_PM_CALC="$(grep "php-fpm: pool" "$DEMYX_TMP"/demyx_pm_calc_ps)"
+
+                if [[ -n "$DEMYX_PM_CALC" ]]; then
+                    DEMYX_PM_CALC_AVERAGE="$(grep "m {" "$DEMYX_TMP"/demyx_pm_calc_ps | head -c -1 | awk '{print $1}' | head -c -1 | sed 's|m||g' | jq -s add/length | awk -F '.' '{print $1}')"
+                    echo "${DEMYX_PM_CALC_MEMORY}/${DEMYX_PM_CALC_AVERAGE}" | bc | tee "$DEMYX_PM_CALC_FILE"
+                    break
+                fi
+            done
+        ;;
+        max-spare)
+            DEMYX_PM_CALC="$(cat < "$DEMYX_PM_CALC_FILE")*75/100"
+            echo "$DEMYX_PM_CALC" | bc
+        ;;
+        min-spare)
+            DEMYX_PM_CALC="$(cat < "$DEMYX_PM_CALC_FILE")*25/100"
+            echo "$DEMYX_PM_CALC" | bc
+        ;;
+        start-server)
+            DEMYX_PM_CALC="$(cat < "$DEMYX_PM_CALC_FILE")*25/100"
+            echo "$DEMYX_PM_CALC" | bc
+        ;;
+    esac
+}
+#
 #   Properizes files/directories.
 #
 demyx_proper() {
