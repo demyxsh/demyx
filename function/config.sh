@@ -31,6 +31,7 @@ demyx_config() {
     local DEMYX_CONFIG_FLAG_PHP_VERSION=
     local DEMYX_CONFIG_FLAG_PMA=
     local DEMYX_CONFIG_FLAG_RATE_LIMIT=
+    local DEMYX_CONFIG_FLAG_REDIS=
     local DEMYX_CONFIG_FLAG_RESOURCES=
     local DEMYX_CONFIG_FLAG_RESOURCES_DB_CPU=
     local DEMYX_CONFIG_FLAG_RESOURCES_DB_MEM=
@@ -162,6 +163,12 @@ demyx_config() {
             #--restart=nginx-php|--restart=nginx|--restart=ols|--restart=php)
             #    DEMYX_CONFIG_FLAG_RESTART="${DEMYX_CONFIG_FLAG#*=}"
             #;;
+            --redis|--redis=true)
+                DEMYX_CONFIG_FLAG_REDIS=true
+            ;;
+            --redis=false)
+                DEMYX_CONFIG_FLAG_REDIS=false
+            ;;
             --sftp|--sftp=true)
                 DEMYX_CONFIG_FLAG_SFTP=true
             ;;
@@ -260,6 +267,9 @@ demyx_config() {
                 fi
                 if [[ -n "$DEMYX_CONFIG_FLAG_RATE_LIMIT" ]]; then
                     demyx_config_rate_limit
+                fi
+                if [[ -n "$DEMYX_CONFIG_FLAG_REDIS" ]]; then
+                    demyx_config_redis
                 fi
                 if [[ -n "$DEMYX_CONFIG_FLAG_RESOURCES" ]]; then
                     demyx_config_resources
@@ -706,6 +716,58 @@ demyx_config_rate_limit() {
 
     demyx_execute "Setting rate limit to $DEMYX_CONFIG_FLAG_RATE_LIMIT" \
         "demyx_app_env_update DEMYX_APP_RATE_LIMIT=$DEMYX_CONFIG_FLAG_RATE_LIMIT"
+}
+#
+#   Configures a Redis container for an app.
+#
+demyx_config_redis() {
+    demyx_app_env wp "
+        DEMYX_APP_DOMAIN
+        DEMYX_APP_ID
+        DEMYX_APP_STACK
+        DEMYX_APP_WP_CONTAINER
+    "
+
+    local DEMYX_CONFIG_REDIS=
+
+    demyx_execute "Setting redis to $DEMYX_CONFIG_FLAG_REDIS" \
+        "demyx_app_env_update DEMYX_APP_REDIS=$DEMYX_CONFIG_FLAG_REDIS; \
+           demyx_yml ${DEMYX_APP_STACK}"
+
+    if [[ "$DEMYX_CONFIG_FLAG_REDIS" = true ]]; then
+        DEMYX_CONFIG_REDIS="$(demyx_wp "$DEMYX_APP_DOMAIN" plugin list --format=csv)"
+
+        demyx_compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
+
+        if [[ "$DEMYX_APP_STACK" = nginx-php || "$DEMYX_APP_STACK" = bedrock ]]; then
+            if [[ "$DEMYX_CONFIG_REDIS" != *"redis-cache"* ]]; then
+                demyx_wp "$DEMYX_APP_DOMAIN" plugin install redis-cache --activate
+            elif [[ "$DEMYX_CONFIG_REDIS" == *"redis-cache,inactive"* ]]; then
+                demyx_wp "$DEMYX_APP_DOMAIN" plugin activate redis-cache
+            fi
+
+            demyx_wp "$DEMYX_APP_DOMAIN" redis enable
+        elif [[ "$DEMYX_APP_STACK" = ols || "$DEMYX_APP_STACK" = ols-bedrock ]]; then
+            if [[ "$DEMYX_CONFIG_REDIS" != *"litespeed-cache"* ]]; then
+                demyx_wp "$DEMYX_APP_DOMAIN" plugin install litespeed-cache --activate
+            fi
+
+            demyx_wp "$DEMYX_APP_DOMAIN" option update litespeed.conf.object 1
+            demyx_wp "$DEMYX_APP_DOMAIN" option update litespeed.conf.object-kind 1
+            demyx_wp "$DEMYX_APP_DOMAIN" option update litespeed.conf.object-host rd_"$DEMYX_APP_ID"
+            demyx_wp "$DEMYX_APP_DOMAIN" option update litespeed.conf.object-port 6379
+        fi
+    elif [[ "$DEMYX_CONFIG_FLAG_REDIS" = false ]]; then
+        if [[ "$DEMYX_APP_STACK" = nginx-php || "$DEMYX_APP_STACK" = bedrock ]]; then
+            demyx_wp "$DEMYX_APP_DOMAIN" redis disable
+            demyx_wp "$DEMYX_APP_DOMAIN" plugin deactivate redis-cache
+            demyx_exec "$DEMYX_APP_DOMAIN" rm -f wp-content/object-cache.php
+        elif [[ "$DEMYX_APP_STACK" = ols || "$DEMYX_APP_STACK" = ols-bedrock ]]; then
+            demyx_wp "$DEMYX_APP_DOMAIN" option update litespeed.conf.object 0
+        fi
+
+        demyx_compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
+    fi
 }
 #
 #   Configure an app's container resources.

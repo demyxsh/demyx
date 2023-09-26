@@ -16,6 +16,7 @@ demyx_run() {
     local DEMYX_RUN_FLAG_FORCE=
     local DEMYX_RUN_FLAG_PASSWORD=
     local DEMYX_RUN_FLAG_PHP=
+    local DEMYX_RUN_FLAG_REDIS=
     local DEMYX_RUN_FLAG_SSL=
     local DEMYX_RUN_FLAG_STACK=
     local DEMYX_RUN_FLAG_TYPE=
@@ -55,6 +56,9 @@ demyx_run() {
             ;;
             --php=8|--php=8.0|--php=8.1)
                 DEMYX_RUN_FLAG_PHP="${DEMYX_RUN_FLAG#*=}"
+            ;;
+            --redis)
+                DEMYX_RUN_FLAG_REDIS=true
             ;;
             --ssl|--ssl=true)
                 DEMYX_RUN_FLAG_SSL=true
@@ -177,6 +181,7 @@ demyx_run_clone() {
         mkdir -p ${DEMYX_TMP}/run-${DEMYX_APP_ID}; \
         docker cp ${DEMYX_RUN_CLONE_WP_CONTAINER}:/demyx ${DEMYX_TMP}/run-${DEMYX_APP_ID}; \
         demyx_proper ${DEMYX_TMP}/run-${DEMYX_APP_ID}; \
+        rm -f ${DEMYX_TMP}/run-${DEMYX_APP_ID}/demyx/wp-content/object-cache.php; \
         docker cp ${DEMYX_TMP}/run-${DEMYX_APP_ID}/demyx ${DEMYX_APP_WP_CONTAINER}:/; \
         demyx_wp $DEMYX_APP_DOMAIN config create \
             --dbhost=$WORDPRESS_DB_HOST \
@@ -188,6 +193,7 @@ demyx_run_clone() {
 
     DEMYX_RUN_FLAG_AUTH="$(grep DEMYX_APP_AUTH= "$DEMYX_RUN_CLONE_APP"/.env | awk -F '=' '{print $2}')"
     DEMYX_RUN_FLAG_CACHE="$(grep DEMYX_APP_CACHE= "$DEMYX_RUN_CLONE_APP"/.env | awk -F '=' '{print $2}')"
+    DEMYX_RUN_FLAG_REDIS="$(grep DEMYX_APP_REDIS= "$DEMYX_RUN_CLONE_APP"/.env | awk -F '=' '{print $2}')"
     DEMYX_RUN_FLAG_SSL="$(grep DEMYX_APP_SSL= "$DEMYX_RUN_CLONE_APP"/.env | awk -F '=' '{print $2}')"
     DEMYX_RUN_FLAG_WHITELIST="$(grep DEMYX_APP_IP_WHITELIST= "$DEMYX_RUN_CLONE_APP"/.env | awk -F '=' '{print $2}')"
     DEMYX_RUN_FLAG_WWW="$(grep DEMYX_APP_DOMAIN_WWW= "$DEMYX_RUN_CLONE_APP"/.env | awk -F '=' '{print $2}')"
@@ -195,6 +201,7 @@ demyx_run_clone() {
     demyx_execute "Syncing configs" \
         "demyx_app_env_update DEMYX_APP_AUTH=${DEMYX_RUN_FLAG_AUTH}; \
             demyx_app_env_update DEMYX_APP_CACHE=${DEMYX_RUN_FLAG_CACHE}; \
+            demyx_app_env_update DEMYX_APP_REDIS=${DEMYX_RUN_FLAG_REDIS}; \
             demyx_app_env_update DEMYX_APP_SSL=${DEMYX_RUN_FLAG_SSL}; \
             demyx_app_env_update DEMYX_APP_IP_WHITELIST=${DEMYX_RUN_FLAG_WHITELIST}; \
             demyx_app_env_update DEMYX_APP_DOMAIN_WWW=${DEMYX_RUN_FLAG_WWW}"
@@ -277,6 +284,9 @@ demyx_run_init() {
     # Define php version.
     DEMYX_APP_PHP="${DEMYX_RUN_FLAG_PHP:-8.0}"
 
+    # Define redis value
+    DEMYX_APP_REDIS=${DEMYX_RUN_FLAG_REDIS:-false}
+
     # Define WordPress admin credentials.
     WORDPRESS_USER="${WORDPRESS_USER:-$DEMYX_RUN_FLAG_USERNAME}"
     WORDPRESS_USER_EMAIL="${WORDPRESS_USER_EMAIL:-$DEMYX_RUN_FLAG_EMAIL}"
@@ -323,6 +333,10 @@ demyx_run_extras() {
         DEMYX_RUN_EXTRAS+="--cache "
     fi
 
+    if [[ "$DEMYX_RUN_FLAG_REDIS" = true ]]; then
+        DEMYX_RUN_EXTRAS+="--redis "
+    fi
+
     if [[ -n "$DEMYX_RUN_FLAG_WHITELIST" ]]; then
         DEMYX_RUN_EXTRAS+="--whitelist=$DEMYX_RUN_FLAG_WHITELIST "
     fi
@@ -355,6 +369,7 @@ demyx_run_table() {
         DEMYX_APP_OLS_ADMIN_USERNAME
         DEMYX_APP_OLS_LSPHP
         DEMYX_APP_PHP
+        DEMYX_APP_REDIS
         DEMYX_APP_WP_CONTAINER
         WORDPRESS_USER
         WORDPRESS_USER_EMAIL
@@ -398,6 +413,7 @@ demyx_run_table() {
         echo "Basic Auth                $DEMYX_APP_AUTH"
         echo "Cache                     $DEMYX_APP_CACHE"
         echo "Whitelist                 $DEMYX_APP_IP_WHITELIST"
+        echo "Redis                     $DEMYX_APP_REDIS"
     } > "$DEMYX_RUN_TRANSIENT"
 
     demyx_execute false \

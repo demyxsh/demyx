@@ -138,9 +138,11 @@ demyx_host_dangling_images() {
     for DEMYX_HOST_DANGLING_IMAGES_I in $DEMYX_HOST_DANGLING_IMAGES; do
         DEMYX_HOST_DANGLING_IMAGES_CHECK_CTOP="$(docker inspect "$DEMYX_HOST_DANGLING_IMAGES_I" | grep ctop || true)"
         DEMYX_HOST_DANGLING_IMAGES_CHECK_PMA="$(docker inspect "$DEMYX_HOST_DANGLING_IMAGES_I" | grep phpmyadmin || true)"
+        DEMYX_HOST_DANGLING_IMAGES_CHECK_REDIS="$(docker inspect "$DEMYX_HOST_DANGLING_IMAGES_I" | grep redis || true)"
 
         if [[ -n "$DEMYX_HOST_DANGLING_IMAGES_CHECK_CTOP" ||
-                -n "$DEMYX_HOST_DANGLING_IMAGES_CHECK_PMA" ]]; then
+                -n "$DEMYX_HOST_DANGLING_IMAGES_CHECK_PMA" ||
+                -n "$DEMYX_HOST_DANGLING_IMAGES_CHECK_REDIS" ]]; then
             docker image rm "$DEMYX_HOST_DANGLING_IMAGES_I" || true
         fi
     done

@@ -43,6 +43,7 @@ demyx_pull_all() {
         demyx/wordpress:bedrock
         phpmyadmin/phpmyadmin
         quay.io/vektorlab/ctop
+        redis:alpine3.18
     "
     local DEMYX_PULL_ALL_CHECK=
     local DEMYX_PULL_ALL_I=
@@ -71,6 +72,8 @@ demyx_pull_image() {
     elif [[   "$DEMYX_ARG_2" = pma ||
             "$DEMYX_ARG_2" = phpmyadmin ]]; then
         DEMYX_PULL_IMAGE=phpmyadmin/phpmyadmin
+    elif [[   "$DEMYX_ARG_2" = redis ]]; then
+        DEMYX_PULL_IMAGE=redis:alpine3.18
     fi
 
     demyx_execute false \

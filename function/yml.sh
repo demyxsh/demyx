@@ -151,6 +151,7 @@ demyx_yml_bedrock() {
               - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}:/demyx
               - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_log:/var/log/demyx
           $(demyx_yml_service_pma)
+          $(demyx_yml_service_redis)
           $(demyx_yml_service_sftp)
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}:
             cpus: \${DEMYX_APP_WP_CPU}
@@ -395,6 +396,7 @@ demyx_yml_nginx_php() {
               - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}:/demyx
               - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_log:/var/log/demyx
           $(demyx_yml_service_pma)
+          $(demyx_yml_service_redis)
           $(demyx_yml_service_sftp)
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}:
             cpus: \${DEMYX_APP_WP_CPU}
@@ -628,6 +630,7 @@ demyx_yml_ols() {
               - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_log:/var/log/demyx
               $DEMYX_YML_OLS_DEV_VOLUME
           $(demyx_yml_service_pma)
+          $(demyx_yml_service_redis)
           $(demyx_yml_service_sftp)
         version: \"$DEMYX_DOCKER_COMPOSE\"
         volumes:
@@ -815,6 +818,7 @@ demyx_yml_ols_bedrock() {
               - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_log:/var/log/demyx
               $DEMYX_YML_OLS_DEV_VOLUME
           $(demyx_yml_service_pma)
+          $(demyx_yml_service_redis)
           $(demyx_yml_service_sftp)
         version: \"$DEMYX_DOCKER_COMPOSE\"
         volumes:
@@ -1006,6 +1010,25 @@ demyx_yml_service_pma() {
               - \"traefik.http.middlewares.\${DEMYX_APP_COMPOSE_PROJECT}-pma-prefix.stripprefix.prefixes=/demyx/pma/\"
               $DEMYX_YML_SERVICE_PMA_LABELS
               - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-pma.priority=99\"
+            mem_limit: \${DEMYX_APP_DB_MEM}
+            networks:
+              - demyx
+            restart: unless-stopped"
+    fi
+}
+#
+#   YAML template for the phpMyAdmin service.
+#
+demyx_yml_service_redis() {
+    demyx_app_env wp "
+        DEMYX_APP_ID
+        DEMYX_APP_REDIS
+    "
+
+    if [[ "$DEMYX_APP_REDIS" = true ]]; then
+        echo "rd_${DEMYX_APP_ID}:
+            cpus: \${DEMYX_APP_DB_CPU}
+            image: redis:alpine3.18
             mem_limit: \${DEMYX_APP_DB_MEM}
             networks:
               - demyx
