@@ -176,6 +176,7 @@ demyx_run_clone() {
         demyx_wp $DEMYX_RUN_FLAG_CLONE db export /demyx/${DEMYX_APP_ID}.sql; \
         mkdir -p ${DEMYX_TMP}/run-${DEMYX_APP_ID}; \
         docker cp ${DEMYX_RUN_CLONE_WP_CONTAINER}:/demyx ${DEMYX_TMP}/run-${DEMYX_APP_ID}; \
+        demyx_proper ${DEMYX_TMP}/run-${DEMYX_APP_ID}; \
         docker cp ${DEMYX_TMP}/run-${DEMYX_APP_ID}/demyx ${DEMYX_APP_WP_CONTAINER}:/; \
         demyx_wp $DEMYX_APP_DOMAIN config create \
             --dbhost=$WORDPRESS_DB_HOST \
@@ -185,20 +186,23 @@ demyx_run_clone() {
             --force; \
         docker stop $DEMYX_APP_WP_CONTAINER"
 
+    DEMYX_RUN_FLAG_AUTH="$(grep DEMYX_APP_AUTH= "$DEMYX_RUN_CLONE_APP"/.env | awk -F '=' '{print $2}')"
+    DEMYX_RUN_FLAG_CACHE="$(grep DEMYX_APP_CACHE= "$DEMYX_RUN_CLONE_APP"/.env | awk -F '=' '{print $2}')"
+    DEMYX_RUN_FLAG_SSL="$(grep DEMYX_APP_SSL= "$DEMYX_RUN_CLONE_APP"/.env | awk -F '=' '{print $2}')"
+    DEMYX_RUN_FLAG_WHITELIST="$(grep DEMYX_APP_IP_WHITELIST= "$DEMYX_RUN_CLONE_APP"/.env | awk -F '=' '{print $2}')"
+    DEMYX_RUN_FLAG_WWW="$(grep DEMYX_APP_DOMAIN_WWW= "$DEMYX_RUN_CLONE_APP"/.env | awk -F '=' '{print $2}')"
+
+    demyx_execute "Syncing configs" \
+        "demyx_app_env_update DEMYX_APP_AUTH=${DEMYX_RUN_FLAG_AUTH}; \
+            demyx_app_env_update DEMYX_APP_CACHE=${DEMYX_RUN_FLAG_CACHE}; \
+            demyx_app_env_update DEMYX_APP_SSL=${DEMYX_RUN_FLAG_SSL}; \
+            demyx_app_env_update DEMYX_APP_IP_WHITELIST=${DEMYX_RUN_FLAG_WHITELIST}; \
+            demyx_app_env_update DEMYX_APP_DOMAIN_WWW=${DEMYX_RUN_FLAG_WWW}"
+
     demyx_compose "$DEMYX_APP_DOMAIN" up -d
 
     demyx_execute "Installing WordPress" \
-        "demyx_wp $DEMYX_APP_DOMAIN core install \
-            --admin_email=$WORDPRESS_USER_EMAIL \
-            --admin_password=$WORDPRESS_USER_PASSWORD \
-            --admin_user=$WORDPRESS_USER \
-            --skip-email \
-            --title=$DEMYX_APP_DOMAIN \
-            --url=$(demyx_app_proto)://$(demyx_app_domain); \
-        docker run -t --rm \
-            --volumes-from=$DEMYX_APP_WP_CONTAINER \
-            demyx/utilities demyx-proxy; \
-        demyx_wp $DEMYX_APP_DOMAIN db import /demyx/${DEMYX_APP_ID}.sql; \
+        "demyx_wp $DEMYX_APP_DOMAIN db import /demyx/${DEMYX_APP_ID}.sql; \
         demyx_wp $DEMYX_APP_DOMAIN user create $WORDPRESS_USER $WORDPRESS_USER_EMAIL \
             --role=administrator \
             --user_pass=${WORDPRESS_USER_PASSWORD}; \
@@ -323,9 +327,12 @@ demyx_run_extras() {
         DEMYX_RUN_EXTRAS+="--whitelist=$DEMYX_RUN_FLAG_WHITELIST "
     fi
 
-    eval demyx_config "$DEMYX_APP_DOMAIN" --no-compose "$DEMYX_RUN_EXTRAS"
+    if [[ -n "$DEMYX_RUN_FLAG_WWW" ]]; then
+        DEMYX_RUN_EXTRAS+="--www "
+    fi
 
     if [[ -n "$DEMYX_RUN_EXTRAS" ]]; then
+        eval demyx_config "$DEMYX_APP_DOMAIN" "$DEMYX_RUN_EXTRAS" --no-compose
         demyx_compose "$DEMYX_APP_DOMAIN" up -d
     fi
 }
