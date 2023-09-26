@@ -156,6 +156,7 @@ RUN set -ex; \
     chmod o-x /usr/bin/curl; \
     chmod o-x /usr/bin/nano; \
     chmod o-x /usr/local/bin/docker; \
+    chmod o-x /usr/bin/docker-compose; \
     \
     # Copy custom directory
     cp -r "$DEMYX_CONFIG"/custom "$DEMYX"; \
