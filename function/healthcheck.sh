@@ -44,6 +44,7 @@ demyx_healthcheck_app() {
     local DEMYX_HEALTHCHECK_APP_WP=
 
     [[ -f "$DEMYX_HEALTHCHECK_TRANSIENT" ]] && rm -f "$DEMYX_HEALTHCHECK_TRANSIENT"
+    [[ "$(demyx_count_wp)" = 0 ]] && exit
 
     cd "$DEMYX_WP" || exit
 
