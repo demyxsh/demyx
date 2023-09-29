@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.1] - 2023-09-28
+### Fixes
+- Add missing command to recreate all apps when doing an upgrade [495a908](https://github.com/demyxsh/demyx/commit/495a90875807606372e6e856045020391cabaf15)
+- Remove tag due to errors when pulling, users can manually enter tag version [b85df64](https://github.com/demyxsh/demyx/commit/b85df64506a493814fd8de78ca82f2b16cf1dec7)
+- Exit if there's no apps installed, causing notifications to fire off when there's no error [75c5563](https://github.com/demyxsh/demyx/commit/75c556357c9b92cf69987418eef745843db92fd7)
+- Remove variable causing cache to not work properly on first run [809ff8d](https://github.com/demyxsh/demyx/commit/809ff8dae0015b79456a083a28cbec7229850c9c)
+
 ## [1.5.0] - 2023-09-26
 ### New
 - All Demyx app stacks now supports Redis, either by `demyx run` or `demyx config` [08b6589](https://github.com/demyxsh/demyx/commit/08b65899ba34c06d4ef46c384edce7d5f3924420)
@@ -542,6 +549,7 @@ Yml
 - Switch to nginx-php as the default stack
 - Add hostname key and use app ID as part of volume name
 
+[1.5.1]: https://github.com/demyxsh/demyx/compare/1.5.0...1.5.1
 [1.5.0]: https://github.com/demyxsh/demyx/compare/1.4.0...1.5.0
 [1.4.0]: https://github.com/demyxsh/demyx/compare/1.3.1...1.4.0
 [1.3.1]: https://github.com/demyxsh/demyx/compare/1.3.0...1.3.1
