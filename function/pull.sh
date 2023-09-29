@@ -32,7 +32,7 @@ demyx_pull_all() {
         demyx/code-server:openlitespeed
         demyx/code-server:openlitespeed-bedrock
         demyx/code-server:wp
-        demyx/demyx:${DEMYX_IMAGE_VERSION}
+        demyx/demyx
         demyx/docker-socket-proxy
         demyx/mariadb
         demyx/nginx
