@@ -353,6 +353,9 @@ demyx_host_upgrade() {
     # Upgrade database if needed
     demyx_host_app_upgrade
 
+    # Use new images
+    demyx_host_exec refresh all
+
     # Remove old images
     demyx_host_dangling_images
 
