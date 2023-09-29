@@ -403,7 +403,6 @@ demyx_config_bedrock() {
 #
 demyx_config_cache() {
     demyx_app_env wp "
-        DEMYX_APP_CACHE
         DEMYX_APP_DOMAIN
         DEMYX_APP_STACK
     "
