@@ -266,7 +266,7 @@ demyx_host_not_running() {
 demyx_host_run() {
     if [[ -f ~/.demyx ]]; then
         docker run -t --rm \
-            --netwwork=host \
+            --network=host \
             --hostname="$DEMYX_HOST_HOSTNAME" \
             --user=root \
             --entrypoint=demyx-yml \
