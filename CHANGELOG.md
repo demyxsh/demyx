@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2023-10-18
+### Changes
+- Update logic [b5a0984](https://github.com/demyxsh/demyx/commit/b5a0984d8babbeacc6256b93a0f8afc3391a2842)
+- Revert back to old traefik rules for www and non www labels [371070b](https://github.com/demyxsh/demyx/commit/371070b7bcfede6443318846eb76e55ab9c5195e)
+- `demyx config <app> --www` can't be used for sub domains [ef338ae](https://github.com/demyxsh/demyx/commit/ef338ae6252f95782d7660f7eca3c96fe528c6c7)
+
+### Fixes
+- Fix not installed error when using `--www` in `demyx run` [f111e06](https://github.com/demyxsh/demyx/commit/f111e0633c6b883e7467cfa1b7fce02153c77882)
+
+### New
+- New function `demyx_wordpress_ready()` loops checks if wp core is installed [99ed589](https://github.com/demyxsh/demyx/commit/99ed5896b938e05cda26644ef5902b86f49f84f7)
+- New function `demyx_subdomain()` returns a string if it's a subdomain [8eec3bb](https://github.com/demyxsh/demyx/commit/8eec3bb753c0c9da8b4be7db84aae506086eef89)
+
 ## [1.5.2] - 2023-10-10
 ### Fixes
 - Merge pull request #31 from NuclearMonster/master [adac58f](https://github.com/demyxsh/demyx/commit/adac58fd5e32280e95915f408a696b00cc91b686)
@@ -554,6 +567,7 @@ Yml
 - Switch to nginx-php as the default stack
 - Add hostname key and use app ID as part of volume name
 
+[1.6.0]: https://github.com/demyxsh/demyx/compare/1.5.2...1.6.0
 [1.5.2]: https://github.com/demyxsh/demyx/compare/1.5.1...1.5.2
 [1.5.1]: https://github.com/demyxsh/demyx/compare/1.5.0...1.5.1
 [1.5.0]: https://github.com/demyxsh/demyx/compare/1.4.0...1.5.0
