@@ -1060,6 +1060,10 @@ demyx_config_www() {
 
     DEMYX_CONFIG_COMPOSE=true
 
+    if [[ -n "$(demyx_subdomain "$DEMYX_APP_DOMAIN")" ]]; then
+        demyx_error custom "Not allowed with subdomains"
+    fi
+
     case "$DEMYX_CONFIG_FLAG_WWW" in
         false)
             demyx_execute "Updating domain to ${DEMYX_APP_DOMAIN}" \
