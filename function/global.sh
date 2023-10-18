@@ -575,6 +575,13 @@ demyx_source() {
     done
 }
 #
+#   Return string if it's a subdomain.
+#
+demyx_subdomain() {
+    local DEMYX_SUBDOMAIN="${1:-}"
+    echo "$DEMYX_SUBDOMAIN" | grep -E '\.[^.]+\.[[:alpha:]]' || true
+}
+#
 #   TODO
 #   Validates IP addresses.
 #
