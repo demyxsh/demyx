@@ -1067,11 +1067,13 @@ demyx_config_www() {
     case "$DEMYX_CONFIG_FLAG_WWW" in
         false)
             demyx_execute "Updating domain to ${DEMYX_APP_DOMAIN}" \
-                "demyx_wp $DEMYX_APP_DOMAIN search-replace --precise --all-tables $(demyx_app_proto)://www.${DEMYX_APP_DOMAIN} $(demyx_app_proto)://${DEMYX_APP_DOMAIN}"
+                "demyx_wordpress_ready; \
+                    demyx_wp $DEMYX_APP_DOMAIN search-replace --precise --all-tables $(demyx_app_proto)://www.${DEMYX_APP_DOMAIN} $(demyx_app_proto)://${DEMYX_APP_DOMAIN}"
         ;;
         true)
             demyx_execute "Updating domain to www.${DEMYX_APP_DOMAIN}" \
-                "demyx_wp $DEMYX_APP_DOMAIN search-replace --precise --all-tables $(demyx_app_proto)://${DEMYX_APP_DOMAIN} $(demyx_app_proto)://www.${DEMYX_APP_DOMAIN}"
+                "demyx_wordpress_ready; \
+                    demyx_wp $DEMYX_APP_DOMAIN search-replace --precise --all-tables $(demyx_app_proto)://${DEMYX_APP_DOMAIN} $(demyx_app_proto)://www.${DEMYX_APP_DOMAIN}"
         ;;
     esac
 
