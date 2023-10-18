@@ -839,12 +839,10 @@ demyx_yml_ols_bedrock() {
 #   Traefik resolver.
 #
 demyx_yml_resolver() {
-    local DEMYX_YML_RESOLVER=
+    local DEMYX_YML_RESOLVER=demyx
 
     if [[ "$DEMYX_EMAIL" != false && "$DEMYX_CF_KEY" != false ]]; then
         DEMYX_YML_RESOLVER=demyx-cf
-    else
-        DEMYX_YML_RESOLVER=demyx
     fi
 
     echo "$DEMYX_YML_RESOLVER"
