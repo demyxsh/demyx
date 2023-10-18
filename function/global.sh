@@ -606,3 +606,13 @@ demyx_warning() {
         exit
     fi
 }
+#
+#   Loop checks a connection to WordPress and exits when a connection is successful.
+#
+demyx_wordpress_ready() {
+    demyx_app_env wp DEMYX_APP_WP_CONTAINER
+
+    until docker exec "$DEMYX_APP_WP_CONTAINER" wp core is-installed; do
+        sleep 1
+    done
+}
