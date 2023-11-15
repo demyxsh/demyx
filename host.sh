@@ -333,7 +333,7 @@ demyx_host_upgrade() {
 
     if [[ -z "$DEMYX_HOST_UPGRADE_FORCE" ]]; then
         echo -en "\e[33m"
-        read -rep "[WARNING] Depending on the update, services may temporarily disrupt. Continue? [yY]: " DEMYX_HOST_CONFIRM
+        read -rep "[WARNING] Depending on the update, services may be temporarily disrupted. Continue? [yY]: " DEMYX_HOST_CONFIRM
         echo -en "\e[39m"
 
         if [[ "$DEMYX_HOST_CONFIRM" != [yY] ]]; then
