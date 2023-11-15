@@ -13,6 +13,7 @@ demyx_config() {
     local DEMYX_CONFIG_FLAG=
     local DEMYX_CONFIG_FLAG_AUTH=
     local DEMYX_CONFIG_FLAG_AUTH_WP=
+    local DEMYX_CONFIG_FLAG_BACKUP=
     local DEMYX_CONFIG_FLAG_BEDROCK=
     local DEMYX_CONFIG_FLAG_CACHE=
     local DEMYX_CONFIG_FLAG_CLEAN=
@@ -71,6 +72,12 @@ demyx_config() {
             ;;
             --auth-wp=false)
                 DEMYX_CONFIG_FLAG_AUTH_WP=false
+            ;;
+            --backup|--backup=true)
+                DEMYX_CONFIG_FLAG_BACKUP=true
+            ;;
+            --backup=false)
+                DEMYX_CONFIG_FLAG_BACKUP=false
             ;;
             --bedrock|--bedrock=production)
                 DEMYX_CONFIG_FLAG_BEDROCK=production
@@ -245,6 +252,9 @@ demyx_config() {
                 if [[ -n "$DEMYX_CONFIG_FLAG_AUTH_WP" ]]; then
                     demyx_config_auth_wp
                 fi
+                if [[ -n "$DEMYX_CONFIG_FLAG_BACKUP" ]]; then
+                    demyx_config_backup
+                fi
                 if [[ -n "$DEMYX_CONFIG_FLAG_BEDROCK" ]]; then
                     demyx_config_bedrock
                 fi
@@ -384,6 +394,17 @@ demyx_config_auth_wp() {
             echo "Password      $DEMYX_APP_AUTH_PASSWORD"
         } > "$DEMYX_CONFIG_TRANSIENT"
     fi
+}
+#
+#   Configures an app's backup status.
+#
+demyx_config_backup() {
+    demyx_app_env wp "
+        DEMYX_APP_BACKUP
+    "
+
+    demyx_execute "Setting backup to $DEMYX_CONFIG_FLAG_BACKUP" \
+        "demyx_app_env_update DEMYX_APP_BACKUP=$DEMYX_CONFIG_FLAG_BACKUP"
 }
 #
 #   Configures app's bedrock .env mode.
