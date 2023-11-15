@@ -326,6 +326,8 @@ demyx_run_init() {
 #   Execute extra commands.
 #
 demyx_run_extras() {
+    demyx_wordpress_ready
+
     local DEMYX_RUN_EXTRAS=
 
     if [[ "$DEMYX_RUN_FLAG_AUTH" = true ]]; then
