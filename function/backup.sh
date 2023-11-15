@@ -110,6 +110,7 @@ demyx_backup_app() {
     DEMYX_BACKUP_TODAYS_DATE="$(date +%Y-%m-%d)"
 
     demyx_app_env wp "
+        DEMYX_APP_BACKUP
         DEMYX_APP_CONTAINER
         DEMYX_APP_DOMAIN
         DEMYX_APP_ID
