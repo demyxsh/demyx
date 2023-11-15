@@ -612,7 +612,17 @@ demyx_warning() {
 demyx_wordpress_ready() {
     demyx_app_env wp DEMYX_APP_WP_CONTAINER
 
-    until docker exec "$DEMYX_APP_WP_CONTAINER" wp core is-installed; do
-        sleep 1
+    local DEMYX_WORDPRESS_READY=0
+    local DEMYX_WORDPRESS_READY_MESSAGE="Timed out executing: docker exec $DEMYX_APP_WP_CONTAINER wp core is-installed"
+
+    until docker exec "$DEMYX_APP_WP_CONTAINER" wp core is-installed 2>/dev/null; do
+        DEMYX_WORDPRESS_READY="$((DEMYX_WORDPRESS_READY+1))"
+
+        if [[ "$DEMYX_WORDPRESS_READY" = 5 ]]; then
+            demyx_logger false "demyx_wordpress_ready" "$DEMYX_WORDPRESS_READY_MESSAGE" error
+            demyx_error custom "$DEMYX_WORDPRESS_READY_MESSAGE"
+        else
+            sleep 1
+        fi
     done
 }
