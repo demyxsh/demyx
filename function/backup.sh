@@ -119,59 +119,63 @@ demyx_backup_app() {
         DEMYX_APP_WP_CONTAINER
     "
 
-    demyx_backup_config
+    if [[ "$DEMYX_APP_BACKUP" = true ]]; then
+        demyx_backup_config
 
-    # shellcheck disable=SC2153
-    if [[ ! -d "$DEMYX_BACKUP_WP"/"$DEMYX_APP_DOMAIN" ]]; then
-        demyx_execute false "mkdir -p ${DEMYX_BACKUP_WP}/${DEMYX_APP_DOMAIN}"
-    fi
+        # shellcheck disable=SC2153
+        if [[ ! -d "$DEMYX_BACKUP_WP"/"$DEMYX_APP_DOMAIN" ]]; then
+            demyx_execute false "mkdir -p ${DEMYX_BACKUP_WP}/${DEMYX_APP_DOMAIN}"
+        fi
 
-    if [[ ! -d "$DEMYX_TMP"/"$DEMYX_APP_DOMAIN" ]]; then
-        demyx_execute false "cp -rp ${DEMYX_WP}/${DEMYX_APP_DOMAIN} ${DEMYX_TMP}"
-    fi
+        if [[ ! -d "$DEMYX_TMP"/"$DEMYX_APP_DOMAIN" ]]; then
+            demyx_execute false "cp -rp ${DEMYX_WP}/${DEMYX_APP_DOMAIN} ${DEMYX_TMP}"
+        fi
 
-    if [[ "$DEMYX_APP_TYPE" = wp ]]; then
-        demyx_execute "Exporting ${DEMYX_APP_CONTAINER}.sql" \
-            "demyx_wp ${DEMYX_APP_DOMAIN} db export ${DEMYX_APP_CONTAINER}.sql"
+        if [[ "$DEMYX_APP_TYPE" = wp ]]; then
+            demyx_execute "Exporting ${DEMYX_APP_CONTAINER}.sql" \
+                "demyx_wp ${DEMYX_APP_DOMAIN} db export ${DEMYX_APP_CONTAINER}.sql"
 
-        demyx_execute "Exporting ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}" \
-            "docker cp ${DEMYX_APP_WP_CONTAINER}:/demyx ${DEMYX_TMP}/${DEMYX_APP_DOMAIN}/demyx-wp"
-    fi
+            demyx_execute "Exporting ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}" \
+                "docker cp ${DEMYX_APP_WP_CONTAINER}:/demyx ${DEMYX_TMP}/${DEMYX_APP_DOMAIN}/demyx-wp"
+        fi
 
-    demyx_execute "Exporting ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_log" \
-        "docker cp ${DEMYX_APP_WP_CONTAINER}:/var/log/demyx ${DEMYX_TMP}/${DEMYX_APP_DOMAIN}/demyx-log"
+        demyx_execute "Exporting ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_log" \
+            "docker cp ${DEMYX_APP_WP_CONTAINER}:/var/log/demyx ${DEMYX_TMP}/${DEMYX_APP_DOMAIN}/demyx-log"
 
-    demyx_execute "Exporting ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code" \
-        "docker run -t \
-            --rm \
-            --entrypoint=bash \
-            -v demyx:$DEMYX \
-            -v ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code:/${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code \
-            demyx/utilities -c 'cp -rp /${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code ${DEMYX_TMP}/${DEMYX_APP_DOMAIN}/demyx-code'"
+        demyx_execute "Exporting ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code" \
+            "docker run -t \
+                --rm \
+                --entrypoint=bash \
+                -v demyx:$DEMYX \
+                -v ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code:/${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code \
+                demyx/utilities -c 'cp -rp /${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code ${DEMYX_TMP}/${DEMYX_APP_DOMAIN}/demyx-code'"
 
-    demyx_execute "Exporting ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_sftp" \
-        "docker run -t \
-            --rm \
-            --entrypoint=bash \
-            -v demyx:$DEMYX \
-            -v ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_sftp:/${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_sftp \
-            demyx/utilities -c 'cp -rp /${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_sftp ${DEMYX_TMP}/${DEMYX_APP_DOMAIN}/demyx-sftp'"
+        demyx_execute "Exporting ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_sftp" \
+            "docker run -t \
+                --rm \
+                --entrypoint=bash \
+                -v demyx:$DEMYX \
+                -v ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_sftp:/${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_sftp \
+                demyx/utilities -c 'cp -rp /${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_sftp ${DEMYX_TMP}/${DEMYX_APP_DOMAIN}/demyx-sftp'"
 
-    demyx_execute "Archiving directory" \
-        "demyx_proper ${DEMYX_TMP}/${DEMYX_APP_DOMAIN}; \
-        tar -czf ${DEMYX_TMP}/${DEMYX_BACKUP_TODAYS_DATE}-${DEMYX_APP_DOMAIN}.tgz -C $DEMYX_TMP ${DEMYX_APP_DOMAIN}; \
-        mv ${DEMYX_TMP}/${DEMYX_BACKUP_TODAYS_DATE}-${DEMYX_APP_DOMAIN}.tgz ${DEMYX_BACKUP_WP}/${DEMYX_APP_DOMAIN}"
+        demyx_execute "Archiving directory" \
+            "demyx_proper ${DEMYX_TMP}/${DEMYX_APP_DOMAIN}; \
+            tar -czf ${DEMYX_TMP}/${DEMYX_BACKUP_TODAYS_DATE}-${DEMYX_APP_DOMAIN}.tgz -C $DEMYX_TMP ${DEMYX_APP_DOMAIN}; \
+            mv ${DEMYX_TMP}/${DEMYX_BACKUP_TODAYS_DATE}-${DEMYX_APP_DOMAIN}.tgz ${DEMYX_BACKUP_WP}/${DEMYX_APP_DOMAIN}"
 
-    if [[ -n "$DEMYX_BACKUP_FLAG_PATH" ]]; then
-        demyx_execute "Moving backup to $DEMYX_BACKUP_FLAG_PATH" \
-            "mkdir -p ${DEMYX_BACKUP_FLAG_PATH}; \
-            mv ${DEMYX_BACKUP_WP}/${DEMYX_APP_DOMAIN}/${DEMYX_BACKUP_TODAYS_DATE}-${DEMYX_APP_DOMAIN}.tgz $DEMYX_BACKUP_FLAG_PATH"
-    fi
+        if [[ -n "$DEMYX_BACKUP_FLAG_PATH" ]]; then
+            demyx_execute "Moving backup to $DEMYX_BACKUP_FLAG_PATH" \
+                "mkdir -p ${DEMYX_BACKUP_FLAG_PATH}; \
+                mv ${DEMYX_BACKUP_WP}/${DEMYX_APP_DOMAIN}/${DEMYX_BACKUP_TODAYS_DATE}-${DEMYX_APP_DOMAIN}.tgz $DEMYX_BACKUP_FLAG_PATH"
+        fi
 
-    if [[ "$DEMYX_APP_TYPE" = wp ]]; then
-        demyx_execute "Cleaning up" \
-            "docker exec -t $DEMYX_APP_WP_CONTAINER rm -f ${DEMYX_APP_CONTAINER}.sql; \
-            rm -rf ${DEMYX_TMP}/${DEMYX_APP_DOMAIN}"
+        if [[ "$DEMYX_APP_TYPE" = wp ]]; then
+            demyx_execute "Cleaning up" \
+                "docker exec -t $DEMYX_APP_WP_CONTAINER rm -f ${DEMYX_APP_CONTAINER}.sql; \
+                rm -rf ${DEMYX_TMP}/${DEMYX_APP_DOMAIN}"
+        fi
+    else
+        demyx_warning "$DEMYX_APP_DOMAIN has backups disabled, skipping ..."
     fi
 }
 #
