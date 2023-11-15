@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2023-11-14
+### New
+- Add new volume `custom` for user customizations [5a1d155](https://github.com/demyxsh/demyx/commit/5a1d1553554bb10c06c3d5a34bfbb63d1366789d)
+- `demyx config <app> --backup` new flag to skip backups of a specifc app [a2497a3](https://github.com/demyxsh/demyx/commit/a2497a36d7b3a9b257b040a991519daccf332d96)
+- Add new variable DEMYX_APP_BACKUP [04cfb4c](https://github.com/demyxsh/demyx/commit/04cfb4c04058b6964ee55f2fdca24dcace297b6d)
+### Changes
+- Use `demyx_wordpress_ready` in `demyx_run_extras` [974fed2](https://github.com/demyxsh/demyx/commit/974fed212e4a75b264fe25b7d72fd3304d1bb7fb)
+- Log error for `demyx_wordpress_ready` [7d377cb](https://github.com/demyxsh/demyx/commit/7d377cb451a10b408094c6e84961d675bd23583d)
+- Skip app backup if DEMYX_APP_BACKUP is set to false [14bd04e](https://github.com/demyxsh/demyx/commit/14bd04e2b0683c1b3387bf53037908b3a511adf7)
+
 ## [1.6.0] - 2023-10-18
 ### Changes
 - Update logic [b5a0984](https://github.com/demyxsh/demyx/commit/b5a0984d8babbeacc6256b93a0f8afc3391a2842)
@@ -567,6 +577,7 @@ Yml
 - Switch to nginx-php as the default stack
 - Add hostname key and use app ID as part of volume name
 
+[1.7.0]: https://github.com/demyxsh/demyx/compare/1.6.0...1.7.0
 [1.6.0]: https://github.com/demyxsh/demyx/compare/1.5.2...1.6.0
 [1.5.2]: https://github.com/demyxsh/demyx/compare/1.5.1...1.5.2
 [1.5.1]: https://github.com/demyxsh/demyx/compare/1.5.0...1.5.1
