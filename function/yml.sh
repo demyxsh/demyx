@@ -149,6 +149,7 @@ demyx_yml_bedrock() {
             restart: unless-stopped
             volumes:
               - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}:/demyx
+              - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_custom:/etc/demyx/custom
               - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_log:/var/log/demyx
           $(demyx_yml_service_pma)
           $(demyx_yml_service_redis)
@@ -204,6 +205,7 @@ demyx_yml_bedrock() {
             restart: unless-stopped
             volumes:
               - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}:/demyx
+              - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_custom:/etc/demyx/custom
               - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_log:/var/log/demyx
               $DEMYX_YML_BEDROCK_DEV_VOLUME
         version: \"$DEMYX_DOCKER_COMPOSE\"
@@ -212,6 +214,8 @@ demyx_yml_bedrock() {
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code:
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_code
+          ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_custom:
+            name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_custom
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_db:
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_db
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_log:
@@ -395,6 +399,7 @@ demyx_yml_nginx_php() {
             restart: unless-stopped
             volumes:
               - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}:/demyx
+              - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_custom:/etc/demyx/custom
               - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_log:/var/log/demyx
           $(demyx_yml_service_pma)
           $(demyx_yml_service_redis)
@@ -447,6 +452,7 @@ demyx_yml_nginx_php() {
             restart: unless-stopped
             volumes:
               - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}:/demyx
+              - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_custom:/etc/demyx/custom
               - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_log:/var/log/demyx
               $DEMYX_YML_NGINX_PHP_DEV_VOLUME
         version: \"$DEMYX_DOCKER_COMPOSE\"
@@ -455,6 +461,8 @@ demyx_yml_nginx_php() {
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code:
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_code
+          ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_custom:
+            name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_custom
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_db:
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_db
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_log:
@@ -628,6 +636,7 @@ demyx_yml_ols() {
             restart: unless-stopped
             volumes:
               - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}:/demyx
+              - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_custom:/etc/demyx/custom
               - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_log:/var/log/demyx
               $DEMYX_YML_OLS_DEV_VOLUME
           $(demyx_yml_service_pma)
@@ -639,6 +648,8 @@ demyx_yml_ols() {
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code:
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_code
+          ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_custom:
+            name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_custom
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_db:
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_db
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_log:
@@ -827,6 +838,8 @@ demyx_yml_ols_bedrock() {
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code:
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_code
+          ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_custom:
+            name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_custom
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_db:
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_db
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_log:

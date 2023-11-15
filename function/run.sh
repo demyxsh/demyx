@@ -440,6 +440,7 @@ demyx_run_volumes() {
 
     docker volume create "$DEMYX_APP_TYPE"_"$DEMYX_APP_ID"
     docker volume create "$DEMYX_APP_TYPE"_"$DEMYX_APP_ID"_code
+    docker volume create "$DEMYX_APP_TYPE"_"$DEMYX_APP_ID"_custom
     docker volume create "$DEMYX_APP_TYPE"_"$DEMYX_APP_ID"_db
     docker volume create "$DEMYX_APP_TYPE"_"$DEMYX_APP_ID"_log
     docker volume create "$DEMYX_APP_TYPE"_"$DEMYX_APP_ID"_sftp
