@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.1] - 2023-11-16
+### Changes
+- Missing backup/restore commands for custom volume [aa8e543](https://github.com/demyxsh/demyx/commit/aa8e5431b104261ada0ac75be43329c7175b6c84)
+
 ## [1.7.0] - 2023-11-14
 ### New
 - Add new volume `custom` for user customizations [5a1d155](https://github.com/demyxsh/demyx/commit/5a1d1553554bb10c06c3d5a34bfbb63d1366789d)
@@ -577,6 +581,7 @@ Yml
 - Switch to nginx-php as the default stack
 - Add hostname key and use app ID as part of volume name
 
+[1.7.1]: https://github.com/demyxsh/demyx/compare/1.7.0...1.7.1
 [1.7.0]: https://github.com/demyxsh/demyx/compare/1.6.0...1.7.0
 [1.6.0]: https://github.com/demyxsh/demyx/compare/1.5.2...1.6.0
 [1.5.2]: https://github.com/demyxsh/demyx/compare/1.5.1...1.5.2
