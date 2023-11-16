@@ -150,6 +150,9 @@ demyx_backup_app() {
                 -v ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code:/${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code \
                 demyx/utilities -c 'cp -rp /${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code ${DEMYX_TMP}/${DEMYX_APP_DOMAIN}/demyx-code'"
 
+        demyx_execute "Exporting ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_custom" \
+            "docker cp ${DEMYX_APP_WP_CONTAINER}:/etc/demyx/custom ${DEMYX_TMP}/${DEMYX_APP_DOMAIN}/demyx-custom"
+
         demyx_execute "Exporting ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_sftp" \
             "docker run -t \
                 --rm \

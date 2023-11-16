@@ -126,6 +126,7 @@ demyx_restore_app() {
     demyx_execute "Creating volumes" \
         "docker volume create ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}; \
         docker volume create ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code; \
+        docker volume create ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_custom; \
         docker volume create ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_db; \
         docker volume create ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_log; \
         docker volume create ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_sftp"
@@ -163,9 +164,11 @@ demyx_restore_app() {
             --network=demyx \
             --entrypoint=bash \
             -v wp_${DEMYX_APP_ID}:/demyx \
+            -v wp_${DEMYX_APP_ID}_custom:/etc/demyx/custom \
             -v wp_${DEMYX_APP_ID}_log:/var/log/demyx \
             demyx/wordpress; \
         docker cp ${DEMYX_APP_PATH}/demyx-wp/. ${DEMYX_APP_WP_CONTAINER}:/demyx; \
+        docker cp ${DEMYX_APP_PATH}/demyx-custom/. ${DEMYX_APP_WP_CONTAINER}:/etc/demyx/custom; \
         docker cp ${DEMYX_APP_PATH}/demyx-log/. ${DEMYX_APP_WP_CONTAINER}:/var/log/demyx; \
         demyx_wp $DEMYX_APP_DOMAIN db import ${DEMYX_APP_CONTAINER}.sql
         docker exec -t $DEMYX_APP_CONTAINER rm -f /demyx/${DEMYX_APP_CONTAINER}.sql; \
@@ -178,6 +181,7 @@ demyx_restore_app() {
         "rm -rf ${DEMYX_APP_PATH}/demyx-wp; \
         rm -rf ${DEMYX_APP_PATH}/demyx-log; \
         rm -rf ${DEMYX_APP_PATH}/demyx-code; \
+        rm -rf ${DEMYX_APP_PATH}/demyx-custom; \
         rm -rf ${DEMYX_APP_PATH}/demyx-sftp; \
         rm -rf ${DEMYX_TMP}/${DEMYX_APP_DOMAIN}; \
         docker exec -t $DEMYX_APP_WP_CONTAINER rm -f /demyx/${DEMYX_APP_CONTAINER}.sql"
