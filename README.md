@@ -16,6 +16,8 @@ bash -c "$(curl -sL https://demyx.sh/install)"
 wget https://demyx.sh/install; bash install --no-ping
 ```
 
+<a href="https://demyx.sh/sponsor-buymeacoffee" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
 [![Code Size](https://img.shields.io/github/languages/code-size/demyxsh/demyx?style=flat&color=blue)](https://github.com/demyxsh/demyx)
 [![Repository Size](https://img.shields.io/github/repo-size/demyxsh/demyx?style=flat&color=blue)](https://github.com/demyxsh/demyx)
 [![Watches](https://img.shields.io/github/watchers/demyxsh/demyx?style=flat&color=blue)](https://github.com/demyxsh/demyx)
