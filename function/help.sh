@@ -10,63 +10,65 @@ demyx_help() {
     case "${1:-$DEMYX_ARG_2}" in
         backup)
             echo
-            echo "demyx backup <app> <args>             Backs up app's WordPress, code-server, MariaDB, logs, and SFTP volumes"
-            echo "             all                      Backup all apps"
-            echo "                   -c                 Backup configs only"
-            echo "                   -d                 Backup database only"
-            echo "                   -l                 List an app's backups"
-            echo "                   --path             Save backups to a specific path"
+            echo "demyx backup <app> <args>             Backup specific app."
+            echo "             all                      Backup all apps in a loop."
+            echo "                   -c                 Backup only the configs (docker-compose.yml and .env)."
+            echo "                   -d                 Backup only the database."
+            echo "                   -l                 List all backups with file size shown."
+            echo "                   --path             For advance users where the main docker-compose.yml has been extended with a custom volume path. (Usage: --path=/custom/path)"
             echo
         ;;
         compose)
             echo
-            echo "demyx compose <app> <args> <docker-compose args>      Execute docker-compose commands to apps"
-            echo "                    -d                                docker-compose for the MariaDB container"
-            echo "                    down                              Shorthand for docker-compose stop/rm -f"
-            echo "                    fr                                Shorthand for docker-compose up -d --force-recreate --remove-orphans"
-            echo "                    -n                                docker-compose for the NGINX container"
-            echo "                    -w                                docker-compose for the WordPress container"
+            echo "demyx compose <app> <args> <docker-compose args>      Targets an app to execute docker-compose commands."
+            echo "                    all                               Execute docker-compose commands to all apps."
+            echo "                    -d                                Targets an app’s MariaDB container."
+            echo "                    down                              Executes docker-compose stop and rm -f."
+            echo "                    fr                                Executes docker-compose up -d –for-recreate –remove-orphans."
+            echo "                    -n                                Target an app’s Nginx container."
+            echo "                    -w                                Targets an app’s WordPress container."
             echo
         ;;
         config)
             echo
-            echo "demyx config <app> <args>                             Configure demyx apps"
-            echo "             all                                      Targets all apps (only works with --restart)"
-            echo "                   --auth                             Turns on/off basic auth"
-            echo "                   --auth-wp                          Turns on/off basic auth for wp-login.php"
-            echo "                   --backup                           Turns on/off an app's backup status"
-            echo "                   --bedrock                          Sets production/development mode for Bedrock"
-            echo "                   --cache                            Turns on/off fastcgi cache"
-            echo "                   --clean                            Creates new MariaDB credentials and reinstalls WordPress core files"
-            echo "                   --db-cpu                           Set the app's DB container CPU usage, --db-cpu=0 to remove cap"
-            echo "                   --db-mem                           Set the app's DB container MEM usage, --db-mem=0 to remove cap"
-            echo "                   --dev                              Turns on/off development mode"
-            echo "                   --healthcheck                      Turns on/off healthcheck for WordPress container"
-            echo "                   --no-compose                       Skip docker-compose command"
+            echo "demyx config <app> <args>                             Configure a specific app."
+            echo "             all                                      Configures all apps in a loop)."
+            echo "                   --auth                             Enable/disable basic authentication."
+            echo "                   --auth-wp                          Enable/disable basic authentication for WordPress login."
+            echo "                   --backup                           Enable/disable app backup. (Usage: --backup=<true|false>)"
+            echo "                   --bedrock                          Configure a Bedrock app's mode to production/development. (Usage: --bedrock=<production|development>)"
+            echo "                   --cache                            Installs and configures cache plugins depending on app's stack. Supports WP Rocket with rocket-nginx (only for the nginx-php stack). (Usage: --cache=<true|false|default|rocket>)"
+            echo "                   --clean                            Export and imports database with new credentials, force downloads core WordPress files, and refresh salts."
+            echo "                   --db-cpu                           Configure DB container's CPU limit, --db-cpu=0 to remove limit. (Usage: --db-cpu=.50)"
+            echo "                   --db-mem                           Configure DB container's memory limit, --db-mem=0 to remove limit. (Usage: --db-mem=256m)"
+            echo "                   --dev                              Code-server service will be created and perform various commands to WordPress."
+            echo "                   --healthcheck                      Enable/disable healthcheck."
+            echo "                   --no-compose                       Prevents executing docker-compose up -d after running a config."
             # TODO - echo "                   --no-maldet                        Skip maldet commands, used with --clean"
-            echo "                   --opcache                          Turns on/off PHP opcache"
-            echo "                   --php                              Update PHP version, accepts: 8, 8.0, 8.1"
-            echo "                   --php-max-children                 Update PHP's pm.max_children"
-            echo "                   --php-max-requests                 Update PHP's pm.max_requests"
-            echo "                   --php-max-spare-servers            Update PHP's pm.max_spare_servers"
-            echo "                   --php-min-spare-servers            Update PHP's pm.min_spare_servers"
-            echo "                   --php-pm                           Update PHP's pm"
-            echo "                   --php-pm-calc                      Automatically adjust php-fpm values based on container memory"
-            echo "                   --php-process-idle-timeout         Update PHP's pm.process_idle_timeout"
-            echo "                   --php-start-servers                Update PHP's pm.start_servers"
-            echo "                   --pma                              Activate/deactivate phpMyAdmin container"
-            echo "                   --rate-limit                       Turns on/off NGINX rate limting"
-            echo "                   --redis                            Enable/disable redis"
+            echo "                   --opcache                          Enable/disable PHP opcache."
+            echo "                   --php                              Switch PHP/LSPHP version. (Usage: --php=<8.1|8.2>)"
+            echo "                   --php-max-children                 Update php-fpm max child processes. (Usage: --php-max-children=5)"
+            echo "                   --php-max-requests                 Update php-fpm max requests per child process. (Usage: --php-max-requests=500)"
+            echo "                   --php-max-spare-servers            Update php-fpm max idle server processes. (Usage: --php-max-spare=4)"
+            echo "                   --php-min-spare-servers            Update php-fpm minimum idle server processes. (Usage: --php-min-spare=1)"
+            echo "                   --php-pm                           Update php-fpm process manager. (Usage: --php-pm=<static|ondemand|dynamic>)"
+            echo "                   --php-pm-calc                      Automatically adjust php-fpm values based on container's memory."
+            echo "                   --php-process-idle-timeout         Update php-fpm duration when killing an idle process. (Usage: --php-process-idle-timeout=3s)"
+            echo "                   --php-start-servers                Update php-fpm initial child processes on startup. (Usage: --php-start-servers=1)"
+            echo "                   --pma                              Enable/disable phpMyAdmin service."
+            echo "                   --rate-limit                       Enable/disable Nginx's rate limiting for /wp-login.php and /wp-cron.php."
+            echo "                   --redis                            Enable/disable Redis service and configures the proper plugin depending on app's stack."
             # TODO - echo "                   --restart                          Restart NGINX/PHP/OLS services: nginx, nginx-php, ols, php (restarting nginx will delete cache)"
-            echo "                   --sftp                             Activate/deactivate SFTP container"
-            echo "                   --ssl                              Turns on/off SSL"
-            echo "                   --stack                            Switch the WordPress stack: bedrock, nginx-php, ols, ols-bedrock"
-            echo "                   --whitelist                        Available values: all (site-wide), login"
-            echo "                   --wp-cpu                           Set the app's container CPU usage, --wp-cpu=0 to remove cap"
-            echo "                   --wp-mem                           Set the app's container MEM usage, --wp-mem=0 to remove cap"
-            echo "                   --wp-update                        Auto update WordPress core, themes, and plugins"
-            echo "                   --www                              Search/replace www. to an app's domain"
-            echo "                   --xmlrpc                           Turns on/off xmlrpc.php"
+            echo "                   --sftp                             Enable/disable SFTP service. Automatically scans for open port starting with 2222."
+            echo "                   --ssl                              Enable/disable http or https. Executes wp-cli to search and replace the database."
+            echo "                   --ssl-wildcard                     Enable/disable wildcard for SSL. Executes wp-cli to search and replace the database."
+            echo "                   --stack                            Switch stack between Nginx/PHP to OpenLiteSpeed and vice versa but cannot switch from Nginx/PHP to Bedrock. The same applies to OpenLiteSpeed to OpenLiteSpeed Bedrock. (Usage: --stack=<bedrock|nginx-php|ols|ols-bedrock>)"
+            echo "                   --whitelist                        Enables/disables IP whitelisting site-wide or just WordPress login. DEMYX_IP must be set by running demyx host edit. (Usage: --whitelist=<all|login>)"
+            echo "                   --wp-cpu                           Configure WP container's CPU limit, --wp-cpu=0 to remove limit. (Usage: --wp-cpu=.50)"
+            echo "                   --wp-mem                           Configure WP container's memory limit, --wp-mem=0 to remove limit. (Usage: --wp-mem=256m)"
+            echo "                   --wp-update                        Enable/disable WordPress auto update by wp-cli. Auto updates WordPress core files, plugins, and themes."
+            echo "                   --www                              Converts/reverts top level domain to use/remove www."
+            echo "                   --xmlrpc                           Enable/disable /xmlrpc.php file by returning a 404. Disabled by default."
             echo
         ;;
         cp)
@@ -74,70 +76,73 @@ demyx_help() {
             # TODO
             #echo "demyx cp <app/path>:<path> <app/path>:<path>      Wrapper for docker cp"
             #echo "         db                                       Target docker cp for MariaDB container"
-            echo "demyx cp <app>    Outputs a table of commands for MariaDB, Nginx, and WordPress"
+            echo "demyx cp <app>    Outputs a series of commands to copy and paste."
             echo
         ;;
         cron)
             echo
-            echo "demyx cron <arg>              Execute demyx cron (daily|hourly|minute|six-hour|weekly)"
-            echo "           daily              Execute daily cron"
-            echo "           five-minute        Execute every five minute cron"
-            echo "           hourly             Execute hourly cron"
-            echo "           minute             Execute every minute cron"
-            echo "           six-hour           Execute every six hour cron"
-            echo "           weekly             Execute every week cron"
+            echo "demyx cron <arg>              Execute demyx cron manually."
+            echo "           daily              Daily cron that will execute a series of commands in order on midnight and depending on the value of DEMYX_TZ."
+            echo "           five-minute        Every five minute cron that will execute a series of commands."
+            echo "           hourly             Hourly cron that will execute a custom hourly callback script for now."
+            echo "           minute             Every minute cron that will execute a custom minute callback script for now."
+            echo "           six-hour           Every six hour cron that will execute a custom six hour callback script for now."
+            echo "           weekly             Weekly cron that will execute a custom weekly callback script for now."
             echo
         ;;
         edit)
             echo
-            echo "demyx edit <app>      <args>          Uses nano to edit .env files"
+            echo "demyx edit <app>      <args>          Executes 'nano /demyx/app/wp/<app>/.env' inside the Demyx container."
             # TODO - echo "           traefik                    Edit Traefik's .env"
-            echo "                      -r              Refreshes the config to reflect changes, will restart container(s)"
+            echo "                      -r              Use this flag to refresh the app’s docker-compose.yml and .env files. App’s containers will be recreated."
             echo
         ;;
         exec)
             echo
-            echo "demyx exec <app> <args>       Execute docker exec commands to apps"
-            echo "                 -d           Targets MariaDB container"
-            echo "                 -n           Targets NGINX container"
-            echo "                 -r           Execute as root"
-            echo "                 -t           Allocate a non-interactive TTY"
+            echo "demyx exec <app> <args>       Executes commands inside the WordPress container. If no arguments passed, then a bash shell will open."
+            echo "                 -d           Executes commands inside the MariaDB container. If no arguments passed, then a bash shell will open."
+            echo "                 -n           Executes commands inside the Nginx container. If no arguments passed, then a bash shell will open."
+            echo "                 -r           Executes root commands inside the container. (Usage: demyx exec <app> -r)"
+            echo "                 -t           Disables interactive mode."
             echo
         ;;
         healthcheck)
             echo
-            echo "demyx healthcheck     Checks if WordPress apps are up"
+            echo "demyx healthcheck <args>      Mainly used by demyx cron but can be executed manually. If there’s no output, then everything is working smoothly. To enable notifications, fill in the values under DEMYX_MATRIX and DEMYX_SMTP when you run 'demyx host edit'."
+            echo "demyx healthcheck app         Checks if any of the app’s containers are down. Executes a series of commands to display multiple and relevant logs if any are down."
+            echo "demyx healthcheck disk        Checks how low disk space is based on the value of DEMYX_HEALTHCHECK_DISK_THRESHOLD."
+            echo "demyx healthcheck load        Checks and compares the 5 minute load average value from /proc/loadavg with DEMYX_HEALTHCHECK_LOAD."
             echo
         ;;
         info)
             echo
-            echo "demyx info <app>      <args>      Prints useful information about demyx images, installed apps, and system"
-            echo "           apps                   Show table of installed apps"
-            echo "           system                 Show miscellaneous system data"
-            echo "                      --env       Grab value from a specific environment variable"
-            echo "                      -j          Output data in JSON"
-            echo "                      -l          Show variable login credentials for a specific app"
-            echo "                      -nv         Omit volume sizes"
-            echo "                      -r          Currently works with apps, show list of installed apps without a table"
+            echo "demyx info <app>      <args>      Prints all environment variables for an app and formatted using column."
+            echo "           apps                   Prints currently installed apps."
+            echo "           system                 Prints useful system information. Mainly used with demyx motd."
+            echo "                      --env       Executes grep to grab environment variable(s). (Usage: --env=DEMYX_APP_STACK)"
+            echo "                      -j          Print in JSON format."
+            echo "                      -l          Prints all login credentials with a WordPress login link provided by wp login package."
+            echo "                      -nv         Suppress showing DB and WP's volume sizes."
+            echo "                      -r          Prints raw list of installed apps without the header."
             echo
         ;;
         log)
             echo
-            echo "demyx log <app>           <args>          Show logs from various apps, can also logrotate"
-            echo "          cron                            Show cron log"
-            echo "          main                            Show demyx container log, pass -e for error log"
-            echo "          traefik                         Show Traefik logs"
-            echo "                          -c|-cf|-fc      Show log for WP cron"
-            echo "                          -d|-df|-fd      Show log for MariaDB"
-            echo "                          -e|-ef|-fe      Show error log"
-            echo "                          -f              Follow log"
-            echo "                          -s|-sf|-fs      Show stdout using docker logs"
+            echo "demyx log <app>           <args>          Main command to print various logs."
+            echo "          cron                            Prints Demyx cron log."
+            echo "          main                            Prints Demyx main log."
+            echo "          traefik                         Prints Traefik log."
+            echo "                          -c|-cf|-fc      Prints cron log."
+            echo "                          -d|-df|-fd      Prints MariaDB log."
+            echo "                          -e|-ef|-fe      Prints error log."
+            echo "                          -f              Print log and follow."
+            echo "                          -s|-sf|-fs      Execute docker logs."
             echo
         ;;
         pull)
             echo
-            echo "demyx pull <args>                                 Enter specific image or demyx pull all"
-            echo "           all                                    Pull core and relevant images"
+            echo "demyx pull <args>                                 Pull available specific Demyx or third party images to update them manually."
+            echo "           all                                    Smart pulls all Demyx and third party images."
             echo "           browsersync"
             echo "           code-server:bedrock"
             echo "           code-server:browse"
@@ -152,6 +157,7 @@ demyx_help() {
             echo "           openlitespeed"
             echo "           openlitespeed:bedrock"
             echo "           pma"
+            echo "           redis"
             echo "           ssh"
             echo "           traefik"
             echo "           utilities"
@@ -161,103 +167,106 @@ demyx_help() {
         ;;
         refresh)
             echo
-            echo "demyx refresh <app>       <args>      Regenerate .env/docker-compose.yml files of an app"
-            echo "              all                     Regenerate all app's .env/docker-compose.yml files"
-            echo "              code                    Regenerate code-server docker-compose.yml"
-            echo "              traefik                 Regenerate Traefik docker-compose.yml"
-            echo "                          -f          Deletes non-core variables"
-            echo "                          -nc         Refresh env/yml only, no compose commands"
-            echo "                          -nfr        Pass 'up -d' instead of '--force-recreate --remove-orphans' to docker-compose"
-            echo "                          -s          Skip regenerating other configs like auth, cache, etc."
+            echo "demyx refresh <app>       <args>      Regenerate docker-compose.yml and .env files."
+            echo "              all                     Regenerate all app's .env/docker-compose.yml files."
+            echo "              code                    Regenerate docker-compose.yml and .env for the code-server service."
+            echo "              traefik                 Regenerate docker-compose.yml and .env for the traefik service."
+            echo "                          -f          Delete and regenerate app's non-sensitive environment variables between two points. Does not work with code-server and traefik service."
+            echo "                          -nc         Regenerate docker-compose.yml and .env files only, no docker-compose commands will be executed."
+            echo "                          -nfr        Regenerate docker-compose.yml and .env files and execute docker-compose up -d instead of docker-compose up -d --force-recreate --remove-orphans."
+            echo "                          -s          Regenerate docker-compose.yml and .env files and skip app's config backup."
             echo
         ;;
         restore)
             echo
-            echo "demyx restore <app> <args>        Restore app's configs and volumes"
-            echo "                    -c            Restore configs only"
-            echo "                    -d            Restore database only"
-            echo "                    --date        Restore from a specific date in format: YY/mm/dd"
-            echo "                    -f            Force restore"
+            echo "demyx restore <app> <args>        Restore app’s configs and volumes."
+            echo "                    -c            Restores app’s docker-compose.yml and .env files only."
+            echo "                    --date        Specify which archive date you want to restore. Must be in the format of yy-mm-d."
+            echo "                    -d            Restore database only."
+            echo "                    -f            Disable prompt when restoring an app."
             echo
         ;;
         rm)
             echo
-            echo "demyx rm <app> <args>         Deletes an app and its volumes"
-            echo "         all                  Deletes all apps"
-            echo "               -f             Force delete without confirmation"
+            echo "demyx rm <app> <args>         Delete an app’s configs and volumes."
+            echo "         all                  Delete all app configs and volumes."
+            echo "               -f             Disable prompt when deleting an app."
             echo
         ;;
         run)
             echo
-            echo "demyx run <app> <args>                Creates a new app"
-            echo "                --auth                Run with basic auth on/off"
-            echo "                --cache               Run with cache on/off"
-            echo "                --clone               Clone an already running app"
-            echo "                --email               Override email generation"
-            echo "                -f                    Force delete if exists"
-            echo "                --pass                Override password generation"
-            echo "                --php                 Set PHP version, accepts: 8, 8.0, 8.1"
-            echo "                --redis               Enable redis when creating an app"
-            echo "                --ssl                 Run with ssl on/off"
-            echo "                --stack               Create a WordPress app using preferred stack: bedrock, nginx-php (default), ols, ols-bedrock"
-            echo "                --type                Run app type as html, php, wp (default)"
-            echo "                --user                Override user generation"
-            echo "                --whitelist           Available values: all (site-wide), login"
-            echo "                --www                 Adds www. to app's domain"
+            echo "demyx run <app> <args>                    Creates an app."
+            echo "                --auth                    Create an app with basic authentication enabled."
+            echo "                --cache                   Create an app with cache enabled."
+            echo "                --clone                   Create an app by cloning a running app. (Usage: --clone=<app>)"
+            echo "                --email                   Set custom email when creating an app instead of info@DEMYX_DOMAIN."
+            echo "                -f                        Disable delete prompt when creating an app that already exist."
+            echo "                --pass|--password         Set custom password when creating a new app."
+            echo "                --php                     Set specific PHP version when creating an app. PHP version is set to 8.1 by default. (Usage: --php=<8.1|8.2>)"
+            echo "                --redis                   Create an app with Redis enabled."
+            echo "                --ssl                     Enable SSL when creating an app. SSL is false by default."
+            echo "                --ssl-wildcard            Enable wildcard SSL when creating an app."
+            echo "                --stack                   Set stack type when creating an app. Nginx/PHP is set by default. (Usage: --stack=<bedrock|nginx-php|ols|ols-bedrock>)"
+            echo "                --type                    Create an app other than WordPress. Default is WordPress. (WordPress is only available)"
+            echo "                --user|--username         Set custom username instead of using the auto generated username."
+            echo "                --whitelist               Enable IP whitelist when creating an app. Defaults to all. (Usage: --whitelist=<all|login>)"
+            echo "                --www                     Include www. as the app's full URL"
             echo
         ;;
         smtp)
             echo
-            echo "demyx smtp        Execute command to send a test email via ssmtp, with proper credentials"
+            echo "demyx smtp        Sends out a success email if SMTP is configured properly."
             echo
         ;;
         update)
             echo
-            echo "demyx update <args>           Update demyx cache"
-            echo "             -i               Update images only"
-            echo "             -l               Show local/remote versions of updates"
+            echo "demyx update <args>           Runs a series of commands to compare local versions of Demyx images to remote versions. It will also update the Demyx helper script on the host."
+            echo "             -i               Update cache only and not the Demyx helper script."
+            echo "             -l               Prints out all Demyx images with current versions. An indicator will show when an update is available."
             echo
         ;;
         utility)
             echo
-            echo "demyx utility <type>              <args>          Generate credentials or execute shell commands to demyx/utilities"
-            echo "              cred|credentials                    Generates full random credentials"
-            echo "              htpasswd                            Usage: demyx htpasswd <username> <password>"
-            echo "              id                                  Usage: demyx id <length> (default 10)"
-            echo "              pass|password                       Usage: demyx password <length> (default 20)"
-            echo "              sh|shell                            Runs demyx/utility container"
-            echo "              user|username                       Generates random username"
-            echo "              -r                                  Output generated string without a table"
+            echo "demyx utility <type>              <args>          Generate various credentials or open a shell to the Demyx Utilities container."
+            echo "              cred|credentials                    Generates username, password, and htpasswd."
+            echo "              htpasswd                            Generates htpasswd. (Usage: demyx htpasswd <username> <password>)"
+            echo "              id                                  Generates random ID. Default is 5 characters. (Usage: demyx id <length>)"
+            echo "              pass|password                       Generates random password. Default is 20 characters. (Usage: demyx password <length>)"
+            echo "              sh|shell                            Run commands to demyx/utilities container. Opens a bash shell if there's no args passed."
+            echo "              user|username                       Generates random username."
+            echo "              -r                                  Prints raw. Does not work with the credentials arg."
             echo
         ;;
         wp)
             echo
-            echo "demyx wp <app> <arg>      Execute wp-cli commands"
+            echo "demyx wp <app> <args>     Execute wp-cli commands to an app."
+            echo "demyx wp all <args>       Execute wp-cli commands to all apps in a loop."
             echo
         ;;
         *)
             echo
             echo "demyx <arg>                   Main demyx command, for more info: demyx help <arg>"
-            echo "      backup                  Backs up app's WordPress, code-server, MariaDB, logs, and SFTP volumes"
-            echo "      compose                 Execute docker-compose commands to apps"
-            echo "      config                  Configure demyx apps"
-            echo "      cp                      Outputs a table of container names for MariaDB, Nginx, and WordPress"
-            echo "      cron                    Execute demyx cron (daily|hourly|minute|six-hour|weekly)"
-            echo "      edit                    Uses nano to edit .env files"
-            echo "      exec                    Execute docker exec commands to apps"
-            echo "      healthcheck             Checks if WordPress apps are up"
-            echo "      info                    Prints useful information about apps and system"
-            echo "      log                     Show logs from various apps"
-            echo "      motd                    Message of the day"
-            echo "      pull                    Enter specific image or demyx pull all relevant demyx images"
-            echo "      refresh                 Regenerate app's .env/docker-compose.yml"
-            echo "      restore                 Restore app's configs and volumes"
-            echo "      rm                      Deletes an app and its volumes"
-            echo "      run                     Creates a new app"
-            echo "      update                  Update demyx cache and helper script on host"
-            echo "      util|utility            Generate credentials or execute shell commands to demyx/utilities"
+            echo "      backup                  Backup specific app."
+            echo "      compose                 Targets an app to execute docker-compose commands."
+            echo "      config                  Configure a specific app."
+            echo "      cp                      Outputs a series of commands to copy and paste."
+            echo "      cron                    Execute demyx cron manually."
+            echo "      edit                    Executes 'nano /demyx/app/wp/<app>/.env' inside the Demyx container."
+            echo "      exec                    Executes commands inside the WordPress container. If no arguments passed, then a bash shell will open."
+            echo "      healthcheck             Mainly used by demyx cron but can be executed manually."
+            echo "      info                    Prints all environment variables for an app and formatted using column."
+            echo "      log                     Main command to print various logs."
+            echo "      motd                    Message of the day."
+            echo "      pull                    Pull available specific Demyx or third party images to update them manually."
+            echo "      refresh                 Regenerate docker-compose.yml and .env files."
+            echo "      restore                 Restore app’s configs and volumes."
+            echo "      rm                      Delete an app’s configs and volumes."
+            echo "      run                     Creates an app."
+            echo "      smtp                    Sends out a success email if SMTP is configured properly."
+            echo "      update                  Runs a series of commands to compare local versions of Demyx images to remote versions. It will also update the Demyx helper script on the host."
+            echo "      util|utility            Generate various credentials or open a shell to the Demyx Utilities container."
             echo "      -v|--version|version    Show demyx version"
-            echo "      wp                      Execute wp-cli commands"
+            echo "      wp                      Execute wp-cli commands to an app."
             echo
         ;;
     esac
