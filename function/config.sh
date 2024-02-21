@@ -832,45 +832,44 @@ demyx_config_redis() {
         DEMYX_APP_WP_CONTAINER
     "
 
-    local DEMYX_CONFIG_REDIS=
-
     demyx_execute "Setting redis to $DEMYX_CONFIG_FLAG_REDIS" \
-        "demyx_app_env_update DEMYX_APP_REDIS=$DEMYX_CONFIG_FLAG_REDIS; \
-           demyx_yml ${DEMYX_APP_STACK}"
+        "demyx_app_env_update DEMYX_APP_REDIS=$DEMYX_CONFIG_FLAG_REDIS"
 
     if [[ "$DEMYX_CONFIG_FLAG_REDIS" = true ]]; then
-        DEMYX_CONFIG_REDIS="$(demyx_wp "$DEMYX_APP_DOMAIN" plugin list --format=csv)"
-
-        demyx_compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
+        demyx_execute "Waiting for redis" \
+            "demyx_yml ${DEMYX_APP_STACK}; \
+            demyx_compose $DEMYX_APP_DOMAIN up -d 2>&1"
 
         if [[ "$DEMYX_APP_STACK" = nginx-php || "$DEMYX_APP_STACK" = bedrock ]]; then
-            if [[ "$DEMYX_CONFIG_REDIS" != *"redis-cache"* ]]; then
-                demyx_wp "$DEMYX_APP_DOMAIN" plugin install redis-cache --activate
-            elif [[ "$DEMYX_CONFIG_REDIS" == *"redis-cache,inactive"* ]]; then
-                demyx_wp "$DEMYX_APP_DOMAIN" plugin activate redis-cache
-            fi
-
-            demyx_wp "$DEMYX_APP_DOMAIN" redis enable
+            demyx_execute "Configuring redis" \
+                "demyx_wp $DEMYX_APP_DOMAIN plugin install redis-cache --activate --force; \
+                docker stop ${DEMYX_APP_WP_CONTAINER}; \
+                docker rm ${DEMYX_APP_WP_CONTAINER}; \
+                demyx_compose $DEMYX_APP_DOMAIN up -d 2>&1; \
+                demyx_wp $DEMYX_APP_DOMAIN redis enable"
         elif [[ "$DEMYX_APP_STACK" = ols || "$DEMYX_APP_STACK" = ols-bedrock ]]; then
-            if [[ "$DEMYX_CONFIG_REDIS" != *"litespeed-cache"* ]]; then
-                demyx_wp "$DEMYX_APP_DOMAIN" plugin install litespeed-cache --activate
-            fi
-
-            demyx_wp "$DEMYX_APP_DOMAIN" option update litespeed.conf.object 1
-            demyx_wp "$DEMYX_APP_DOMAIN" option update litespeed.conf.object-kind 1
-            demyx_wp "$DEMYX_APP_DOMAIN" option update litespeed.conf.object-host rd_"$DEMYX_APP_ID"
-            demyx_wp "$DEMYX_APP_DOMAIN" option update litespeed.conf.object-port 6379
+            demyx_execute "Configuring redis" \
+                "demyx_config $DEMYX_APP_DOMAIN --cache plugin install litespeed-cache --activate --force; \
+                demyx_wp $DEMYX_APP_DOMAIN option update litespeed.conf.object 1; \
+                demyx_wp $DEMYX_APP_DOMAIN option update litespeed.conf.object-kind 1; \
+                demyx_wp $DEMYX_APP_DOMAIN option update litespeed.conf.object-host rd_${DEMYX_APP_ID}; \
+                demyx_wp $DEMYX_APP_DOMAIN option update litespeed.conf.object-port 6379; \
+                demyx_app_env_update DEMYX_APP_CACHE=true"
         fi
     elif [[ "$DEMYX_CONFIG_FLAG_REDIS" = false ]]; then
         if [[ "$DEMYX_APP_STACK" = nginx-php || "$DEMYX_APP_STACK" = bedrock ]]; then
-            demyx_wp "$DEMYX_APP_DOMAIN" redis disable
-            demyx_wp "$DEMYX_APP_DOMAIN" plugin deactivate redis-cache
-            demyx_exec "$DEMYX_APP_DOMAIN" rm -f wp-content/object-cache.php
+            demyx_execute "Configuring redis" \
+                "demyx_wp $DEMYX_APP_DOMAIN redis disable; \
+                demyx_wp $DEMYX_APP_DOMAIN plugin uninstall redis-cache --deactivate; \
+                docker exec $DEMYX_APP_WP_CONTAINER rm -f wp-content/object-cache.php"
         elif [[ "$DEMYX_APP_STACK" = ols || "$DEMYX_APP_STACK" = ols-bedrock ]]; then
-            demyx_wp "$DEMYX_APP_DOMAIN" option update litespeed.conf.object 0
+            demyx_execute "Configuring redis" \
+                "demyx_wp $DEMYX_APP_DOMAIN option update litespeed.conf.object 0"
         fi
 
-        demyx_compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
+        demyx_compose "$DEMYX_APP_DOMAIN" stop rd_"$DEMYX_APP_ID"
+        demyx_compose "$DEMYX_APP_DOMAIN" rm -f rd_"$DEMYX_APP_ID"
+        demyx_yml "$DEMYX_APP_STACK"
     fi
 }
 #
@@ -1066,6 +1065,7 @@ demyx_config_stack() {
         DEMYX_APP_DOMAIN
         DEMYX_APP_OLS_ADMIN_PASSWORD
         DEMYX_APP_OLS_ADMIN_USERNAME
+        DEMYX_APP_REDIS
         DEMYX_APP_STACK
         WORDPRESS_USER
         WORDPRESS_USER_PASSWORD
@@ -1074,6 +1074,7 @@ demyx_config_stack() {
     DEMYX_CONFIG=Stack
     DEMYX_CONFIG_COMPOSE=true
     local DEMYX_CONFIG_STACK_CACHE=
+    local DEMYX_CONFIG_STACK_REDIS=
     # TODO
     #local DEMYX_CONFIG_STACK_IMAGE=
 
@@ -1113,6 +1114,11 @@ demyx_config_stack() {
         demyx_config "$DEMYX_APP_DOMAIN" --cache=false --no-compose
     fi
 
+    if [[ "$DEMYX_APP_REDIS" = true ]]; then
+        DEMYX_CONFIG_STACK_REDIS=true
+        demyx_config "$DEMYX_APP_DOMAIN" --redis=false --no-compose
+    fi
+
     # TODO
     #demyx_execute "Updating app's image to $DEMYX_CONFIG_STACK_IMAGE" \
     #    "demyx_app_env_update DEMYX_APP_WP_IMAGE=$DEMYX_CONFIG_STACK_IMAGE"
@@ -1123,6 +1129,10 @@ demyx_config_stack() {
 
     if [[ "$DEMYX_CONFIG_STACK_CACHE" = true ]]; then
         demyx_config "$DEMYX_APP_DOMAIN" --cache --no-compose
+    fi
+
+    if [[ "$DEMYX_CONFIG_STACK_REDIS" = true ]]; then
+        demyx_config "$DEMYX_APP_DOMAIN" --redis --no-compose
     fi
 
     {
