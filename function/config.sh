@@ -17,6 +17,7 @@ demyx_config() {
     local DEMYX_CONFIG_FLAG_BACKUP=
     local DEMYX_CONFIG_FLAG_BEDROCK=
     local DEMYX_CONFIG_FLAG_CACHE=
+    local DEMYX_CONFIG_FLAG_CACHE_TYPE=
     local DEMYX_CONFIG_FLAG_CLEAN=
     local DEMYX_CONFIG_FLAG_DEV=
     local DEMYX_CONFIG_FLAG_HEALTHCHECK=
@@ -86,11 +87,15 @@ demyx_config() {
             --bedrock=development)
                 DEMYX_CONFIG_FLAG_BEDROCK=development
             ;;
-            --cache|--cache=true)
+            --cache|--cache=default|--cache=rocket|--cache=true)
+                DEMYX_CONFIG_FLAG_CACHE="${DEMYX_CONFIG_FLAG#*=}"
+                DEMYX_CONFIG_FLAG_CACHE_TYPE=default
+                [[ "$DEMYX_CONFIG_FLAG_CACHE" = rocket ]] && DEMYX_CONFIG_FLAG_CACHE_TYPE=rocket
                 DEMYX_CONFIG_FLAG_CACHE=true
             ;;
             --cache=false)
                 DEMYX_CONFIG_FLAG_CACHE=false
+                DEMYX_CONFIG_FLAG_CACHE_TYPE=default
             ;;
             --clean)
                 DEMYX_CONFIG_FLAG_CLEAN=true
@@ -436,16 +441,18 @@ demyx_config_cache() {
     "
 
     local DEMYX_CONFIG_CACHE_CHECK=
+    DEMYX_CONFIG_CACHE_CHECK="$(demyx_wp "$DEMYX_APP_DOMAIN" plugin list --format=csv)"
     local DEMYX_CONFIG_CACHE_PLUGIN=
     DEMYX_CONFIG_COMPOSE=true
+
+     # WP Rocket check
+    [[ "$DEMYX_CONFIG_CACHE_CHECK" != *"wp-rocket"* && "$DEMYX_CONFIG_FLAG_CACHE_TYPE" = rocket ]] && \
+        demyx_error custom "This app does not have wp-rocket installed, please upload it first"
 
     case "$DEMYX_APP_STACK" in
         bedrock|nginx-php)
             DEMYX_CONFIG_CACHE_PLUGIN=nginx-helper
-            if [[ "$DEMYX_CONFIG_FLAG_CACHE" = true ]]; then
-                demyx_execute "Configuring nginx-helper" \
-                    "demyx_config_cache_helper"
-            fi
+            [[ "$DEMYX_CONFIG_FLAG_CACHE_TYPE" = rocket ]] && DEMYX_CONFIG_CACHE_PLUGIN=wp-rocket
         ;;
         ols|ols-bedrock)
             DEMYX_CONFIG_CACHE_PLUGIN=litespeed-cache
@@ -453,33 +460,63 @@ demyx_config_cache() {
     esac
 
     if [[ "$DEMYX_CONFIG_FLAG_CACHE" = true ]]; then
-        DEMYX_CONFIG_CACHE_CHECK="$(demyx_wp "$DEMYX_APP_DOMAIN" plugin list --format=csv)"
+        [[ "$DEMYX_CONFIG_CACHE_PLUGIN" = nginx-helper ]] && \
+                demyx_execute "Configuring nginx-helper" \
+                    "demyx_config_cache_helper"
 
-        if [[ "$DEMYX_CONFIG_CACHE_CHECK" == *"$DEMYX_CONFIG_CACHE_PLUGIN,inactive"* ]]; then
-            demyx_execute "Activating $DEMYX_CONFIG_CACHE_PLUGIN" \
-                "demyx_wp $DEMYX_APP_DOMAIN plugin activate $DEMYX_CONFIG_CACHE_PLUGIN"
+        if [[ "$DEMYX_CONFIG_CACHE_PLUGIN" = nginx-helper && "$DEMYX_CONFIG_CACHE_CHECK" == *"wp-rocket,active"* ]]; then
+            demyx_execute "Deactivating wp-rocket" \
+                "demyx_wp $DEMYX_APP_DOMAIN plugin deactivate wp-rocket"
+        elif [[ "$DEMYX_CONFIG_CACHE_PLUGIN" = wp-rocket && "$DEMYX_CONFIG_CACHE_CHECK" == *"nginx-helper,active"* ]]; then
+            demyx_execute "Deleting nginx-helper" \
+                "demyx_wp $DEMYX_APP_DOMAIN plugin uninstall nginx-helper --deactivate"
+        fi
+
+        if [[ "$DEMYX_CONFIG_CACHE_PLUGIN" = wp-rocket ]]; then
+            if [[ "$DEMYX_CONFIG_CACHE_CHECK" == *"$DEMYX_CONFIG_CACHE_PLUGIN,inactive"* ]]; then
+                demyx_execute "Activating $DEMYX_CONFIG_CACHE_PLUGIN" \
+                    "demyx_wp $DEMYX_APP_DOMAIN plugin activate $DEMYX_CONFIG_CACHE_PLUGIN"
+            fi
         else
-            demyx_execute "Installing $DEMYX_CONFIG_CACHE_PLUGIN" \
-                "demyx_wp $DEMYX_APP_DOMAIN plugin install $DEMYX_CONFIG_CACHE_PLUGIN --activate"
+            if [[ "$DEMYX_CONFIG_CACHE_CHECK" == *"$DEMYX_CONFIG_CACHE_PLUGIN,inactive"* ]]; then
+                demyx_execute "Activating $DEMYX_CONFIG_CACHE_PLUGIN" \
+                    "demyx_wp $DEMYX_APP_DOMAIN plugin activate $DEMYX_CONFIG_CACHE_PLUGIN"
+            else
+                demyx_execute "Installing $DEMYX_CONFIG_CACHE_PLUGIN" \
+                    "demyx_wp $DEMYX_APP_DOMAIN plugin install $DEMYX_CONFIG_CACHE_PLUGIN --activate"
+
+                [[ "$DEMYX_CONFIG_CACHE_PLUGIN" = litespeed-cache ]] && \
+                    demyx_execute "Configuring litespeed-cache" \
+                        "demyx_wp $DEMYX_APP_DOMAIN option update litespeed.conf.cache-browser 1"
+            fi
         fi
 
         # Delete old cache plugin when switching stacks.
         if [[   "$DEMYX_APP_STACK" = bedrock && "$DEMYX_CONFIG_CACHE_CHECK" == *"litespeed-cache"* ||
                 "$DEMYX_APP_STACK" = nginx-php && "$DEMYX_CONFIG_CACHE_CHECK" == *"litespeed-cache"* ]]; then
             demyx_execute "Deleting litespeed-cache" \
-                "demyx_wp $DEMYX_APP_DOMAIN plugin delete litespeed-cache"
+                "demyx_wp $DEMYX_APP_DOMAIN plugin uninstall litespeed-cache --deactivate"
         elif [[   "$DEMYX_APP_STACK" = ols && "$DEMYX_CONFIG_CACHE_CHECK" == *"nginx-helper"* ||
                 "$DEMYX_APP_STACK" = ols-bedrock && "$DEMYX_CONFIG_CACHE_CHECK" == *"nginx-helper"* ]]; then
             demyx_execute "Deleting nginx-helper" \
-                "demyx_wp $DEMYX_APP_DOMAIN plugin delete nginx-helper"
+                "demyx_wp $DEMYX_APP_DOMAIN plugin uninstall nginx-helper --deactivate"
+        elif [[   "$DEMYX_APP_STACK" = ols && "$DEMYX_CONFIG_CACHE_CHECK" == *"wp-rocket"* ||
+                "$DEMYX_APP_STACK" = ols-bedrock && "$DEMYX_CONFIG_CACHE_CHECK" == *"wp-rocket"* ]]; then
+            demyx_execute "Deactivating wp-rocket" \
+                "demyx_wp $DEMYX_APP_DOMAIN plugin deactivate wp-rocket"
         fi
     elif [[ "$DEMYX_CONFIG_FLAG_CACHE" = false ]]; then
+        if [[ "$DEMYX_CONFIG_CACHE_CHECK" == *"wp-rocket"* ]]; then
+            DEMYX_CONFIG_CACHE_PLUGIN=wp-rocket
+        fi
+
         demyx_execute "Deactivating $DEMYX_CONFIG_CACHE_PLUGIN" \
             "demyx_wp $DEMYX_APP_DOMAIN plugin deactivate $DEMYX_CONFIG_CACHE_PLUGIN"
     fi
 
     demyx_execute "Updating .env" \
-        "demyx_app_env_update DEMYX_APP_CACHE=$DEMYX_CONFIG_FLAG_CACHE"
+        "demyx_app_env_update DEMYX_APP_CACHE=${DEMYX_CONFIG_FLAG_CACHE}; \
+        demyx_app_env_update DEMYX_APP_CACHE_TYPE=${DEMYX_CONFIG_FLAG_CACHE_TYPE}"
 }
 #
 #   Option updater for nginx-helper plugin.
