@@ -862,6 +862,7 @@ demyx_yml_ols_bedrock() {
             restart: unless-stopped
             volumes:
               - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}:/demyx
+              - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_custom:/etc/demyx/custom
               - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_log:/var/log/demyx
               $DEMYX_YML_OLS_DEV_VOLUME
           $(demyx_yml_service_pma)
