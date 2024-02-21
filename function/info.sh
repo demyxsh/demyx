@@ -117,9 +117,9 @@ demyx_info_app() {
 
             if [[ "$DEMYX_APP_STACK" = ols || "$DEMYX_APP_STACK" = ols-bedrock ]]; then
                 echo
-                echo "OLS Admin Login           $(demyx_app_proto)://$(demyx_app_domain)/demyx/ols/"
-                echo "OLS Admin Username        $DEMYX_APP_OLS_ADMIN_USERNAME"
-                echo "OLS Admin Password        $DEMYX_APP_OLS_ADMIN_PASSWORD"
+                echo "OLS Admin Login               $(demyx_app_proto)://$(demyx_app_domain)/demyx/ols/"
+                echo "OLS Admin Username            $DEMYX_APP_OLS_ADMIN_USERNAME"
+                echo "OLS Admin Password            $DEMYX_APP_OLS_ADMIN_PASSWORD"
             fi
 
             echo
@@ -161,8 +161,7 @@ demyx_info_app() {
 
             echo "${DEMYX_INFO_APP_JSON%,*}}" > "$DEMYX_TMP"/demyx_info
 
-            demyx_execute false \
-                "cat < ${DEMYX_TMP}/demyx_info"
+            cat < "$DEMYX_TMP"/demyx_info
         else
             demyx_app_env wp DEMYX_APP_PATH
 

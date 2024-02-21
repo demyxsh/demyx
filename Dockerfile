@@ -34,8 +34,8 @@ ENV DEMYX_CODE_SSL                      false
 ENV DEMYX_CF_KEY                        false
 ENV DEMYX_CPU                           .50
 ENV DEMYX_DOCKER_COMPOSE                2.4
-ENV DEMYX_DOMAIN                        false
-ENV DEMYX_EMAIL                         false
+ENV DEMYX_DOMAIN                        localhost
+ENV DEMYX_EMAIL                         info@localhost
 ENV DEMYX_HEALTHCHECK                   true
 ENV DEMYX_HEALTHCHECK_DISK              /demyx
 ENV DEMYX_HEALTHCHECK_DISK_THRESHOLD    80

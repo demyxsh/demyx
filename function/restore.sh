@@ -172,7 +172,7 @@ demyx_restore_app() {
         docker cp ${DEMYX_APP_PATH}/demyx-custom/. ${DEMYX_APP_WP_CONTAINER}:/etc/demyx/custom; \
         docker cp ${DEMYX_APP_PATH}/demyx-log/. ${DEMYX_APP_WP_CONTAINER}:/var/log/demyx; \
         demyx_wp $DEMYX_APP_DOMAIN db import ${DEMYX_APP_CONTAINER}.sql
-        docker exec -t $DEMYX_APP_CONTAINER rm -f /demyx/${DEMYX_APP_CONTAINER}.sql; \
+        docker exec -t $DEMYX_APP_WP_CONTAINER rm -f /demyx/${DEMYX_APP_CONTAINER}.sql; \
         docker stop $DEMYX_APP_WP_CONTAINER"
 
     demyx_compose "$DEMYX_APP_DOMAIN" up -d

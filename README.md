@@ -4,9 +4,7 @@
 
 Demyx is a Docker image that automates and manages WordPress installations. Traefik for reverse proxy with Lets Encrypt SSL/TLS. WordPress sites are powered by OpenLiteSpeed/NGINX-PHP and MariaDB.
 
-<a href="https://demyx.sh/discussions" target="_blank">Discussions</a> | <a href="https://demyx.sh/discord" target="_blank">Discord</a> | <a href="https://demyx.sh/irc" target="_blank">IRC</a>
-
-Everything has been moved to the <a href="https://demyx.sh/kb/getting-started/" target="_blank">Knowledge Base</a>.
+Get started at the <a href="https://demyx.sh/kb/getting-started/" target="_blank">Knowledge Base</a> (README).
 
 ```
 # Install demyx and ping home
@@ -16,7 +14,17 @@ bash -c "$(curl -sL https://demyx.sh/install)"
 wget https://demyx.sh/install; bash install --no-ping
 ```
 
+[![Demyx Discord](https://discordapp.com/api/guilds/1152828583446859818/widget.png?style=banner2)](https://demyx.sh/discord)
+
+Join us on Discord for latest news, faster support, or just chill.
+
 <a href="https://demyx.sh/sponsor-buymeacoffee" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
+Support this project by buying coffee (please).
+
+[![DigitalOcean Referral Badge](https://web-platforms.sfo2.cdn.digitaloceanspaces.com/WWW/Badge%201.svg)](https://demyx.sh/sponsor-digitalocean)
+
+Demyx is proudly sponsored by DigitalOcean.
 
 [![Code Size](https://img.shields.io/github/languages/code-size/demyxsh/demyx?style=flat&color=blue)](https://github.com/demyxsh/demyx)
 [![Repository Size](https://img.shields.io/github/repo-size/demyxsh/demyx?style=flat&color=blue)](https://github.com/demyxsh/demyx)

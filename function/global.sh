@@ -425,14 +425,16 @@ demyx_notification() {
     local DEMYX_NOTIFICATION="${1:-}"
     local DEMYX_NOTIFICATION_ARG_2="${2:-}"
     local DEMYX_NOTIFICATION_BODY=
-    DEMYX_NOTIFICATION_BODY="$(cat < "$DEMYX_TMP"/demyx_notification | sed 's/\r$//' | sed 's|["'\'']||g' | sed ':a;N;$!ba;s/\n/<br>/g')"
 
     case "$DEMYX_NOTIFICATION" in
         error)
             DEMYX_NOTIFICATION="[ERROR - $DEMYX_HOSTNAME] $DEMYX_NOTIFICATION_ARG_2"
+            DEMYX_NOTIFICATION_BODY="$(cat < "$DEMYX_TMP"/demyx_trap | sed -r "s/\x1B\[([0-9]{1,3}(;[0-9]{1,2})?)?[mGK]//g" | sed 's|["'\'']||g' | sed ':a;N;$!ba;s/\n/<br>/g')"
+            DEMYX_NOTIFICATION_BODY+="$(cat < "$DEMYX_TMP"/demyx_trace | sed -r "s/\x1B\[([0-9]{1,3}(;[0-9]{1,2})?)?[mGK]//g" | sed 's|["'\'']||g' | sed ':a;N;$!ba;s/\n/<br>/g')"
         ;;
         healthcheck)
             DEMYX_NOTIFICATION="[HEALTHCHECK - $DEMYX_HOSTNAME] $DEMYX_NOTIFICATION_ARG_2"
+            DEMYX_NOTIFICATION_BODY="$(cat < "$DEMYX_TMP"/demyx_notify_healthcheck | sed -r "s/\x1B\[([0-9]{1,3}(;[0-9]{1,2})?)?[mGK]//g" | sed 's|["'\'']||g' | sed ':a;N;$!ba;s/\n/<br>/g')"
         ;;
     esac
 
@@ -538,13 +540,15 @@ demyx_proper() {
     demyx_event
     local DEMYX_PROPER="${1:-}"
 
-    # Reset properness
-    if [[ -n "$DEMYX_PROPER" ]]; then
-        chown -R demyx:demyx "$DEMYX_PROPER"
-    else
-        chown -R demyx:demyx "$DEMYX"
-        chown -R demyx:demyx "$DEMYX_LOG"
-    fi
+    {
+        # Reset properness
+        if [[ -n "$DEMYX_PROPER" ]]; then
+            chown -R demyx:demyx "$DEMYX_PROPER"
+        else
+            chown -R demyx:demyx "$DEMYX"
+            chown -R demyx:demyx "$DEMYX_LOG"
+        fi
+    } || true
 }
 #
 #   Source .env/.sh depending on first argument.
@@ -677,12 +681,12 @@ demyx_wordpress_ready() {
     demyx_app_env wp DEMYX_APP_WP_CONTAINER
 
     local DEMYX_WORDPRESS_READY=0
-    local DEMYX_WORDPRESS_READY_MESSAGE="Timed out executing: docker exec $DEMYX_APP_WP_CONTAINER wp core is-installed"
+    local DEMYX_WORDPRESS_READY_MESSAGE="Something is wrong with the WP container, docker logs has been attached"
 
     until docker exec "$DEMYX_APP_WP_CONTAINER" wp core is-installed 2>/dev/null; do
         DEMYX_WORDPRESS_READY="$((DEMYX_WORDPRESS_READY+1))"
 
-        if [[ "$DEMYX_WORDPRESS_READY" = 5 ]]; then
+        if [[ "$DEMYX_WORDPRESS_READY" = 10 ]]; then
             docker logs "$DEMYX_APP_WP_CONTAINER"
             demyx_error custom "$DEMYX_WORDPRESS_READY_MESSAGE"
         else

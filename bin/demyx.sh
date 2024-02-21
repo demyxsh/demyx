@@ -11,13 +11,12 @@ demyx() {
     local DEMYX_ARG_1="${1:-}"
     # shellcheck disable=2034
     local DEMYX_ARG_2="${2:-}"
-
     . "$DEMYX_FUNCTION"/global.sh
     . "$DEMYX_FUNCTION"/help.sh
     . "$DEMYX_FUNCTION"/smtp.sh
     trap 'demyx_trap "${BASH_LINENO[*]}" "$LINENO" "${FUNCNAME[*]:-script}" "$?" "$BASH_COMMAND"' ERR
-    demyx_source "$DEMYX_ARG_1"
 
+    demyx_source "$DEMYX_ARG_1"
     case "$DEMYX_ARG_1" in
         backup) shift
             demyx_backup "$@"
@@ -72,7 +71,7 @@ demyx() {
         ;;
         smtp) shift
             demyx_smtp "$@"
-        ;;  
+        ;;
         update) shift
             demyx_update "$@"
         ;;
@@ -90,7 +89,7 @@ demyx() {
         ;;
     esac
 
-    demyx_proper 
+    demyx_proper
 }
 #
 #   Init.

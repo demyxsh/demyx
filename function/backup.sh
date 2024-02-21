@@ -96,7 +96,7 @@ demyx_backup_all() {
         fi
 
         if [[ "$DEMYX_BACKUP_ALL_CHECK" = 1 ]]; then
-            demyx_warning "$DEMYX_ARG_2 has one or more errors. Please check error log, skipping ..."
+            demyx_warning "$DEMYX_ARG_2 has one or more errors, skipping ..."
             continue
         else
             eval demyx_backup "$DEMYX_BACKUP_ALL" "$DEMYX_BACKUP_ARGS"

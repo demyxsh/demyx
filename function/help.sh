@@ -265,7 +265,7 @@ demyx_help() {
             echo "      smtp                    Sends out a success email if SMTP is configured properly."
             echo "      update                  Runs a series of commands to compare local versions of Demyx images to remote versions. It will also update the Demyx helper script on the host."
             echo "      util|utility            Generate various credentials or open a shell to the Demyx Utilities container."
-            echo "      -v|--version|version    Show demyx version"
+            echo "      -v|--version|version    Show demyx version."
             echo "      wp                      Execute wp-cli commands to an app."
             echo
         ;;

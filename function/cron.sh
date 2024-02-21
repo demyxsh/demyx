@@ -90,7 +90,7 @@ demyx_cron_daily() {
             else
                 demyx_execute "[CROND DAILY - ${DEMYX_CRON_DAILY_I}] Updating WordPress core, themes, and plugins" \
                     "demyx_wp $DEMYX_CRON_DAILY_I core update; \
-                        demyx_wp $DEMYX_CRON_DAILY_I plugin update --all"
+                    demyx_wp $DEMYX_CRON_DAILY_I plugin update --all"
 
                 # A roundabout way to handle wp-cli nonexistent error
                 DEMYX_CRON_DAILY_WP_CHECK="$(docker exec "$DEMYX_APP_WP_CONTAINER" wp theme update --all 2>&1 || true)"

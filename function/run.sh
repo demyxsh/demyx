@@ -238,6 +238,7 @@ demyx_run_clone() {
 #   Create app directory based on --type.
 #
 demyx_run_directory() {
+    demyx_event
     case "$DEMYX_APP_TYPE" in
         html)
             mkdir -p "$DEMYX_HTML"/"$DEMYX_ARG_2"
@@ -383,7 +384,7 @@ demyx_run_extras() {
         DEMYX_RUN_EXTRAS+="--whitelist=$DEMYX_RUN_FLAG_WHITELIST "
     fi
 
-    if [[ -n "$DEMYX_RUN_FLAG_WWW" ]]; then
+    if [[ "$DEMYX_RUN_FLAG_WWW" = true ]]; then
         DEMYX_RUN_EXTRAS+="--www "
     fi
 
@@ -445,6 +446,7 @@ demyx_run_table() {
             echo "WordPress Container       $DEMYX_APP_WP_CONTAINER"
 
             if [[ "$DEMYX_APP_STACK" = ols || "$DEMYX_APP_STACK" = ols-bedrock ]]; then
+                echo
                 echo "OLS Admin Login           $(demyx_app_proto)://$(demyx_app_domain "$DEMYX_APP_DOMAIN")/demyx/ols/"
                 echo "OLS Admin Username        $DEMYX_APP_OLS_ADMIN_USERNAME"
                 echo "OLS Admin Password        $DEMYX_APP_OLS_ADMIN_PASSWORD"

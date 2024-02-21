@@ -693,6 +693,7 @@ demyx_yml_ols() {
 #   YAML template for the ols-bedrock stack.
 #
 demyx_yml_ols_bedrock() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_DOMAIN
         DEMYX_APP_DEV

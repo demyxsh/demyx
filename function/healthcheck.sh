@@ -8,23 +8,20 @@
 demyx_healthcheck() {
     demyx_event
     local DEMYX_HEALTHCHECK_ARG="${1:-$DEMYX_ARG_2}"
-    shift
-    local DEMYX_HEALTHCHECK_TRANSIENT="$DEMYX_TMP"/demyx_notification
+    shift || true
+    local DEMYX_HEALTHCHECK_TRANSIENT="$DEMYX_TMP"/demyx_notify_healthcheck
 
     if [[ "$DEMYX_HEALTHCHECK" = true ]]; then
         demyx_source smtp
         case "$DEMYX_HEALTHCHECK_ARG" in
             app)
-                demyx_execute false \
-                    demyx_healthcheck_app
+                demyx_healthcheck_app
             ;;
             disk)
-                demyx_execute false \
-                    demyx_healthcheck_disk
+                demyx_healthcheck_disk
             ;;
             load)
-                demyx_execute false \
-                    demyx_healthcheck_load
+                demyx_healthcheck_load
             ;;
             *)
                 demyx_help healthcheck

@@ -24,5 +24,5 @@ demyx_smtp() {
         echo "$DEMYX_SMTP_ARG_2" | sed 's|["'\'']||g' | sed ':a;N;$!ba;s/\n/<br>/g'
     } > "$DEMYX_SMTP_FILE"
 
-    demyx_execute false "ssmtp $DEMYX_SMTP_TO < $DEMYX_SMTP_FILE"
+    ssmtp "$DEMYX_SMTP_TO" < "$DEMYX_SMTP_FILE"
 }

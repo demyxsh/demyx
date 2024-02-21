@@ -47,7 +47,7 @@ demyx_wp_all() {
         fi
 
         if [[ "$DEMYX_WP_ALL_CHECK" = 1 ]]; then
-            demyx_warning "$DEMYX_ARG_2 has one or more errors. Please check error log, skipping ..."
+            demyx_warning "$DEMYX_ARG_2 has one or more errors, skipping ..."
             continue
         else
             eval demyx_wp "$DEMYX_WP_ALL" "$DEMYX_WP_ARGS"
