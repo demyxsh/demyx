@@ -6,6 +6,7 @@
 #   demyx wp <app> <args>
 #
 demyx_wp() {
+    demyx_event
     DEMYX_ARG_2="${1:-$DEMYX_ARG_2}"
     [[ -n "$DEMYX_ARG_2" ]] && shift && local DEMYX_WP_ARGS="$*"
 
@@ -33,6 +34,7 @@ demyx_wp_all() {
     cd "$DEMYX_WP" || exit
 
     for DEMYX_WP_ALL in *; do
+        demyx_event
         DEMYX_ARG_2="$DEMYX_WP_ALL"
         DEMYX_WP_ALL_CHECK=0
 
@@ -57,6 +59,7 @@ demyx_wp_all() {
 #   Main WP-CLI function.
 #
 demyx_wp_app() {
+    demyx_event
     local DEMYX_WP_APP=
     local DEMYX_WP_APP_COUNT
     DEMYX_WP_APP_COUNT="$(demyx_count_wp)"

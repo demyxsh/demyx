@@ -6,6 +6,7 @@
 #   Main function for yml generation.
 #
 demyx_yml() {
+    demyx_event
     local DEMYX_YML="${1:-}"
     local DEMYX_YML_RESOLVER=
 
@@ -39,6 +40,7 @@ demyx_yml() {
 #   Basic auth label.
 #
 demyx_yml_auth_label() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_AUTH
         DEMYX_APP_AUTH_PASSWORD
@@ -54,6 +56,7 @@ demyx_yml_auth_label() {
 #   YAML template for the bedrock stack.
 #
 demyx_yml_bedrock() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_DOMAIN
         DEMYX_APP_DEV
@@ -228,6 +231,7 @@ demyx_yml_bedrock() {
 #   YAML template for code-server.
 #
 demyx_yml_code() {
+    demyx_event
     local DEMYX_YML_CODE_LABELS=
     local DEMYX_YML_CODE_WHITELIST=
 
@@ -291,6 +295,7 @@ demyx_yml_code() {
 #   YAML template for traefik http labels.
 #
 demyx_yml_http_labels() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_DOMAIN
         DEMYX_APP_ID
@@ -329,6 +334,7 @@ demyx_yml_http_labels() {
 #   YAML template for the nginx-php stack.
 #
 demyx_yml_nginx_php() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_DOMAIN
         DEMYX_APP_DEV
@@ -475,6 +481,7 @@ demyx_yml_nginx_php() {
 #   NGINX basic auth environment variables.
 #
 demyx_yml_nginx_basic_auth() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_AUTH_WP
         DEMYX_APP_AUTH_PASSWORD
@@ -490,6 +497,7 @@ demyx_yml_nginx_basic_auth() {
 #   NGINX whitelist environment variables.
 #
 demyx_yml_nginx_whitelist() {
+    demyx_event
     demyx_app_env wp DEMYX_APP_IP_WHITELIST
 
     if [[ "$DEMYX_APP_IP_WHITELIST" != false ]]; then
@@ -501,6 +509,7 @@ demyx_yml_nginx_whitelist() {
 #   YAML template for the ols stack.
 #
 demyx_yml_ols() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_DOMAIN
         DEMYX_APP_DEV
@@ -852,6 +861,7 @@ demyx_yml_ols_bedrock() {
 #   Traefik resolver.
 #
 demyx_yml_resolver() {
+    demyx_event
     local DEMYX_YML_RESOLVER=demyx
 
     if [[ "$DEMYX_EMAIL" != false && "$DEMYX_CF_KEY" != false ]]; then
@@ -864,6 +874,7 @@ demyx_yml_resolver() {
 #   YAML template for the browser-sync service.
 #
 demyx_yml_service_bs() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_COMPOSE_PROJECT
         DEMYX_APP_DOMAIN
@@ -945,6 +956,7 @@ demyx_yml_service_bs() {
 #   YAML template for the MariaDB service.
 #
 demyx_yml_service_mariadb() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_ID
         DEMYX_APP_TYPE
@@ -994,6 +1006,7 @@ demyx_yml_service_mariadb() {
 #   YAML template for the phpMyAdmin service.
 #
 demyx_yml_service_pma() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_ID
         DEMYX_APP_PMA
@@ -1032,6 +1045,7 @@ demyx_yml_service_pma() {
 #   YAML template for the phpMyAdmin service.
 #
 demyx_yml_service_redis() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_ID
         DEMYX_APP_REDIS
@@ -1051,6 +1065,7 @@ demyx_yml_service_redis() {
 #   YAML template for the SFTP service.
 #
 demyx_yml_service_sftp() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_COMPOSE_PROJECT
         DEMYX_APP_DOMAIN
@@ -1090,6 +1105,7 @@ demyx_yml_service_sftp() {
 #   YAML template for traefik.
 #
 demyx_yml_traefik() {
+    demyx_event
     local DEMYX_YML_TRAEFIK_DASHBOARD=
     local DEMYX_YML_TRAEFIK_LABELS=
     local DEMYX_YML_TRAEFIK_SECURITY=

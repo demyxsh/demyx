@@ -6,6 +6,7 @@
 #   Checks if main app domain is www or not.
 #
 demyx_app_domain() {
+    demyx_event
     local DEMYX_APP_DOMAIN_ARG="${1:-$DEMYX_ARG_2}"
     local DEMYX_APP_DOMAIN_ARG_FIND=
     DEMYX_APP_DOMAIN_ARG_FIND="$(find "$DEMYX_APP" -name "$DEMYX_APP_DOMAIN_ARG")"
@@ -29,6 +30,7 @@ demyx_app_domain() {
 #   Get variable from app's .env file.
 #
 demyx_app_env() {
+    demyx_event
     local DEMYX_APP_ENV_1="${1:-}"
     local DEMYX_APP_ENV_2="${2:-}"
     local DEMYX_APP_FILE=
@@ -92,6 +94,7 @@ demyx_app_env() {
 #   Update an app's specific environment variable.
 #
 demyx_app_env_update() {
+    demyx_event
     local DEMYX_APP_ENV_UPDATE="${1:-}"
     local DEMYX_APP_ENV_UPDATE_I=
     local DEMYX_APP_ENV_UPDATE_I_VAL=
@@ -121,6 +124,7 @@ demyx_app_env_update() {
 #   Check if a WordPress or MariaDB container is running.
 #
 demyx_app_is_up() {
+    demyx_event
     local DEMYX_APP_IS_UP=
     DEMYX_APP_IS_UP="$(demyx_ps)"
 
@@ -138,6 +142,7 @@ demyx_app_is_up() {
 #
 #
 demyx_app_login() {
+    demyx_event
     local DEMYX_APP_LOGIN=
 
     demyx_app_env wp "
@@ -159,13 +164,15 @@ demyx_app_login() {
 #   Get app's path using find.
 #
 demyx_app_path() {
+    demyx_event
     local DEMYX_APP_PATH="${1:-$DEMYX_ARG_2}"
     find "$DEMYX_APP" -name "$DEMYX_APP_PATH" -type d
 }
 #
-#   Echo out protocol based on DEMYX_APP_SSL.
+#   Echo out protocol based on DEMYX_APP_SSL or DEMYX_APP_SSL_WILDCARD.
 #
 demyx_app_proto() {
+    demyx_event
     local DEMYX_APP_PROTO=
     local DEMYX_APP_PROTO_ENV=
     DEMYX_APP_PROTO_ENV="$(demyx_app_path "$DEMYX_ARG_2")"/.env
@@ -187,6 +194,7 @@ demyx_app_proto() {
 #   Validates $DEMYX_ARG_2.
 #
 demyx_arg_valid() {
+    demyx_event
     if [[ "$DEMYX_ARG_2" == *"://"* ]]; then
         demyx_error custom "${DEMYX_ARG_2//:\/\/*/}:// is not allowed"
     fi
@@ -213,12 +221,14 @@ demyx_arg_valid() {
 #   Compare versions.
 #
 demyx_compare() {
+    demyx_event
     echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }';
 }
 #
 #   Count all WP sites.
 #
 demyx_count_wp() {
+    demyx_event
     if [[ -d "$DEMYX_WP" ]]; then
         find "$DEMYX_WP" -mindepth 1 -maxdepth 1 -type d | wc -l
     else
@@ -229,6 +239,7 @@ demyx_count_wp() {
 #   Print a divider as long as the current terminal width. Defaults to 100.
 #
 demyx_divider() {
+    demyx_event
     local DEMYX_DIVIDER="${1:-}"
     local DEMYX_DIVIDER_COUNT="${DEMYX_DIVIDER:-50}"
 
@@ -243,6 +254,7 @@ demyx_divider() {
 #   Print divider title.
 #
 demyx_divider_title() {
+    demyx_event
     local DEMYX_DIVIDER_TITLE="${1:-}"
     local DEMYX_DIVIDER_TITLE_BODY="${2:-}"
     local DEMYX_DIVIDER_TITLE_COUNT="${3:-}"
@@ -255,14 +267,15 @@ demyx_divider_title() {
 #   Echos INFO messages
 #
 demyx_echo() {
+    demyx_event
     local DEMYX_ECHO="\e[34m[INFO]\e[39m ${1:-}"
     echo -e "$DEMYX_ECHO"
-    demyx_logger false "demyx_echo" "$DEMYX_ECHO"
 }
 #
 #   Outputs error string with an exit code 1.
 #
 demyx_error() {
+    demyx_event
     local DEMYX_ERROR="${1:-}"
     local DEMYX_ERROR_ARG="${2:-$DEMYX_ARG_2}"
     local DEMYX_ERROR_STRING=
@@ -301,7 +314,7 @@ demyx_error() {
 #   Echos useful messages to the user and executes second argument.
 #
 demyx_execute() {
-    local DEMYX_EXECUTE_ECHO="${1:-}"
+    demyx_event
     shift
     local DEMYX_EXECUTE="$*"
     local DEMYX_EXECUTE_FILE="$DEMYX_TMP"/demyx_execute
@@ -340,6 +353,7 @@ demyx_execute() {
 #   Output `docker images` to a file for performance and outputs contents to stdout.
 #
 demyx_images() {
+    demyx_event
     local DEMYX_IMAGES="${1:-}"
     local DEMYX_IMAGES_FILE="$DEMYX"/.images
 
@@ -415,6 +429,7 @@ demyx_logger() {
 #   Loop checks a connection to MariaDB and exits when a connection is successful.
 #
 demyx_mariadb_ready() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_DB_CONTAINER
         WORDPRESS_DB_PASSWORD
@@ -430,6 +445,7 @@ demyx_mariadb_ready() {
 #   Send notification by email/matrix.
 #
 demyx_notification() {
+    demyx_event
     local DEMYX_NOTIFICATION="${1:-}"
     local DEMYX_NOTIFICATION_ARG_2="${2:-}"
     local DEMYX_NOTIFICATION_BODY=
@@ -464,6 +480,7 @@ demyx_notification() {
 #   Checks if stack is ols and then exits.
 #
 demyx_ols_not_supported() {
+    demyx_event
     demyx_app_env wp DEMYX_APP_STACK
 
     if [[ "$DEMYX_APP_STACK" = ols || "$DEMYX_APP_STACK" = ols-bedrock ]]; then
@@ -474,6 +491,7 @@ demyx_ols_not_supported() {
 #   Checks for open ports on the host.
 #
 demyx_open_port() {
+    demyx_event
     local DEMYX_OPEN_PORT=
 
     DEMYX_OPEN_PORT="$(docker run --rm \
@@ -487,6 +505,7 @@ demyx_open_port() {
 #   Reference: https://chrismoore.ca/2018/10/finding-the-correct-pm-max-children-settings-for-php-fpm/
 #
 demyx_pm_calc() {
+    demyx_event
     demyx_source "
         exec
         utility
@@ -540,6 +559,7 @@ demyx_pm_calc() {
 #   Properizes files/directories.
 #
 demyx_proper() {
+    demyx_event
     local DEMYX_PROPER="${1:-}"
 
     # Reset properness
@@ -554,6 +574,7 @@ demyx_proper() {
 #   Source .env/.sh depending on first argument.
 #
 demyx_source() {
+    demyx_event
     local DEMYX_SOURCE=
     DEMYX_SOURCE="${1:-}"
     local DEMYX_SOURCE_I=
@@ -578,6 +599,7 @@ demyx_source() {
 #   Return string if it's a subdomain.
 #
 demyx_subdomain() {
+    demyx_event
     local DEMYX_SUBDOMAIN="${1:-}"
     echo "$DEMYX_SUBDOMAIN" | grep -E '\.[^.]+\.[[:alpha:]]' || true
 }
@@ -625,10 +647,32 @@ demyx_trap() {
     demyx_notification error "$DEMYX_ARGS"
 }
 #
+#   Event logs.
+#
+demyx_event() {
+    local DEMYX_EVENT=
+
+    {
+        echo -en "[$(date +%F-%T)][${DEMYX_ARGS}]"
+        for DEMYX_EVENT in "${FUNCNAME[@]}"; do
+            [[ "$DEMYX_EVENT" = demyx || "$DEMYX_EVENT" = main ]] && continue
+            echo -en "[${DEMYX_EVENT}]"
+        done
+        echo
+
+        # TODO
+        #echo -en "[$(date +%F-%T)]"
+        #for DEMYX_EVENT in $DEMYX_ARGS; do
+        #    echo -en "[$DEMYX_EVENT]"
+        #done
+    } >> "$DEMYX_LOG"/demyx.log
+}
+#
 #   TODO
 #   Validates IP addresses.
 #
 demyx_validate_ip() {
+    demyx_event
     local DEMYX_VALIDATE_IP="${1:-}"
     echo "$DEMYX_VALIDATE_IP" |
     grep -E '(([0-9]{1,3})\.){3}([0-9]{1,3}){1}' |
@@ -639,6 +683,7 @@ demyx_validate_ip() {
 #   Echos WARNING messages.
 #
 demyx_warning() {
+    demyx_event
     local DEMYX_WARNING="\e[33m[WARNING]\e[39m ${1:-}"
     local DEMYX_WARNING_EXIT="${2:-}"
 
@@ -653,6 +698,7 @@ demyx_warning() {
 #   Loop checks a connection to WordPress and exits when a connection is successful.
 #
 demyx_wordpress_ready() {
+    demyx_event
     demyx_app_env wp DEMYX_APP_WP_CONTAINER
 
     local DEMYX_WORDPRESS_READY=0

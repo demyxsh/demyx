@@ -6,6 +6,7 @@
 #   demyx backup <app> <args>
 #
 demyx_backup() {
+    demyx_event
     DEMYX_ARG_2="${1:-$DEMYX_ARG_2}"
     shift && local DEMYX_BACKUP_ARGS="$*"
     local DEMYX_BACKUP_FLAG=
@@ -81,6 +82,7 @@ demyx_backup_all() {
     cd "$DEMYX_WP" || exit
 
     for DEMYX_BACKUP_ALL in *; do
+        demyx_event
         DEMYX_ARG_2="$DEMYX_BACKUP_ALL"
         DEMYX_BACKUP_ALL_CHECK=0
 
@@ -106,6 +108,7 @@ demyx_backup_all() {
 #   Main backup function.
 #
 demyx_backup_app() {
+    demyx_event
     local DEMYX_BACKUP_TODAYS_DATE=
     DEMYX_BACKUP_TODAYS_DATE="$(date +%Y-%m-%d)"
 
@@ -185,6 +188,7 @@ demyx_backup_app() {
 #   Backup config only.
 #
 demyx_backup_config() {
+    demyx_event
     demyx_app_env wp DEMYX_APP_DOMAIN
 
     if [[ ! -d "$DEMYX_BACKUP"/config ]]; then
@@ -198,6 +202,7 @@ demyx_backup_config() {
 #   Backup database only.
 #
 demyx_backup_db() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_CONTAINER
         DEMYX_APP_DOMAIN
@@ -219,6 +224,7 @@ demyx_backup_db() {
 #   List app's backups.
 #
 demyx_backup_list() {
+    demyx_event
     local DEMYX_BACKUP_LIST="$DEMYX_TMP"/demyx_transient
     local DEMYX_BACKUP_LIST_COUNT=
     local DEMYX_BACKUP_LIST_TOTAL_SIZE=

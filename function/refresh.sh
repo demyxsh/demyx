@@ -6,6 +6,7 @@
 #   demyx refresh <app> <args>
 #
 demyx_refresh() {
+    demyx_event
     DEMYX_ARG_2="${1:-$DEMYX_ARG_2}"
     shift && local DEMYX_REFRESH_ARGS="$*"
     local DEMYX_REFRESH_FLAG=
@@ -73,6 +74,7 @@ demyx_refresh() {
 #   Loop for demyx_backup_app.
 #
 demyx_refresh_all() {
+    demyx_event
     local DEMYX_REFRESH_ALL=
 
     cd "$DEMYX_WP" || exit
@@ -86,6 +88,7 @@ demyx_refresh_all() {
 #   Main refresh function.
 #
 demyx_refresh_app() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_DEV
         DEMYX_APP_DOMAIN
@@ -129,6 +132,7 @@ demyx_refresh_app() {
 #   Refresh code-server.
 #
 demyx_refresh_code() {
+    demyx_event
     if [[ "$DEMYX_CODE_ENABLE" = true ]]; then
         if [[ ! -d "$DEMYX_CODE" ]]; then
             mkdir -p "$DEMYX_CODE"
@@ -148,6 +152,7 @@ demyx_refresh_code() {
 #   Refresh traefik.
 #
 demyx_refresh_traefik() {
+    demyx_event
     demyx_execute "Backing up traefik directory to ${DEMYX_BACKUP}/traefik.tgz" \
         "tar -czf ${DEMYX_BACKUP}/traefik.tgz -C $DEMYX_APP traefik"
 

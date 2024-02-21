@@ -6,6 +6,7 @@
 #   demyx cp <app> <args> <target|path> <target|path>
 #
 demyx_cp() {
+    demyx_event
     DEMYX_ARG_2="${1:-$DEMYX_ARG_2}"
     # shellcheck disable=SC2153
     local DEMYX_CP="$DEMYX_TMP"/demyx_transient

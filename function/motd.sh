@@ -6,6 +6,7 @@
 #   Main motd function.
 #
 demyx_motd() {
+    demyx_event
     demyx_source info
     demyx_divider_title "DEMYX" "https://demyx.sh" "${DEMYX_STTY:-}"
     echo "Welcome to Demyx! Please report any bugs you see."
@@ -25,6 +26,7 @@ demyx_motd() {
 #   Show getting started message if no apps are installed.
 #
 demyx_motd_start() {
+    demyx_event
     if [[ -z "$(demyx_motd_wp)" ]]; then
         demyx_echo "To create a WordPress app: demyx run $DEMYX_DOMAIN"
         demyx_echo "Supported stacks: bedrock, nginx-php, ols, ols-bedrock"
@@ -35,6 +37,7 @@ demyx_motd_start() {
 #   Warns users if certain system functions are disabled.
 #
 demyx_motd_warning() {
+    demyx_event
     local DEMYX_MOTD_WARNING_I=
 
     if [[ "$DEMYX_DOMAIN" = localhost ]]; then
@@ -74,6 +77,7 @@ demyx_motd_warning() {
 #   Checks if WP apps are installed.
 #
 demyx_motd_wp() {
+    demyx_event
     local DEMYX_MOTD_HAS_WP=
     DEMYX_MOTD_HAS_WP="$(find "$DEMYX_WP" -mindepth 1 -maxdepth 1 -type d | wc -l)"
 

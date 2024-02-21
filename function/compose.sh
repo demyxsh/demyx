@@ -6,6 +6,7 @@
 #   demyx compose <app> <args> <docker-compose args>
 #
 demyx_compose() {
+    demyx_event
     DEMYX_ARG_2="${1:-$DEMYX_ARG_2}"
     local DEMYX_COMPOSE_TYPE="${2:-}"
     [[ -n "$DEMYX_ARG_2" ]] && shift && local DEMYX_COMPOSE_ARGS="$*"
@@ -23,6 +24,7 @@ demyx_compose() {
 #   Loop for demyx_compose_app.
 #
 demyx_compose_all() {
+    demyx_event
     local DEMYX_COMPOSE_ALL=
 
     cd "$DEMYX_WP" || exit
@@ -35,6 +37,7 @@ demyx_compose_all() {
 #   Main docker-compose function.
 #
 demyx_compose_app() {
+    demyx_event
     local DEMYX_COMPOSE_APP=
     local DEMYX_COMPOSE_APP_CHECK=
 

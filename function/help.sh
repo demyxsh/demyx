@@ -6,6 +6,7 @@
 #   demyx help <args>
 #
 demyx_help() {
+    demyx_event
     case "${1:-$DEMYX_ARG_2}" in
         backup)
             echo

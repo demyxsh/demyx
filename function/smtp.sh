@@ -6,6 +6,7 @@
 #   demyx smtp <args>
 #
 demyx_smtp() {
+    demyx_event
     local DEMYX_SMTP_ARG_1="${1:-"[DEMYX] SMTP test"}"
     local DEMYX_SMTP_ARG_2="${2:-"Success."}"
     local DEMYX_SMTP_FILE="$DEMYX_TMP"/demyx_smtp

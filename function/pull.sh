@@ -6,6 +6,7 @@
 #   demyx pull <args>
 #
 demyx_pull() {
+    demyx_event
     DEMYX_ARG_2="${1:-$DEMYX_ARG_2}"
 
     case "$DEMYX_ARG_2" in
@@ -25,6 +26,7 @@ demyx_pull() {
 #   Smart pull all demyx images.
 #
 demyx_pull_all() {
+    demyx_event
     local DEMYX_PULL_ALL="
         demyx/browsersync
         demyx/code-server:bedrock
@@ -65,6 +67,7 @@ demyx_pull_all() {
 #   Pull specific demyx images.
 #
 demyx_pull_image() {
+    demyx_event
     local DEMYX_PULL_IMAGE=demyx/"$DEMYX_ARG_2"
 
     if [[ "$DEMYX_ARG_2" = ctop ]]; then

@@ -6,6 +6,7 @@
 #   Main template for app's .env file.
 #
 demyx_env() {
+    demyx_event
     demyx_source utility
 
     local DEMYX_ENV=

@@ -8,6 +8,7 @@
 #	Loops until a word/name is present.
 #
 demyx_name() {
+	demyx_event
 	local DEMYX_NAME_LEFT=
     local DEMYX_NAME_RIGHT=
 
@@ -27,6 +28,7 @@ demyx_name() {
 #	Randomly spits out adjective words from the array.
 #
 demyx_name_adjectives() {
+	demyx_event
 	local DEMYX_NAME_ADJECTIVES=
 	local DEMYX_NAME_ADJECTIVES_RANDOM=
 
@@ -146,12 +148,14 @@ demyx_name_adjectives() {
 #	Main random function.
 #
 demyx_name_randomizer() {
+	demyx_event
 	printf "%s\0" "$@" | shuf -z -n1 | tr -d '\0'
 }
 #
 #	Randomly spits out names from the array.
 #
 demyx_name_sur() {
+	demyx_event
 	local DEMYX_NAME_SUR=
 	local DEMYX_NAME_SUR_RANDOM=
 

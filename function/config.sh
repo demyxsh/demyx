@@ -6,6 +6,7 @@
 #   demyx config <app> <args>
 #
 demyx_config() {
+    demyx_event
     DEMYX_ARG_2="${1:-$DEMYX_ARG_2}"
     shift && local DEMYX_CONFIG_ARGS="$*"
     local DEMYX_CONFIG=
@@ -341,6 +342,7 @@ demyx_config_all() {
     cd "$DEMYX_WP" || exit
 
     for DEMYX_CONFIG_ALL in *; do
+        demyx_event
         demyx_echo "Configuring $DEMYX_CONFIG_ALL"
         eval demyx_config "$DEMYX_CONFIG_ALL" "$DEMYX_CONFIG_ARGS"
     done
@@ -349,6 +351,7 @@ demyx_config_all() {
 #   Configures app's basic auth labels.
 #
 demyx_config_auth() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_AUTH
         DEMYX_APP_AUTH_USERNAME
@@ -374,6 +377,7 @@ demyx_config_auth() {
 #   Configures app's basic auth for WordPress login page.
 #
 demyx_config_auth_wp() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_AUTH_WP
         DEMYX_APP_AUTH_USERNAME
@@ -399,6 +403,7 @@ demyx_config_auth_wp() {
 #   Configures an app's backup status.
 #
 demyx_config_backup() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_BACKUP
     "
@@ -410,6 +415,7 @@ demyx_config_backup() {
 #   Configures app's bedrock .env mode.
 #
 demyx_config_bedrock() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_BEDROCK_MODE
         DEMYX_APP_WP_CONTAINER
@@ -423,6 +429,7 @@ demyx_config_bedrock() {
 #   Configures app's cache plugin.
 #
 demyx_config_cache() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_DOMAIN
         DEMYX_APP_STACK
@@ -478,6 +485,7 @@ demyx_config_cache() {
 #   Option updater for nginx-helper plugin.
 #
 demyx_config_cache_helper() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_DOMAIN
         DEMYX_APP_WP_CONTAINER
@@ -489,6 +497,7 @@ demyx_config_cache_helper() {
 #   Reconfigures an app's MariaDB credentials and reinstall WordPress core files.
 #
 demyx_config_clean() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_CONTAINER
         DEMYX_APP_DB_CONTAINER
@@ -561,6 +570,7 @@ demyx_config_clean() {
 #   Configures an app for development mode.
 #
 demyx_config_dev() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_DOMAIN
         DEMYX_APP_DEV_PASSWORD
@@ -632,6 +642,7 @@ demyx_config_dev() {
 #   Configures an app's healthcheck.
 #
 demyx_config_healthcheck() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_HEALTHCHECK
     "
@@ -643,6 +654,7 @@ demyx_config_healthcheck() {
 #   Configures an app's opcache setting.
 #
 demyx_config_opcache() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_STACK
         DEMYX_APP_PHP_OPCACHE
@@ -657,6 +669,7 @@ demyx_config_opcache() {
 #   Configures an app's php-fpm settings.
 #
 demyx_config_php() {
+    demyx_event
     DEMYX_CONFIG_COMPOSE=true
 
     if [[ -n "$DEMYX_CONFIG_FLAG_PHP_PM" ]]; then
@@ -703,6 +716,7 @@ demyx_config_php() {
 #   Configure php-fpm values based on app's defined memory.
 #
 demyx_config_pm() {
+    demyx_event
     demyx_ols_not_supported
     DEMYX_CONFIG_COMPOSE=true
 
@@ -716,6 +730,7 @@ demyx_config_pm() {
 #   Configures a phpMyAdmin container for an app.
 #
 demyx_config_pma() {
+    demyx_event
     # TODO - needs to work with IP address
     demyx_app_env wp "
         DEMYX_APP_COMPOSE_PROJECT
@@ -747,6 +762,7 @@ demyx_config_pma() {
 #   Configures an app's rate limit.
 #
 demyx_config_rate_limit() {
+    demyx_event
     demyx_ols_not_supported
     demyx_app_env wp "
         DEMYX_APP_RATE_LIMIT
@@ -761,6 +777,7 @@ demyx_config_rate_limit() {
 #   Configures a Redis container for an app.
 #
 demyx_config_redis() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_DOMAIN
         DEMYX_APP_ID
@@ -813,6 +830,7 @@ demyx_config_redis() {
 #   Configure an app's container resources.
 #
 demyx_config_resources() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_DOMAIN
         DEMYX_APP_DB_CONTAINER
@@ -842,6 +860,7 @@ demyx_config_resources() {
 #   # TODO - Configures an app's restart process without bringing down the container.
 #
 demyx_config_restart() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_DOMAIN
         DEMYX_APP_NX_CONTAINER
@@ -885,6 +904,7 @@ demyx_config_restart() {
 #   Configures an SFTP container for an app.
 #
 demyx_config_sftp() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_COMPOSE_PROJECT
         DEMYX_APP_DOMAIN
@@ -934,6 +954,7 @@ demyx_config_sftp() {
 #   Configures an app's SSL.
 #
 demyx_config_ssl() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_DOMAIN
         DEMYX_APP_SSL
@@ -957,10 +978,12 @@ demyx_config_ssl() {
         "demyx_app_env_update DEMYX_APP_SSL=${DEMYX_CONFIG_FLAG_SSL}; \
         demyx_yml $DEMYX_APP_STACK"
 }
+    demyx_event
 #
 #   Configures an app's stack switching.
 #
 demyx_config_stack() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_CACHE
         DEMYX_APP_DOMAIN
@@ -1041,6 +1064,7 @@ demyx_config_stack() {
 #   Configures an app's auto updating of WordPress core, theme, and plugin files.
 #
 demyx_config_wp_update() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_WP_UPDATE
     "
@@ -1052,6 +1076,7 @@ demyx_config_wp_update() {
 #   Configures an app's whitelist mode.
 #
 demyx_config_whitelist() {
+    demyx_event
     # TODO - make this work with OLS
     demyx_ols_not_supported
     demyx_app_env wp "
@@ -1073,6 +1098,7 @@ demyx_config_whitelist() {
 #   Configures app's WordPress URL.
 #
 demyx_config_www() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_DOMAIN
         DEMYX_APP_DOMAIN_WWW
@@ -1106,6 +1132,7 @@ demyx_config_www() {
 #   Configures an app's xmlrpc setting.
 #
 demyx_config_xmlrpc() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_XMLRPC
     "

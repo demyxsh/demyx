@@ -6,6 +6,7 @@
 #   demyx info <app> <args>
 #
 demyx_info() {
+    demyx_event
     DEMYX_ARG_2="${1:-$DEMYX_ARG_2}"
     local DEMYX_INFO="DEMYX - INFO"
     local DEMYX_INFO_FLAG=
@@ -71,6 +72,7 @@ demyx_info() {
 #   Displays app's entire environment variables.
 #
 demyx_info_app() {
+    demyx_event
     local DEMYX_INFO_APP_DB_VOLUME=
     local DEMYX_INFO_APP_ENV=
     local DEMYX_INFO_APP_ENV_VAR=
@@ -177,6 +179,7 @@ demyx_info_app() {
 #   # TODO - List apps that are currently installed.
 #
 demyx_info_apps() {
+    demyx_event
     local DEMYX_INFO_APPS_COUNT=
     DEMYX_INFO_APPS_COUNT="$(find "$DEMYX_WP" -mindepth 1 -maxdepth 1 -type d | wc -l)"
 
@@ -202,6 +205,7 @@ demyx_info_apps() {
 #   Display basic information of demyx system.
 #
 demyx_info_system() {
+    demyx_event
     local DEMYX_INFO_SYSTEM_CONTAINER_DEAD=
     DEMYX_INFO_SYSTEM_CONTAINER_DEAD="$(docker ps -q --filter "status=exited" | wc -l)"
     local DEMYX_INFO_SYSTEM_CONTAINER_RUNNING=

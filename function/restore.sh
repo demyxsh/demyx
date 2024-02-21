@@ -6,6 +6,7 @@
 #   demyx restore <app> <args>
 #
 demyx_restore() {
+    demyx_event
     DEMYX_ARG_2="${1:-$DEMYX_ARG_2}"
     local DEMYX_RESTORE_CHECK=
     local DEMYX_RESTORE_FLAG=
@@ -73,6 +74,7 @@ demyx_restore() {
 #   Main restore function.
 #
 demyx_restore_app() {
+    demyx_event
     local DEMYX_RESTORE_APP_CHECK=
     DEMYX_RESTORE_APP_CHECK="$(demyx_app_path "$DEMYX_ARG_2")"
     local DEMYX_RESTORE_APP_DATE=
@@ -192,6 +194,7 @@ demyx_restore_app() {
 #   Restore app's directory only.
 #
 demyx_restore_config() {
+    demyx_event
     local DEMYX_RESTORE_CONFIG_FILE=
     DEMYX_RESTORE_CONFIG_FILE="$(find "$DEMYX_BACKUP"/config -type f -name "${DEMYX_ARG_2}.tgz")"
 
@@ -208,6 +211,7 @@ demyx_restore_config() {
 #   Restore app's database only.
 #
 demyx_restore_db() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_CONTAINER
         DEMYX_APP_DOMAIN

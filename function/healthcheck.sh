@@ -6,6 +6,7 @@
 #   demyx healthcheck <args>
 #
 demyx_healthcheck() {
+    demyx_event
     local DEMYX_HEALTHCHECK_ARG="${1:-$DEMYX_ARG_2}"
     shift
     local DEMYX_HEALTHCHECK_TRANSIENT="$DEMYX_TMP"/demyx_notification
@@ -35,6 +36,7 @@ demyx_healthcheck() {
 #   Checks if apps are running.
 #
 demyx_healthcheck_app() {
+    demyx_event
     local DEMYX_HEALTHCHECK_APP_COUNT=0
     local DEMYX_HEALTHCHECK_APP_I=
     local DEMYX_HEALTHCHECK_APP_DB=
@@ -125,6 +127,7 @@ demyx_healthcheck_app() {
 #   Checks disk space.
 #
 demyx_healthcheck_disk() {
+    demyx_event
     local DEMYX_HEALTHCHECK_DISK=
     local DEMYX_HEALTHCHECK_DISK_ALL=
     DEMYX_HEALTHCHECK_DISK_ALL="$(df -h | tee "$DEMYX_HEALTHCHECK_TRANSIENT")"
@@ -142,6 +145,7 @@ demyx_healthcheck_disk() {
 #   Checks for high load average.
 #
 demyx_healthcheck_load() {
+    demyx_event
     local DEMYX_HEALTHCHECK_LOAD_AVERAGE=
     DEMYX_HEALTHCHECK_LOAD_AVERAGE="$(cat < /proc/loadavg | awk '{print $1 " " $2 " " $3}')"
     local DEMYX_HEALTHCHECK_LOAD_AVERAGE_TARGET=

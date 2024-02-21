@@ -6,6 +6,7 @@
 #   demyx utility <type> <args>
 #
 demyx_utility() {
+    demyx_event
     DEMYX_ARG_2="${1:-$DEMYX_ARG_2}"
     local DEMYX_UTILITY="DEMYX - UTILITY"
     local DEMYX_UTILITY_FLAG=
@@ -75,6 +76,7 @@ demyx_utility() {
 #   Generates credentials.
 #
 demyx_utility_credentials() {
+    demyx_event
     local DEMYX_UTILITY_CREDENTIALS_USERNAME
     DEMYX_UTILITY_CREDENTIALS_USERNAME="$(demyx_utility username -r)"
     local DEMYX_UTILITY_CREDENTIALS_PASSWORD
@@ -96,6 +98,7 @@ demyx_utility_credentials() {
 #   Generates htpasswd.
 #
 demyx_utility_htpasswd() {
+    demyx_event
     local DEMYX_UTILITY_HTPASSWD_USERNAME="${1:-}"
     local DEMYX_UTILITY_HTPASSWD_PASSWORD="${2:-}"
     local DEMYX_UTILITY_HTPASSWD=
@@ -128,6 +131,7 @@ demyx_utility_htpasswd() {
 #   Generates ID.
 #
 demyx_utility_id() {
+    demyx_event
     local DEMYX_UTILITY_ID="${1:-"5"}"
     local DEMYX_UTILITY_ID_DEFAULT="a-z0-9"
     local DEMYX_UTILITY_ID_GEN=
@@ -149,6 +153,7 @@ demyx_utility_id() {
 #   Generates password.
 #
 demyx_utility_password() {
+    demyx_event
     local DEMYX_UTILITY_PASSWORD="${1:-"20"}"
     local DEMYX_UTILITY_PASSWORD_DEFAULT="A-Za-z0-9"
     local DEMYX_UTILITY_PWGEN=
@@ -170,6 +175,7 @@ demyx_utility_password() {
 #   Generates username.
 #
 demyx_utility_username() {
+    demyx_event
     local DEMYX_UTILITY_USERNAME
     DEMYX_UTILITY_USERNAME="$(demyx_name)"
 

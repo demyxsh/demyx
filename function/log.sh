@@ -6,6 +6,7 @@
 #   demyx log <app> <args>
 #
 demyx_log() {
+    demyx_event
     DEMYX_ARG_2="${1:-$DEMYX_ARG_2}"
     local DEMYX_LOG_FLAG=
     local DEMYX_LOG_FLAG_CRON=
@@ -91,6 +92,7 @@ demyx_log() {
 #   Main log function.
 #
 demyx_log_app() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_DOMAIN
         DEMYX_APP_DB_CONTAINER
@@ -117,12 +119,13 @@ demyx_log_app() {
 #   View cron logs.
 #
 demyx_log_cron() {
-    tail "$DEMYX_LOG_TAIL_FLAG" "$DEMYX_LOG"/cron.log
+    demyx_event
 }
 #
 #   View demyx logs.
 #
 demyx_log_main() {
+    demyx_event
     if [[ "$DEMYX_LOG_FLAG_ERROR" = true ]]; then
         if [[ -f "$DEMYX_LOG"/error.log ]]; then
             tail "$DEMYX_LOG_TAIL_FLAG" "$DEMYX_LOG"/error.log
@@ -139,6 +142,7 @@ demyx_log_main() {
 #   View traefik logs.
 #
 demyx_log_traefik() {
+    demyx_event
     if [[ "$DEMYX_LOG_FLAG_ERROR" = true ]]; then
         tail "$DEMYX_LOG_TAIL_FLAG" "$DEMYX_LOG"/traefik.error.log
     else

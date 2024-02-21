@@ -6,6 +6,7 @@
 #   demyx run <app> <args>
 #
 demyx_run() {
+    demyx_event
     DEMYX_ARG_2="${1:-$DEMYX_ARG_2}"
     local DEMYX_RUN="DEMYX - RUN"
     local DEMYX_RUN_FLAG=
@@ -113,6 +114,7 @@ demyx_run() {
 #   Main run function.
 #
 demyx_run_app() {
+    demyx_event
     demyx_execute "Creating app" \
         "demyx_run_directory; \
         demyx_env; \
@@ -134,6 +136,7 @@ demyx_run_app() {
 #   Main run clone function.
 #
 demyx_run_clone() {
+    demyx_event
     local DEMYX_RUN_CLONE_APP=
     DEMYX_RUN_CLONE_APP="$(find "$DEMYX_APP" -name "$DEMYX_RUN_FLAG_CLONE")"
     local DEMYX_RUN_CLONE_WP_CONTAINER=
@@ -245,7 +248,7 @@ demyx_run_directory() {
 #   Initialize commands before main run function.
 #
 demyx_run_init() {
-    local DEMYX_APP_RUN_INIT_CHECK
+    demyx_event
     DEMYX_APP_RUN_INIT_CHECK="$(demyx_app_path "$DEMYX_ARG_2")"
     local DEMYX_RUN_APP_INIT_CONFIRM=
 
@@ -326,6 +329,7 @@ demyx_run_init() {
 #   Execute extra commands.
 #
 demyx_run_extras() {
+    demyx_event
     demyx_wordpress_ready
 
     local DEMYX_RUN_EXTRAS=
@@ -359,6 +363,7 @@ demyx_run_extras() {
 #   Feature coming soon.
 #
 demyx_run_soon() {
+    demyx_event
     if [[ "$DEMYX_RUN_FLAG_TYPE" = html || "$DEMYX_RUN_FLAG_TYPE" = php ]]; then
         demyx_error custom "Coming Soon™"
     fi
@@ -367,6 +372,7 @@ demyx_run_soon() {
 #   Output run table.
 #
 demyx_run_table() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_AUTH
         DEMYX_APP_CACHE
@@ -433,6 +439,7 @@ demyx_run_table() {
 #   Create app's volumes.
 #
 demyx_run_volumes() {
+    demyx_event
     demyx_app_env wp "
         DEMYX_APP_ID
         DEMYX_APP_STACK

@@ -6,6 +6,7 @@
 #   demyx edit <app> <args>
 #
 demyx_edit() {
+    demyx_event
     local DEMYX_EDIT_FLAG=
     local DEMYX_EDIT_FLAG_REFRESH=
 

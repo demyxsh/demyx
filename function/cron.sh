@@ -6,6 +6,7 @@
 #   demyx cron <args>
 #
 demyx_cron() {
+    demyx_event
     demyx_source "
         backup
         log
@@ -43,6 +44,7 @@ demyx_cron() {
 #   Daily cron.
 #
 demyx_cron_daily() {
+    demyx_event
     local DEMYX_CRON_DAILY_I=
     local DEMYX_CRON_DAILY_WP_CHECK=
 
@@ -125,6 +127,7 @@ demyx_cron_daily() {
 #   Every five minute cron.
 #
 demyx_cron_five_minute() {
+    demyx_event
     # Healthchecks
     demyx_execute "[CROND FIVE-MINUTE] Healthcheck - App" \
         "demyx_healthcheck app"
@@ -141,6 +144,7 @@ demyx_cron_five_minute() {
 #   Hourly cron.
 #
 demyx_cron_hourly() {
+    demyx_event
     # Execute custom cron
     if [[ -f "$DEMYX"/custom/cron/hourly.sh ]]; then
         demyx_execute "[CROND HOURLY] Executing ${DEMYX}/custom/cron/hourly.sh" \
@@ -151,6 +155,7 @@ demyx_cron_hourly() {
 #   Every minute cron.
 #
 demyx_cron_minute() {
+    demyx_event
     # Execute custom cron
     if [[ -f "$DEMYX"/custom/cron/minute.sh ]]; then
         demyx_execute "[CROND MINUTE] Executing ${DEMYX}/custom/cron/minute.sh" \
@@ -161,6 +166,7 @@ demyx_cron_minute() {
 #   Every six hour cron.
 #
 demyx_cron_six_hour() {
+    demyx_event
     # Execute custom cron
     if [[ -f "$DEMYX"/custom/cron/six-hour.sh ]]; then
         demyx_execute "[CROND SIX-HOUR] Executing ${DEMYX}/custom/cron/six-hour.sh" \
@@ -171,6 +177,7 @@ demyx_cron_six_hour() {
 #   Every week cron.
 #
 demyx_cron_weekly() {
+    demyx_event
     # Check for updates
     demyx_execute "[CROND WEEKLY] Updating cache" \
         "demyx_update"

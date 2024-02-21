@@ -6,7 +6,7 @@
 #   demyx exec <app> <args>
 #
 demyx_exec() {
-    local DEMYX_EXEC=
+    demyx_event
     local DEMYX_EXEC_CONTAINER=
     local DEMYX_EXEC_FLAG=
     local DEMYX_EXEC_FLAG_DB=

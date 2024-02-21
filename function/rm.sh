@@ -6,6 +6,7 @@
 #   demyx rm <app> <args>
 #
 demyx_rm() {
+    demyx_event
     DEMYX_ARG_2="${1:-$DEMYX_ARG_2}"
     local DEMYX_RM_FLAG=
     local DEMYX_RM_FLAG_FORCE=
@@ -51,6 +52,7 @@ demyx_rm() {
 #   Loop for demyx_rm_app.
 #
 demyx_rm_all() {
+    demyx_event
     local DEMYX_RM_ALL=
     local DEMYX_RM_ALL_APP_CONFIRM=
     local DEMYX_RM_ALL_HTML=
@@ -113,6 +115,7 @@ demyx_rm_all() {
 #   Main rm function.
 #
 demyx_rm_app() {
+    demyx_event
     local DEMYX_RM_APP_CONFIRM=
     local DEMYX_RM_APP_PATH=
     DEMYX_RM_APP_PATH="$(demyx_app_path "$DEMYX_ARG_2")"
