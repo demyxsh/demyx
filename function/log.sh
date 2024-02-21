@@ -100,18 +100,18 @@ demyx_log_app() {
     "
 
     if [[ "$DEMYX_LOG_FLAG_CRON" ]]; then
-        docker exec -it "$DEMYX_APP_WP_CONTAINER" \
+        exec docker exec -it "$DEMYX_APP_WP_CONTAINER" \
             tail "$DEMYX_LOG_TAIL_FLAG" "$DEMYX_LOG"/"$DEMYX_APP_DOMAIN".cron.log
     elif [[ "$DEMYX_LOG_FLAG_DATABASE" = true ]]; then
-        docker exec -it "$DEMYX_APP_DB_CONTAINER" \
+        exec docker exec -it "$DEMYX_APP_DB_CONTAINER" \
             tail "$DEMYX_LOG_TAIL_FLAG" "$DEMYX_LOG"/"$DEMYX_APP_DOMAIN".mariadb.log
     elif [[ "$DEMYX_LOG_FLAG_ERROR" = true ]]; then
-        docker exec -it "$DEMYX_APP_WP_CONTAINER" \
+        exec docker exec -it "$DEMYX_APP_WP_CONTAINER" \
             tail "$DEMYX_LOG_TAIL_FLAG" "$DEMYX_LOG"/"$DEMYX_APP_DOMAIN".error.log
     elif [[ "$DEMYX_LOG_STDOUT_FLAG" = true ]]; then
-        eval docker logs "$DEMYX_APP_WP_CONTAINER" "$DEMYX_LOG_FLAG_FOLLOW"
+        eval "exec docker logs $DEMYX_APP_WP_CONTAINER $DEMYX_LOG_FLAG_FOLLOW"
     else
-        docker exec -it "$DEMYX_APP_WP_CONTAINER" \
+        exec docker exec -it "$DEMYX_APP_WP_CONTAINER" \
             tail "$DEMYX_LOG_TAIL_FLAG" "$DEMYX_LOG"/"$DEMYX_APP_DOMAIN".access.log
     fi
 }
@@ -120,6 +120,7 @@ demyx_log_app() {
 #
 demyx_log_cron() {
     demyx_event
+    exec tail "$DEMYX_LOG_TAIL_FLAG" "$DEMYX_LOG"/cron.log
 }
 #
 #   View demyx logs.
@@ -128,14 +129,14 @@ demyx_log_main() {
     demyx_event
     if [[ "$DEMYX_LOG_FLAG_ERROR" = true ]]; then
         if [[ -f "$DEMYX_LOG"/error.log ]]; then
-            tail "$DEMYX_LOG_TAIL_FLAG" "$DEMYX_LOG"/error.log
+            exec tail "$DEMYX_LOG_TAIL_FLAG" "$DEMYX_LOG"/error.log
         else
             demyx_warning "Error log file hasn't been created yet, exiting ..."
         fi
     elif [[ "$DEMYX_LOG_STDOUT_FLAG" = true ]]; then
-        eval docker logs demyx "$DEMYX_LOG_FLAG_FOLLOW"
+        exec docker logs demyx "$DEMYX_LOG_FLAG_FOLLOW"
     else
-        tail "$DEMYX_LOG_TAIL_FLAG" "$DEMYX_LOG"/demyx.log
+        exec tail "$DEMYX_LOG_TAIL_FLAG" "$DEMYX_LOG"/demyx.log
     fi
 }
 #
@@ -144,8 +145,8 @@ demyx_log_main() {
 demyx_log_traefik() {
     demyx_event
     if [[ "$DEMYX_LOG_FLAG_ERROR" = true ]]; then
-        tail "$DEMYX_LOG_TAIL_FLAG" "$DEMYX_LOG"/traefik.error.log
+        exec tail "$DEMYX_LOG_TAIL_FLAG" "$DEMYX_LOG"/traefik.error.log
     else
-        tail "$DEMYX_LOG_TAIL_FLAG" "$DEMYX_LOG"/traefik.access.log
+        exec tail "$DEMYX_LOG_TAIL_FLAG" "$DEMYX_LOG"/traefik.access.log
     fi
 }
