@@ -36,11 +36,8 @@ demyx_cp() {
 
         } > "$DEMYX_CP"
 
-        demyx_execute false "demyx_divider_title CP Commands; \
-            cat < $DEMYX_CP"
-
-        # shellcheck disable=2153
-        demyx_logger false "$DEMYX_ARGS" "$(cat < "$DEMYX_TMP"/demyx_transient)"
+        demyx_divider_title "CP Commands"
+        cat < "$DEMYX_CP"
     else
         demyx_error app
     fi

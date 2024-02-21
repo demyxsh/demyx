@@ -93,7 +93,6 @@ demyx_backup_all() {
         if [[ "$DEMYX_BACKUP_ALL_CHECK_WP" == *"Error"* ||
                 "$DEMYX_BACKUP_ALL_CHECK_WP" == *"error"* ]]; then
             DEMYX_BACKUP_ALL_CHECK=1
-            demyx_logger "Backing up $DEMYX_BACKUP_ALL" "demyx_backup $DEMYX_BACKUP_ALL $DEMYX_BACKUP_ARGS" "$DEMYX_BACKUP_ALL_CHECK_WP" error
         fi
 
         if [[ "$DEMYX_BACKUP_ALL_CHECK" = 1 ]]; then

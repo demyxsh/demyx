@@ -315,39 +315,13 @@ demyx_error() {
 #
 demyx_execute() {
     demyx_event
+    local DEMYX_EXECUTE="${1:-}"
     shift
-    local DEMYX_EXECUTE="$*"
-    local DEMYX_EXECUTE_FILE="$DEMYX_TMP"/demyx_execute
-    local DEMYX_EXECUTE_LOG=main
-    local DEMYX_EXECUTE_STDOUT=
 
-    if [[ "$DEMYX_EXECUTE_ECHO" = false ]]; then
-        if ! eval "$DEMYX_EXECUTE" 2>&1 | tee -i "$DEMYX_EXECUTE_FILE"; then
-            DEMYX_EXECUTE_LOG=error
-        fi
-
-        DEMYX_EXECUTE_STDOUT="$(cat < "$DEMYX_EXECUTE_FILE")"
-    else
-        echo -n "$DEMYX_EXECUTE_ECHO ... "
-
-        if ! DEMYX_EXECUTE_STDOUT="$(eval "$DEMYX_EXECUTE" 2>&1)"; then
-            DEMYX_EXECUTE_LOG=error
-        fi
-
-        echo -en "\e[32mdone\e[39m\n"
-    fi
-
-    demyx_logger "$DEMYX_EXECUTE_ECHO" "$DEMYX_EXECUTE" "$DEMYX_EXECUTE_STDOUT" "$DEMYX_EXECUTE_LOG"
-
-    if [[ "$DEMYX_EXECUTE_LOG" = error ]]; then
-        if [[ "$DEMYX_EXECUTE_ECHO" != false ]]; then
-            if [[ -f "$DEMYX_TMP"/demyx_execute ]]; then
-                cat < "$DEMYX_TMP"/demyx_execute
-            fi
-        fi
-
-        exit 1
-    fi
+    echo -n "$DEMYX_EXECUTE ... "
+    # shellcheck disable=SC2153
+    eval "$*" > "$DEMYX_TMP"/demyx_execute
+    echo -en "\e[32mdone\e[39m\n"
 }
 #
 #   Output `docker images` to a file for performance and outputs contents to stdout.
@@ -688,7 +662,6 @@ demyx_warning() {
     local DEMYX_WARNING_EXIT="${2:-}"
 
     echo -e "$DEMYX_WARNING"
-    demyx_logger false "demyx_warning" "$DEMYX_WARNING"
 
     if [[ "$DEMYX_WARNING_EXIT" = true ]]; then
         exit
@@ -708,7 +681,7 @@ demyx_wordpress_ready() {
         DEMYX_WORDPRESS_READY="$((DEMYX_WORDPRESS_READY+1))"
 
         if [[ "$DEMYX_WORDPRESS_READY" = 5 ]]; then
-            demyx_logger false "demyx_wordpress_ready" "$DEMYX_WORDPRESS_READY_MESSAGE" error
+            docker logs "$DEMYX_APP_WP_CONTAINER"
             demyx_error custom "$DEMYX_WORDPRESS_READY_MESSAGE"
         else
             sleep 1

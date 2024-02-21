@@ -85,9 +85,5 @@ demyx_compose_app() {
         ;;
     esac
 
-    if eval "$DEMYX_COMPOSE_APP" 2>&1 | tee "$DEMYX_TMP"/demyx_execute; then
-        demyx_logger false "$DEMYX_COMPOSE_APP" "$(cat < "$DEMYX_TMP"/demyx_execute)"
-    else
-        demyx_logger false "$DEMYX_COMPOSE_APP" "$(cat < "$DEMYX_TMP"/demyx_execute)" error
-    fi
+    eval "$DEMYX_COMPOSE_APP"
 }

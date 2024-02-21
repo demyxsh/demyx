@@ -44,7 +44,6 @@ demyx_wp_all() {
         if [[ "$DEMYX_WP_ALL_CHECK_WP" == *"Error"* ||
                 "$DEMYX_WP_ALL_CHECK_WP" == *"error"* ]]; then
             DEMYX_WP_ALL_CHECK=1
-            demyx_logger "Executing WP-CLI for $DEMYX_WP_ALL" "demyx_wp $DEMYX_WP_ALL $DEMYX_WP_ARGS" "$DEMYX_WP_ALL_CHECK_WP" error
         fi
 
         if [[ "$DEMYX_WP_ALL_CHECK" = 1 ]]; then

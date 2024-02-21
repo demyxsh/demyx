@@ -39,8 +39,6 @@ demyx_edit() {
 
         nano "$DEMYX_APP_PATH"/.env
 
-        demyx_logger false "nano ${DEMYX_APP_PATH}/.env" "$(cat < "$DEMYX_APP_PATH"/.env)"
-
         if [[ "$DEMYX_EDIT_FLAG_REFRESH" = true ]]; then
             demyx_refresh "$DEMYX_APP_DOMAIN"
         fi

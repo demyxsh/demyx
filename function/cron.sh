@@ -97,13 +97,9 @@ demyx_cron_daily() {
                 # A roundabout way to handle wp-cli nonexistent error
                 DEMYX_CRON_DAILY_WP_CHECK="$(docker exec "$DEMYX_APP_WP_CONTAINER" wp theme update --all 2>&1 || true)"
                 if [[ "$DEMYX_CRON_DAILY_WP_CHECK" == *"Success"* || "$DEMYX_CRON_DAILY_WP_CHECK" == *"No themes updated"* ]]; then
-                    demyx_logger "[CROND DAILY - ${DEMYX_CRON_DAILY_I}] Updating WP theme" \
-                        "docker exec $DEMYX_APP_WP_CONTAINER wp theme update --all" \
-                            "$DEMYX_CRON_DAILY_WP_CHECK"
+                    docker exec "$DEMYX_APP_WP_CONTAINER" wp theme update --all
                 else
-                    demyx_logger "[CROND DAILY - ${DEMYX_CRON_DAILY_I}] Updating WP theme" \
-                        "docker exec $DEMYX_APP_WP_CONTAINER wp theme update --all" \
-                            "$DEMYX_CRON_DAILY_WP_CHECK" error
+                    docker exec "$DEMYX_APP_WP_CONTAINER" wp theme update --all
                 fi
             fi
         fi

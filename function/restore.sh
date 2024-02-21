@@ -230,8 +230,7 @@ demyx_restore_db() {
         DEMYX_RESTORE_DB_CHECK_WP="$(docker exec "$DEMYX_APP_WP_CONTAINER" wp core is-installed 2>&1 || true)"
         if [[ "$DEMYX_RESTORE_DB_CHECK_WP" == *"Error"* ||
                 "$DEMYX_RESTORE_DB_CHECK_WP" == *"error"* ]]; then
-            demyx_logger "Backing up database of $DEMYX_APP_DOMAIN" "demyx_backup $DEMYX_APP_DOMAIN $DEMYX_RESTORE_FLAG" "$DEMYX_RESTORE_DB_CHECK_WP" error
-            demyx_error custom "$DEMYX_ARG_2 has one or more errors. Please check error log."
+            demyx_error custom "$DEMYX_ARG_2 has one or more errors."
         fi
     fi
 

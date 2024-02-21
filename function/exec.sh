@@ -76,13 +76,7 @@ demyx_exec() {
 
         shift
 
-        DEMYX_EXEC="docker exec $DEMYX_EXEC_TTY $DEMYX_EXEC_USER $DEMYX_EXEC_CONTAINER ${*:-bash}"
-
-        if eval "$DEMYX_EXEC" 2>&1 | tee "$DEMYX_TMP"/demyx_execute; then
-            demyx_logger false "docker exec $DEMYX_EXEC" "$(cat < "$DEMYX_TMP"/demyx_execute)"
-        else
-            demyx_logger false "docker exec $DEMYX_EXEC" "$(cat < "$DEMYX_TMP"/demyx_execute)" error
-        fi
+        eval "exec docker exec $DEMYX_EXEC_TTY $DEMYX_EXEC_USER $DEMYX_EXEC_CONTAINER ${*:-bash}"
     else
         demyx_help exec
     fi
