@@ -65,6 +65,7 @@ demyx_yml_bedrock() {
         DEMYX_APP_TYPE
     "
 
+    local DEMYX_YML_BEDROCK_DEV_CPU="\${DEMYX_APP_WP_CPU}"
     local DEMYX_YML_BEDROCK_DEV_LABELS=
     local DEMYX_YML_BEDROCK_DEV_ENTRYPOINTS=
     local DEMYX_YML_BEDROCK_DEV_PASSWORD=
@@ -72,6 +73,7 @@ demyx_yml_bedrock() {
     local DEMYX_YML_BEDROCK_IMAGE=demyx/wordpress:bedrock
 
     if [[ "$DEMYX_APP_DEV" = true ]]; then
+        DEMYX_YML_BEDROCK_DEV_CPU=".80"
         DEMYX_YML_BEDROCK_DEV_PASSWORD="- DEMYX_CODE_PASSWORD=\${DEMYX_APP_DEV_PASSWORD}"
         DEMYX_YML_BEDROCK_DEV_VOLUME="- \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_code:/home/demyx"
         DEMYX_YML_BEDROCK_IMAGE=demyx/code-server:bedrock
@@ -158,7 +160,7 @@ demyx_yml_bedrock() {
           $(demyx_yml_service_redis)
           $(demyx_yml_service_sftp)
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}:
-            cpus: \${DEMYX_APP_WP_CPU}
+            cpus: $DEMYX_YML_BEDROCK_DEV_CPU
             depends_on:
               - db_\${DEMYX_APP_ID}
             environment:
@@ -259,7 +261,7 @@ demyx_yml_code() {
         services:
           code:
             container_name: demyx_code
-            cpus: $DEMYX_CPU
+            cpus: .80
             environment:
               - PASSWORD=$DEMYX_CODE_PASSWORD
               - TZ=$TZ
@@ -348,6 +350,7 @@ demyx_yml_nginx_php() {
         DEMYX_APP_TYPE
     "
 
+    local DEMYX_YML_NGINX_PHP_DEV_CPU="\${DEMYX_APP_WP_CPU}"
     local DEMYX_YML_NGINX_PHP_DEV_LABELS=
     local DEMYX_YML_NGINX_PHP_DEV_ENTRYPOINTS=
     local DEMYX_YML_NGINX_PHP_DEV_PASSWORD=
@@ -355,6 +358,7 @@ demyx_yml_nginx_php() {
     local DEMYX_YML_NGINX_PHP_IMAGE=demyx/wordpress
 
     if [[ "$DEMYX_APP_DEV" = true ]]; then
+        DEMYX_YML_NGINX_PHP_DEV_CPU=".80"
         DEMYX_YML_NGINX_PHP_DEV_PASSWORD="- DEMYX_CODE_PASSWORD=\${DEMYX_APP_DEV_PASSWORD}"
         DEMYX_YML_NGINX_PHP_DEV_VOLUME="- \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_code:/home/demyx"
         DEMYX_YML_NGINX_PHP_IMAGE=demyx/code-server:wp
@@ -416,7 +420,7 @@ demyx_yml_nginx_php() {
           $(demyx_yml_service_redis)
           $(demyx_yml_service_sftp)
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}:
-            cpus: \${DEMYX_APP_WP_CPU}
+            cpus: $DEMYX_YML_NGINX_PHP_DEV_CPU
             depends_on:
               - db_\${DEMYX_APP_ID}
             environment:
@@ -523,6 +527,7 @@ demyx_yml_ols() {
         DEMYX_APP_TYPE
     "
 
+    local DEMYX_YML_OLS_DEV_CPU="\${DEMYX_APP_WP_CPU}"
     local DEMYX_YML_OLS_DEV_ENTRYPOINTS=
     local DEMYX_YML_OLS_DEV_LABELS=
     local DEMYX_YML_OLS_DEV_PASSWORD=
@@ -533,6 +538,7 @@ demyx_yml_ols() {
     local DEMYX_YML_OLS_PORT=8080
 
     if [[ "$DEMYX_APP_DEV" = true ]]; then
+        DEMYX_YML_OLS_DEV_CPU=".80"
         DEMYX_YML_OLS_DEV_PASSWORD="- DEMYX_CODE_PASSWORD=\${DEMYX_APP_DEV_PASSWORD}"
         DEMYX_YML_OLS_DEV_VOLUME="- \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_code:/home/demyx"
         DEMYX_YML_OLS_IMAGE=demyx/code-server:openlitespeed
@@ -572,7 +578,7 @@ demyx_yml_ols() {
           $(demyx_yml_service_bs)
           $(demyx_yml_service_mariadb)
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}:
-            cpus: \${DEMYX_APP_WP_CPU}
+            cpus: $DEMYX_YML_OLS_DEV_CPU
             depends_on:
               - db_\${DEMYX_APP_ID}
             environment:
@@ -690,6 +696,7 @@ demyx_yml_ols_bedrock() {
         DEMYX_APP_TYPE
     "
 
+    local DEMYX_YML_OLS_DEV_CPU="\${DEMYX_APP_WP_CPU}"
     local DEMYX_YML_OLS_DEV_ENTRYPOINTS=
     local DEMYX_YML_OLS_DEV_LABELS=
     local DEMYX_YML_OLS_DEV_PASSWORD=
@@ -700,6 +707,7 @@ demyx_yml_ols_bedrock() {
     local DEMYX_YML_OLS_PORT=8080
 
     if [[ "$DEMYX_APP_DEV" = true ]]; then
+        DEMYX_YML_OLS_DEV_CPU=".80"
         DEMYX_YML_OLS_DEV_PASSWORD="- DEMYX_CODE_PASSWORD=\${DEMYX_APP_DEV_PASSWORD}"
         DEMYX_YML_OLS_DEV_VOLUME="- \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_code:/home/demyx"
         DEMYX_YML_OLS_IMAGE=demyx/code-server:openlitespeed-bedrock
@@ -763,7 +771,7 @@ demyx_yml_ols_bedrock() {
         services:
           $(demyx_yml_service_mariadb)
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}:
-            cpus: \${DEMYX_APP_WP_CPU}
+            cpus: $DEMYX_YML_OLS_DEV_CPU
             depends_on:
               - db_\${DEMYX_APP_ID}
             environment:
