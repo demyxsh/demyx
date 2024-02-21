@@ -172,8 +172,8 @@ demyx_host_error() {
     DEMYX_HOST_ERROR="$(echo "$DEMYX_HOST_ERROR" | sed 's|\r$||g')"
 
     if [[ "$DEMYX_HOST_ERROR" = true ]]; then
-        echo -e "\e[31m[ERROR]\e[39m New error(s): please run: demyx log main -e"
-        docker exec -t --user=root demyx bash -c "rm -f /demyx/tmp/demyx_log_error"
+        echo -e "\e[31m[ERROR]\e[39m An error has occured, view error log: demyx log main -e"
+        docker exec -t --user=root demyx bash -c "cat < /demyx/tmp/demyx_log_error && rm -f /demyx/tmp/demyx_log_error"
     fi
 }
 #
