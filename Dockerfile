@@ -139,6 +139,7 @@ RUN set -ex; \
     " | sed "s|    ||g" > /etc/crontabs/demyx; \
     \
     echo -e "${DEMYX_LOG}/*.log {\n\
+        create\n\
         missingok\n\
         notifempty\n\
         ${DEMYX_LOGROTATE}\n\
