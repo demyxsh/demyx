@@ -125,7 +125,7 @@ demyx_cron_five_minute() {
         "demyx_healthcheck load"
 
     # Execute custom cron
-    if [[ -f "$DEMYX"/custom/cron/minute.sh ]]; then
+    if [[ -f "$DEMYX"/custom/cron/five-minute.sh ]]; then
         demyx_execute "[CROND FIVE-MINUTE] Executing ${DEMYX}/custom/cron/five-minute.sh" \
             "bash ${DEMYX}/custom/cron/five-minute.sh"
     fi
