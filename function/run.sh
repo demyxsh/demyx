@@ -56,7 +56,7 @@ demyx_run() {
             --pass=?*|--password=?*)
                 DEMYX_RUN_FLAG_PASSWORD="${DEMYX_RUN_FLAG#*=}"
             ;;
-            --php=8|--php=8.0|--php=8.1)
+            --php=8.1|--php=8.2)
                 DEMYX_RUN_FLAG_PHP="${DEMYX_RUN_FLAG#*=}"
             ;;
             --redis)
@@ -297,7 +297,7 @@ demyx_run_init() {
     DEMYX_APP_IP_WHITELIST="${DEMYX_RUN_FLAG_WHITELIST:-false}"
 
     # Define php version.
-    DEMYX_APP_PHP="${DEMYX_RUN_FLAG_PHP:-8.0}"
+    DEMYX_APP_PHP="${DEMYX_RUN_FLAG_PHP:-8.1}"
 
     # Define redis value
     DEMYX_APP_REDIS=${DEMYX_RUN_FLAG_REDIS:-false}
