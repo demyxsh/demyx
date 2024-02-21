@@ -19,6 +19,7 @@ demyx_run() {
     local DEMYX_RUN_FLAG_PHP=
     local DEMYX_RUN_FLAG_REDIS=
     local DEMYX_RUN_FLAG_SSL=
+    local DEMYX_RUN_FLAG_SSL_WILDCARD=
     local DEMYX_RUN_FLAG_STACK=
     local DEMYX_RUN_FLAG_TYPE=
     local DEMYX_RUN_FLAG_USERNAME=
@@ -63,6 +64,9 @@ demyx_run() {
             ;;
             --ssl|--ssl=true)
                 DEMYX_RUN_FLAG_SSL=true
+            ;;
+            --ssl-wildcard|--ssl-wildcard=true)
+                DEMYX_RUN_FLAG_SSL_WILDCARD=true
             ;;
             --stack=bedrock|--stack=nginx-php|--stack=ols|--stack=ols-bedrock)
                 DEMYX_RUN_FLAG_STACK="${DEMYX_RUN_FLAG#*=}"
@@ -201,6 +205,7 @@ demyx_run_clone() {
     DEMYX_RUN_FLAG_CACHE="$(grep DEMYX_APP_CACHE= "$DEMYX_RUN_CLONE_APP"/.env | awk -F '=' '{print $2}')"
     DEMYX_RUN_FLAG_REDIS="$(grep DEMYX_APP_REDIS= "$DEMYX_RUN_CLONE_APP"/.env | awk -F '=' '{print $2}')"
     DEMYX_RUN_FLAG_SSL="$(grep DEMYX_APP_SSL= "$DEMYX_RUN_CLONE_APP"/.env | awk -F '=' '{print $2}')"
+    DEMYX_RUN_FLAG_SSL_WILDCARD="$(grep DEMYX_APP_SSL_WILDCARD= "$DEMYX_RUN_CLONE_APP"/.env | awk -F '=' '{print $2}')"
     DEMYX_RUN_FLAG_WHITELIST="$(grep DEMYX_APP_IP_WHITELIST= "$DEMYX_RUN_CLONE_APP"/.env | awk -F '=' '{print $2}')"
     DEMYX_RUN_FLAG_WWW="$(grep DEMYX_APP_DOMAIN_WWW= "$DEMYX_RUN_CLONE_APP"/.env | awk -F '=' '{print $2}')"
 
@@ -209,6 +214,7 @@ demyx_run_clone() {
             demyx_app_env_update DEMYX_APP_CACHE=${DEMYX_RUN_FLAG_CACHE}; \
             demyx_app_env_update DEMYX_APP_REDIS=${DEMYX_RUN_FLAG_REDIS}; \
             demyx_app_env_update DEMYX_APP_SSL=${DEMYX_RUN_FLAG_SSL}; \
+            demyx_app_env_update DEMYX_APP_SSL_WILDCARD=${DEMYX_RUN_FLAG_SSL_WILDCARD}; \
             demyx_app_env_update DEMYX_APP_IP_WHITELIST=${DEMYX_RUN_FLAG_WHITELIST}; \
             demyx_app_env_update DEMYX_APP_DOMAIN_WWW=${DEMYX_RUN_FLAG_WWW}"
 
@@ -275,6 +281,9 @@ demyx_run_init() {
     # Define SSL.
     DEMYX_APP_SSL="${DEMYX_RUN_FLAG_SSL:-false}"
 
+    # Define wildcard SSL.
+    DEMYX_APP_SSL_WILDCARD="${DEMYX_RUN_FLAG_SSL_WILDCARD:-false}"
+
     # Define type.
     DEMYX_APP_TYPE="${DEMYX_RUN_FLAG_TYPE:-wp}"
 
@@ -301,6 +310,20 @@ demyx_run_init() {
     if [[ "$DEMYX_RUN_FLAG_WWW" = true ]]; then
         # shellcheck disable=2034
         DEMYX_APP_DOMAIN_WWW=true
+    fi
+
+    # Require specific variables to be set for SSL
+    if [[ "$DEMYX_RUN_FLAG_SSL" = true || "$DEMYX_RUN_FLAG_SSL_WILDCARD" = true ]]; then
+        if [[ "$DEMYX_DOMAIN" = localhost || "$DEMYX_EMAIL" = info@localhost || "$DEMYX_CF_KEY" = false ]]; then
+            demyx_error custom "Please update DEMYX_DOMAIN, DEMYX_EMAIL, and/or DEMYX_CF_KEY on the host"
+        elif [[ -n "$(demyx_subdomain "$DEMYX_ARG_2")" ]]; then
+            demyx_error custom "--ssl-wildcard is not supported with subdomains"
+        fi
+    fi
+
+    # Can't use --ssl and --ssl-wildcard together
+    if [[ "$DEMYX_RUN_FLAG_SSL" = true && "$DEMYX_RUN_FLAG_SSL_WILDCARD" = true ]]; then
+        demyx_error custom "You can only use one SSL flag"
     fi
 
     # Can't clone itself
@@ -385,11 +408,15 @@ demyx_run_table() {
         DEMYX_APP_PHP
         DEMYX_APP_REDIS
         DEMYX_APP_SSL
+        DEMYX_APP_SSL_WILDCARD
         DEMYX_APP_WP_CONTAINER
         WORDPRESS_USER
         WORDPRESS_USER_EMAIL
         WORDPRESS_USER_PASSWORD
     "
+
+    local DEMYX_RUN_TABLE_SSL="SSL                      "
+    local DEMYX_RUN_TABLE_SSL_VALUE="$DEMYX_APP_SSL"
 
     {
         if [[ "$DEMYX_APP_TYPE" = wp ]]; then
@@ -424,7 +451,12 @@ demyx_run_table() {
             echo "LSPHP                     $DEMYX_APP_OLS_LSPHP"
         fi
 
-        echo "SSL                       $DEMYX_APP_SSL"
+        if [[ "$DEMYX_APP_SSL_WILDCARD" = true ]]; then
+            DEMYX_RUN_TABLE_SSL="Wildcard SSL             "
+            DEMYX_RUN_TABLE_SSL_VALUE="$DEMYX_APP_SSL_WILDCARD"
+        fi
+
+        echo "$DEMYX_RUN_TABLE_SSL $DEMYX_RUN_TABLE_SSL_VALUE"
         echo "Basic Auth                $DEMYX_APP_AUTH"
         echo "Cache                     $DEMYX_APP_CACHE"
         echo "Whitelist                 $DEMYX_APP_IP_WHITELIST"

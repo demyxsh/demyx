@@ -56,6 +56,7 @@ demyx_env() {
         DEMYX_APP_OLS_ADMIN_USERNAME=${DEMYX_APP_OLS_ADMIN_USERNAME:-$(demyx_utility username -r)}
         DEMYX_APP_PATH=${DEMYX_APP_PATH:-$DEMYX_WP/$DEMYX_APP_DOMAIN}
         DEMYX_APP_SSL=${DEMYX_APP_SSL:-false}
+        DEMYX_APP_SSL_WILDCARD=${DEMYX_APP_SSL_WILDCARD:-false}
         DEMYX_APP_SFTP_PASSWORD=${DEMYX_APP_SFTP_PASSWORD:-$(demyx_utility password -r)}
         DEMYX_APP_STACK=${DEMYX_APP_STACK:-nginx-php}
         DEMYX_APP_TYPE=${DEMYX_APP_TYPE:-wp}

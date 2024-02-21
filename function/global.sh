@@ -177,15 +177,17 @@ demyx_app_proto() {
     local DEMYX_APP_PROTO_ENV=
     DEMYX_APP_PROTO_ENV="$(demyx_app_path "$DEMYX_ARG_2")"/.env
     local DEMYX_APP_PROTO_SSL=
+    local DEMYX_APP_PROTO_SSL_WILDCARD=
 
     if [[ -f "$DEMYX_APP_PROTO_ENV" ]]; then
-        DEMYX_APP_PROTO_SSL="$(grep DEMYX_APP_SSL=false "$DEMYX_APP_PROTO_ENV" || true)"
+        DEMYX_APP_PROTO_SSL="$(grep DEMYX_APP_SSL=true "$DEMYX_APP_PROTO_ENV" || true)"
+        DEMYX_APP_PROTO_SSL_WILDCARD="$(grep DEMYX_APP_SSL_WILDCARD=true "$DEMYX_APP_PROTO_ENV" || true)"
     fi
 
-    if [[ -n "$DEMYX_APP_PROTO_SSL" ]]; then
-        DEMYX_APP_PROTO=http
-    else
+    if [[ -n "$DEMYX_APP_PROTO_SSL" || -n "$DEMYX_APP_PROTO_SSL_WILDCARD" ]]; then
         DEMYX_APP_PROTO=https
+    else
+        DEMYX_APP_PROTO=http
     fi
 
     echo "$DEMYX_APP_PROTO"

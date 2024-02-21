@@ -298,7 +298,7 @@ demyx_yml_http_labels() {
     demyx_event
     demyx_app_env wp "
         DEMYX_APP_DOMAIN
-        DEMYX_APP_ID
+        DEMYX_APP_SSL_WILDCARD
     "
 
     local DEMYX_YML_HTTP_LABELS_RULES=
@@ -323,6 +323,11 @@ demyx_yml_http_labels() {
       - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-https.tls.certresolver=$(demyx_yml_resolver)\"
       - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-https.service=\${DEMYX_APP_COMPOSE_PROJECT}-https-port\"
       - \"traefik.http.services.\${DEMYX_APP_COMPOSE_PROJECT}-https-port.loadbalancer.server.port=80\""
+
+        if [[ "$DEMYX_APP_SSL_WILDCARD" = true ]]; then
+            echo "      - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-https.tls.domains[0].main=\${DEMYX_APP_DOMAIN}\"
+      - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-https.tls.domains[0].sans=*.\${DEMYX_APP_DOMAIN}\""
+        fi
     else
         echo "- \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-http.rule=${DEMYX_YML_HTTP_LABELS_RULES}\"
       - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-http.entrypoints=http\"

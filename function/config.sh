@@ -44,6 +44,7 @@ demyx_config() {
     #local DEMYX_CONFIG_FLAG_RESTART=
     local DEMYX_CONFIG_FLAG_SFTP=
     local DEMYX_CONFIG_FLAG_SSL=
+    local DEMYX_CONFIG_FLAG_SSL_WILDCARD=
     local DEMYX_CONFIG_FLAG_STACK=
     local DEMYX_CONFIG_FLAG_WHITELIST=
     local DEMYX_CONFIG_FLAG_WP_UPDATE=
@@ -198,6 +199,12 @@ demyx_config() {
             --ssl=false)
                 DEMYX_CONFIG_FLAG_SSL=false
             ;;
+            --ssl-wildcard|--ssl-wildcard=true)
+                DEMYX_CONFIG_FLAG_SSL_WILDCARD=true
+            ;;
+            --ssl-wildcard=false)
+                DEMYX_CONFIG_FLAG_SSL_WILDCARD=false
+            ;;
             --stack=bedrock|--stack=nginx-php|--stack=ols|--stack=ols-bedrock)
                 DEMYX_CONFIG_FLAG_STACK="${DEMYX_CONFIG_FLAG#*=}"
             ;;
@@ -306,6 +313,9 @@ demyx_config() {
                 fi
                 if [[ -n "$DEMYX_CONFIG_FLAG_SSL" ]]; then
                     demyx_config_ssl
+                fi
+                if [[ -n "$DEMYX_CONFIG_FLAG_SSL_WILDCARD" ]]; then
+                    demyx_config_ssl_wildcard
                 fi
                 if [[ -n "$DEMYX_CONFIG_FLAG_STACK" ]]; then
                     demyx_config_stack
@@ -995,8 +1005,11 @@ demyx_config_ssl() {
     demyx_app_env wp "
         DEMYX_APP_DOMAIN
         DEMYX_APP_SSL
+        DEMYX_APP_SSL_WILDCARD
         DEMYX_APP_STACK
     "
+    [[ "$DEMYX_APP_SSL_WILDCARD" = true ]] && demyx_app_env_update DEMYX_APP_SSL_WILDCARD=false
+    [[ -n "$DEMYX_CONFIG_FLAG_SSL_WILDCARD" ]] && demyx_error custom "You can't use --ssl-wildcard with this flag"
 
     DEMYX_CONFIG_COMPOSE=true
 
@@ -1015,7 +1028,34 @@ demyx_config_ssl() {
         "demyx_app_env_update DEMYX_APP_SSL=${DEMYX_CONFIG_FLAG_SSL}; \
         demyx_yml $DEMYX_APP_STACK"
 }
+#
+#   Configures an app's wildcard SSL.
+#
+demyx_config_ssl_wildcard() {
     demyx_event
+    demyx_app_env wp "
+        DEMYX_APP_DOMAIN
+        DEMYX_APP_SSL
+        DEMYX_APP_SSL_WILDCARD
+        DEMYX_APP_STACK
+    "
+
+    [[ "$DEMYX_DOMAIN" = localhost || "$DEMYX_EMAIL" = info@localhost || "$DEMYX_CF_KEY" = false ]] && demyx_error custom "Please update DEMYX_DOMAIN, DEMYX_EMAIL, and/or DEMYX_CF_KEY on the host"
+    [[ -n "$DEMYX_CONFIG_FLAG_SSL" ]] && demyx_error custom "You can't use --ssl with this flag'"
+
+    if [[ "$DEMYX_CONFIG_FLAG_SSL_WILDCARD" = true ]]; then
+        [[ "$DEMYX_APP_SSL" = true ]] && demyx_app_env_update DEMYX_APP_SSL=false
+        DEMYX_CONFIG_COMPOSE=true
+        demyx_execute "Setting wildcard SSL to true" \
+            "demyx_wp $DEMYX_APP_DOMAIN search-replace --precise --all-tables http://${DEMYX_APP_DOMAIN} https://${DEMYX_APP_DOMAIN}; \
+            demyx_app_env_update DEMYX_APP_SSL_WILDCARD=true; \
+            demyx_yml $DEMYX_APP_STACK"
+    else
+        demyx_execute "Enabling regular SSL" \
+            "demyx_app_env_update DEMYX_APP_SSL_WILDCARD=false"
+        demyx_config "$DEMYX_APP_DOMAIN" --ssl
+    fi
+}
 #
 #   Configures an app's stack switching.
 #
