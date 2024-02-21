@@ -756,7 +756,8 @@ demyx_config_php() {
     fi
     if [[ -n "$DEMYX_CONFIG_FLAG_PHP_VERSION" ]]; then
         demyx_execute "Updating php to version $DEMYX_CONFIG_FLAG_PHP_VERSION" \
-            "demyx_app_env_update DEMYX_APP_PHP=$DEMYX_CONFIG_FLAG_PHP_VERSION"
+            "demyx_app_env_update DEMYX_APP_PHP=${DEMYX_CONFIG_FLAG_PHP_VERSION}; \
+            demyx_app_env_update DEMYX_APP_OLS_LSPHP=${DEMYX_CONFIG_FLAG_PHP_VERSION}"
     fi
 }
 #
