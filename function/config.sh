@@ -1174,6 +1174,8 @@ demyx_config_whitelist() {
         DEMYX_APP_STACK
     "
 
+    [[ "$DEMYX_IP" = false ]] && demyx_error custom "Please update DEMYX_IP on the host"
+
     DEMYX_CONFIG_COMPOSE=true
 
     if [[ "$DEMYX_CONFIG_FLAG_WHITELIST" = --whitelist ]]; then
