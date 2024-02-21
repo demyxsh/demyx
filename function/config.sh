@@ -1008,6 +1008,8 @@ demyx_config_ssl() {
         DEMYX_APP_SSL_WILDCARD
         DEMYX_APP_STACK
     "
+
+    [[ "$DEMYX_DOMAIN" = localhost || "$DEMYX_EMAIL" = info@localhost ]] && demyx_error custom "Please update DEMYX_DOMAIN and/or DEMYX_EMAIL on the host"
     [[ "$DEMYX_APP_SSL_WILDCARD" = true ]] && demyx_app_env_update DEMYX_APP_SSL_WILDCARD=false
     [[ -n "$DEMYX_CONFIG_FLAG_SSL_WILDCARD" ]] && demyx_error custom "You can't use --ssl-wildcard with this flag"
 
