@@ -411,13 +411,13 @@ demyx_update_list() {
             echo "Browsersync             $DEMYX_LOCAL_BROWSERSYNC_VERSION $DEMYX_REMOTE_BROWSERSYNC_VERSION"
         fi
 
-        echo "Code Server             $DEMYX_LOCAL_CODE_VERSION $DEMYX_REMOTE_CODE_VERSION"
+        [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/code-server:browse"* ]] && echo "Code Server             $DEMYX_LOCAL_CODE_VERSION $DEMYX_REMOTE_CODE_VERSION"
         echo "Demyx                   $DEMYX_LOCAL_VERSION $DEMYX_REMOTE_VERSION"
         echo " - Docker               $DEMYX_LOCAL_DOCKER_VERSION $DEMYX_REMOTE_DOCKER_VERSION"
         echo " - Docker Compose       $DEMYX_LOCAL_DOCKER_COMPOSE_VERSION $DEMYX_REMOTE_DOCKER_COMPOSE_VERSION"
         echo "Docker Socket Proxy     $DEMYX_LOCAL_HAPROXY_VERSION $DEMYX_REMOTE_HAPROXY_VERSION"
         echo "MariaDB                 $DEMYX_LOCAL_MARIADB_VERSION $DEMYX_REMOTE_MARIADB_VERSION"
-        echo "Nginx                   $DEMYX_LOCAL_NGINX_VERSION $DEMYX_REMOTE_NGINX_VERSION"
+        [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/nginx"* ]] && echo "Nginx                   $DEMYX_LOCAL_NGINX_VERSION $DEMYX_REMOTE_NGINX_VERSION"
 
         if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/openlitespeed"* ]]; then
             if [[ "$(demyx_compare "$DEMYX_LOCAL_OPENLITESPEED_VERSION")" -lt "$(demyx_compare "$DEMYX_REMOTE_OPENLITESPEED_VERSION")" ]]; then
@@ -462,7 +462,7 @@ demyx_update_list() {
         echo "WordPress               $DEMYX_LOCAL_WORDPRESS_VERSION $DEMYX_REMOTE_WORDPRESS_VERSION"
         echo " - PHP                  $DEMYX_LOCAL_WORDPRESS_PHP_VERSION $DEMYX_REMOTE_WORDPRESS_PHP_VERSION"
         echo " - PHP Latest           $DEMYX_LOCAL_WORDPRESS_PHP_LATEST_VERSION $DEMYX_REMOTE_WORDPRESS_PHP_LATEST_VERSION"
-        echo " - Bedrock              $DEMYX_LOCAL_WORDPRESS_BEDROCK_VERSION $DEMYX_REMOTE_WORDPRESS_BEDROCK_VERSION"
+        [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/wordrpess:bedrock"* ]] && echo " - Bedrock             $DEMYX_LOCAL_WORDPRESS_BEDROCK_VERSION $DEMYX_REMOTE_WORDPRESS_BEDROCK_VERSION"
 
     } > "$DEMYX_UPDATE_TRANSIENT"
 
