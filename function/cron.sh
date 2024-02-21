@@ -107,10 +107,6 @@ demyx_cron_daily() {
     demyx_execute "[CROND DAILY] Rotating logs" \
         "logrotate --log=${DEMYX_LOG}/logrotate.log ${DEMYX_CONFIG}/logrotate.conf"
 
-    # Healthchecks
-    demyx_execute "[CROND MINUTE] Healthcheck - Disk" \
-        "demyx_healthcheck disk"
-
     # Execute custom cron
     if [[ -f "$DEMYX"/custom/cron/daily.sh ]]; then
         demyx_execute "[CROND DAILY] Executing ${DEMYX}/custom/cron/daily.sh" \
@@ -139,6 +135,11 @@ demyx_cron_five_minute() {
 #
 demyx_cron_hourly() {
     demyx_event
+
+    # Disk healthcheck
+    demyx_execute "[CROND DAILY] Healthcheck - Disk" \
+        "demyx_healthcheck disk"
+
     # Execute custom cron
     if [[ -f "$DEMYX"/custom/cron/hourly.sh ]]; then
         demyx_execute "[CROND HOURLY] Executing ${DEMYX}/custom/cron/hourly.sh" \
