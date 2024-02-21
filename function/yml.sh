@@ -1134,13 +1134,10 @@ demyx_yml_service_sftp() {
 #
 demyx_yml_traefik() {
     demyx_event
+
     local DEMYX_YML_TRAEFIK_DASHBOARD=
     local DEMYX_YML_TRAEFIK_LABELS=
     local DEMYX_YML_TRAEFIK_SECURITY=
-
-    if [[ -f "$DEMYX"/.env && ! -L "$DEMYX_TRAEFIK"/.env ]]; then
-        ln -sf "$DEMYX"/.env "$DEMYX_TRAEFIK"/.env
-    fi
 
     if [[ "$DEMYX_TRAEFIK_DASHBOARD" = true ]]; then
         DEMYX_YML_TRAEFIK_DASHBOARD="labels:
@@ -1164,7 +1161,7 @@ demyx_yml_traefik() {
                 DEMYX_YML_TRAEFIK_SECURITY="  - \"traefik.http.middlewares.traefik-whitelist.ipwhitelist.sourcerange=${DEMYX_IP}\"
               - \"traefik.http.routers.traefik-https.middlewares=traefik-whitelist\""
             else
-                DEMYX_YML_TRAEFIK_SECURITY="  - \"traefik.http.middlewares.traefik-auth.basicauth.users=\${DEMYX_YML_AUTH}\"
+                DEMYX_YML_TRAEFIK_SECURITY="  - \"traefik.http.middlewares.traefik-auth.basicauth.users=$(demyx_utility htpasswd -r "$DEMYX_AUTH_USERNAME" "$DEMYX_AUTH_PASSWORD" | sed "s|\\$|\$$|g")\"
               - \"traefik.http.routers.traefik-https.middlewares=traefik-auth\""
             fi
         else
@@ -1172,7 +1169,7 @@ demyx_yml_traefik() {
                 DEMYX_YML_TRAEFIK_SECURITY="  - \"traefik.http.middlewares.traefik-whitelist.ipwhitelist.sourcerange=${DEMYX_IP}\"
               - \"traefik.http.routers.traefik-http.middlewares=traefik-whitelist\""
             else
-                DEMYX_YML_TRAEFIK_SECURITY="  - \"traefik.http.middlewares.traefik-auth.basicauth.users=\${DEMYX_YML_AUTH}\"
+                DEMYX_YML_TRAEFIK_SECURITY="  - \"traefik.http.middlewares.traefik-auth.basicauth.users=$(demyx_utility htpasswd -r "$DEMYX_AUTH_USERNAME" "$DEMYX_AUTH_PASSWORD" | sed "s|\\$|\$$|g")\"
               - \"traefik.http.routers.traefik-http.middlewares=traefik-auth\""
             fi
         fi
