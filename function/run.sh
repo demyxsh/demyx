@@ -255,8 +255,35 @@ demyx_run_directory() {
 #
 demyx_run_init() {
     demyx_event
+    local DEMYX_APP_RUN_INIT_CHECK=
     DEMYX_APP_RUN_INIT_CHECK="$(demyx_app_path "$DEMYX_ARG_2")"
     local DEMYX_RUN_APP_INIT_CONFIRM=
+
+    # Execute first if there's already an existing app.
+    if [[ -d "$DEMYX_APP_RUN_INIT_CHECK" ]]; then
+        # Make a copy of .env.
+        cp "$DEMYX_APP_RUN_INIT_CHECK"/.env "$DEMYX_LOG"/"$DEMYX_ARG_2".env
+
+        # Prompt to delete.
+        if [[ "$DEMYX_RUN_FLAG_FORCE" = true ]]; then
+            demyx_rm "$DEMYX_ARG_2" -f
+        else
+            echo -en "\e[33m"
+            read -rep "[WARNING] Delete $DEMYX_ARG_2? [yY]: " DEMYX_RUN_APP_INIT_CONFIRM
+            echo -en "\e[39m"
+
+            if [[ "$DEMYX_RUN_APP_INIT_CONFIRM" != [yY] ]]; then
+                demyx_error cancel
+            else
+                demyx_rm "$DEMYX_ARG_2" -f
+            fi
+        fi
+
+        # Clear out environment variables in the scope.
+        sed -i 's|=.*|=|g' "$DEMYX_LOG"/"$DEMYX_ARG_2".env
+        . "$DEMYX_LOG"/"$DEMYX_ARG_2".env
+        rm -f "$DEMYX_LOG"/"$DEMYX_ARG_2".env
+    fi
 
     # Define stack.
     case "$DEMYX_RUN_FLAG_STACK" in
@@ -329,23 +356,6 @@ demyx_run_init() {
     # Can't clone itself
     if [[ "$DEMYX_ARG_2" = "$DEMYX_RUN_FLAG_CLONE" ]]; then
         demyx_error custom "You can't clone itself"
-    fi
-
-    # Prompt user to delete.
-    if [[ -d "$DEMYX_APP_RUN_INIT_CHECK" ]]; then
-        if [[ "$DEMYX_RUN_FLAG_FORCE" = true ]]; then
-            demyx_rm "$DEMYX_ARG_2" -f
-        else
-            echo -en "\e[33m"
-            read -rep "[WARNING] Delete $DEMYX_ARG_2? [yY]: " DEMYX_RUN_APP_INIT_CONFIRM
-            echo -en "\e[39m"
-
-            if [[ "$DEMYX_RUN_APP_INIT_CONFIRM" != [yY] ]]; then
-                demyx_error cancel
-            else
-                demyx_rm "$DEMYX_ARG_2" -f
-            fi
-        fi
     fi
 }
 #
