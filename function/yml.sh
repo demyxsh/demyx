@@ -134,6 +134,7 @@ demyx_yml_bedrock() {
             environment:
               $(demyx_yml_nginx_basic_auth)
               $(demyx_yml_nginx_whitelist)
+              - DEMYX_CACHE_TYPE=\${DEMYX_APP_CACHE_TYPE}
               - NGINX_CACHE=\${DEMYX_APP_CACHE}
               - NGINX_DOMAIN=\${DEMYX_APP_DOMAIN}
               - NGINX_RATE_LIMIT=\${DEMYX_APP_RATE_LIMIT}
@@ -166,8 +167,8 @@ demyx_yml_bedrock() {
             environment:
               - DEMYX_BEDROCK_MODE=\${DEMYX_APP_BEDROCK_MODE}
               - DEMYX_CRON=\${DEMYX_APP_CRON}
-              - DEMYX_CRON_WP_INTERVAL=\"\${DEMYX_APP_CRON_WP_INTERVAL}\"
               - DEMYX_CRON_LOGROTATE_INTERVAL=\"\${DEMYX_APP_CRON_LOGROTATE_INTERVAL}\"
+              - DEMYX_CRON_WP_INTERVAL=\"\${DEMYX_APP_CRON_WP_INTERVAL}\"
               - DEMYX_DB_HOST=\${WORDPRESS_DB_HOST}
               - DEMYX_DB_NAME=\${WORDPRESS_DB_NAME}
               - DEMYX_DB_PASSWORD=\${WORDPRESS_DB_PASSWORD}
@@ -395,6 +396,7 @@ demyx_yml_nginx_php() {
             environment:
               $(demyx_yml_nginx_basic_auth)
               $(demyx_yml_nginx_whitelist)
+              - DEMYX_CACHE_TYPE=\${DEMYX_APP_CACHE_TYPE}
               - NGINX_CACHE=\${DEMYX_APP_CACHE}
               - NGINX_DOMAIN=\${DEMYX_APP_DOMAIN}
               - NGINX_RATE_LIMIT=\${DEMYX_APP_RATE_LIMIT}
@@ -425,8 +427,8 @@ demyx_yml_nginx_php() {
               - db_\${DEMYX_APP_ID}
             environment:
               - DEMYX_CRON=\${DEMYX_APP_CRON}
-              - DEMYX_CRON_WP_INTERVAL=\"\${DEMYX_APP_CRON_WP_INTERVAL}\"
               - DEMYX_CRON_LOGROTATE_INTERVAL=\"\${DEMYX_APP_CRON_LOGROTATE_INTERVAL}\"
+              - DEMYX_CRON_WP_INTERVAL=\"\${DEMYX_APP_CRON_WP_INTERVAL}\"
               - DEMYX_DB_HOST=\${WORDPRESS_DB_HOST}
               - DEMYX_DB_NAME=\${WORDPRESS_DB_NAME}
               - DEMYX_DB_PASSWORD=\${WORDPRESS_DB_PASSWORD}
@@ -831,10 +833,6 @@ demyx_yml_ols_bedrock() {
               - DEMYX_XMLRPC=\${DEMYX_APP_XMLRPC}
               $DEMYX_YML_OLS_DEV_PASSWORD
               - TZ=$TZ
-              - WORDPRESS_DB_HOST=\${WORDPRESS_DB_HOST}
-              - WORDPRESS_DB_NAME=\${WORDPRESS_DB_NAME}
-              - WORDPRESS_DB_PASSWORD=\${WORDPRESS_DB_PASSWORD}
-              - WORDPRESS_DB_USER=\${WORDPRESS_DB_USER}
             hostname: \${DEMYX_APP_COMPOSE_PROJECT}
             image: ${DEMYX_YML_OLS_IMAGE}
             labels:
@@ -990,6 +988,7 @@ demyx_yml_service_mariadb() {
     echo "db_${DEMYX_APP_ID}:
             cpus: \${DEMYX_APP_DB_CPU}
             environment:
+              - DEMYX_DOMAIN=\${DEMYX_APP_DOMAIN}
               - MARIADB_CHARACTER_SET_SERVER=\${MARIADB_CHARACTER_SET_SERVER}
               - MARIADB_COLLATION_SERVER=\${MARIADB_COLLATION_SERVER}
               - MARIADB_DATABASE=\${WORDPRESS_DB_NAME}
