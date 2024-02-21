@@ -15,6 +15,7 @@ demyx() {
     . "$DEMYX_FUNCTION"/global.sh
     . "$DEMYX_FUNCTION"/help.sh
     . "$DEMYX_FUNCTION"/smtp.sh
+    trap 'demyx_trap "${BASH_LINENO[*]}" "$LINENO" "${FUNCNAME[*]:-script}" "$?" "$BASH_COMMAND"' ERR
     demyx_source "$DEMYX_ARG_1"
 
     case "$DEMYX_ARG_1" in
@@ -94,4 +95,4 @@ demyx() {
 #
 #   Init.
 #
-demyx "$@"
+demyx "$@" 2>&1 | tee "$DEMYX_TMP"/demyx_trap

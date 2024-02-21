@@ -582,6 +582,49 @@ demyx_subdomain() {
     echo "$DEMYX_SUBDOMAIN" | grep -E '\.[^.]+\.[[:alpha:]]' || true
 }
 #
+#   Custom stack trace.
+#
+demyx_trap() {
+    local DEMYX_TRAP_LINENO=('' ${BASH_LINENO[@]})
+    local DEMYX_TRAP_EXIT="$4"
+    local DEMYX_TRAP_COMMAND="$5"
+    local DEMYX_TRAP_I=
+    local DEMYX_TRAP_INDEX=()
+
+    {
+        echo
+        echo "[$(date +%F-%T)] Fatal Error: '$DEMYX_TRAP_COMMAND' with exit code '$DEMYX_TRAP_EXIT' in ${BASH_SOURCE[1]}:${BASH_LINENO[0]}"
+        echo
+        echo "Stack Trace:"
+
+        for DEMYX_TRAP_I in "${!BASH_SOURCE[@]}"; do
+            DEMYX_TRAP_INDEX+=("$DEMYX_TRAP_I" )
+        done
+
+        for DEMYX_TRAP_I in "${!BASH_SOURCE[@]}"; do
+            [[ "$DEMYX_TRAP_I" = 0 ]] && continue
+            DEMYX_TRAP_INDEX[DEMYX_TRAP_I]="$((DEMYX_TRAP_INDEX[DEMYX_TRAP_I]-1))"
+            echo "#${DEMYX_TRAP_INDEX[$DEMYX_TRAP_I]} ${BASH_SOURCE[$DEMYX_TRAP_I]}(${DEMYX_TRAP_LINENO[$DEMYX_TRAP_I]}): ${FUNCNAME[$DEMYX_TRAP_I]}"
+        done
+
+        DEMYX_TRAP_I="$(echo "${DEMYX_TRAP_INDEX[@]}" | wc -w)"
+        echo "#$((DEMYX_TRAP_I-1)) $DEMYX_ARGS"
+        echo
+    } > "$DEMYX_TMP"/demyx_trace
+
+    {
+        cat < "$DEMYX_TMP"/demyx_trap
+        cat < "$DEMYX_TMP"/demyx_trace
+    } >> "$DEMYX_LOG"/error.log
+
+    {
+        cat < "$DEMYX_TMP"/demyx_trap
+        cat < "$DEMYX_TMP"/demyx_trace
+    } > "$DEMYX_TMP"/demyx_log_error
+
+    demyx_notification error "$DEMYX_ARGS"
+}
+#
 #   TODO
 #   Validates IP addresses.
 #
