@@ -316,6 +316,7 @@ demyx_yml_http_labels() {
         echo "- \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-http.rule=${DEMYX_YML_HTTP_LABELS_RULES}\"
       - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-http.entrypoints=http\"
       - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-http.service=\${DEMYX_APP_COMPOSE_PROJECT}-http-port\"
+      - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-http.priority=10\"
       - \"traefik.http.services.\${DEMYX_APP_COMPOSE_PROJECT}-http-port.loadbalancer.server.port=80\"
       - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-http.middlewares=\${DEMYX_APP_COMPOSE_PROJECT}-redirect\"
       - \"traefik.http.middlewares.\${DEMYX_APP_COMPOSE_PROJECT}-redirect.redirectregex.regex="'^https?:\\/\\/(?:www\\.)?(.+)'"\"
@@ -325,6 +326,7 @@ demyx_yml_http_labels() {
       - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-https.entrypoints=https\"
       - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-https.tls.certresolver=$(demyx_yml_resolver)\"
       - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-https.service=\${DEMYX_APP_COMPOSE_PROJECT}-https-port\"
+      - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-https.priority=10\"
       - \"traefik.http.services.\${DEMYX_APP_COMPOSE_PROJECT}-https-port.loadbalancer.server.port=80\""
 
         if [[ "$DEMYX_APP_SSL_WILDCARD" = true ]]; then
@@ -335,6 +337,7 @@ demyx_yml_http_labels() {
         echo "- \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-http.rule=${DEMYX_YML_HTTP_LABELS_RULES}\"
       - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-http.entrypoints=http\"
       - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-http.service=\${DEMYX_APP_COMPOSE_PROJECT}-http-port\"
+      - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-http.priority=10\"
       - \"traefik.http.services.\${DEMYX_APP_COMPOSE_PROJECT}-http-port.loadbalancer.server.port=80\""
     fi
 }
