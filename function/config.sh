@@ -324,8 +324,8 @@ demyx_config() {
                     demyx_compose "$DEMYX_ARG_2" up -d --remove-orphans
                 fi
                 if [[ -n "$DEMYX_CONFIG" ]]; then
-                    demyx_execute false "demyx_divider_title \"DEMYX - CONFIG\" \"${DEMYX_CONFIG}\"; \
-                        cat < $DEMYX_CONFIG_TRANSIENT"
+                    demyx_divider_title "DEMYX - CONFIG" "$DEMYX_CONFIG"
+                    cat < "$DEMYX_CONFIG_TRANSIENT"
                 fi
             else
                 demyx_help config

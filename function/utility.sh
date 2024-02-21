@@ -38,20 +38,16 @@ demyx_utility() {
 
     case "$DEMYX_ARG_2" in
         cred|credentials)
-            demyx_execute false \
-                "demyx_utility_credentials"
+            demyx_utility_credentials
         ;;
         htpasswd) shift
-            demyx_execute false \
-                "demyx_utility_htpasswd $*"
+            demyx_utility_htpasswd "$@"
         ;;
         id) shift
-            demyx_execute false \
-                "demyx_utility_id $*"
+            demyx_utility_id "$@"
         ;;
         pass|password) shift
-            demyx_execute false \
-                "demyx_utility_password $*"
+            demyx_utility_password "$@"
         ;;
         sh|shell) shift
             if [[ -z "$*" ]]; then
@@ -60,12 +56,10 @@ demyx_utility() {
                 DEMYX_UTILITY_SHELL="$*"
             fi
 
-            demyx_execute false \
-                "docker run -it --rm demyx/utilities $DEMYX_UTILITY_SHELL"
+            docker run -it --rm demyx/utilities "$DEMYX_UTILITY_SHELL"
         ;;
         user|username)
-            demyx_execute false \
-                "demyx_utility_username"
+            demyx_utility_username
         ;;
         *)
             demyx_help utility
@@ -90,9 +84,8 @@ demyx_utility_credentials() {
         echo "Htpasswd      $DEMYX_UTILITY_CREDENTIALS"
     } > "$DEMYX_UTILITY_TRANSIENT"
 
-    demyx_execute false \
-        "demyx_divider_title \"${DEMYX_UTILITY}\" \"Credentials\"; \
-            cat < $DEMYX_UTILITY_TRANSIENT"
+    demyx_divider_title "$DEMYX_UTILITY" "Credentials"
+    cat < "$DEMYX_UTILITY_TRANSIENT"
 }
 #
 #   Generates htpasswd.
@@ -122,9 +115,8 @@ demyx_utility_htpasswd() {
             echo "$DEMYX_UTILITY_HTPASSWD"
         } > "$DEMYX_UTILITY_TRANSIENT"
 
-        demyx_execute false \
-            "demyx_divider_title \"${DEMYX_UTILITY}\" \"Htpasswd\"; \
-                cat < $DEMYX_UTILITY_TRANSIENT"
+        demyx_divider_title "$DEMYX_UTILITY" "Htpasswd"
+        cat < "$DEMYX_UTILITY_TRANSIENT"
     fi
 }
 #
@@ -144,9 +136,8 @@ demyx_utility_id() {
             echo "$DEMYX_UTILITY_ID_GEN"
         } > "$DEMYX_UTILITY_TRANSIENT"
 
-        demyx_execute false \
-            "demyx_divider_title \"${DEMYX_UTILITY}\" \"ID\"; \
-                cat < $DEMYX_UTILITY_TRANSIENT"
+        demyx_divider_title "$DEMYX_UTILITY" "ID"
+            cat < "$DEMYX_UTILITY_TRANSIENT"
     fi
 }
 #
@@ -166,9 +157,8 @@ demyx_utility_password() {
             echo "$DEMYX_UTILITY_PWGEN"
         } > "$DEMYX_UTILITY_TRANSIENT"
 
-        demyx_execute false \
-            "demyx_divider_title \"${DEMYX_UTILITY}\" \"Password\"; \
-                cat < $DEMYX_UTILITY_TRANSIENT"
+        demyx_divider_title "$DEMYX_UTILITY" "Password"
+            cat < "$DEMYX_UTILITY_TRANSIENT"
     fi
 }
 #
@@ -186,8 +176,7 @@ demyx_utility_username() {
             echo "$DEMYX_UTILITY_USERNAME"
         } > "$DEMYX_UTILITY_TRANSIENT"
 
-        demyx_execute false \
-            "demyx_divider_title \"${DEMYX_UTILITY}\" \"Username\"; \
-                cat < $DEMYX_UTILITY_TRANSIENT"
+        demyx_divider_title "$DEMYX_UTILITY" "Username"
+            cat < "$DEMYX_UTILITY_TRANSIENT"
     fi
 }

@@ -453,9 +453,8 @@ demyx_update_list() {
         DEMYX_UPDATE_LIST_TITLE="$DEMYX_UPDATE_LIST_COUNT Update"
     fi
 
-    demyx_execute false \
-        "demyx_divider_title \"DEMYX - UPDATE\" \"${DEMYX_UPDATE_LIST_TITLE}\"; \
-            cat < $DEMYX_UPDATE_TRANSIENT"
+    demyx_divider_title "DEMYX - UPDATE" "$DEMYX_UPDATE_LIST_TITLE"
+    cat < "$DEMYX_UPDATE_TRANSIENT"
 }
 #
 #   Generates demyx updater's remote versions.

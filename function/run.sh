@@ -431,9 +431,8 @@ demyx_run_table() {
         echo "Redis                     $DEMYX_APP_REDIS"
     } > "$DEMYX_RUN_TRANSIENT"
 
-    demyx_execute false \
-        "demyx_divider_title \"$DEMYX_RUN\" \"App Credentials\"; \
-            cat < $DEMYX_RUN_TRANSIENT"
+    demyx_divider_title "$DEMYX_RUN" "App Credentials"
+    cat < "$DEMYX_RUN_TRANSIENT"
 }
 #
 #   Create app's volumes.

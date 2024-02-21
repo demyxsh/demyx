@@ -56,8 +56,7 @@ demyx_pull_all() {
         DEMYX_PULL_ALL_CHECK="$(grep "$DEMYX_PULL_ALL_I" "$DEMYX_PULL_ALL_PATH" || true)"
 
         if [[ -n "$DEMYX_PULL_ALL_CHECK" ]]; then
-            demyx_execute false \
-                "docker pull ${DEMYX_PULL_ALL_I}"
+            docker pull "$DEMYX_PULL_ALL_I"
         fi
 
         echo "$DEMYX_PULL_ALL_CHECK"
@@ -79,6 +78,5 @@ demyx_pull_image() {
         DEMYX_PULL_IMAGE=redis:alpine3.18
     fi
 
-    demyx_execute false \
-        "docker pull ${DEMYX_PULL_IMAGE}"
+    docker pull "$DEMYX_PULL_IMAGE"
 }

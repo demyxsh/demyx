@@ -104,8 +104,7 @@ demyx_restore_app() {
 
         DEMYX_RESTORE_APP_FIND_PATH="$(grep DEMYX_APP_PATH "$DEMYX_TMP"/"$DEMYX_ARG_2"/.env | awk -F '=' '{print $2}')"
 
-        demyx_execute false \
-            "mv ${DEMYX_TMP}/${DEMYX_ARG_2} $DEMYX_RESTORE_APP_FIND_PATH"
+        mv "$DEMYX_TMP"/"$DEMYX_ARG_2" "$DEMYX_RESTORE_APP_FIND_PATH"
     else
         demyx_backup "$DEMYX_ARG_2" -l
         demyx_error file "$DEMYX_RESTORE_APP_FIND_FILE"

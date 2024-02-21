@@ -134,8 +134,8 @@ demyx_info_app() {
             echo "WordPress Password            $WORDPRESS_USER_PASSWORD"
         } > "$DEMYX_INFO_TRANSIENT"
 
-        demyx_execute false "demyx_divider_title \"$DEMYX_INFO\" \"Login Credentials\"; \
-            cat < $DEMYX_INFO_TRANSIENT"
+        demyx_divider_title "$DEMYX_INFO" "Login Credentials"
+        cat < "$DEMYX_INFO_TRANSIENT"
     else
         demyx_app_env wp "
             DEMYX_APP_DB_CONTAINER
@@ -170,7 +170,7 @@ demyx_info_app() {
                 cat < "$DEMYX_APP_PATH"/.env | sed '/#/d'
             } > "$DEMYX_INFO_TRANSIENT"
 
-            demyx_execute false "demyx_divider_title \"$DEMYX_INFO\" \"DB Volume ($DEMYX_INFO_APP_DB_VOLUME) - WP Volume ($DEMYX_INFO_APP_WP_VOLUME)\""
+            demyx_divider_title "$DEMYX_INFO" "DB Volume ($DEMYX_INFO_APP_DB_VOLUME) - WP Volume ($DEMYX_INFO_APP_WP_VOLUME)"
             column "$DEMYX_INFO_TRANSIENT"
         fi
     fi
@@ -195,9 +195,8 @@ demyx_info_apps() {
         if [[ "$DEMYX_INFO_FLAG_RAW" = true ]]; then
             cat < "$DEMYX_INFO_TRANSIENT"
         else
-            demyx_execute false \
-                "demyx_divider_title \"$DEMYX_INFO\" \"Apps ($DEMYX_INFO_APPS_COUNT)\"; \
-                    cat < $DEMYX_INFO_TRANSIENT"
+            demyx_divider_title "$DEMYX_INFO" "Apps ($DEMYX_INFO_APPS_COUNT)"
+            cat < "$DEMYX_INFO_TRANSIENT"
         fi
     fi
 }
@@ -254,9 +253,8 @@ demyx_info_system() {
             echo "}"
         } > "$DEMYX_INFO_TRANSIENT"
 
-        demyx_execute false \
-            "sed -i ':a;N;\$!ba;s/\n/ /g' $DEMYX_INFO_TRANSIENT; \
-                cat < $DEMYX_INFO_TRANSIENT"
+        sed -i ':a;N;\$!ba;s/\n/ /g' "$DEMYX_INFO_TRANSIENT"
+        cat < "$DEMYX_INFO_TRANSIENT"
     else
         {
             echo "Build                     $DEMYX_BUILD"
@@ -276,8 +274,7 @@ demyx_info_system() {
             echo "Dead Containers           $DEMYX_INFO_SYSTEM_CONTAINER_DEAD"
         } > "$DEMYX_INFO_TRANSIENT"
 
-        demyx_execute false \
-            "demyx_divider_title \"$DEMYX_INFO\" \"System Information\"; \
-                cat < $DEMYX_INFO_TRANSIENT"
+        demyx_divider_title "$DEMYX_INFO" "System Information"
+        cat < "$DEMYX_INFO_TRANSIENT"
     fi
 }

@@ -126,11 +126,11 @@ demyx_backup_app() {
 
         # shellcheck disable=SC2153
         if [[ ! -d "$DEMYX_BACKUP_WP"/"$DEMYX_APP_DOMAIN" ]]; then
-            demyx_execute false "mkdir -p ${DEMYX_BACKUP_WP}/${DEMYX_APP_DOMAIN}"
+            mkdir -p "$DEMYX_BACKUP_WP"/"$DEMYX_APP_DOMAIN"
         fi
 
         if [[ ! -d "$DEMYX_TMP"/"$DEMYX_APP_DOMAIN" ]]; then
-            demyx_execute false "cp -rp ${DEMYX_WP}/${DEMYX_APP_DOMAIN} ${DEMYX_TMP}"
+            cp -rp "$DEMYX_WP"/"$DEMYX_APP_DOMAIN" "$DEMYX_TMP"
         fi
 
         if [[ "$DEMYX_APP_TYPE" = wp ]]; then
@@ -191,7 +191,7 @@ demyx_backup_config() {
     demyx_app_env wp DEMYX_APP_DOMAIN
 
     if [[ ! -d "$DEMYX_BACKUP"/config ]]; then
-        demyx_execute false "mkdir -p ${DEMYX_BACKUP}/config"
+        mkdir -p "$DEMYX_BACKUP"/config
     fi
 
     demyx_execute "Backing up configs" \
@@ -246,7 +246,6 @@ demyx_backup_list() {
         done
     fi
 
-    demyx_execute false \
-        "demyx_divider_title \"DEMYX - BACKUP\" \"$DEMYX_ARG_2 - Count: $DEMYX_BACKUP_LIST_COUNT - Total Size: $DEMYX_BACKUP_LIST_TOTAL_SIZE\"; \
-            cat < ${DEMYX_BACKUP_LIST}"
+    demyx_divider_title "DEMYX - BACKUP" "$DEMYX_ARG_2 - Count: $DEMYX_BACKUP_LIST_COUNT - Total Size: $DEMYX_BACKUP_LIST_TOTAL_SIZE"
+    cat < "$DEMYX_BACKUP_LIST"
 }

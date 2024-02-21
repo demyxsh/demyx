@@ -64,12 +64,10 @@ demyx_cron_daily() {
 
     if [[ "$DEMYX_BACKUP_ENABLE" = true ]]; then
         # Backup WordPress sites at midnight
-        demyx_execute "[CROND DAILY] Backing up apps" \
-            "demyx_backup all"
+        demyx_backup all
 
         # Delete backups older than X amounts of days
-        demyx_execute "[CROND DAILY] Deleting backups older than $DEMYX_BACKUP_LIMIT days" \
-            "find $DEMYX_BACKUP_WP -name \"*.tgz\" -type f -mtime +${DEMYX_BACKUP_LIMIT} -delete"
+        find "$DEMYX_BACKUP_WP" -name "*.tgz" -type f -mtime +"${DEMYX_BACKUP_LIMIT}" -delete
     fi
 
     # WP auto update
