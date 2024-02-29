@@ -18,7 +18,7 @@ wget https://demyx.sh/install; bash install --no-ping
 
 Join us on Discord for latest news, faster support, or just chill.
 
-<a href="https://demyx.sh/sponsor-buymeacoffee" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+<a href="https://demyx.sh/sponsor-buymeacoffee" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" width="320" ></a>
 
 Support this project by buying coffee (please).
 
