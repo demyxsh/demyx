@@ -38,6 +38,7 @@ demyx_pull_all() {
         demyx/docker-socket-proxy
         demyx/mariadb
         demyx/nginx
+        demyx/openlitespeed
         demyx/ssh
         demyx/traefik
         demyx/utilities
