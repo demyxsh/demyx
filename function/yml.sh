@@ -1135,6 +1135,7 @@ demyx_yml_service_sftp() {
 #
 demyx_yml_traefik() {
     demyx_event
+    demyx_source utility
 
     local DEMYX_YML_TRAEFIK_DASHBOARD=
     local DEMYX_YML_TRAEFIK_LABELS=
