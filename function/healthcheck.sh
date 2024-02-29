@@ -112,7 +112,7 @@ demyx_healthcheck_app() {
 
     if [[ "$DEMYX_APP_HEALTHCHECK" = true ]]; then
         DEMYX_HEALTHCHECK_APP_SUBJECT="$DEMYX_HEALTHCHECK_APP_COUNT app isn't running"
-        
+
         if (( "$DEMYX_HEALTHCHECK_APP_COUNT" >= 2 )); then
             DEMYX_HEALTHCHECK_APP_SUBJECT="$DEMYX_HEALTHCHECK_APP_COUNT apps aren't running"
         elif (( "$DEMYX_HEALTHCHECK_APP_COUNT" > 0 )); then
@@ -147,13 +147,24 @@ demyx_healthcheck_load() {
     DEMYX_HEALTHCHECK_LOAD_AVERAGE="$(cat < /proc/loadavg | awk '{print $1 " " $2 " " $3}')"
     local DEMYX_HEALTHCHECK_LOAD_AVERAGE_TARGET=
     DEMYX_HEALTHCHECK_LOAD_AVERAGE_TARGET="$(echo "$DEMYX_HEALTHCHECK_LOAD_AVERAGE" | awk '{print $2}' | awk -F '.' '{print $1}')"
+    local DEMYX_HEALTHCHECK_LOAD_CONTAINER=
+    local DEMYX_HEALTHCHECK_LOAD_CPU=
+    local DEMYX_HEALTHCHECK_LOAD_LINE=
+    local DEMYX_HEALTHCHECK_LOAD_MEM=
 
     {
         demyx_divider_title "HEALTHCHECK - LOAD" "top ($DEMYX_HEALTHCHECK_LOAD_AVERAGE)"
         top -b -n 1
 
-        demyx_divider_title "HEALTHCHECK - LOAD" "docker stats --no-stream"
-        docker stats --no-stream
+        demyx_divider_title "HEALTHCHECK - LOAD" "Container (CPU% - MEM)"
+        while IFS= read -r DEMYX_HEALTHCHECK_LOAD_LINE
+        do
+            DEMYX_HEALTHCHECK_LOAD_CONTAINER="$(awk -F ' ' '{print $2}' <<< "$DEMYX_HEALTHCHECK_LOAD_LINE")"
+            DEMYX_HEALTHCHECK_LOAD_CPU="$(awk -F ' ' '{print $3}' <<< "$DEMYX_HEALTHCHECK_LOAD_LINE")"
+            DEMYX_HEALTHCHECK_LOAD_MEM="$(awk -F ' ' '{print $4}' <<< "$DEMYX_HEALTHCHECK_LOAD_LINE")"
+            [[ "${DEMYX_HEALTHCHECK_LOAD_CPU//.*/}" = 0 || "$DEMYX_HEALTHCHECK_LOAD_CONTAINER" = ID ]] && continue
+            echo "$DEMYX_HEALTHCHECK_LOAD_CONTAINER ($DEMYX_HEALTHCHECK_LOAD_CPU - $DEMYX_HEALTHCHECK_LOAD_MEM)"
+        done <<< "$(docker stats --no-stream)"
     } | tee "$DEMYX_HEALTHCHECK_TRANSIENT"
 
     if (( "$DEMYX_HEALTHCHECK_LOAD_AVERAGE_TARGET" >= "$DEMYX_HEALTHCHECK_LOAD" )); then
