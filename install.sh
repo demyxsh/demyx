@@ -19,7 +19,7 @@ demyx_install() {
 
     if [[ "$DEMYX_INSTALL" != *"--no-ping"* ]]; then
         echo -e "\n\e[34m[INFO\e[39m] Pinging active server to demyx"
-        docker run -t --rm demyx/utilities curl -s "https://demyx.sh/?action=active&version=1.7.1&token=V1VpdGNPcWNDVlZSUDFQdFBaR0Zhdz09OjrnA1h6ZbDFJ2T6MHOwg3p4" -o /dev/null
+        docker run -t --rm demyx/utilities curl -s "https://demyx.sh/?action=active&version=1.8.0&token=V1VpdGNPcWNDVlZSUDFQdFBaR0Zhdz09OjrnA1h6ZbDFJ2T6MHOwg3p4" -o /dev/null
     fi
 
     echo -e "\n\e[34m[INFO\e[39m] Installing demyx helper"

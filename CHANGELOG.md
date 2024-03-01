@@ -4,6 +4,76 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0] - 2024-03-01
+
+### Highlights
+- Default PHP versions are now 8.1 and 8.2
+- WP Rocket + rocket-nginx is now supported
+- Wildcard SSL is now supported for any app, only for top level domains
+- Weekly updates and showing updates should now be "smarter"
+- General logging now only logs the function name
+- Better error logging, simliar to PHP stack trace
+- Thanks @NuclearMonster for the PR to fix one of my many errors
+
+```
+# Example of the new error log stack trace entry
+
+"docker exec" requires at least 2 arguments.
+See 'docker exec --help'.
+
+Usage:  docker exec [OPTIONS] CONTAINER COMMAND [ARG...]
+
+Execute a command in a running container
+
+[2024-02-20-00:43:55] Fatal Error: 'docker exec' with exit code '1' in /etc/demyx/function/backup.sh:113
+
+Stack Trace:
+#0 /etc/demyx/function/backup.sh(113): demyx_backup_app
+#1 /etc/demyx/function/backup.sh(66): demyx_backup
+#2 /etc/demyx/bin/demyx.sh(22): demyx
+#3 /etc/demyx/bin/demyx.sh(97): main
+#4 backup domain.tld
+```
+
+### New
+- Custom stack trace for better error logging and debugging [47cb92f](https://github.com/demyxsh/demyx/commit/47cb92ff0b8980e6215435e3ae5af42f9fd3cd2e)
+- `demyx_event()` will replace general logging and will log every function when executed [7906b4c](https://github.com/demyxsh/demyx/commit/7906b4cafab7b9fdcbabea73c1d8c2f88ff110ec)
+- Add support for WP Rocket + rocket-nginx [e72f8ef](https://github.com/demyxsh/demyx/commit/e72f8ef47780e8f6132c49543ada7e04ea804fb6)
+- Add support for wildcard SSL [f99be89](https://github.com/demyxsh/demyx/commit/f99be89f791bf171a1e1aba5917efba75cc3fefa)
+### Changes
+- Match help text with the KB [c9c5530](https://github.com/demyxsh/demyx/commit/c9c5530c2e92a238612283214d8fec5bb3b12314)
+- Remove/replace old logging function [07f3d59](https://github.com/demyxsh/demyx/commit/07f3d59c8c2c58bcb5a313ff8adf7fe057ba6e35)
+- Only use demyx_execute to supress outputs from specific commands [04e8d09](https://github.com/demyxsh/demyx/commit/04e8d09c36a772082062ff49905264e3526e0fe2)
+- Bump default PHP versions to 8.1 and 8.2 [3f1ef22](https://github.com/demyxsh/demyx/commit/3f1ef2269f555f55ff9ff263bc76c38d25939983)
+- `--www` will error if using with a subdomain [4cbaa65](https://github.com/demyxsh/demyx/commit/4cbaa655c577b39a46075f04bb7043b5971e831a)
+- Error on `--whitelist` if DEMYX_IP isn't set [d9738a8](https://github.com/demyxsh/demyx/commit/d9738a85a5653fb1f441585391e97c7711856d67)
+- Make sure two core variables are set in order to enable SSL [5119d1a](https://github.com/demyxsh/demyx/commit/5119d1ac645099e0264df37630cae2d20f7d70f8)
+- Update both php and lsphp versions when using `--php` [0f94720](https://github.com/demyxsh/demyx/commit/0f94720c623bbcb580b7d8af3c95b2431f1bdf01)
+- Move disk healthcheck to hourly [7377be3](https://github.com/demyxsh/demyx/commit/7377be359f2d1e8d4ea4eec29365d4cefcd674d8)
+- Add new/missing variables for OLS [99060d7](https://github.com/demyxsh/demyx/commit/99060d72d5960b259b9748efa60fbbcefad54507)
+- Double the upload limit [b147698](https://github.com/demyxsh/demyx/commit/b1476980bf30f8f816b8044984ac030b0684f9db)
+- Use exec to override the subshell [080bc99](https://github.com/demyxsh/demyx/commit/080bc99b4ee6ee708deae47e301447506d45a4b6)
+- Move delete prompt and make sure to clear out old variables [31fa70b](https://github.com/demyxsh/demyx/commit/31fa70b9f83a6d18144a99ba509499113bc4748a)
+- When checking for local image versions, make sure to only check if image is installed first [e21414a](https://github.com/demyxsh/demyx/commit/e21414a08ab55dec08728ecbc9fa533da4496fe5)
+- Show updates if these images are installed only [73ab751](https://github.com/demyxsh/demyx/commit/73ab751eb5f636fb38b699c15e6ca54c5c37e3d2)
+- Remove old conditional code [0136da6](https://github.com/demyxsh/demyx/commit/0136da61de0a6d0a0596e7661987865d7dc62497)
+- Hardcode the CPU for only the code-server services [2b21b47](https://github.com/demyxsh/demyx/commit/2b21b47c40152dc37fbc53b1f81bf4dbbda9665a)
+- Add/remove environment variables for yml.sh [6724490](https://github.com/demyxsh/demyx/commit/6724490b1b642b90c7598ba257722fef2ee7d133)
+- One service was missing the custom volume [fea20d7](https://github.com/demyxsh/demyx/commit/fea20d7ac64a3804dfd3fad6fcfc0a65921d2b81)
+- Hardcode the htpasswd instead of using .env [c6c0967](https://github.com/demyxsh/demyx/commit/c6c0967263f2ab3f41955428ffb4070f7a25f992)
+- Output the latest error on the host if there is one [f2a2813](https://github.com/demyxsh/demyx/commit/f2a28136e6e24fb85765529ad187c6a8e0e42349)
+- Miscellaneous changes/updates [bb84dd3](https://github.com/demyxsh/demyx/commit/bb84dd37106dfa33843bb1953475ab716964a10b)
+- Output containers with cpu != 0% [6e75d6a](https://github.com/demyxsh/demyx/commit/6e75d6ade1f58e40daacabc9982ed83dd554f646)
+- Utility needs to be sourced again for non alpine [380f5c3](https://github.com/demyxsh/demyx/commit/380f5c309f89a71e8e2ab4d0ac994341638b4153)
+- Set fixed width [c8a2491](https://github.com/demyxsh/demyx/commit/c8a2491baad5d36c44a4aba8b3607b5e8048d556)
+- @NuclearMonster "Update pull.sh to pull OLS and resolve out of date OLS installs." [82a1b6d](https://github.com/demyxsh/demyx/commit/82a1b6d0b1c6ba813bf78b8322d8facc4c4b6013)
+### Fixes
+- Be sure to exit on error for subshells [c44e466](https://github.com/demyxsh/demyx/commit/c44e4661bca6965e3989f2cfd8ba07c9f4ddf8b5)
+- Redis wasn't configuring properly when switching stacks [7b1c1cd](https://github.com/demyxsh/demyx/commit/7b1c1cdb44919018ed79222b9f4ae27048147be5)
+- Fix incorrect filename [6d4bcf3](https://github.com/demyxsh/demyx/commit/6d4bcf3ef30e5d2af0d3867ecb82412c289fb408)
+- This is supposed to be defaulted at 7 [e0ffd28](https://github.com/demyxsh/demyx/commit/e0ffd28177cfc34a79df9cafbf98d27a53ce7091)
+- Add missing logrotate rule [faa2056](https://github.com/demyxsh/demyx/commit/faa20566a300411d1b601aadaed942b2f6164cbc)
+
 ## [1.7.1] - 2023-11-16
 ### Changes
 - Missing backup/restore commands for custom volume [aa8e543](https://github.com/demyxsh/demyx/commit/aa8e5431b104261ada0ac75be43329c7175b6c84)
@@ -581,6 +651,7 @@ Yml
 - Switch to nginx-php as the default stack
 - Add hostname key and use app ID as part of volume name
 
+[1.8.0]: https://github.com/demyxsh/demyx/compare/1.7.1...1.8.0
 [1.7.1]: https://github.com/demyxsh/demyx/compare/1.7.0...1.7.1
 [1.7.0]: https://github.com/demyxsh/demyx/compare/1.6.0...1.7.0
 [1.6.0]: https://github.com/demyxsh/demyx/compare/1.5.2...1.6.0
