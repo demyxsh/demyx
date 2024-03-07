@@ -56,10 +56,10 @@ demyx_host() {
 
                     if [[ "$DEMYX_HOST_DEV" = true ]]; then
                         echo -e "\e[33m[WARNING]\e[39m Enabling developer mode"
-                        docker exec --user=root demyx bash -c 'sed -i "s|-euo|-euox|g" /etc/demyx/bin/demyx.sh'
+                        docker exec --user=root demyx bash -c 'sed -i "s|-eEuo|-eEuox|g" /etc/demyx/bin/demyx.sh'
                     elif [[ "$DEMYX_HOST_DEV" = false ]]; then
                         echo -e "\e[34m[INFO]\e[39m  Disabling developer mode"
-                        docker exec --user=root demyx bash -c 'sed -i "s|-euox|-euo|g" /etc/demyx/bin/demyx.sh'
+                        docker exec --user=root demyx bash -c 'sed -i "s|-eEuox|-eEuo|g" /etc/demyx/bin/demyx.sh'
                     fi
                 ;;
                 edit)
