@@ -166,7 +166,14 @@ demyx_app_login() {
 demyx_app_path() {
     demyx_event
     local DEMYX_APP_PATH="${1:-$DEMYX_ARG_2}"
-    find "$DEMYX_APP" -name "$DEMYX_APP_PATH" -type d
+    local DEMYX_APP_PATH_FIND=
+    DEMYX_APP_PATH_FIND="$(find "$DEMYX_APP" -name "$DEMYX_APP_PATH" -type d)"
+
+    if [[ "$DEMYX_APP_PATH_FIND" == *"$DEMYX_WP"/"$DEMYX_APP_PATH"* ]]; then
+        echo "$DEMYX_WP"/"$DEMYX_APP_PATH"
+    else
+        echo "$DEMYX_APP_PATH_FIND"
+    fi
 }
 #
 #   Echo out protocol based on DEMYX_APP_SSL or DEMYX_APP_SSL_WILDCARD.
