@@ -847,6 +847,7 @@ demyx_config_redis() {
                 docker stop ${DEMYX_APP_WP_CONTAINER}; \
                 docker rm ${DEMYX_APP_WP_CONTAINER}; \
                 demyx_compose $DEMYX_APP_DOMAIN up -d 2>&1; \
+                sleep 5; \
                 demyx_wp $DEMYX_APP_DOMAIN redis enable"
         elif [[ "$DEMYX_APP_STACK" = ols || "$DEMYX_APP_STACK" = ols-bedrock ]]; then
             demyx_execute "Configuring redis" \
