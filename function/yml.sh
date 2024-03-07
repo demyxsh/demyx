@@ -1107,6 +1107,12 @@ demyx_yml_service_sftp() {
 
     if [[ "$DEMYX_APP_SFTP" = true ]]; then
         local DEMYX_YML_SERVICE_SFTP_PORTS=
+
+        # shellcheck disable=2153
+        if [[ ! -f "$DEMYX_TMP"/"$DEMYX_APP_DOMAIN"_sftp ]]; then
+            demyx_open_port
+        fi
+
         # shellcheck disable=2153
         DEMYX_YML_SERVICE_SFTP_PORTS="$(cat < "$DEMYX_TMP"/"$DEMYX_APP_DOMAIN"_sftp)"
 
