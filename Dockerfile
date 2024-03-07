@@ -1,5 +1,4 @@
 FROM msoap/shell2http as demyx_api
-FROM docker as demyx_docker
 FROM alpine:3.17
 
 LABEL sh.demyx.image demyx/demyx
@@ -70,6 +69,7 @@ RUN set -ex; \
     apache2-utils \
     bash \
     bind-tools \
+    docker \
     docker-compose \
     curl \
     jq \
@@ -84,7 +84,6 @@ RUN set -ex; \
 # Copy files and binaries
 COPY . /etc/demyx
 COPY --from=demyx_api /app/shell2http /usr/local/bin/shell2http
-COPY --from=demyx_docker /usr/local/bin/docker /usr/local/bin/docker
 
 # Configure Demyx
 RUN set -ex; \
@@ -156,7 +155,7 @@ RUN set -ex; \
     chmod o-x /bin/echo; \
     chmod o-x /usr/bin/curl; \
     chmod o-x /usr/bin/nano; \
-    chmod o-x /usr/local/bin/docker; \
+    chmod o-x /usr/bin/docker; \
     chmod o-x /usr/bin/docker-compose; \
     \
     # Copy custom directory
