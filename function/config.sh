@@ -683,6 +683,18 @@ demyx_config_dev() {
             fi
 
         } > "$DEMYX_CONFIG_TRANSIENT"
+
+        if [[ "$DEMYX_APP_STACK" = nginx-php || "$DEMYX_APP_STACK" = ols ]]; then
+            docker exec "$DEMYX_APP_WP_CONTAINER" bash -c "sed -i \"s|'WP_DEBUG',.*|'WP_DEBUG', true );|g\" ${DEMYX}/wp-config.php"
+        elif [[ "$DEMYX_APP_STACK" = bedrock || "$DEMYX_APP_STACK" = ols-bedrock ]]; then
+            docker exec "$DEMYX_APP_WP_CONTAINER" bash -c "sed -i \"s|WP_ENV=.*|WP_ENV=development|g\" ${DEMYX}/.env"
+        fi
+    elif [[ "$DEMYX_CONFIG_FLAG_DEV" = false ]]; then
+        if [[ "$DEMYX_APP_STACK" = nginx-php || "$DEMYX_APP_STACK" = ols ]]; then
+            docker exec "$DEMYX_APP_WP_CONTAINER" bash -c "sed -i \"s|'WP_DEBUG',.*|'WP_DEBUG', false );|g\" ${DEMYX}/wp-config.php"
+        elif [[ "$DEMYX_APP_STACK" = bedrock || "$DEMYX_APP_STACK" = ols-bedrock ]]; then
+            docker exec "$DEMYX_APP_WP_CONTAINER" bash -c "sed -i \"s|WP_ENV=.*|WP_ENV=production|g\" ${DEMYX}/.env"
+        fi
     fi
 }
 #
