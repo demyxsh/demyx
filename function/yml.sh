@@ -1056,6 +1056,7 @@ demyx_yml_service_pma() {
               - PMA_ABSOLUTE_URI=$(demyx_app_proto)://\${DEMYX_APP_DOMAIN}/demyx/pma/
               - PMA_HOST=db_\${DEMYX_APP_ID}
               - TZ=$TZ
+              - UPLOAD_LIMIT=64M
             image: phpmyadmin/phpmyadmin
             labels:
               - \"traefik.enable=true\"
