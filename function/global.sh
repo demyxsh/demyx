@@ -9,7 +9,7 @@ demyx_app_domain() {
     demyx_event
     local DEMYX_APP_DOMAIN_ARG="${1:-$DEMYX_ARG_2}"
     local DEMYX_APP_DOMAIN_ARG_FIND=
-    DEMYX_APP_DOMAIN_ARG_FIND="$(find "$DEMYX_APP" -name "$DEMYX_APP_DOMAIN_ARG")"
+    DEMYX_APP_DOMAIN_ARG_FIND="$(demyx_app_path "$DEMYX_APP_DOMAIN_ARG")"
     local DEMYX_APP_DOMAIN_ARG_SUBDOMAIN_CHECK=
     local DEMYX_APP_DOMAIN_ARG_WWW=
     DEMYX_APP_DOMAIN_ARG_WWW="$(grep DEMYX_APP_DOMAIN_WWW "$DEMYX_APP_DOMAIN_ARG_FIND"/.env | awk -F '=' '{print $2}' || true)"
