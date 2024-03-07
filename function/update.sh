@@ -74,17 +74,39 @@ demyx_update() {
 demyx_update_local() {
     demyx_event
     {
-        [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/browsersync"* ]] && echo "DEMYX_LOCAL_BROWSERSYNC_VERSION=$(docker run --rm --entrypoint=browser-sync demyx/browsersync --version)"
-        [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/code-server:browse"* ]] && echo "DEMYX_LOCAL_CODE_VERSION=$(docker run --rm --entrypoint=code-server demyx/code-server:browse --version | awk -F '[ ]' '{print $1}' | awk '{line=$0} END{print line}')"
-        [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/nginx"* ]] && echo "DEMYX_LOCAL_NGINX_VERSION=$(docker run --rm --entrypoint=nginx demyx/nginx -V 2>&1 > /dev/null | head -n 1 | cut -c 22-)"
-        [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/openlitespeed"* ]] && echo "DEMYX_LOCAL_OPENLITESPEED_VERSION=$(docker run --rm --entrypoint=cat demyx/openlitespeed /usr/local/lsws/VERSION)"
-        [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/openlitespeed"* ]] && echo "DEMYX_LOCAL_OPENLITESPEED_LSPHP_LATEST_VERSION=$(docker run --rm --entrypoint=bash demyx/openlitespeed -c '/usr/local/lsws/lsphp81/bin/php -v' | head -1 | awk '{print $2}')"
-        [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/openlitespeed"* ]] && echo "DEMYX_LOCAL_OPENLITESPEED_LSPHP_VERSION=$(docker run --rm --entrypoint=bash demyx/openlitespeed -c '/usr/local/lsws/${DEMYX_LSPHP}/bin/php -v' | head -1 | awk '{print $2}')"
-        [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/ssh"* ]] && echo "DEMYX_LOCAL_OPENSSH_VERSION=$(docker run --rm --entrypoint=ssh demyx/ssh -V  2>&1 | cut -c -13 | awk -F '[_]' '{print $2}')"
-        [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/wordrpess:bedrock"* ]] && echo "DEMYX_LOCAL_WORDPRESS_BEDROCK_VERSION=$(curl -sL https://api.github.com/repos/roots/bedrock/releases/latest | jq -r '.tag_name')"
-        [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/wordrpess"* ]] && echo "DEMYX_LOCAL_WORDPRESS_PHP_LATEST_VERSION=$(docker run --rm --entrypoint=php81 demyx/wordpress -v | grep cli | awk -F '[ ]' '{print $2}')"
-        [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/wordrpess"* ]] && echo "DEMYX_LOCAL_WORDPRESS_PHP_VERSION=$(docker run --rm --entrypoint=php demyx/wordpress -v | grep cli | awk -F '[ ]' '{print $2}')"
-        [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/wordrpess"* ]] && echo "DEMYX_LOCAL_WORDPRESS_VERSION=$(docker run --rm --entrypoint=sh demyx/wordpress -c "grep '\$wp_version =' /demyx/wp-includes/version.php | cut -d\"'\" -f 2")"
+        if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/browsersync"* ]]; then
+            echo "DEMYX_LOCAL_BROWSERSYNC_VERSION=$(docker run --rm --entrypoint=browser-sync demyx/browsersync --version)"
+        fi
+        if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/code-server:browse"* ]]; then
+            echo "DEMYX_LOCAL_CODE_VERSION=$(docker run --rm --entrypoint=code-server demyx/code-server:browse --version | awk -F '[ ]' '{print $1}' | awk '{line=$0} END{print line}')"
+        fi
+        if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/nginx"* ]]; then
+            echo "DEMYX_LOCAL_NGINX_VERSION=$(docker run --rm --entrypoint=nginx demyx/nginx -V 2>&1 > /dev/null | head -n 1 | awk -F '/' '{print $2}')"
+        fi
+        if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/openlitespeed"* ]]; then
+            echo "DEMYX_LOCAL_OPENLITESPEED_VERSION=$(docker run --rm --entrypoint=cat demyx/openlitespeed /usr/local/lsws/VERSION)"
+        fi
+        if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/openlitespeed"* ]]; then
+            echo "DEMYX_LOCAL_OPENLITESPEED_LSPHP_LATEST_VERSION=$(docker run --rm --entrypoint=bash demyx/openlitespeed -c '/usr/local/lsws/lsphp81/bin/php -v' | head -1 | awk '{print $2}')"
+        fi
+        if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/openlitespeed"* ]]; then
+            echo "DEMYX_LOCAL_OPENLITESPEED_LSPHP_VERSION=$(docker run --rm --entrypoint=bash demyx/openlitespeed -c '/usr/local/lsws/${DEMYX_LSPHP}/bin/php -v' | head -1 | awk '{print $2}')"
+        fi
+        if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/ssh"* ]]; then
+            echo "DEMYX_LOCAL_OPENSSH_VERSION=$(docker run --rm --entrypoint=ssh demyx/ssh -V  2>&1 | cut -c -13 | awk -F '[_]' '{print $2}')"
+        fi
+        if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/wordrpess:bedrock"* ]]; then
+            echo "DEMYX_LOCAL_WORDPRESS_BEDROCK_VERSION=$(curl -sL https://api.github.com/repos/roots/bedrock/releases/latest | jq -r '.tag_name')"
+        fi
+        if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/wordrpess"* ]]; then
+            echo "DEMYX_LOCAL_WORDPRESS_PHP_LATEST_VERSION=$(docker run --rm --entrypoint=php81 demyx/wordpress -v | grep cli | awk -F '[ ]' '{print $2}')"
+        fi
+        if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/wordrpess"* ]]; then
+            echo "DEMYX_LOCAL_WORDPRESS_PHP_VERSION=$(docker run --rm --entrypoint=php demyx/wordpress -v | grep cli | awk -F '[ ]' '{print $2}')"
+        fi
+        if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/wordrpess"* ]]; then
+            echo "DEMYX_LOCAL_WORDPRESS_VERSION=$(docker run --rm --entrypoint=sh demyx/wordpress -c "grep '\$wp_version =' /demyx/wp-includes/version.php | cut -d\"'\" -f 2")"
+        fi
 
         echo "DEMYX_LOCAL_DOCKER_COMPOSE_VERSION=$(docker-compose -v | awk -F ' ' '{print $3}' | sed 's|,||g')"
         echo "DEMYX_LOCAL_DOCKER_VERSION=$(docker -v | awk -F ' ' '{print $3}' | sed 's|,||g')"
