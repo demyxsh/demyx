@@ -66,14 +66,16 @@ demyx_yml_bedrock() {
     "
 
     local DEMYX_YML_BEDROCK_DEV_CPU="\${DEMYX_APP_WP_CPU}"
-    local DEMYX_YML_BEDROCK_DEV_LABELS=
     local DEMYX_YML_BEDROCK_DEV_ENTRYPOINTS=
+    local DEMYX_YML_BEDROCK_DEV_LABELS=
+    local DEMYX_YML_BEDROCK_DEV_MEM="\${DEMYX_APP_WP_MEM}"
     local DEMYX_YML_BEDROCK_DEV_PASSWORD=
     local DEMYX_YML_BEDROCK_DEV_VOLUME=
     local DEMYX_YML_BEDROCK_IMAGE=demyx/wordpress:bedrock
 
     if [[ "$DEMYX_APP_DEV" = true ]]; then
         DEMYX_YML_BEDROCK_DEV_CPU=".80"
+        DEMYX_YML_BEDROCK_DEV_MEM="$(demyx_yml_memory)"
         DEMYX_YML_BEDROCK_DEV_PASSWORD="- DEMYX_CODE_PASSWORD=\${DEMYX_APP_DEV_PASSWORD}"
         DEMYX_YML_BEDROCK_DEV_VOLUME="- \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_code:/home/demyx"
         DEMYX_YML_BEDROCK_IMAGE=demyx/code-server:bedrock
@@ -205,7 +207,7 @@ demyx_yml_bedrock() {
             hostname: \${DEMYX_APP_COMPOSE_PROJECT}
             image: $DEMYX_YML_BEDROCK_IMAGE
             $DEMYX_YML_BEDROCK_DEV_LABELS
-            mem_limit: \${DEMYX_APP_WP_MEM}
+            mem_limit: $DEMYX_YML_BEDROCK_DEV_MEM
             networks:
               - demyx
             restart: unless-stopped
@@ -276,7 +278,7 @@ demyx_yml_code() {
               - \"traefik.http.services.demyx-code-http-port.loadbalancer.server.port=8080\"
               $DEMYX_YML_CODE_LABELS
               $DEMYX_YML_CODE_WHITELIST
-            mem_limit: $DEMYX_MEM
+            mem_limit: $(demyx_yml_memory)
             networks:
               - demyx
               - demyx_socket
@@ -342,6 +344,14 @@ demyx_yml_http_labels() {
     fi
 }
 #
+#   Calculates half the total memory for code-server services.
+#
+demyx_yml_memory() {
+    local DEMYX_YML_MEMORY=
+    DEMYX_YML_MEMORY="$(grep MemTotal /proc/meminfo | awk -F ' ' '{print $2}')"
+    echo "$(( DEMYX_YML_MEMORY / 2 ))k"
+}
+#
 #   YAML template for the nginx-php stack.
 #
 demyx_yml_nginx_php() {
@@ -355,14 +365,16 @@ demyx_yml_nginx_php() {
     "
 
     local DEMYX_YML_NGINX_PHP_DEV_CPU="\${DEMYX_APP_WP_CPU}"
-    local DEMYX_YML_NGINX_PHP_DEV_LABELS=
     local DEMYX_YML_NGINX_PHP_DEV_ENTRYPOINTS=
+    local DEMYX_YML_NGINX_PHP_DEV_LABELS=
+    local DEMYX_YML_NGINX_PHP_DEV_MEM="\${DEMYX_APP_WP_MEM}"
     local DEMYX_YML_NGINX_PHP_DEV_PASSWORD=
     local DEMYX_YML_NGINX_PHP_DEV_VOLUME=
     local DEMYX_YML_NGINX_PHP_IMAGE=demyx/wordpress
 
     if [[ "$DEMYX_APP_DEV" = true ]]; then
         DEMYX_YML_NGINX_PHP_DEV_CPU=".80"
+        DEMYX_YML_NGINX_PHP_DEV_MEM="$(demyx_yml_memory)"
         DEMYX_YML_NGINX_PHP_DEV_PASSWORD="- DEMYX_CODE_PASSWORD=\${DEMYX_APP_DEV_PASSWORD}"
         DEMYX_YML_NGINX_PHP_DEV_VOLUME="- \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_code:/home/demyx"
         DEMYX_YML_NGINX_PHP_IMAGE=demyx/code-server:wp
@@ -466,7 +478,7 @@ demyx_yml_nginx_php() {
             hostname: \${DEMYX_APP_COMPOSE_PROJECT}
             image: $DEMYX_YML_NGINX_PHP_IMAGE
             $DEMYX_YML_NGINX_PHP_DEV_LABELS
-            mem_limit: \${DEMYX_APP_WP_MEM}
+            mem_limit: $DEMYX_YML_NGINX_PHP_DEV_MEM
             networks:
               - demyx
             restart: unless-stopped
@@ -535,6 +547,7 @@ demyx_yml_ols() {
     local DEMYX_YML_OLS_DEV_CPU="\${DEMYX_APP_WP_CPU}"
     local DEMYX_YML_OLS_DEV_ENTRYPOINTS=
     local DEMYX_YML_OLS_DEV_LABELS=
+    local DEMYX_YML_OLS_DEV_MEM="\${DEMYX_APP_WP_MEM}"
     local DEMYX_YML_OLS_DEV_PASSWORD=
     local DEMYX_YML_OLS_DEV_VOLUME=
     local DEMYX_YML_OLS_IMAGE=demyx/openlitespeed
@@ -544,6 +557,7 @@ demyx_yml_ols() {
 
     if [[ "$DEMYX_APP_DEV" = true ]]; then
         DEMYX_YML_OLS_DEV_CPU=".80"
+        DEMYX_YML_OLS_DEV_MEM="$(demyx_yml_memory)"
         DEMYX_YML_OLS_DEV_PASSWORD="- DEMYX_CODE_PASSWORD=\${DEMYX_APP_DEV_PASSWORD}"
         DEMYX_YML_OLS_DEV_VOLUME="- \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_code:/home/demyx"
         DEMYX_YML_OLS_IMAGE=demyx/code-server:openlitespeed
@@ -661,7 +675,7 @@ demyx_yml_ols() {
               $DEMYX_YML_OLS_LABEL_ASSETS
               - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-ols-assets.priority=99\"
               $DEMYX_YML_OLS_DEV_LABELS
-            mem_limit: \${DEMYX_APP_WP_MEM}
+            mem_limit: $DEMYX_YML_OLS_DEV_MEM
             networks:
               - demyx
             restart: unless-stopped
@@ -705,6 +719,7 @@ demyx_yml_ols_bedrock() {
     local DEMYX_YML_OLS_DEV_CPU="\${DEMYX_APP_WP_CPU}"
     local DEMYX_YML_OLS_DEV_ENTRYPOINTS=
     local DEMYX_YML_OLS_DEV_LABELS=
+    local DEMYX_YML_OLS_DEV_MEM="\${DEMYX_APP_WP_MEM}"
     local DEMYX_YML_OLS_DEV_PASSWORD=
     local DEMYX_YML_OLS_DEV_VOLUME=
     local DEMYX_YML_OLS_IMAGE=demyx/openlitespeed:bedrock
@@ -714,6 +729,7 @@ demyx_yml_ols_bedrock() {
 
     if [[ "$DEMYX_APP_DEV" = true ]]; then
         DEMYX_YML_OLS_DEV_CPU=".80"
+        DEMYX_YML_OLS_DEV_MEM="$(demyx_yml_memory)"
         DEMYX_YML_OLS_DEV_PASSWORD="- DEMYX_CODE_PASSWORD=\${DEMYX_APP_DEV_PASSWORD}"
         DEMYX_YML_OLS_DEV_VOLUME="- \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_code:/home/demyx"
         DEMYX_YML_OLS_IMAGE=demyx/code-server:openlitespeed-bedrock
@@ -857,7 +873,7 @@ demyx_yml_ols_bedrock() {
               $DEMYX_YML_OLS_LABEL_ASSETS
               - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-ols-assets.priority=99\"
               $DEMYX_YML_OLS_DEV_LABELS
-            mem_limit: \${DEMYX_APP_WP_MEM}
+            mem_limit: $DEMYX_YML_OLS_DEV_MEM
             networks:
               - demyx
             restart: unless-stopped
