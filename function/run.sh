@@ -342,10 +342,12 @@ demyx_run_init() {
 
     # Require specific variables to be set for SSL
     if [[ "$DEMYX_RUN_FLAG_SSL" = true || "$DEMYX_RUN_FLAG_SSL_WILDCARD" = true ]]; then
-        if [[ "$DEMYX_DOMAIN" = localhost || "$DEMYX_EMAIL" = info@localhost || "$DEMYX_CF_KEY" = false ]]; then
-            demyx_error custom "Please update DEMYX_DOMAIN, DEMYX_EMAIL, and/or DEMYX_CF_KEY on the host"
-        elif [[ -n "$(demyx_subdomain "$DEMYX_ARG_2")" ]]; then
+        if [[ "$DEMYX_DOMAIN" = localhost || "$DEMYX_EMAIL" = info@localhost ]]; then
+            demyx_error custom "Please update DEMYX_DOMAIN and DEMYX_EMAIL on the host"
+        elif [[ -n "$(demyx_subdomain "$DEMYX_ARG_2")" && "$DEMYX_RUN_FLAG_SSL_WILDCARD" = true ]]; then
             demyx_error custom "--ssl-wildcard is not supported with subdomains"
+        elif [[ "$DEMYX_RUN_FLAG_SSL_WILDCARD" = true && "$DEMYX_CF_KEY" = false ]]; then
+            demyx_error custom "Please update DEMYX_CF_KEY on the host"
         fi
     fi
 
