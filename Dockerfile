@@ -59,7 +59,7 @@ ENV DEMYX_SMTP_TO                       false
 ENV DEMYX_TELEMETRY                     true
 ENV DEMYX_TRAEFIK_LOG                   INFO
 ENV DEMYX_TRAEFIK_SSL                   false
-ENV DEMYX_VERSION                       1.8.0
+ENV DEMYX_VERSION                       1.8.1
 ENV DOCKER_HOST                         tcp://demyx_socket:2375
 ENV TZ                                  America/Los_Angeles
 

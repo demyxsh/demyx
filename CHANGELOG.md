@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.1] - 2024-03-19
+### Fixes
+- Creating new apps were erroring on subdomains using `--ssl` flag [72fd7da](https://github.com/demyxsh/demyx/commit/72fd7da7fdde1daf1d377376cb7edf035a5617ea)
+- Docker versions would mismatch between local and remote versions [7b18cb7](https://github.com/demyxsh/demyx/commit/7b18cb7ab046d6a712b92dfcc0f10c3a4f7226a3)
+- `demyx host dev` was targeting the wrong string [87398c4](https://github.com/demyxsh/demyx/commit/87398c4043d9825a3a28e01ba3393bc5f984229c)
+- Apparently the code-server service crashes when `mem_limit` is too low [a08eef2](https://github.com/demyxsh/demyx/commit/a08eef25c9de30418cf468a5c1295ec4dd3f16e5)
+- This was supposed to be included in the last update but phpmyadmin needed this upload limit bump [f57aa3a](https://github.com/demyxsh/demyx/commit/f57aa3a1acfc2faca7ba8d9c8729847a2f65d0d0)
+- `demyx restore` with sftp enabled was failing due to missing port [5c8883b](https://github.com/demyxsh/demyx/commit/5c8883b4e539ffcf9fa918c4d1f068a2a4f6c124)
+- Shorthand was causing pipe errors for nginx which also crashed `demyx update`, so might as well remove all shorthands [a40d189](https://github.com/demyxsh/demyx/commit/a40d189561e24247e3803fffd531419f1c93ed78)
+- Use `demyx_app_path` since the function `demyx_app_domain` was also affected by the `find` bug [b567ed9](https://github.com/demyxsh/demyx/commit/b567ed9d57208397393a70ce6f14112dcd39311e)
+- `find` found multiple paths matching the app's domain which was crashing `demyx restore` [345b44f](https://github.com/demyxsh/demyx/commit/345b44f06b67a1eedcfe9d02c1cb03da43d899cd)
+- `--dev` should enable/disable debug mode for WordPress [9ba3c32](https://github.com/demyxsh/demyx/commit/9ba3c32841292d4fbdba4c945c4d4b1d8f68caba)
+- Config flag `--redis` was outputting `pop_var_context` error [5e25da5](https://github.com/demyxsh/demyx/commit/5e25da5107b7a426b9ac512b1b765288514ad1f4)
+- Missing key `workflow_dispatch` for manual build [909e993](https://github.com/demyxsh/demyx/commit/909e993c3db879430e49d0ca9ca90aa946529df1)
+
 ## [1.8.0] - 2024-03-01
 
 ### Highlights
@@ -651,6 +666,7 @@ Yml
 - Switch to nginx-php as the default stack
 - Add hostname key and use app ID as part of volume name
 
+[1.8.1]: https://github.com/demyxsh/demyx/compare/1.8.0...1.8.1
 [1.8.0]: https://github.com/demyxsh/demyx/compare/1.7.1...1.8.0
 [1.7.1]: https://github.com/demyxsh/demyx/compare/1.7.0...1.7.1
 [1.7.0]: https://github.com/demyxsh/demyx/compare/1.6.0...1.7.0
