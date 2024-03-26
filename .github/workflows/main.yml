@@ -55,7 +55,6 @@ jobs:
         run: |
           DEMYX_ALPINE_VERSION="$(docker exec --user=root ${{ env.DEMYX_REPOSITORY }} cat /etc/os-release | grep VERSION_ID | cut -c 12-)"
           DEMYX_DOCKER_VERSION="$(docker exec --user=root ${{ env.DEMYX_REPOSITORY }} docker version | grep Version: | head -n 1 | awk -F ' ' '{print $2}')"
-          DEMYX_DOCKER_COMPOSE_VERSION="$(docker exec --user=root ${{ env.DEMYX_REPOSITORY }} docker-compose -v | awk -F ' ' '{print $3}' | sed 's|,||g')"
           DEMYX_JQ="$(jq ".alpine = \"$DEMYX_ALPINE_VERSION\" | .demyx = \"$DEMYX_VERSION\" | .docker = \"$DEMYX_DOCKER_VERSION\" | .docker_compose = \"$DEMYX_DOCKER_COMPOSE_VERSION\"" version.json)"
 
           # Update versions

@@ -3,7 +3,7 @@
 # shellcheck shell=bash
 
 #
-#   demyx compose <app> <args> <docker-compose args>
+#   demyx compose <app> <args> <docker compose args>
 #
 demyx_compose() {
     demyx_event
@@ -34,7 +34,7 @@ demyx_compose_all() {
     done
 }
 #
-#   Main docker-compose function.
+#   Main docker compose function.
 #
 demyx_compose_app() {
     demyx_event
@@ -60,28 +60,28 @@ demyx_compose_app() {
 
     case "$DEMYX_COMPOSE_TYPE" in
         -d)
-            DEMYX_COMPOSE_APP="docker-compose ${DEMYX_COMPOSE_ARGS//db /} db_${DEMYX_APP_ID}"
-            DEMYX_COMPOSE_APP="${DEMYX_COMPOSE_APP//docker-compose -d/docker-compose}"
-            DEMYX_COMPOSE_APP="${DEMYX_COMPOSE_APP//docker-compose --database/docker-compose}"
+            DEMYX_COMPOSE_APP="docker compose ${DEMYX_COMPOSE_ARGS//db /} db_${DEMYX_APP_ID}"
+            DEMYX_COMPOSE_APP="${DEMYX_COMPOSE_APP//docker compose -d/docker compose}"
+            DEMYX_COMPOSE_APP="${DEMYX_COMPOSE_APP//docker compose --database/docker compose}"
         ;;
         down)
-            DEMYX_COMPOSE_APP="docker-compose stop && docker-compose rm -f"
+            DEMYX_COMPOSE_APP="docker compose stop && docker compose rm -f"
         ;;
         fr)
-            DEMYX_COMPOSE_APP="docker-compose up -d --force-recreate --remove-orphans"
+            DEMYX_COMPOSE_APP="docker compose up -d --force-recreate --remove-orphans"
         ;;
         -n)
-            DEMYX_COMPOSE_APP="docker-compose --no-deps ${DEMYX_COMPOSE_ARGS//nx /} nx_${DEMYX_APP_ID}"
-            DEMYX_COMPOSE_APP="${DEMYX_COMPOSE_APP//docker-compose --no-deps -n/docker-compose}"
-            DEMYX_COMPOSE_APP="${DEMYX_COMPOSE_APP//docker-compose --no-deps --nginx/docker-compose}"
+            DEMYX_COMPOSE_APP="docker compose --no-deps ${DEMYX_COMPOSE_ARGS//nx /} nx_${DEMYX_APP_ID}"
+            DEMYX_COMPOSE_APP="${DEMYX_COMPOSE_APP//docker compose --no-deps -n/docker compose}"
+            DEMYX_COMPOSE_APP="${DEMYX_COMPOSE_APP//docker compose --no-deps --nginx/docker compose}"
         ;;
         -w)
-            DEMYX_COMPOSE_APP="docker-compose --no-deps ${DEMYX_COMPOSE_ARGS//wp /} --no-deps wp_${DEMYX_APP_ID}"
-            DEMYX_COMPOSE_APP="${DEMYX_COMPOSE_APP//docker-compose --no-deps -w/docker-compose}"
-            DEMYX_COMPOSE_APP="${DEMYX_COMPOSE_APP//docker-compose --no-deps --wordpress/docker-compose}"
+            DEMYX_COMPOSE_APP="docker compose --no-deps ${DEMYX_COMPOSE_ARGS//wp /} --no-deps wp_${DEMYX_APP_ID}"
+            DEMYX_COMPOSE_APP="${DEMYX_COMPOSE_APP//docker compose --no-deps -w/docker compose}"
+            DEMYX_COMPOSE_APP="${DEMYX_COMPOSE_APP//docker compose --no-deps --wordpress/docker compose}"
         ;;
         *)
-            DEMYX_COMPOSE_APP="docker-compose $DEMYX_COMPOSE_ARGS"
+            DEMYX_COMPOSE_APP="docker compose $DEMYX_COMPOSE_ARGS"
         ;;
     esac
 

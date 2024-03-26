@@ -1,5 +1,5 @@
 FROM msoap/shell2http as demyx_api
-FROM alpine:3.17
+FROM docker:cli
 
 LABEL sh.demyx.image demyx/demyx
 LABEL sh.demyx.maintainer Demyx <info@demyx.sh>
@@ -69,8 +69,6 @@ RUN set -ex; \
     apache2-utils \
     bash \
     bind-tools \
-    docker \
-    docker-compose \
     curl \
     jq \
     htop \
@@ -155,8 +153,7 @@ RUN set -ex; \
     chmod o-x /bin/echo; \
     chmod o-x /usr/bin/curl; \
     chmod o-x /usr/bin/nano; \
-    chmod o-x /usr/bin/docker; \
-    chmod o-x /usr/bin/docker-compose; \
+    chmod o-x /usr/local/bin/docker; \
     \
     # Copy custom directory
     cp -r "$DEMYX_CONFIG"/custom "$DEMYX"; \

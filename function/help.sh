@@ -20,11 +20,11 @@ demyx_help() {
         ;;
         compose)
             echo
-            echo "demyx compose <app> <args> <docker-compose args>      Targets an app to execute docker-compose commands."
-            echo "                    all                               Execute docker-compose commands to all apps."
+            echo "demyx compose <app> <args> <docker compose args>      Targets an app to execute docker compose commands."
+            echo "                    all                               Execute docker compose commands to all apps."
             echo "                    -d                                Targets an app’s MariaDB container."
-            echo "                    down                              Executes docker-compose stop and rm -f."
-            echo "                    fr                                Executes docker-compose up -d –for-recreate –remove-orphans."
+            echo "                    down                              Executes docker compose stop and rm -f."
+            echo "                    fr                                Executes docker compose up -d –for-recreate –remove-orphans."
             echo "                    -n                                Target an app’s Nginx container."
             echo "                    -w                                Targets an app’s WordPress container."
             echo
@@ -43,7 +43,7 @@ demyx_help() {
             echo "                   --db-mem                           Configure DB container's memory limit, --db-mem=0 to remove limit. (Usage: --db-mem=256m)"
             echo "                   --dev                              Code-server service will be created and perform various commands to WordPress."
             echo "                   --healthcheck                      Enable/disable healthcheck."
-            echo "                   --no-compose                       Prevents executing docker-compose up -d after running a config."
+            echo "                   --no-compose                       Prevents executing docker compose up -d after running a config."
             # TODO - echo "                   --no-maldet                        Skip maldet commands, used with --clean"
             echo "                   --opcache                          Enable/disable PHP opcache."
             echo "                   --php                              Switch PHP/LSPHP version. (Usage: --php=<8.1|8.2>)"
@@ -172,8 +172,8 @@ demyx_help() {
             echo "              code                    Regenerate docker-compose.yml and .env for the code-server service."
             echo "              traefik                 Regenerate docker-compose.yml and .env for the traefik service."
             echo "                          -f          Delete and regenerate app's non-sensitive environment variables between two points. Does not work with code-server and traefik service."
-            echo "                          -nc         Regenerate docker-compose.yml and .env files only, no docker-compose commands will be executed."
-            echo "                          -nfr        Regenerate docker-compose.yml and .env files and execute docker-compose up -d instead of docker-compose up -d --force-recreate --remove-orphans."
+            echo "                          -nc         Regenerate docker-compose.yml and .env files only, no docker compose commands will be executed."
+            echo "                          -nfr        Regenerate docker-compose.yml and .env files and execute docker compose up -d instead of docker compose up -d --force-recreate --remove-orphans."
             echo "                          -s          Regenerate docker-compose.yml and .env files and skip app's config backup."
             echo
         ;;
@@ -247,7 +247,7 @@ demyx_help() {
             echo
             echo "demyx <arg>                   Main demyx command, for more info: demyx help <arg>"
             echo "      backup                  Backup specific app."
-            echo "      compose                 Targets an app to execute docker-compose commands."
+            echo "      compose                 Targets an app to execute docker compose commands."
             echo "      config                  Configure a specific app."
             echo "      cp                      Outputs a series of commands to copy and paste."
             echo "      cron                    Execute demyx cron manually."

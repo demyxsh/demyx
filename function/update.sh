@@ -108,7 +108,6 @@ demyx_update_local() {
             echo "DEMYX_LOCAL_WORDPRESS_VERSION=$(docker run --rm --entrypoint=sh demyx/wordpress -c "grep '\$wp_version =' /demyx/wp-includes/version.php | cut -d\"'\" -f 2")"
         fi
 
-        echo "DEMYX_LOCAL_DOCKER_COMPOSE_VERSION=$(docker-compose -v | awk -F ' ' '{print $3}' | sed 's|,||g')"
         echo "DEMYX_LOCAL_DOCKER_VERSION=$(docker -v | awk -F ' ' '{print $3}' | sed 's|,||g')"
         echo "DEMYX_LOCAL_HAPROXY_VERSION=$(docker run --rm --user=root --entrypoint=haproxy demyx/docker-socket-proxy -v | grep HA-Proxy | awk '{print $3}')"
         echo "DEMYX_LOCAL_MARIADB_VERSION=$(docker run --rm --entrypoint=mariadb demyx/mariadb --version | awk -F '[ ]' '{print $6}' | awk -F '[,]' '{print $1}' | sed 's/-MariaDB//g')"
@@ -127,7 +126,6 @@ demyx_update_image() {
     local DEMYX_LOCAL_BROWSERSYNC_VERSION=
     local DEMYX_LOCAL_CODE_VERSION=
     local DEMYX_LOCAL_DOCKER_VERSION=
-    local DEMYX_LOCAL_DOCKER_COMPOSE_VERSION=
     local DEMYX_LOCAL_HAPROXY_VERSION=
     local DEMYX_LOCAL_MARIADB_VERSION=
     local DEMYX_LOCAL_NGINX_VERSION=
@@ -145,7 +143,6 @@ demyx_update_image() {
     local DEMYX_REMOTE_BROWSERSYNC_VERSION=
     local DEMYX_REMOTE_CODE_VERSION=
     local DEMYX_REMOTE_DOCKER_VERSION=
-    local DEMYX_REMOTE_DOCKER_COMPOSE_VERSION=
     local DEMYX_REMOTE_HAPROXY_VERSION=
     local DEMYX_REMOTE_MARIADB_VERSION=
     local DEMYX_REMOTE_NGINX_VERSION=
@@ -174,12 +171,6 @@ demyx_update_image() {
 
     if [[ -n "$DEMYX_LOCAL_DOCKER_VERSION" && -n "$DEMYX_REMOTE_DOCKER_VERSION" ]]; then
         if [[ "$(demyx_compare "$DEMYX_LOCAL_DOCKER_VERSION")" -lt "$(demyx_compare "$DEMYX_REMOTE_DOCKER_VERSION")" ]]; then
-            echo "demyx" > "$DEMYX_UPDATE_FILE_IMAGE"
-        fi
-    fi
-
-    if [[ -n "$DEMYX_LOCAL_DOCKER_COMPOSE_VERSION" && -n "$DEMYX_REMOTE_DOCKER_COMPOSE_VERSION" ]]; then
-        if [[ "$(demyx_compare "$DEMYX_LOCAL_DOCKER_COMPOSE_VERSION")" -lt "$(demyx_compare "$DEMYX_REMOTE_DOCKER_COMPOSE_VERSION")" ]]; then
             echo "demyx" > "$DEMYX_UPDATE_FILE_IMAGE"
         fi
     fi
@@ -276,7 +267,6 @@ demyx_update_list() {
     local DEMYX_LOCAL_BROWSERSYNC_VERSION=
     local DEMYX_LOCAL_CODE_VERSION=
     local DEMYX_LOCAL_DOCKER_VERSION=
-    local DEMYX_LOCAL_DOCKER_COMPOSE_VERSION=
     local DEMYX_LOCAL_HAPROXY_VERSION=
     local DEMYX_LOCAL_MARIADB_VERSION=
     local DEMYX_LOCAL_NGINX_VERSION=
@@ -293,7 +283,6 @@ demyx_update_list() {
     local DEMYX_LOCAL_WORDPRESS_VERSION=
     local DEMYX_REMOTE_BROWSERSYNC_VERSION=
     local DEMYX_REMOTE_DOCKER_VERSION=
-    local DEMYX_REMOTE_DOCKER_COMPOSE_VERSION=
     local DEMYX_REMOTE_HAPROXY_VERSION=
     local DEMYX_REMOTE_MARIADB_VERSION=
     local DEMYX_REMOTE_NGINX_VERSION=
@@ -339,14 +328,6 @@ demyx_update_list() {
             DEMYX_REMOTE_DOCKER_VERSION="$(echo -e "\e[32m(NEW) ${DEMYX_REMOTE_DOCKER_VERSION}\e[39m")"
         else
             DEMYX_REMOTE_DOCKER_VERSION=
-        fi
-    fi
-
-    if [[ -n "$DEMYX_LOCAL_DOCKER_COMPOSE_VERSION" && -n "$DEMYX_REMOTE_DOCKER_COMPOSE_VERSION" ]]; then
-        if [[ "$(demyx_compare "$DEMYX_LOCAL_DOCKER_COMPOSE_VERSION")" -lt "$(demyx_compare "$DEMYX_REMOTE_DOCKER_COMPOSE_VERSION")" ]]; then
-            DEMYX_REMOTE_DOCKER_COMPOSE_VERSION="$(echo -e "\e[32m(NEW) ${DEMYX_REMOTE_DOCKER_COMPOSE_VERSION}\e[39m")"
-        else
-            DEMYX_REMOTE_DOCKER_COMPOSE_VERSION=
         fi
     fi
 
@@ -436,7 +417,6 @@ demyx_update_list() {
         [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/code-server:browse"* ]] && echo "Code Server             $DEMYX_LOCAL_CODE_VERSION $DEMYX_REMOTE_CODE_VERSION"
         echo "Demyx                   $DEMYX_LOCAL_VERSION $DEMYX_REMOTE_VERSION"
         echo " - Docker               $DEMYX_LOCAL_DOCKER_VERSION $DEMYX_REMOTE_DOCKER_VERSION"
-        echo " - Docker Compose       $DEMYX_LOCAL_DOCKER_COMPOSE_VERSION $DEMYX_REMOTE_DOCKER_COMPOSE_VERSION"
         echo "Docker Socket Proxy     $DEMYX_LOCAL_HAPROXY_VERSION $DEMYX_REMOTE_HAPROXY_VERSION"
         echo "MariaDB                 $DEMYX_LOCAL_MARIADB_VERSION $DEMYX_REMOTE_MARIADB_VERSION"
         [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/nginx"* ]] && echo "Nginx                   $DEMYX_LOCAL_NGINX_VERSION $DEMYX_REMOTE_NGINX_VERSION"
@@ -535,7 +515,6 @@ demyx_update_remote() {
 
     echo "DEMYX_REMOTE_BROWSERSYNC_VERSION=$DEMYX_BROWSERSYNC_VERSION
     DEMYX_REMOTE_CODE_VERSION=$DEMYX_CODE_VERSION
-    DEMYX_REMOTE_DOCKER_COMPOSE_VERSION=${DEMYX_REMOTE_DOCKER_COMPOSE_VERSION:-$DEMYX_LOCAL_DOCKER_COMPOSE_VERSION}
     DEMYX_REMOTE_DOCKER_VERSION=$DEMYX_DOCKER_VERSION
     DEMYX_REMOTE_HAPROXY_VERSION=$DEMYX_DOCKER_SOCKET_PROXY_HAPROXY_VERSION
     DEMYX_REMOTE_MARIADB_VERSION=$DEMYX_MARIADB_VERSION
