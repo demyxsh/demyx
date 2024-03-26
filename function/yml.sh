@@ -216,7 +216,6 @@ demyx_yml_bedrock() {
               - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_custom:/etc/demyx/custom
               - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_log:/var/log/demyx
               $DEMYX_YML_BEDROCK_DEV_VOLUME
-        version: \"$DEMYX_DOCKER_COMPOSE\"
         volumes:
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}:
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}
@@ -287,7 +286,6 @@ demyx_yml_code() {
               - demyx:/demyx
               - demyx_user:/home/demyx
               - demyx_log:/var/log/demyx
-        version: \"$DEMYX_DOCKER_COMPOSE\"
         volumes:
           demyx:
             name: demyx
@@ -487,7 +485,6 @@ demyx_yml_nginx_php() {
               - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_custom:/etc/demyx/custom
               - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_log:/var/log/demyx
               $DEMYX_YML_NGINX_PHP_DEV_VOLUME
-        version: \"$DEMYX_DOCKER_COMPOSE\"
         volumes:
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}:
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}
@@ -687,7 +684,6 @@ demyx_yml_ols() {
           $(demyx_yml_service_pma)
           $(demyx_yml_service_redis)
           $(demyx_yml_service_sftp)
-        version: \"$DEMYX_DOCKER_COMPOSE\"
         volumes:
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}:
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}
@@ -885,7 +881,6 @@ demyx_yml_ols_bedrock() {
           $(demyx_yml_service_pma)
           $(demyx_yml_service_redis)
           $(demyx_yml_service_sftp)
-        version: \"$DEMYX_DOCKER_COMPOSE\"
         volumes:
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}:
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}
@@ -1236,7 +1231,6 @@ demyx_yml_traefik() {
             volumes:
               - demyx_log:/var/log/demyx
               - demyx_traefik:/demyx
-        version: \"$DEMYX_DOCKER_COMPOSE\"
         volumes:
           demyx_log:
             name: demyx_log

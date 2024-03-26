@@ -136,7 +136,6 @@ demyx_yml() {
 
     # Generate /demyx/docker-compose.yml
     echo "# DEMYX $DEMYX_VERSION
-version: \"2.4\"
 services:
   socket:
     image: demyx/docker-socket-proxy
