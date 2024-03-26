@@ -126,6 +126,7 @@ demyx_yml_bedrock() {
     echo "# DEMYX $DEMYX_VERSION
         networks:
           demyx:
+            external: true
             name: demyx
         services:
           $(demyx_yml_service_mariadb)
@@ -218,16 +219,22 @@ demyx_yml_bedrock() {
               $DEMYX_YML_BEDROCK_DEV_VOLUME
         volumes:
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}:
+            external: true
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code:
+            external: true
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_code
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_custom:
+            external: true
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_custom
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_db:
+            external: true
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_db
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_log:
+            external: true
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_log
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_sftp:
+            external: true
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_sftp
         " | sed "s|        ||g" > "$DEMYX_APP_PATH"/docker-compose.yml
 }
@@ -257,8 +264,10 @@ demyx_yml_code() {
     echo "# DEMYX $DEMYX_VERSION
         networks:
           demyx:
+            external: true
             name: demyx
           demyx_socket:
+            external: true
             name: demyx_socket
         services:
           code:
@@ -288,10 +297,13 @@ demyx_yml_code() {
               - demyx_log:/var/log/demyx
         volumes:
           demyx:
+            external: true
             name: demyx
           demyx_log:
+            external: true
             name: demyx_log
           demyx_user:
+            external: true
             name: demyx_user" | sed "s|        ||g" > "$DEMYX_CODE"/docker-compose.yml
 }
 #
@@ -398,6 +410,7 @@ demyx_yml_nginx_php() {
     echo "# DEMYX $DEMYX_VERSION
         networks:
           demyx:
+            external: true
             name: demyx
         services:
           $(demyx_yml_service_bs)
@@ -487,16 +500,22 @@ demyx_yml_nginx_php() {
               $DEMYX_YML_NGINX_PHP_DEV_VOLUME
         volumes:
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}:
+            external: true
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code:
+            external: true
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_code
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_custom:
+            external: true
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_custom
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_db:
+            external: true
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_db
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_log:
+            external: true
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_log
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_sftp:
+            external: true
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_sftp
         " | sed "s|        ||g" > "$DEMYX_APP_PATH"/docker-compose.yml
 }
@@ -589,6 +608,7 @@ demyx_yml_ols() {
     echo "# DEMYX $DEMYX_VERSION
         networks:
           demyx:
+            external: true
             name: demyx
         services:
           $(demyx_yml_service_bs)
@@ -686,16 +706,22 @@ demyx_yml_ols() {
           $(demyx_yml_service_sftp)
         volumes:
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}:
+            external: true
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code:
+            external: true
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_code
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_custom:
+            external: true
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_custom
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_db:
+            external: true
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_db
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_log:
+            external: true
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_log
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_sftp:
+            external: true
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_sftp
         " | sed "s|        ||g" > "$DEMYX_APP_PATH"/docker-compose.yml
 }
@@ -785,6 +811,7 @@ demyx_yml_ols_bedrock() {
     echo "# DEMYX $DEMYX_VERSION
         networks:
           demyx:
+            external: true
             name: demyx
         services:
           $(demyx_yml_service_mariadb)
@@ -883,16 +910,22 @@ demyx_yml_ols_bedrock() {
           $(demyx_yml_service_sftp)
         volumes:
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}:
+            external: true
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code:
+            external: true
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_code
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_custom:
+            external: true
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_custom
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_db:
+            external: true
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_db
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_log:
+            external: true
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_log
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_sftp:
+            external: true
             name: \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}_sftp
         " | sed "s|        ||g" > "$DEMYX_APP_PATH"/docker-compose.yml
 }
@@ -1202,8 +1235,10 @@ demyx_yml_traefik() {
     echo "# DEMYX $DEMYX_VERSION
         networks:
           demyx:
+            external: true
             name: demyx
           demyx_socket:
+            external: true
             name: demyx_socket
         services:
           traefik:
@@ -1233,7 +1268,9 @@ demyx_yml_traefik() {
               - demyx_traefik:/demyx
         volumes:
           demyx_log:
+            external: true
             name: demyx_log
           demyx_traefik:
+            external: true
             name: demyx_traefik" | sed "s|        ||g" > "$DEMYX_TRAEFIK"/docker-compose.yml
 }

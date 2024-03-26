@@ -213,10 +213,13 @@ services:
       - TZ=\${DEMYX_TZ}
 volumes:
   demyx:
+    external: true
     name: demyx
   demyx_log:
+    external: true
     name: demyx_log
   demyx_user:
+    external: true
     name: demyx_user
 networks:
   demyx:
