@@ -5,6 +5,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [1.8.2] - 2024-03-27
+### Upgrading
+Due to a lot of changes with Docker, there had to be a lot of fixes/workarounds made in order to ease the burden of upgrading. Follow these steps for a smooth transition.
+```
+# Update the demyx image to the latest version
+docker pull demyx/demyx
+
+# Update the host helper script
+docker run -t --rm \
+    -v /usr/local/bin:/tmp \
+    --user=root \
+    --entrypoint=bash \
+    demyx/demyx -c 'cp -f /etc/demyx/host.sh /tmp/demyx; chmod +x /tmp/demyx'
+
+# Use the latest version of demyx
+demyx host restart
+
+# Force the upgrade
+demyx host upgrade -f
+```
+
 ### Fixes
 - The `-f` flag should also bypass the no updates check [bab05a1](https://github.com/demyxsh/demyx/commit/bab05a1b28504666413688fe8af9811c8caf4fbf)
 - Fix GitHub Action failure [570991d](https://github.com/demyxsh/demyx/commit/570991df1bed1526cf14a2155e915ad672614801)
