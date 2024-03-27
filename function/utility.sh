@@ -146,15 +146,20 @@ demyx_utility_id() {
 demyx_utility_password() {
     demyx_event
     local DEMYX_UTILITY_PASSWORD="${1:-"20"}"
-    local DEMYX_UTILITY_PASSWORD_DEFAULT="A-Za-z0-9"
+    local DEMYX_UTILITY_PASSWORD_PRINT=
     local DEMYX_UTILITY_PWGEN=
-    DEMYX_UTILITY_PWGEN="$(head /dev/urandom | tr -dc "$DEMYX_UTILITY_PASSWORD_DEFAULT" | head -c "$DEMYX_UTILITY_PASSWORD" && echo)"
+
+    DEMYX_UTILITY_PWGEN=()
+    for i in {a..z} {A..Z} {0..9}; do
+        DEMYX_UTILITY_PWGEN[$RANDOM]=$i
+    done
+    DEMYX_UTILITY_PASSWORD_PRINT="$(printf %s "${DEMYX_UTILITY_PWGEN[@]::${DEMYX_UTILITY_PASSWORD}}" $'\n')"
 
     if [[ "$DEMYX_UTILITY_FLAG_RAW" = true ]]; then
-        echo "$DEMYX_UTILITY_PWGEN"
+        echo "$DEMYX_UTILITY_PASSWORD_PRINT"
     else
         {
-            echo "$DEMYX_UTILITY_PWGEN"
+            echo "$DEMYX_UTILITY_PASSWORD_PRINT"
         } > "$DEMYX_UTILITY_TRANSIENT"
 
         demyx_divider_title "$DEMYX_UTILITY" "Password"

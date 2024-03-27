@@ -1271,6 +1271,6 @@ demyx_yml_traefik() {
             external: true
             name: demyx_log
           demyx_traefik:
-            external: true
+            $(demyx_external_volume traefik)
             name: demyx_traefik" | sed "s|        ||g" > "$DEMYX_TRAEFIK"/docker-compose.yml
 }

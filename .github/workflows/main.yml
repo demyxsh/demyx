@@ -37,6 +37,8 @@ jobs:
         id: test
         shell: 'script -q -e -c "bash {0}"'
         run: |
+          docker volume create demyx
+          sudo touch /var/lib/docker/volumes/demyx/_data/github_action
           sudo cp host.sh /usr/local/bin/demyx
           sudo chmod +x /usr/local/bin/demyx
 
@@ -45,7 +47,7 @@ jobs:
           demyx wp demyx.app core is-installed
 
           DEMYX_TEST="$(demyx exec demyx.app -n wget -qO- http://localhost 2>&1)"
-          if [[ "$DEMYX_TEST" == *"Hello world"* ]]; then
+          if [[ "$DEMYX_TEST" == *"Hello world"* && ! -f /var/lib/docker/volumes/demyx/_data/tmp/demyx_log_error ]]; then
             echo "Passed."
           else
             echo "$DEMYX_TEST"

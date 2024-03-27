@@ -333,6 +333,29 @@ demyx_execute() {
     echo -en "\e[32mdone\e[39m\n"
 }
 #
+#   GitHub Action and existing volume warning fix.
+#
+demyx_external_volume() {
+    local DEMYX_EXTERNAL_VOLUME=
+    local DEMYX_EXTERNAL_VOLUME_ARG="${1:-}"
+
+    if [[ ! -f "$DEMYX"/github_action ]]; then
+        if [[ ! -f "$DEMYX_TMP"/demyx_volumes ]]; then
+            DEMYX_EXTERNAL_VOLUME="$(docker volume ls | tee "$DEMYX_TMP"/demyx_volumes)"
+        else
+            DEMYX_EXTERNAL_VOLUME="$(cat < "$DEMYX_TMP"/demyx_volumes)"
+        fi
+
+        case "$DEMYX_EXTERNAL_VOLUME_ARG" in
+            traefik)
+                if [[ -n "$(echo "$DEMYX_EXTERNAL_VOLUME" | grep -w demyx_traefik || true)" ]]; then
+                    echo "external: true"
+                fi
+            ;;
+        esac
+    fi
+}
+#
 #   Output `docker images` to a file for performance and outputs contents to stdout.
 #
 demyx_images() {
@@ -554,6 +577,11 @@ demyx_proper() {
         else
             chown -R demyx:demyx "$DEMYX"
             chown -R demyx:demyx "$DEMYX_LOG"
+        fi
+
+        # Delete volume cache
+        if [[ -f "$DEMYX_TMP"/demyx_volumes ]]; then
+            rm -f "$DEMYX_TMP"/demyx_volumes
         fi
     } || true
 }

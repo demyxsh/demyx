@@ -6,6 +6,11 @@ set -euo pipefail
 #   Main.
 #
 demyx_yml() {
+    local DEMYX_YML_VOLUME=
+    local DEMYX_YML_VOLUME_DEMYX=
+    local DEMYX_YML_VOLUME_LOG=
+    local DEMYX_YML_VOLUME_USER=
+
     # TODO - Generate .env
     if [[ ! -f "$DEMYX"/.env ]]; then
         echo "# DEMYX ENV - AUTO GENERATED
@@ -134,6 +139,22 @@ demyx_yml() {
         " | sed "s|            ||g" > "$DEMYX"/.env
     fi
 
+    # GitHub Action and existing volume warning fix
+    if [[ ! -f "$DEMYX"/github_action ]]; then
+        DEMYX_YML_VOLUME="$(docker volume ls)"
+        if [[ -n "$(echo "$DEMYX_YML_VOLUME" | grep -w demyx || true)" ]]; then
+            DEMYX_YML_VOLUME_DEMYX="external: true"
+        fi
+
+        if [[ -n "$(echo "$DEMYX_YML_VOLUME" | grep -w demyx_log || true)" ]]; then
+            DEMYX_YML_VOLUME_LOG="external: true"
+        fi
+
+        if [[ -n "$(echo "$DEMYX_YML_VOLUME" | grep -w demyx_user || true)" ]]; then
+            DEMYX_YML_VOLUME_USER="external: true"
+        fi
+    fi
+
     # Generate /demyx/docker-compose.yml
     echo "# DEMYX $DEMYX_VERSION
 services:
@@ -213,13 +234,13 @@ services:
       - TZ=\${DEMYX_TZ}
 volumes:
   demyx:
-    external: true
+    $DEMYX_YML_VOLUME_DEMYX
     name: demyx
   demyx_log:
-    external: true
+    $DEMYX_YML_VOLUME_LOG
     name: demyx_log
   demyx_user:
-    external: true
+    $DEMYX_YML_VOLUME_USER
     name: demyx_user
 networks:
   demyx:

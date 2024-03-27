@@ -272,6 +272,8 @@ demyx_host_run() {
             --entrypoint=demyx-yml \
             -v demyx:/demyx \
             -v "$HOME"/.demyx:/tmp/.demyx \
+            -v /var/run/docker.sock:/var/run/docker.sock:ro \
+            -e DOCKER_HOST= \
             demyx/demyx
 
         mv ~/.demyx ~/.demyx.bak
@@ -282,6 +284,8 @@ demyx_host_run() {
             --user=root \
             --entrypoint=demyx-yml \
             -v demyx:/demyx \
+            -v /var/run/docker.sock:/var/run/docker.sock:ro \
+            -e DOCKER_HOST= \
             demyx/demyx
     fi
 
