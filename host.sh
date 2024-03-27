@@ -330,7 +330,7 @@ demyx_host_upgrade() {
     DEMYX_HOST_UPGRADE_FORCE="$(echo "$DEMYX_HOST_ARGS" | grep -e "-f" || true)"
 
     # Exit if no updates are available
-    if [[ "$DEMYX_HOST_UPDATE_IMAGES_COUNT" = 0 ]]; then
+    if [[ "$DEMYX_HOST_UPDATE_IMAGES_COUNT" = 0 && -z "$DEMYX_HOST_UPGRADE_FORCE" ]]; then
         echo -e "\e[34m[INFO]\e[39m No updates available"
         exit
     fi
