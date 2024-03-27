@@ -10,18 +10,11 @@ demyx_app_domain() {
     local DEMYX_APP_DOMAIN_ARG="${1:-$DEMYX_ARG_2}"
     local DEMYX_APP_DOMAIN_ARG_FIND=
     DEMYX_APP_DOMAIN_ARG_FIND="$(demyx_app_path "$DEMYX_APP_DOMAIN_ARG")"
-    local DEMYX_APP_DOMAIN_ARG_SUBDOMAIN_CHECK=
     local DEMYX_APP_DOMAIN_ARG_WWW=
     DEMYX_APP_DOMAIN_ARG_WWW="$(grep DEMYX_APP_DOMAIN_WWW "$DEMYX_APP_DOMAIN_ARG_FIND"/.env | awk -F '=' '{print $2}' || true)"
 
     if [[ "$DEMYX_APP_DOMAIN_ARG_WWW" = true ]]; then
-        DEMYX_APP_DOMAIN_ARG_SUBDOMAIN_CHECK="$(awk -F '.' '{print $3}' <<< "$DEMYX_APP_DOMAIN_ARG")"
-
-        if [[ -n "$DEMYX_APP_DOMAIN_ARG_SUBDOMAIN_CHECK" ]]; then
-            echo "${DEMYX_APP_DOMAIN_ARG}"
-        else
-            echo "www.${DEMYX_APP_DOMAIN_ARG}"
-        fi
+        echo "www.${DEMYX_APP_DOMAIN_ARG}"
     else
         echo "$DEMYX_APP_DOMAIN_ARG"
     fi
@@ -209,7 +202,7 @@ demyx_arg_valid() {
     fi
 
     if [[ "$DEMYX_ARG_2" == "www."* ]]; then
-        demyx_error custom "www. is not allowed"
+        DEMYX_ARG_2="${DEMYX_ARG_2/www./}"
     fi
 
     if [[ "$DEMYX_ARG_2" == "code."* || "$DEMYX_ARG_2" == "traefik."* ]]; then

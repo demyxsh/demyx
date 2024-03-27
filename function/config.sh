@@ -1210,28 +1210,24 @@ demyx_config_www() {
         DEMYX_APP_STACK
     "
 
-    if [[ -n "$(demyx_subdomain "$DEMYX_APP_DOMAIN")" ]]; then
-        demyx_warning "$DEMYX_ARG_2 is a subdomain, skipping --www flag ..."
-    else
-        DEMYX_CONFIG_COMPOSE=true
+    DEMYX_CONFIG_COMPOSE=true
 
-        case "$DEMYX_CONFIG_FLAG_WWW" in
-            false)
-                demyx_execute "Updating domain to ${DEMYX_APP_DOMAIN}" \
-                    "demyx_wordpress_ready; \
-                    demyx_wp $DEMYX_APP_DOMAIN search-replace --precise --all-tables $(demyx_app_proto)://www.${DEMYX_APP_DOMAIN} $(demyx_app_proto)://${DEMYX_APP_DOMAIN}"
-            ;;
-            true)
-                demyx_execute "Updating domain to www.${DEMYX_APP_DOMAIN}" \
-                    "demyx_wordpress_ready; \
-                    demyx_wp $DEMYX_APP_DOMAIN search-replace --precise --all-tables $(demyx_app_proto)://${DEMYX_APP_DOMAIN} $(demyx_app_proto)://www.${DEMYX_APP_DOMAIN}"
-            ;;
-        esac
+    case "$DEMYX_CONFIG_FLAG_WWW" in
+        false)
+            demyx_execute "Updating domain to ${DEMYX_APP_DOMAIN}" \
+                "demyx_wordpress_ready; \
+                demyx_wp $DEMYX_APP_DOMAIN search-replace --precise --all-tables $(demyx_app_proto)://www.${DEMYX_APP_DOMAIN} $(demyx_app_proto)://${DEMYX_APP_DOMAIN}"
+        ;;
+        true)
+            demyx_execute "Updating domain to www.${DEMYX_APP_DOMAIN}" \
+                "demyx_wordpress_ready; \
+                demyx_wp $DEMYX_APP_DOMAIN search-replace --precise --all-tables $(demyx_app_proto)://${DEMYX_APP_DOMAIN} $(demyx_app_proto)://www.${DEMYX_APP_DOMAIN}"
+        ;;
+    esac
 
-        demyx_execute "Setting www to $DEMYX_CONFIG_FLAG_WWW" \
-            "demyx_app_env_update DEMYX_APP_DOMAIN_WWW=${DEMYX_CONFIG_FLAG_WWW}; \
-            demyx_yml $DEMYX_APP_STACK"
-    fi
+    demyx_execute "Setting www to $DEMYX_CONFIG_FLAG_WWW" \
+        "demyx_app_env_update DEMYX_APP_DOMAIN_WWW=${DEMYX_CONFIG_FLAG_WWW}; \
+        demyx_yml $DEMYX_APP_STACK"
 }
 #
 #   Configures an app's xmlrpc setting.

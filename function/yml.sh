@@ -313,15 +313,16 @@ demyx_yml_http_labels() {
     demyx_event
     demyx_app_env wp "
         DEMYX_APP_DOMAIN
+        DEMYX_APP_DOMAIN_WWW
         DEMYX_APP_SSL_WILDCARD
     "
 
     local DEMYX_YML_HTTP_LABELS_RULES=
 
-    if [[ -n "$(demyx_subdomain "$DEMYX_APP_DOMAIN")" ]]; then
-        DEMYX_YML_HTTP_LABELS_RULES="Host(\`\${DEMYX_APP_DOMAIN}\`)"
-    else
+    if [[ "$DEMYX_APP_DOMAIN_WWW" = true ]]; then
         DEMYX_YML_HTTP_LABELS_RULES="Host(\`\${DEMYX_APP_DOMAIN}\`) || Host(\`www.\${DEMYX_APP_DOMAIN}\`)"
+    else
+        DEMYX_YML_HTTP_LABELS_RULES="Host(\`\${DEMYX_APP_DOMAIN}\`)"
     fi
 
     if [[ "$(demyx_app_proto)" = https ]]; then
