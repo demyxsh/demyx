@@ -26,6 +26,7 @@ demyx host upgrade -f
 ```
 
 ### Fixes
+- Remove limitations on subdomains so SSL wildcards and www works on international domains and/or several levels deep of prefixes of subdomains [74fecb0](https://github.com/demyxsh/demyx/commit/74fecb0edd1afef8073c7b1c46295f3df702b039)
 - The `-f` flag should also bypass the no updates check [bab05a1](https://github.com/demyxsh/demyx/commit/bab05a1b28504666413688fe8af9811c8caf4fbf)
 - Fix GitHub Action failure [570991d](https://github.com/demyxsh/demyx/commit/570991df1bed1526cf14a2155e915ad672614801)
 - Suppress the existing volume warning [e4decaf](https://github.com/demyxsh/demyx/commit/e4decaf333f5ba5ea886941b8b68ea172e1c7c17)
