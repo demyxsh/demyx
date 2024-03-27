@@ -4,8 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.8.2] - 2024-04-01
+## [1.8.2] - 2024-03-27
 ### Fixes
+- Fix GitHub Action failure [570991d](https://github.com/demyxsh/demyx/commit/570991df1bed1526cf14a2155e915ad672614801)
 - Suppress the existing volume warning [e4decaf](https://github.com/demyxsh/demyx/commit/e4decaf333f5ba5ea886941b8b68ea172e1c7c17)
 - Nginx would fail if the container names aren't updated to the new format [87eac07](https://github.com/demyxsh/demyx/commit/87eac07d2f418b672c96e6b24a5ee2aba5b05f22)
 - Remove the `version` is obsolete warning [57fdd73](https://github.com/demyxsh/demyx/commit/57fdd730dfd3921635dbfb1a7dcc98ba2200420b)
