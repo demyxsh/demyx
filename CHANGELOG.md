@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.8.2] - 2024-03-27
 ### Fixes
+- The `-f` flag should also bypass the no updates check [bab05a1](https://github.com/demyxsh/demyx/commit/bab05a1b28504666413688fe8af9811c8caf4fbf)
 - Fix GitHub Action failure [570991d](https://github.com/demyxsh/demyx/commit/570991df1bed1526cf14a2155e915ad672614801)
 - Suppress the existing volume warning [e4decaf](https://github.com/demyxsh/demyx/commit/e4decaf333f5ba5ea886941b8b68ea172e1c7c17)
 - Nginx would fail if the container names aren't updated to the new format [87eac07](https://github.com/demyxsh/demyx/commit/87eac07d2f418b672c96e6b24a5ee2aba5b05f22)
