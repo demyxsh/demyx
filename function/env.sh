@@ -13,7 +13,6 @@ demyx_env() {
     DEMYX_ENV="$(demyx_app_path "$DEMYX_ARG_2")"
     local DEMYX_APP_ENV_REMOVE=
     local DEMYX_APP_ENV_REMOVE_COMPOSE=
-    local DEMYX_APP_ENV_REPLACE=
 
     if [[ -f "$DEMYX_ENV"/.env ]]; then
         # TODO - TEMPORARY
@@ -170,10 +169,5 @@ demyx_env() {
         MARIADB_WRITE_BUFFER=${MARIADB_WRITE_BUFFER:-2M}
         # END REFRESHABLE VARIABLES" | sed "s|        ||g" > "$DEMYX_ENV"/.env
 
-        # Update old container names
-        demyx_app_env wp "DEMYX_APP_COMPOSE_PROJECT DEMYX_APP_ID"
-        DEMYX_APP_ENV_REPLACE="$(cat < "$DEMYX_ENV"/.env)"
-        if [[ "$DEMYX_APP_ENV_REPLACE" == *"$DEMYX_APP_COMPOSE_PROJECT"_* ]]; then
-            sed -i -e "s|${DEMYX_APP_COMPOSE_PROJECT}_|${DEMYX_APP_COMPOSE_PROJECT}-|g" -e "s|${DEMYX_APP_ID}_1|${DEMYX_APP_ID}-1|g" "$DEMYX_ENV"/.env
-        fi
+        demyx_container_name_update
 }

@@ -110,6 +110,7 @@ demyx_restore_app() {
         demyx_error file "$DEMYX_RESTORE_APP_FIND_FILE"
     fi
 
+    demyx_container_name_update
     demyx_app_env wp "
         DEMYX_APP_CONTAINER
         DEMYX_APP_DOMAIN
