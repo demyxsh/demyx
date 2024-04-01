@@ -327,51 +327,62 @@ demyx_host_update() {
 #
 demyx_host_upgrade() {
     local DEMYX_HOST_UPGRADE_FORCE=
+    local DEMYX_HOST_UPGRADE_DEMYX=
     DEMYX_HOST_UPGRADE_FORCE="$(echo "$DEMYX_HOST_ARGS" | grep -e "-f" || true)"
+    DEMYX_HOST_UPGRADE_DEMYX="$(echo "$DEMYX_HOST_ARGS" | grep -e "-d" || true)"
 
-    # Exit if no updates are available
-    if [[ "$DEMYX_HOST_UPDATE_IMAGES_COUNT" = 0 && -z "$DEMYX_HOST_UPGRADE_FORCE" ]]; then
-        echo -e "\e[34m[INFO]\e[39m No updates available"
-        exit
-    fi
-
-    if [[ -z "$DEMYX_HOST_UPGRADE_FORCE" ]]; then
-        echo -en "\e[33m"
-        read -rep "[WARNING] Depending on the update, services may be temporarily disrupted. Continue? [yY]: " DEMYX_HOST_CONFIRM
-        echo -en "\e[39m"
-
-        if [[ "$DEMYX_HOST_CONFIRM" != [yY] ]]; then
-            echo -e "\e[31m[ERROR]\e[39m Update cancelled"
-            exit 1
+    if [[ -n "$DEMYX_HOST_UPGRADE_DEMYX" ]]; then
+        demyx_host_exec pull demyx
+        docker run -t --rm \
+            -v /usr/local/bin:/tmp \
+            --user=root \
+            --entrypoint=bash \
+            demyx/demyx -c 'cp -f /etc/demyx/host.sh /tmp/demyx; chmod +x /tmp/demyx'
+        demyx_host_remove
+        demyx_host_run
+    else
+        # Exit if no updates are available
+        if [[ "$DEMYX_HOST_UPDATE_IMAGES_COUNT" = 0 && -z "$DEMYX_HOST_UPGRADE_FORCE" ]]; then
+            echo -e "\e[34m[INFO]\e[39m No updates available"
+            exit
         fi
+
+        if [[ -z "$DEMYX_HOST_UPGRADE_FORCE" ]]; then
+            echo -en "\e[33m"
+            read -rep "[WARNING] Depending on the update, services may be temporarily disrupted. Continue? [yY]: " DEMYX_HOST_CONFIRM
+            echo -en "\e[39m"
+
+            if [[ "$DEMYX_HOST_CONFIRM" != [yY] ]]; then
+                echo -e "\e[31m[ERROR]\e[39m Update cancelled"
+                exit 1
+            fi
+        fi
+
+        # Pull core/relevant images
+        demyx_host_exec pull all
+
+        # Use new images for core services
+        demyx_host_compose up -d --remove-orphans
+
+        # Upgrade database if needed
+        demyx_host_app_upgrade
+
+        # Use new images
+        demyx_host_exec refresh all
+
+        # Remove old images
+        demyx_host_dangling_images
+
+        # Update cache
+        demyx_host_exec update
+
+        # Empty out this variable to suppress update message
+        DEMYX_HOST_UPDATE_IMAGES_COUNT=0
+
+        demyx_host_exec motd
+
+        echo -e "\e[32m[SUCCESS]\e[39m Successfully updated!"
     fi
-
-    # Pull core/relevant images
-    demyx_host_exec pull all
-
-    # Use new images for core services
-    demyx_host_exec refresh traefik
-    demyx_host_exec refresh code
-    demyx_host_compose up -d --remove-orphans
-
-    # Upgrade database if needed
-    demyx_host_app_upgrade
-
-    # Use new images
-    demyx_host_exec refresh all
-
-    # Remove old images
-    demyx_host_dangling_images
-
-    # Update cache
-    demyx_host_exec update
-
-    # Empty out this variable to suppress update message
-    DEMYX_HOST_UPDATE_IMAGES_COUNT=0
-
-    demyx_host_exec motd
-
-    echo -e "\e[32m[SUCCESS]\e[39m Successfully updated!"
 }
 #
 #   Init.
