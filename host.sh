@@ -128,11 +128,11 @@ demyx_host_app_upgrade() {
 #
 demyx_host_compose() {
     docker run -it --rm \
-        --entrypoint=docker-compose \
+        --entrypoint=docker \
+        --workdir=/demyx \
         -v /var/run/docker.sock:/var/run/docker.sock:ro \
         -v demyx:/demyx \
-        -e DOCKER_HOST= \
-        demyx/docker-compose "$@"
+        docker:cli compose "$@"
 }
 #
 #   Removes specific dangling images.
