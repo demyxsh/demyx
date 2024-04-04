@@ -433,8 +433,13 @@ demyx_config_bedrock() {
     demyx_event
     demyx_app_env wp "
         DEMYX_APP_BEDROCK_MODE
+        DEMYX_APP_STACK
         DEMYX_APP_WP_CONTAINER
     "
+
+    if [[ "$DEMYX_APP_STACK" = nginx-php || "$DEMYX_APP_STACK" = ols ]]; then
+        demyx_error custom "This flag only works with bedrock or ols-bedrock stack"
+    fi
 
     demyx_execute "Setting Bedrock config to $DEMYX_CONFIG_FLAG_BEDROCK" \
         "docker exec -t $DEMYX_APP_WP_CONTAINER sh -c \"sed -i 's|WP_ENV=.*|WP_ENV=$DEMYX_CONFIG_FLAG_BEDROCK|g' /demyx/.env\"; \
