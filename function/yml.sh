@@ -248,7 +248,7 @@ demyx_yml_code() {
 
     if [[ "$DEMYX_IP" != false ]]; then
         DEMYX_YML_CODE_WHITELIST="- \"traefik.http.routers.demyx-code-https.middlewares=demyx-code-whitelist\"
-              - \"traefik.http.middlewares.demyx-code-whitelist.ipwhitelist.sourcerange=${DEMYX_IP}\""
+              - \"traefik.http.middlewares.demyx-code-whitelist.ipallowlist.sourcerange=${DEMYX_IP}\""
     fi
 
     if [[ "$DEMYX_CODE_SSL" = true ]]; then
@@ -1212,7 +1212,7 @@ demyx_yml_traefik() {
               - \"traefik.http.services.traefik-https-port.loadbalancer.server.port=8080\""
 
             if [[ "$DEMYX_IP" != false ]]; then
-                DEMYX_YML_TRAEFIK_SECURITY="  - \"traefik.http.middlewares.traefik-whitelist.ipwhitelist.sourcerange=${DEMYX_IP}\"
+                DEMYX_YML_TRAEFIK_SECURITY="  - \"traefik.http.middlewares.traefik-whitelist.ipallowlist.sourcerange=${DEMYX_IP}\"
               - \"traefik.http.routers.traefik-https.middlewares=traefik-whitelist\""
             else
                 DEMYX_YML_TRAEFIK_SECURITY="  - \"traefik.http.middlewares.traefik-auth.basicauth.users=$(demyx_utility htpasswd -r "$DEMYX_AUTH_USERNAME" "$DEMYX_AUTH_PASSWORD" | sed "s|\\$|\$$|g")\"
@@ -1220,7 +1220,7 @@ demyx_yml_traefik() {
             fi
         else
             if [[ "$DEMYX_IP" != false ]]; then
-                DEMYX_YML_TRAEFIK_SECURITY="  - \"traefik.http.middlewares.traefik-whitelist.ipwhitelist.sourcerange=${DEMYX_IP}\"
+                DEMYX_YML_TRAEFIK_SECURITY="  - \"traefik.http.middlewares.traefik-whitelist.ipallowlist.sourcerange=${DEMYX_IP}\"
               - \"traefik.http.routers.traefik-http.middlewares=traefik-whitelist\""
             else
                 DEMYX_YML_TRAEFIK_SECURITY="  - \"traefik.http.middlewares.traefik-auth.basicauth.users=$(demyx_utility htpasswd -r "$DEMYX_AUTH_USERNAME" "$DEMYX_AUTH_PASSWORD" | sed "s|\\$|\$$|g")\"
