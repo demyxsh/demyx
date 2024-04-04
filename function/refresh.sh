@@ -122,7 +122,7 @@ demyx_refresh_app() {
 
     if [[ -z "$DEMYX_REFRESH_FLAG_NO_COMPOSE" ]]; then
         if [[ "$DEMYX_REFRESH_FLAG_NO_FORCE_RECREATE" = true ]]; then
-            demyx_compose "$DEMYX_APP_DOMAIN" up -d
+            demyx_compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
         else
             demyx_compose "$DEMYX_APP_DOMAIN" fr
         fi
