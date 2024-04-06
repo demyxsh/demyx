@@ -6,6 +6,7 @@ set -euo pipefail
 #   Main.
 #
 demyx_yml() {
+    local DEMYX_YML_NETWORK=
     local DEMYX_YML_VOLUME=
     local DEMYX_YML_VOLUME_DEMYX=
     local DEMYX_YML_VOLUME_LOG=
@@ -155,6 +156,11 @@ demyx_yml() {
         fi
     fi
 
+    # Set "external: true" for network
+    if [[ -f "$DEMYX"/docker-compose.yml ]]; then
+        DEMYX_YML_NETWORK="external: true"
+    fi
+
     # Generate /demyx/docker-compose.yml
     echo "# DEMYX $DEMYX_VERSION
 services:
@@ -244,8 +250,10 @@ volumes:
     name: demyx_user
 networks:
   demyx:
+    $DEMYX_YML_NETWORK
     name: demyx
   demyx_socket:
+    $DEMYX_YML_NETWORK
     name: demyx_socket
 " > "$DEMYX"/docker-compose.yml
 }
