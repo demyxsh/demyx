@@ -44,6 +44,7 @@ demyx_pull_all() {
         demyx/utilities
         demyx/wordpress
         demyx/wordpress:bedrock
+        docker:cli
         phpmyadmin/phpmyadmin
         quay.io/vektorlab/ctop
         redis:alpine3.18
