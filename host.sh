@@ -135,34 +135,6 @@ demyx_host_compose() {
         docker:cli compose "$@"
 }
 #
-#   Removes specific dangling images.
-#
-demyx_host_dangling_images() {
-    local DEMYX_HOST_DANGLING_IMAGES=
-    local DEMYX_HOST_DANGLING_IMAGES_CHECK_CTOP=
-    local DEMYX_HOST_DANGLING_IMAGES_CHECK_PMA=
-    local DEMYX_HOST_DANGLING_IMAGES_I=
-    DEMYX_HOST_DANGLING_IMAGES="$(docker images "demyx/*" --filter=dangling=true -q)"
-
-    if [[ -n "$DEMYX_HOST_DANGLING_IMAGES" ]]; then
-        echo "$DEMYX_HOST_DANGLING_IMAGES" | xargs docker rmi || true
-    fi
-
-    # Remove third party dangling images
-    DEMYX_HOST_DANGLING_IMAGES="$(docker images --filter=dangling=true -q)"
-    for DEMYX_HOST_DANGLING_IMAGES_I in $DEMYX_HOST_DANGLING_IMAGES; do
-        DEMYX_HOST_DANGLING_IMAGES_CHECK_CTOP="$(docker inspect "$DEMYX_HOST_DANGLING_IMAGES_I" | grep ctop || true)"
-        DEMYX_HOST_DANGLING_IMAGES_CHECK_PMA="$(docker inspect "$DEMYX_HOST_DANGLING_IMAGES_I" | grep phpmyadmin || true)"
-        DEMYX_HOST_DANGLING_IMAGES_CHECK_REDIS="$(docker inspect "$DEMYX_HOST_DANGLING_IMAGES_I" | grep redis || true)"
-
-        if [[ -n "$DEMYX_HOST_DANGLING_IMAGES_CHECK_CTOP" ||
-                -n "$DEMYX_HOST_DANGLING_IMAGES_CHECK_PMA" ||
-                -n "$DEMYX_HOST_DANGLING_IMAGES_CHECK_REDIS" ]]; then
-            docker image rm "$DEMYX_HOST_DANGLING_IMAGES_I" || true
-        fi
-    done
-}
-#
 #   Warns users for new error log entries.
 #
 demyx_host_error() {
@@ -371,7 +343,7 @@ demyx_host_upgrade() {
         demyx_host_exec refresh all
 
         # Remove old images
-        demyx_host_dangling_images
+        docker images --filter=dangling=true -q | xargs docker rmi
 
         # Update cache
         demyx_host_exec update
