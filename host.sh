@@ -14,19 +14,13 @@ demyx_host() {
     local DEMYX_HOST_ARG_3="${3:-}"
     local DEMYX_HOST_ARGS="$*"
     local DEMYX_HOST_CONFIRM=
+    local DEMYX_HOST_COUNT=0
+    local DEMYX_HOST_COUNT_IMAGES=
     local DEMYX_HOST_DEV=
     local DEMYX_HOST_HOSTNAME=
     DEMYX_HOST_HOSTNAME="$(hostname)"
     local DEMYX_HOST_DEMYX_PS=
     DEMYX_HOST_DEMYX_PS="$(docker ps)"
-    local DEMYX_HOST_UPDATE_IMAGES=
-    [[ "$DEMYX_HOST_DEMYX_PS" == *"demyx/demyx"* ]] && \
-        DEMYX_HOST_UPDATE_IMAGES="$(docker exec -t --user=root demyx bash -c "[[ -f /demyx/.update_image ]] && cat /demyx/.update_image | sed 's|\r$||g' || true")"
-    local DEMYX_HOST_UPDATE_IMAGES_COUNT=0
-
-    if [[ -n "$DEMYX_HOST_UPDATE_IMAGES" ]]; then
-        DEMYX_HOST_UPDATE_IMAGES_COUNT="$(echo "$DEMYX_HOST_UPDATE_IMAGES" | wc -l)"
-    fi
 
     case "$DEMYX_HOST_ARG_1" in
         shell) shift
@@ -110,11 +104,12 @@ demyx_host() {
 #   Checks if database needs upgrading.
 #
 demyx_host_app_upgrade() {
+    demyx_host_count
     local DEMYX_HOST_APP_UPGRADE_I=
     local DEMYX_HOST_APP_UPGRADE_LIST=
     DEMYX_HOST_APP_UPGRADE_LIST="$(demyx_host_exec info apps -r | sed 's/\r//g')"
 
-    if [[ "$DEMYX_HOST_UPDATE_IMAGES" == *"mariadb"* ]]; then
+    if [[ "$DEMYX_HOST_COUNT_IMAGES" == *"mariadb"* ]]; then
         for DEMYX_HOST_APP_UPGRADE_I in $DEMYX_HOST_APP_UPGRADE_LIST; do
             demyx_host_exec backup "$DEMYX_HOST_APP_UPGRADE_I"
             demyx_host_exec backup "$DEMYX_HOST_APP_UPGRADE_I" -d
@@ -133,6 +128,17 @@ demyx_host_compose() {
         -v /var/run/docker.sock:/var/run/docker.sock:ro \
         -v demyx:/demyx \
         docker:cli compose "$@"
+}
+#
+#   Count how many updates.
+#
+demyx_host_count() {
+    [[ "$DEMYX_HOST_DEMYX_PS" == *"demyx/demyx"* ]] && \
+        DEMYX_HOST_COUNT_IMAGES="$(docker exec -t --user=root demyx bash -c "[[ -f /demyx/.update_image ]] && cat /demyx/.update_image | sed 's|\r$||g' || true")"
+
+    if [[ -n "$DEMYX_HOST_COUNT_IMAGES" ]]; then
+        DEMYX_HOST_COUNT="$(echo "$DEMYX_HOST_COUNT_IMAGES" | wc -l)"
+    fi
 }
 #
 #   Warns users for new error log entries.
@@ -286,9 +292,10 @@ demyx_host_remove() {
 #   Notify user of updates.
 #
 demyx_host_update() {
+    demyx_host_count
     if [[ "$DEMYX_HOST_DEMYX_PS" == *"demyx/demyx"* ]]; then
-        if [[ "$DEMYX_HOST_UPDATE_IMAGES_COUNT" != 0 ]]; then
-            echo -e "\e[32m[UPDATE]\e[39m $DEMYX_HOST_UPDATE_IMAGES_COUNT update(s) available!"
+        if [[ "$DEMYX_HOST_COUNT" != 0 ]]; then
+            echo -e "\e[32m[UPDATE]\e[39m $DEMYX_HOST_COUNT update(s) available!"
             echo -e "\e[32m[UPDATE]\e[39m View update(s): demyx update -l"
             echo -e "\e[32m[UPDATE]\e[39m Start upgrade: demyx host upgrade"
         fi
@@ -313,8 +320,9 @@ demyx_host_upgrade() {
         demyx_host_remove
         demyx_host_run
     else
+        demyx_host_count
         # Exit if no updates are available
-        if [[ "$DEMYX_HOST_UPDATE_IMAGES_COUNT" = 0 && -z "$DEMYX_HOST_UPGRADE_FORCE" ]]; then
+        if [[ "$DEMYX_HOST_COUNT" = 0 && -z "$DEMYX_HOST_UPGRADE_FORCE" ]]; then
             echo -e "\e[34m[INFO]\e[39m No updates available"
             exit
         fi
@@ -349,7 +357,7 @@ demyx_host_upgrade() {
         demyx_host_exec update
 
         # Empty out this variable to suppress update message
-        DEMYX_HOST_UPDATE_IMAGES_COUNT=0
+        DEMYX_HOST_COUNT=0
 
         demyx_host_exec motd
 
