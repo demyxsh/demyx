@@ -4,6 +4,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.3] - 2024-04-08
+### Upgrading
+This version requries updating the host helper script first.
+```
+# Update the demyx image to the latest version
+docker pull demyx/demyx
+
+# Update the host helper script
+docker run -t --rm \
+    -v /usr/local/bin:/tmp \
+    --user=root \
+    --entrypoint=bash \
+    demyx/demyx -c 'cp -f /etc/demyx/host.sh /tmp/demyx; chmod +x /tmp/demyx'
+
+# Use the latest version of demyx
+demyx host restart
+
+# Finally upgrade
+demyx host upgrade -f
+```
+
+### Fixes
+- Move update counter commands to its own function so `demyx host restart` can work properly [5c782e3](https://github.com/demyxsh/demyx/commit/5c782e366ef0b101ea97005cb0dc0e5c83886827)
+- The script will error and exit if there are containers still using an old image [c68a85b](https://github.com/demyxsh/demyx/commit/c68a85bf42030f389dff9e0a23e6281f61b280b4)
+- Suppress external network warning [483d57a](https://github.com/demyxsh/demyx/commit/483d57a87c2db71a0bb8adc4fab6285697f54989)
+- Replace `demyx_host_dangling_images()` with a single line command to make sure all dangling images gets deleted [aaf660a](https://github.com/demyxsh/demyx/commit/aaf660a1512a101ad05a422269532876cd19f88b)
+- The image docker:cli should be included here [331f73b](https://github.com/demyxsh/demyx/commit/331f73bc9fcca690f131bc813a5ba140b908a261)
+- Use `demyx refresh` to ensure containers are properly restarted [74bfa4e](https://github.com/demyxsh/demyx/commit/74bfa4ec0fcb45ffb086a8e0c6553ca65edce5ec)
+- Requires the `--remove-orphans` flag when refreshing configs [856ec86](https://github.com/demyxsh/demyx/commit/856ec86cd6ce87ab42dff647ee836580cbb913f2)
+- `demyx config --opcache` wasn't recreating the WP container [734e01b](https://github.com/demyxsh/demyx/commit/734e01b2faed1991907ea0cbdba8623b5e970f9f)
+- `demyx config --bedrock` should error on non bedrock stacks [21e111a](https://github.com/demyxsh/demyx/commit/21e111af1345582c4cf31bde63d629fb7543354e)
+- IPWhiteList is deprecated [8987f31](https://github.com/demyxsh/demyx/commit/8987f319aeac796b42b1f05187b4fd586891e048)
+- Use official Docker CLI image to fix the `KeyConfig` error [0fa5d52](https://github.com/demyxsh/demyx/commit/0fa5d52de3685a17e82dd5afb92d305a7b1cb20b)
+- Should be able to bypass "No updates available" and be able to upgrade demyx and host helper script only [df2bec1](https://github.com/demyxsh/demyx/commit/df2bec1d93f9a9155ab77b7a546a21948f9ec4f7)
+- Move commands into a global function since backups are using the old container name format which would break `demyx restore` [8f3f808](https://github.com/demyxsh/demyx/commit/8f3f808ff63d573a1430d1833d8b8032197175c4)
+
 ## [1.8.2] - 2024-03-27
 ### Upgrading
 Due to a lot of changes with Docker, there had to be a lot of fixes/workarounds made in order to ease the burden of upgrading. Follow these steps for a smooth transition.
@@ -696,6 +732,7 @@ Yml
 - Switch to nginx-php as the default stack
 - Add hostname key and use app ID as part of volume name
 
+[1.8.3]: https://github.com/demyxsh/demyx/compare/1.8.2...1.8.3
 [1.8.2]: https://github.com/demyxsh/demyx/compare/1.8.1...1.8.2
 [1.8.1]: https://github.com/demyxsh/demyx/compare/1.8.0...1.8.1
 [1.8.0]: https://github.com/demyxsh/demyx/compare/1.7.1...1.8.0
