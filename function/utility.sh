@@ -125,15 +125,20 @@ demyx_utility_htpasswd() {
 demyx_utility_id() {
     demyx_event
     local DEMYX_UTILITY_ID="${1:-"5"}"
-    local DEMYX_UTILITY_ID_DEFAULT="a-z0-9"
-    local DEMYX_UTILITY_ID_GEN=
-    DEMYX_UTILITY_ID_GEN="$(head /dev/urandom | tr -dc "$DEMYX_UTILITY_ID_DEFAULT" | head -c "$DEMYX_UTILITY_ID" && echo)"
+    local DEMYX_UTILITY_ID_PRINT=
+    local DEMYX_UTILITY_IDGEN=
+
+    DEMYX_UTILITY_IDGEN=()
+    for i in {a..z} {A..Z} {0..9}; do
+        DEMYX_UTILITY_IDGEN[RANDOM]=$i
+    done
+    DEMYX_UTILITY_ID_PRINT="$(printf %s "${DEMYX_UTILITY_IDGEN[@]::${DEMYX_UTILITY_ID}}" $'\n')"
 
     if [[ "$DEMYX_UTILITY_FLAG_RAW" = true ]]; then
-        echo "$DEMYX_UTILITY_ID_GEN"
+        echo "$DEMYX_UTILITY_ID_PRINT"
     else
         {
-            echo "$DEMYX_UTILITY_ID_GEN"
+            echo "$DEMYX_UTILITY_ID_PRINT"
         } > "$DEMYX_UTILITY_TRANSIENT"
 
         demyx_divider_title "$DEMYX_UTILITY" "ID"
