@@ -156,7 +156,7 @@ demyx_utility_password() {
 
     DEMYX_UTILITY_PWGEN=()
     for i in {a..z} {A..Z} {0..9}; do
-        DEMYX_UTILITY_PWGEN[$RANDOM]=$i
+        DEMYX_UTILITY_PWGEN[RANDOM]=$i
     done
     DEMYX_UTILITY_PASSWORD_PRINT="$(printf %s "${DEMYX_UTILITY_PWGEN[@]::${DEMYX_UTILITY_PASSWORD}}" $'\n')"
 
