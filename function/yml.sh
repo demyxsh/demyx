@@ -137,6 +137,7 @@ demyx_yml_bedrock() {
             environment:
               $(demyx_yml_nginx_basic_auth)
               $(demyx_yml_nginx_whitelist)
+              - DEMYX_CACHE_INACTIVE=\${DEMYX_APP_CACHE_INACTIVE}
               - DEMYX_CACHE_TYPE=\${DEMYX_APP_CACHE_TYPE}
               - NGINX_CACHE=\${DEMYX_APP_CACHE}
               - NGINX_DOMAIN=\${DEMYX_APP_DOMAIN}
@@ -423,6 +424,7 @@ demyx_yml_nginx_php() {
             environment:
               $(demyx_yml_nginx_basic_auth)
               $(demyx_yml_nginx_whitelist)
+              - DEMYX_CACHE_INACTIVE=\${DEMYX_APP_CACHE_INACTIVE}
               - DEMYX_CACHE_TYPE=\${DEMYX_APP_CACHE_TYPE}
               - NGINX_CACHE=\${DEMYX_APP_CACHE}
               - NGINX_DOMAIN=\${DEMYX_APP_DOMAIN}
