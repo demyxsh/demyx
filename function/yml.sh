@@ -342,7 +342,14 @@ demyx_yml_http_labels() {
       - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-https.tls.certresolver=$(demyx_yml_resolver)\"
       - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-https.service=\${DEMYX_APP_COMPOSE_PROJECT}-https-port\"
       - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-https.priority=10\"
-      - \"traefik.http.services.\${DEMYX_APP_COMPOSE_PROJECT}-https-port.loadbalancer.server.port=80\""
+      - \"traefik.http.services.\${DEMYX_APP_COMPOSE_PROJECT}-https-port.loadbalancer.server.port=80\"
+      - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-https.middlewares=\${DEMYX_APP_COMPOSE_PROJECT}-secure-headers\"
+      - \"traefik.http.middlewares.\${DEMYX_APP_COMPOSE_PROJECT}-secure-headers.headers.forceSTSHeader=true\"
+      - \"traefik.http.middlewares.\${DEMYX_APP_COMPOSE_PROJECT}-secure-headers.headers.STSPreload=true\"
+      - \"traefik.http.middlewares.\${DEMYX_APP_COMPOSE_PROJECT}-secure-headers.headers.ContentTypeNosniff=true\"
+      - \"traefik.http.middlewares.\${DEMYX_APP_COMPOSE_PROJECT}-secure-headers.headers.browserXssFilter=true\"
+      - \"traefik.http.middlewares.\${DEMYX_APP_COMPOSE_PROJECT}-secure-headers.headers.STSIncludeSubdomains=true\"
+      - \"traefik.http.middlewares.\${DEMYX_APP_COMPOSE_PROJECT}-secure-headers.headers.STSSeconds=315360000\""
 
         if [[ "$DEMYX_APP_SSL_WILDCARD" = true ]]; then
             echo "      - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-https.tls.domains[0].main=\${DEMYX_APP_DOMAIN}\"
