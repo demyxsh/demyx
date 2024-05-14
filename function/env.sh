@@ -33,8 +33,8 @@ demyx_env() {
         . "$DEMYX_ENV"/.env
 
         # Auto upgrade php to 8.1
-        [[ "$DEMYX_APP_OLS_LSPHP" = 8.0 ]] && DEMYX_APP_OLS_LSPHP=8.1
-        [[ "$DEMYX_APP_PHP" = 8.0 ]] && DEMYX_APP_PHP=8.1
+        [[ "${DEMYX_APP_OLS_LSPHP:-}" = 8.0 ]] && DEMYX_APP_OLS_LSPHP=8.1
+        [[ "${DEMYX_APP_PHP:-}" = 8.0 ]] && DEMYX_APP_PHP=8.1
     else
         DEMYX_APP_DOMAIN="$DEMYX_ARG_2"
         DEMYX_APP_ID="${DEMYX_APP_ID:-$(demyx_utility id -r)}"
