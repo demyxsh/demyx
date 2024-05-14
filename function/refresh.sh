@@ -11,8 +11,8 @@ demyx_refresh() {
     shift && local DEMYX_REFRESH_ARGS="$*"
     local DEMYX_REFRESH_FLAG=
     local DEMYX_REFRESH_FLAG_FORCE=
+    local DEMYX_REFRESH_FLAG_FORCE_RECREATE=
     local DEMYX_REFRESH_FLAG_NO_COMPOSE=
-    local DEMYX_REFRESH_FLAG_NO_FORCE_RECREATE=
     local DEMYX_REFRESH_FLAG_SKIP=
 
     demyx_source "
@@ -28,11 +28,11 @@ demyx_refresh() {
             -f)
                 DEMYX_REFRESH_FLAG_FORCE=true
                 ;;
+            -fr)
+                DEMYX_REFRESH_FLAG_FORCE_RECREATE=true
+            ;;
             -nc)
                 DEMYX_REFRESH_FLAG_NO_COMPOSE=true
-            ;;
-            -nfr)
-                DEMYX_REFRESH_FLAG_NO_FORCE_RECREATE=true
             ;;
             -s)
                 DEMYX_REFRESH_FLAG_SKIP=true
@@ -121,10 +121,10 @@ demyx_refresh_app() {
     #fi
 
     if [[ -z "$DEMYX_REFRESH_FLAG_NO_COMPOSE" ]]; then
-        if [[ "$DEMYX_REFRESH_FLAG_NO_FORCE_RECREATE" = true ]]; then
-            demyx_compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
-        else
+        if [[ "$DEMYX_REFRESH_FLAG_FORCE_RECREATE" = true ]]; then
             demyx_compose "$DEMYX_APP_DOMAIN" fr
+        else
+            demyx_compose "$DEMYX_APP_DOMAIN" up -d --remove-orphans
         fi
     fi
 }

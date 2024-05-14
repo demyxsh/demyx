@@ -337,7 +337,7 @@ demyx_config() {
                     demyx_help config
                 fi
                 if [[ "$DEMYX_CONFIG_COMPOSE" = true && "$DEMYX_CONFIG_FLAG_NO_COMPOSE" != true ]]; then
-                    demyx_refresh "$DEMYX_ARG_2" -nfr
+                    demyx_refresh "$DEMYX_ARG_2"
                 fi
                 if [[ -n "$DEMYX_CONFIG" ]]; then
                     demyx_divider_title "DEMYX - CONFIG" "$DEMYX_CONFIG"

@@ -114,7 +114,7 @@ demyx_host_app_upgrade() {
             demyx_host_exec backup "$DEMYX_HOST_APP_UPGRADE_I"
             demyx_host_exec backup "$DEMYX_HOST_APP_UPGRADE_I" -d
             demyx_host_exec restore "$DEMYX_HOST_APP_UPGRADE_I" -d -f
-            demyx_host_exec refresh "$DEMYX_HOST_APP_UPGRADE_I" -nfr
+            demyx_host_exec refresh "$DEMYX_HOST_APP_UPGRADE_I"
         done
     fi
 }

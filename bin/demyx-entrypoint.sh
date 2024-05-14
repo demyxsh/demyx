@@ -205,7 +205,7 @@ demyx_entrypoint_www() {
 
                 docker stop "$DEMYX_ENTRYPOINT_WWW_DB" "$DEMYX_ENTRYPOINT_WWW_WP"
                 docker rm "$DEMYX_ENTRYPOINT_WWW_DB" "$DEMYX_ENTRYPOINT_WWW_WP"
-                demyx refresh "$DEMYX_ENTRYPOINT_WWW" -nfr
+                demyx refresh "$DEMYX_ENTRYPOINT_WWW"
             fi
         done
 
