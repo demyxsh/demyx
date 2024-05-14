@@ -219,23 +219,6 @@ demyx_arg_valid() {
         fi
     fi
 }
-#   TEMPORARY
-#   Update container name to new format.
-#
-demyx_container_name_update() {
-    local DEMYX_CONTAINER_NAME_UPDATE=
-
-    demyx_app_env wp "
-        DEMYX_APP_COMPOSE_PROJECT
-        DEMYX_APP_ID
-        DEMYX_APP_PATH
-    "
-
-    DEMYX_CONTAINER_NAME_UPDATE="$(cat < "$DEMYX_APP_PATH"/.env)"
-    if [[ "$DEMYX_CONTAINER_NAME_UPDATE" == *"$DEMYX_APP_COMPOSE_PROJECT"_* ]]; then
-        sed -i -e "s|${DEMYX_APP_COMPOSE_PROJECT}_|${DEMYX_APP_COMPOSE_PROJECT}-|g" -e "s|${DEMYX_APP_ID}_1|${DEMYX_APP_ID}-1|g" "$DEMYX_APP_PATH"/.env
-    fi
-}
 #
 #   Compare versions.
 #
