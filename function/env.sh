@@ -13,6 +13,7 @@ demyx_env() {
     DEMYX_ENV="$(demyx_app_path "$DEMYX_ARG_2")"
     local DEMYX_APP_ENV_REMOVE=
     local DEMYX_APP_ENV_REMOVE_COMPOSE=
+    local DEMYX_ENV_GREP=
 
     if [[ -f "$DEMYX_ENV"/.env ]]; then
         # TODO - TEMPORARY
@@ -43,6 +44,17 @@ demyx_env() {
         DEMYX_APP_AUTH_PASSWORD="${DEMYX_APP_AUTH_PASSWORD:-$(demyx_utility password -r)}"
     fi
 
+    # TEMPORARY v1.9.0
+    if [[ -z "${DEMYX_APP_VOLUME_PREFIX:-}" ]]; then
+        DEMYX_ENV_GREP="$(docker volume ls | grep -w "wp_${DEMYX_APP_ID}_db" || true)"
+
+        if [[ -n "$DEMYX_ENV_GREP" ]]; then
+            DEMYX_APP_VOLUME_PREFIX="wp_${DEMYX_APP_ID}"
+        else
+            DEMYX_APP_VOLUME_PREFIX="${DEMYX_APP_COMPOSE_PROJECT}_${DEMYX_APP_ID}"
+        fi
+    fi
+
     echo "# DEMYX $DEMYX_VERSION
         DEMYX_APP_AUTH_PASSWORD=$DEMYX_APP_AUTH_PASSWORD
         DEMYX_APP_AUTH_USERNAME=$DEMYX_APP_AUTH_USERNAME
@@ -63,6 +75,7 @@ demyx_env() {
         DEMYX_APP_SSL_WILDCARD=${DEMYX_APP_SSL_WILDCARD:-false}
         DEMYX_APP_SFTP_PASSWORD=${DEMYX_APP_SFTP_PASSWORD:-$(demyx_utility password -r)}
         DEMYX_APP_STACK=${DEMYX_APP_STACK:-nginx-php}
+        DEMYX_APP_VOLUME_PREFIX=${DEMYX_APP_VOLUME_PREFIX}
         DEMYX_APP_TYPE=${DEMYX_APP_TYPE:-wp}
         DEMYX_APP_WP_CONTAINER=${DEMYX_APP_WP_CONTAINER:-${DEMYX_APP_COMPOSE_PROJECT}-wp_${DEMYX_APP_ID}-1}
         MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD:-$(demyx_utility password -r)}
