@@ -1270,8 +1270,10 @@ demyx_yml_traefik() {
               - demyx
               - demyx_socket
             ports:
-              - 80:8081
-              - 443:8082
+              - 80:80/tcp
+              - 80:80/udp
+              - 443:443/tcp
+              - 443:443/udp
             restart: unless-stopped
             volumes:
               - demyx_log:/var/log/demyx
