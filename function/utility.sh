@@ -129,7 +129,7 @@ demyx_utility_id() {
     local DEMYX_UTILITY_IDGEN=
 
     DEMYX_UTILITY_IDGEN=()
-    for i in {a..z} {A..Z} {0..9}; do
+    for i in {a..z} {0..9}; do
         DEMYX_UTILITY_IDGEN[RANDOM]=$i
     done
     DEMYX_UTILITY_ID_PRINT="$(printf %s "${DEMYX_UTILITY_IDGEN[@]::${DEMYX_UTILITY_ID}}" $'\n')"
