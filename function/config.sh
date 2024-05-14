@@ -576,10 +576,7 @@ demyx_config_clean() {
     local DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD=
     local DEMYX_CONFIG_CLEAN_WORDPRESS_DB_USER=
 
-    demyx_config "$DEMYX_APP_DOMAIN" --healthcheck=false
-
-    demyx_execute "Putting WordPress into maintenance mode" \
-        "docker exec -t $DEMYX_APP_WP_CONTAINER sh -c \"echo '<?php \\\$upgrading = time(); ?>' > .maintenance\""
+    demyx_config "$DEMYX_APP_DOMAIN" --healthcheck=false --maintenance
 
     demyx_execute "Exporting database" \
         "demyx_wp $DEMYX_APP_DOMAIN db export ${DEMYX_APP_CONTAINER}.sql"
@@ -625,10 +622,10 @@ demyx_config_clean() {
         "demyx_wp $DEMYX_APP_DOMAIN config shuffle-salts"
 
     demyx_execute "Cleaning up" \
-        "docker exec -t $DEMYX_APP_WP_CONTAINER sh -c 'rm ${DEMYX_APP_CONTAINER}.sql; rm .maintenance'"
+        "docker exec -t $DEMYX_APP_WP_CONTAINER sh -c 'rm ${DEMYX_APP_CONTAINER}.sql"
 
     demyx_compose "$DEMYX_APP_DOMAIN" fr
-    demyx_config "$DEMYX_APP_DOMAIN" --healthcheck
+    demyx_config "$DEMYX_APP_DOMAIN" --healthcheck  --maintenance=false
 }
 #
 #   Configures an app for development mode.
