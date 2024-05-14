@@ -43,6 +43,7 @@ demyx_help() {
             echo "                   --db-mem                           Configure DB container's memory limit, --db-mem=0 to remove limit. (Usage: --db-mem=256m)"
             echo "                   --dev                              Code-server service will be created and perform various commands to WordPress."
             echo "                   --healthcheck                      Enable/disable healthcheck."
+            echo "                   --maintenance                      Enable/disable maintenance mode."
             echo "                   --no-compose                       Prevents executing docker compose up -d after running a config."
             # TODO - echo "                   --no-maldet                        Skip maldet commands, used with --clean"
             echo "                   --opcache                          Enable/disable PHP opcache."

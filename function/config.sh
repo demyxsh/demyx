@@ -21,6 +21,7 @@ demyx_config() {
     local DEMYX_CONFIG_FLAG_CLEAN=
     local DEMYX_CONFIG_FLAG_DEV=
     local DEMYX_CONFIG_FLAG_HEALTHCHECK=
+    local DEMYX_CONFIG_FLAG_MAINTENANCE=
     local DEMYX_CONFIG_FLAG_NO_COMPOSE=
     local DEMYX_CONFIG_FLAG_OPCACHE=
     local DEMYX_CONFIG_FLAG_PHP=
@@ -121,6 +122,12 @@ demyx_config() {
             ;;
             --healthcheck=false)
                 DEMYX_CONFIG_FLAG_HEALTHCHECK=false
+            ;;
+            --maintenance|--maintenance=true)
+                DEMYX_CONFIG_FLAG_MAINTENANCE=true
+            ;;
+            --maintenance=false)
+                DEMYX_CONFIG_FLAG_MAINTENANCE=false
             ;;
             --no-compose)
                 DEMYX_CONFIG_FLAG_NO_COMPOSE=true
@@ -283,6 +290,9 @@ demyx_config() {
                 fi
                 if [[ -n "$DEMYX_CONFIG_FLAG_HEALTHCHECK" ]]; then
                     demyx_config_healthcheck
+                fi
+                if [[ -n "$DEMYX_CONFIG_FLAG_MAINTENANCE" ]]; then
+                    demyx_config_maintenance
                 fi
                 if [[ -n "$DEMYX_CONFIG_FLAG_OPCACHE" ]]; then
                     demyx_config_opcache
@@ -716,6 +726,25 @@ demyx_config_healthcheck() {
 
     demyx_execute "Setting healthcheck to $DEMYX_CONFIG_FLAG_HEALTHCHECK" \
         "demyx_app_env_update DEMYX_APP_HEALTHCHECK=$DEMYX_CONFIG_FLAG_HEALTHCHECK"
+}
+#
+#   Configures an app's maintenance mode.
+#
+demyx_config_maintenance() {
+    demyx_event
+    demyx_app_env wp "
+        DEMYX_APP_MAINTENANCE
+        DEMYX_APP_WP_CONTAINER
+    "
+
+    if [[ "$DEMYX_CONFIG_FLAG_MAINTENANCE" = true ]]; then
+        docker exec "$DEMYX_APP_WP_CONTAINER" bash -c 'echo "<?php \$upgrading = time(); ?>" > .maintenance'
+    elif [[ "$DEMYX_CONFIG_FLAG_MAINTENANCE" = false ]]; then
+        docker exec "$DEMYX_APP_WP_CONTAINER" rm -f .maintenance
+    fi
+
+    demyx_execute "Setting maintenance mode to $DEMYX_CONFIG_FLAG_MAINTENANCE" \
+        "demyx_app_env_update DEMYX_APP_MAINTENANCE=$DEMYX_CONFIG_FLAG_MAINTENANCE"
 }
 #
 #   Configures an app's opcache setting.
