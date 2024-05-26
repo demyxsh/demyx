@@ -103,6 +103,7 @@ demyx_help() {
         exec)
             echo
             echo "demyx exec <app> <args>       Executes commands inside the WordPress container. If no arguments passed, then a bash shell will open."
+            echo "           code               Executes commands inside the Browser container. If no arguments passed, then a zsh shell will open."
             echo "                 -d           Executes commands inside the MariaDB container. If no arguments passed, then a bash shell will open."
             echo "                 -n           Executes commands inside the Nginx container. If no arguments passed, then a bash shell will open."
             echo "                 -r           Executes root commands inside the container. (Usage: demyx exec <app> -r)"

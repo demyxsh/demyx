@@ -58,6 +58,11 @@ demyx_exec() {
         DEMYX_EXEC_USER="--user=demyx"
     fi
 
+    case "$DEMYX_ARG_2" in
+        code)
+            shift 1
+            eval "exec docker exec $DEMYX_EXEC_TTY $DEMYX_EXEC_USER demyx_code ${*:-zsh}"
+        ;;
         *)
             if [[ -n "$DEMYX_ARG_2" ]]; then
                 demyx_arg_valid
