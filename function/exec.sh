@@ -63,6 +63,10 @@ demyx_exec() {
             shift 1
             eval "exec docker exec $DEMYX_EXEC_TTY $DEMYX_EXEC_USER demyx_code ${*:-zsh}"
         ;;
+        traefik)
+            shift 1
+            eval "exec docker exec $DEMYX_EXEC_TTY --user=root demyx_traefik ${*:-bash}"
+        ;;
         *)
             if [[ -n "$DEMYX_ARG_2" ]]; then
                 demyx_arg_valid
