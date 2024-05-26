@@ -267,7 +267,8 @@ demyx_restore_db() {
     demyx_execute "Deleting old database" \
         "docker stop ${DEMYX_APP_DB_CONTAINER}; \
             docker rm ${DEMYX_APP_DB_CONTAINER}; \
-            docker volume rm ${DEMYX_APP_PREFIX}_db"
+            docker volume rm ${DEMYX_APP_PREFIX}_db; \
+            docker volume create ${DEMYX_APP_PREFIX}_db"
 
     demyx_compose "$DEMYX_APP_DOMAIN" -d up -d
 
