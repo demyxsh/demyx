@@ -39,6 +39,7 @@ demyx_help() {
             echo "                   --bedrock                          Configure a Bedrock app's mode to production/development. (Usage: --bedrock=<production|development>)"
             echo "                   --cache                            Installs and configures cache plugins depending on app's stack. Supports WP Rocket with rocket-nginx (only for the nginx-php stack). (Usage: --cache=<true|false|default|rocket>)"
             echo "                   --clean                            Export and imports database with new credentials, force downloads core WordPress files, and refresh salts."
+            echo "                   --convert                          Convert container and volume names to the new format."
             echo "                   --db-cpu                           Configure DB container's CPU limit, --db-cpu=0 to remove limit. (Usage: --db-cpu=.50)"
             echo "                   --db-mem                           Configure DB container's memory limit, --db-mem=0 to remove limit. (Usage: --db-mem=256m)"
             echo "                   --dev                              Code-server service will be created and perform various commands to WordPress."
