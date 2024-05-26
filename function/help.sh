@@ -33,6 +33,7 @@ demyx_help() {
             echo
             echo "demyx config <app> <args>                             Configure a specific app."
             echo "             all                                      Configures all apps in a loop)."
+            echo "                   -f                                 Skip confirmation."
             echo "                   --auth                             Enable/disable basic authentication."
             echo "                   --auth-wp                          Enable/disable basic authentication for WordPress login."
             echo "                   --backup                           Enable/disable app backup. (Usage: --backup=<true|false>)"

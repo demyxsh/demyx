@@ -21,6 +21,7 @@ demyx_config() {
     local DEMYX_CONFIG_FLAG_CLEAN=
     local DEMYX_CONFIG_FLAG_CONVERT=
     local DEMYX_CONFIG_FLAG_DEV=
+    local DEMYX_CONFIG_FLAG_FORCE=
     local DEMYX_CONFIG_FLAG_HEALTHCHECK=
     local DEMYX_CONFIG_FLAG_MAINTENANCE=
     local DEMYX_CONFIG_FLAG_NO_COMPOSE=
@@ -68,6 +69,9 @@ demyx_config() {
     while :; do
         DEMYX_CONFIG_FLAG="${1:-}"
         case "$DEMYX_CONFIG_FLAG" in
+            -f)
+                DEMYX_CONFIG_FLAG_FORCE=true
+            ;;
             --auth|--auth=true)
                 DEMYX_CONFIG_FLAG_AUTH=true
             ;;
