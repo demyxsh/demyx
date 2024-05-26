@@ -163,7 +163,7 @@ demyx_run_clone() {
         DEMYX_APP_ID
         DEMYX_APP_DB_CONTAINER
         DEMYX_APP_NX_CONTAINER
-        DEMYX_APP_VOLUME_PREFIX
+        DEMYX_APP_PREFIX
         DEMYX_APP_WP_CONTAINER
         WORDPRESS_DB_HOST
         WORDPRESS_DB_NAME
@@ -186,7 +186,7 @@ demyx_run_clone() {
             --entrypoint=bash \
             --name=$DEMYX_APP_WP_CONTAINER \
             --network=demyx \
-            -v ${DEMYX_APP_VOLUME_PREFIX}:/demyx \
+            -v ${DEMYX_APP_PREFIX}:/demyx \
             demyx/wordpress; \
         demyx_wp $DEMYX_RUN_FLAG_CLONE db export /demyx/${DEMYX_APP_ID}.sql; \
         mkdir -p ${DEMYX_TMP}/run-${DEMYX_APP_ID}; \
@@ -486,14 +486,14 @@ demyx_run_volumes() {
     demyx_event
     demyx_app_env wp "
         DEMYX_APP_ID
+        DEMYX_APP_PREFIX
         DEMYX_APP_STACK
-        DEMYX_APP_VOLUME_PREFIX
     "
 
-    docker volume create "$DEMYX_APP_VOLUME_PREFIX"
-    docker volume create "$DEMYX_APP_VOLUME_PREFIX"_code
-    docker volume create "$DEMYX_APP_VOLUME_PREFIX"_custom
-    docker volume create "$DEMYX_APP_VOLUME_PREFIX"_db
-    docker volume create "$DEMYX_APP_VOLUME_PREFIX"_log
-    docker volume create "$DEMYX_APP_VOLUME_PREFIX"_sftp
+    docker volume create "$DEMYX_APP_PREFIX"_code
+    docker volume create "$DEMYX_APP_PREFIX"_custom
+    docker volume create "$DEMYX_APP_PREFIX"_db
+    docker volume create "$DEMYX_APP_PREFIX"_log
+    docker volume create "$DEMYX_APP_PREFIX"_sftp
+    docker volume create "$DEMYX_APP_PREFIX"_wp
 }

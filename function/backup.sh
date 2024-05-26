@@ -117,9 +117,10 @@ demyx_backup_app() {
         DEMYX_APP_DOMAIN
         DEMYX_APP_ID
         DEMYX_APP_PATH
+        DEMYX_APP_PREFIX
         DEMYX_APP_TYPE
-        DEMYX_APP_VOLUME_PREFIX
         DEMYX_APP_WP_CONTAINER
+        DEMYX_APP_WP_VOLUME
     "
 
     if [[ "$DEMYX_APP_BACKUP" = true ]]; then
@@ -138,31 +139,31 @@ demyx_backup_app() {
             demyx_execute "Exporting ${DEMYX_APP_CONTAINER}.sql" \
                 "demyx_wp ${DEMYX_APP_DOMAIN} db export ${DEMYX_APP_CONTAINER}.sql"
 
-            demyx_execute "Exporting ${DEMYX_APP_VOLUME_PREFIX}" \
+            demyx_execute "Exporting ${DEMYX_APP_WP_VOLUME}" \
                 "docker cp ${DEMYX_APP_WP_CONTAINER}:/demyx ${DEMYX_TMP}/${DEMYX_APP_DOMAIN}/demyx-wp"
         fi
 
-        demyx_execute "Exporting ${DEMYX_APP_VOLUME_PREFIX}_log" \
+        demyx_execute "Exporting ${DEMYX_APP_PREFIX}_log" \
             "docker cp ${DEMYX_APP_WP_CONTAINER}:/var/log/demyx ${DEMYX_TMP}/${DEMYX_APP_DOMAIN}/demyx-log"
 
-        demyx_execute "Exporting ${DEMYX_APP_VOLUME_PREFIX}_code" \
+        demyx_execute "Exporting ${DEMYX_APP_PREFIX}_code" \
             "docker run -t \
                 --rm \
                 --entrypoint=bash \
                 -v demyx:$DEMYX \
-                -v ${DEMYX_APP_VOLUME_PREFIX}_code:/${DEMYX_APP_VOLUME_PREFIX}_code \
-                demyx/utilities -c 'cp -rp /${DEMYX_APP_VOLUME_PREFIX}_code ${DEMYX_TMP}/${DEMYX_APP_DOMAIN}/demyx-code'"
+                -v ${DEMYX_APP_PREFIX}_code:/${DEMYX_APP_PREFIX}_code \
+                demyx/utilities -c 'cp -rp /${DEMYX_APP_PREFIX}_code ${DEMYX_TMP}/${DEMYX_APP_DOMAIN}/demyx-code'"
 
-        demyx_execute "Exporting ${DEMYX_APP_VOLUME_PREFIX}_custom" \
+        demyx_execute "Exporting ${DEMYX_APP_PREFIX}_custom" \
             "docker cp ${DEMYX_APP_WP_CONTAINER}:/etc/demyx/custom ${DEMYX_TMP}/${DEMYX_APP_DOMAIN}/demyx-custom"
 
-        demyx_execute "Exporting ${DEMYX_APP_VOLUME_PREFIX}_sftp" \
+        demyx_execute "Exporting ${DEMYX_APP_PREFIX}_sftp" \
             "docker run -t \
                 --rm \
                 --entrypoint=bash \
                 -v demyx:$DEMYX \
-                -v ${DEMYX_APP_VOLUME_PREFIX}_sftp:/${DEMYX_APP_VOLUME_PREFIX}_sftp \
-                demyx/utilities -c 'cp -rp /${DEMYX_APP_VOLUME_PREFIX}_sftp ${DEMYX_TMP}/${DEMYX_APP_DOMAIN}/demyx-sftp'"
+                -v ${DEMYX_APP_PREFIX}_sftp:/${DEMYX_APP_PREFIX}_sftp \
+                demyx/utilities -c 'cp -rp /${DEMYX_APP_PREFIX}_sftp ${DEMYX_TMP}/${DEMYX_APP_DOMAIN}/demyx-sftp'"
 
         demyx_execute "Archiving directory" \
             "demyx_proper ${DEMYX_TMP}/${DEMYX_APP_DOMAIN}; \

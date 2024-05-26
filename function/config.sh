@@ -566,7 +566,7 @@ demyx_config_clean() {
         DEMYX_APP_DB_CONTAINER
         DEMYX_APP_DOMAIN
         DEMYX_APP_ID
-        DEMYX_APP_VOLUME_PREFIX
+        DEMYX_APP_PREFIX
         DEMYX_APP_WP_CONTAINER
         WORDPRESS_DB_PASSWORD
         WORDPRESS_DB_USER
@@ -604,8 +604,8 @@ demyx_config_clean() {
         docker rm $DEMYX_APP_DB_CONTAINER"
 
     demyx_execute "Recreating MariaDB volume" \
-        "docker volume rm ${DEMYX_APP_VOLUME_PREFIX}_db; \
-        docker volume create ${DEMYX_APP_VOLUME_PREFIX}_db"
+        "docker volume rm ${DEMYX_APP_PREFIX}_db; \
+        docker volume create ${DEMYX_APP_PREFIX}_db"
 
     demyx_compose "$DEMYX_APP_DOMAIN" up -d
 
@@ -640,7 +640,7 @@ demyx_config_dev() {
         DEMYX_APP_OLS_ADMIN_USERNAME
         DEMYX_APP_STACK
         DEMYX_APP_TYPE
-        DEMYX_APP_VOLUME_PREFIX
+        DEMYX_APP_PREFIX
         DEMYX_APP_WP_CONTAINER
         WORDPRESS_USER
         WORDPRESS_USER_PASSWORD
@@ -655,17 +655,17 @@ demyx_config_dev() {
     if [[ -n "$DEMYX_CONFIG_DEV_OLD_VOLUME" && "$DEMYX_CONFIG_FLAG_DEV" = true ]]; then
         demyx_execute "Transferring old files to new volume" \
             "docker pull demyx/code-server:wp; \
-            docker volume create ${DEMYX_APP_VOLUME_PREFIX}_code; \
+            docker volume create ${DEMYX_APP_PREFIX}_code; \
             docker run -t --rm \
                 -v /var/lib/docker/volumes/${DEMYX_CONFIG_DEV_OLD_VOLUME}:/tmp/${DEMYX_CONFIG_DEV_OLD_VOLUME} \
-                -v /var/lib/docker/volumes/${DEMYX_APP_VOLUME_PREFIX}_code:/tmp/${DEMYX_APP_VOLUME_PREFIX}_code \
+                -v /var/lib/docker/volumes/${DEMYX_APP_PREFIX}_code:/tmp/${DEMYX_APP_PREFIX}_code \
                 --user=root \
                 --entrypoint=cp \
-                demyx/demyx -rp /tmp/${DEMYX_CONFIG_DEV_OLD_VOLUME}/_data/. /tmp/${DEMYX_APP_VOLUME_PREFIX}_code/_data; \
+                demyx/demyx -rp /tmp/${DEMYX_CONFIG_DEV_OLD_VOLUME}/_data/. /tmp/${DEMYX_APP_PREFIX}_code/_data; \
             docker run -it --rm \
                 --user=root \
                 --entrypoint=chown \
-                -v ${DEMYX_APP_VOLUME_PREFIX}_code:/tmp/demyx \
+                -v ${DEMYX_APP_PREFIX}_code:/tmp/demyx \
                 demyx/demyx -R demyx:demyx /tmp/demyx; \
             docker stop ${DEMYX_APP_WP_CONTAINER}; \
             docker rm ${DEMYX_APP_WP_CONTAINER}; \

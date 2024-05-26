@@ -56,8 +56,8 @@ demyx_healthcheck_app() {
             DEMYX_APP_HEALTHCHECK
             DEMYX_APP_ID
             DEMYX_APP_NX_CONTAINER
+            DEMYX_APP_PREFIX
             DEMYX_APP_STACK
-            DEMYX_APP_VOLUME_PREFIX
             DEMYX_APP_WP_CONTAINER
         "
 
@@ -77,7 +77,7 @@ demyx_healthcheck_app() {
                 demyx_divider_title "HEALTHCHECK - MARIADB" "tail -n $DEMYX_HEALTHCHECK_APP_TAIL ${DEMYX_LOG}/${DEMYX_APP_DOMAIN}.mariadb.log"
                 docker run -t --rm \
                     --entrypoint=tail \
-                    -v "$DEMYX_APP_VOLUME_PREFIX"_log:/var/log/demyx demyx/wordpress \
+                    -v "$DEMYX_APP_PREFIX"_log:/var/log/demyx demyx/wordpress \
                     -n "$DEMYX_HEALTHCHECK_APP_TAIL" "$DEMYX_LOG"/"$DEMYX_APP_DOMAIN".mariadb.log
             fi
 
@@ -87,7 +87,7 @@ demyx_healthcheck_app() {
                 demyx_divider_title "HEALTHCHECK - NGINX" "tail -n $DEMYX_HEALTHCHECK_APP_TAIL ${DEMYX_LOG}/${DEMYX_APP_DOMAIN}.access.log"
                 docker run -t --rm \
                     --entrypoint=tail \
-                    -v "$DEMYX_APP_VOLUME_PREFIX"_log:/var/log/demyx demyx/wordpress \
+                    -v "$DEMYX_APP_PREFIX"_log:/var/log/demyx demyx/wordpress \
                     -n "$DEMYX_HEALTHCHECK_APP_TAIL" "$DEMYX_LOG"/"$DEMYX_APP_DOMAIN".access.log
             fi
 
@@ -97,7 +97,7 @@ demyx_healthcheck_app() {
                 demyx_divider_title "HEALTHCHECK - WORDPRESS" "tail -n $DEMYX_HEALTHCHECK_APP_TAIL ${DEMYX_LOG}/${DEMYX_APP_DOMAIN}.error.log"
                 docker run -t --rm \
                     --entrypoint=tail \
-                    -v "$DEMYX_APP_VOLUME_PREFIX"_log:/var/log/demyx demyx/wordpress \
+                    -v "$DEMYX_APP_PREFIX"_log:/var/log/demyx demyx/wordpress \
                     -n "$DEMYX_HEALTHCHECK_APP_TAIL" "$DEMYX_LOG"/"$DEMYX_APP_DOMAIN".error.log
             fi
         } | tee -a "$DEMYX_HEALTHCHECK_TRANSIENT"

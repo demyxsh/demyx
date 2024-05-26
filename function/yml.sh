@@ -63,7 +63,7 @@ demyx_yml_bedrock() {
         DEMYX_APP_ID
         DEMYX_APP_PATH
         DEMYX_APP_TYPE
-        DEMYX_APP_VOLUME_PREFIX
+        DEMYX_APP_PREFIX
     "
 
     local DEMYX_YML_BEDROCK_DEV_CPU="\${DEMYX_APP_WP_CPU}"
@@ -78,7 +78,7 @@ demyx_yml_bedrock() {
         DEMYX_YML_BEDROCK_DEV_CPU=".80"
         DEMYX_YML_BEDROCK_DEV_MEM="$(demyx_yml_memory)"
         DEMYX_YML_BEDROCK_DEV_PASSWORD="- DEMYX_CODE_PASSWORD=\${DEMYX_APP_DEV_PASSWORD}"
-        DEMYX_YML_BEDROCK_DEV_VOLUME="- ${DEMYX_APP_VOLUME_PREFIX}_code:/home/demyx"
+        DEMYX_YML_BEDROCK_DEV_VOLUME="- ${DEMYX_APP_PREFIX}_code:/home/demyx"
         DEMYX_YML_BEDROCK_IMAGE=demyx/code-server:bedrock
 
         if [[ "$(demyx_app_proto)" = https ]]; then
@@ -159,9 +159,9 @@ demyx_yml_bedrock() {
               - demyx
             restart: unless-stopped
             volumes:
-              - ${DEMYX_APP_VOLUME_PREFIX}:/demyx
-              - ${DEMYX_APP_VOLUME_PREFIX}_custom:/etc/demyx/custom
-              - ${DEMYX_APP_VOLUME_PREFIX}_log:/var/log/demyx
+              - ${DEMYX_APP_PREFIX}:/demyx
+              - ${DEMYX_APP_PREFIX}_custom:/etc/demyx/custom
+              - ${DEMYX_APP_PREFIX}_log:/var/log/demyx
           $(demyx_yml_service_pma)
           $(demyx_yml_service_redis)
           $(demyx_yml_service_sftp)
@@ -215,29 +215,29 @@ demyx_yml_bedrock() {
               - demyx
             restart: unless-stopped
             volumes:
-              - ${DEMYX_APP_VOLUME_PREFIX}:/demyx
-              - ${DEMYX_APP_VOLUME_PREFIX}_custom:/etc/demyx/custom
-              - ${DEMYX_APP_VOLUME_PREFIX}_log:/var/log/demyx
+              - ${DEMYX_APP_PREFIX}:/demyx
+              - ${DEMYX_APP_PREFIX}_custom:/etc/demyx/custom
+              - ${DEMYX_APP_PREFIX}_log:/var/log/demyx
               $DEMYX_YML_BEDROCK_DEV_VOLUME
         volumes:
-          ${DEMYX_APP_VOLUME_PREFIX}:
+          ${DEMYX_APP_PREFIX}:
             external: true
-            name: ${DEMYX_APP_VOLUME_PREFIX}
-          ${DEMYX_APP_VOLUME_PREFIX}_code:
+            name: ${DEMYX_APP_PREFIX}
+          ${DEMYX_APP_PREFIX}_code:
             external: true
-            name: ${DEMYX_APP_VOLUME_PREFIX}_code
-          ${DEMYX_APP_VOLUME_PREFIX}_custom:
+            name: ${DEMYX_APP_PREFIX}_code
+          ${DEMYX_APP_PREFIX}_custom:
             external: true
-            name: ${DEMYX_APP_VOLUME_PREFIX}_custom
-          ${DEMYX_APP_VOLUME_PREFIX}_db:
+            name: ${DEMYX_APP_PREFIX}_custom
+          ${DEMYX_APP_PREFIX}_db:
             external: true
-            name: ${DEMYX_APP_VOLUME_PREFIX}_db
-          ${DEMYX_APP_VOLUME_PREFIX}_log:
+            name: ${DEMYX_APP_PREFIX}_db
+          ${DEMYX_APP_PREFIX}_log:
             external: true
-            name: ${DEMYX_APP_VOLUME_PREFIX}_log
-          ${DEMYX_APP_VOLUME_PREFIX}_sftp:
+            name: ${DEMYX_APP_PREFIX}_log
+          ${DEMYX_APP_PREFIX}_sftp:
             external: true
-            name: ${DEMYX_APP_VOLUME_PREFIX}_sftp
+            name: ${DEMYX_APP_PREFIX}_sftp
         " | sed "s|        ||g" > "$DEMYX_APP_PATH"/docker-compose.yml
 }
 #
@@ -380,9 +380,12 @@ demyx_yml_nginx_php() {
         DEMYX_APP_DOMAIN
         DEMYX_APP_DEV
         DEMYX_APP_ID
+        DEMYX_APP_NX_CONTAINER
         DEMYX_APP_PATH
+        DEMYX_APP_PREFIX
         DEMYX_APP_TYPE
-        DEMYX_APP_VOLUME_PREFIX
+        DEMYX_APP_WP_CONTAINER
+        DEMYX_APP_WP_VOLUME
     "
 
     local DEMYX_YML_NGINX_PHP_DEV_CPU="\${DEMYX_APP_WP_CPU}"
@@ -397,7 +400,7 @@ demyx_yml_nginx_php() {
         DEMYX_YML_NGINX_PHP_DEV_CPU=".80"
         DEMYX_YML_NGINX_PHP_DEV_MEM="$(demyx_yml_memory)"
         DEMYX_YML_NGINX_PHP_DEV_PASSWORD="- DEMYX_CODE_PASSWORD=\${DEMYX_APP_DEV_PASSWORD}"
-        DEMYX_YML_NGINX_PHP_DEV_VOLUME="- ${DEMYX_APP_VOLUME_PREFIX}_code:/home/demyx"
+        DEMYX_YML_NGINX_PHP_DEV_VOLUME="- ${DEMYX_APP_PREFIX}_code:/home/demyx"
         DEMYX_YML_NGINX_PHP_IMAGE=demyx/code-server:wp
 
         if [[ "$(demyx_app_proto)" = https ]]; then
@@ -427,6 +430,7 @@ demyx_yml_nginx_php() {
           $(demyx_yml_service_bs)
           $(demyx_yml_service_mariadb)
           nx_${DEMYX_APP_ID}:
+            container_name: \${DEMYX_APP_NX_CONTAINER}
             cpus: \${DEMYX_APP_WP_CPU}
             depends_on:
               - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}
@@ -453,13 +457,14 @@ demyx_yml_nginx_php() {
               - demyx
             restart: unless-stopped
             volumes:
-              - ${DEMYX_APP_VOLUME_PREFIX}:/demyx
-              - ${DEMYX_APP_VOLUME_PREFIX}_custom:/etc/demyx/custom
-              - ${DEMYX_APP_VOLUME_PREFIX}_log:/var/log/demyx
+              - ${DEMYX_APP_WP_VOLUME}:/demyx
+              - ${DEMYX_APP_PREFIX}_custom:/etc/demyx/custom
+              - ${DEMYX_APP_PREFIX}_log:/var/log/demyx
           $(demyx_yml_service_pma)
           $(demyx_yml_service_redis)
           $(demyx_yml_service_sftp)
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}:
+            container_name: \${DEMYX_APP_WP_CONTAINER}
             cpus: $DEMYX_YML_NGINX_PHP_DEV_CPU
             depends_on:
               - db_\${DEMYX_APP_ID}
@@ -506,29 +511,29 @@ demyx_yml_nginx_php() {
               - demyx
             restart: unless-stopped
             volumes:
-              - ${DEMYX_APP_VOLUME_PREFIX}:/demyx
-              - ${DEMYX_APP_VOLUME_PREFIX}_custom:/etc/demyx/custom
-              - ${DEMYX_APP_VOLUME_PREFIX}_log:/var/log/demyx
+              - ${DEMYX_APP_WP_VOLUME}:/demyx
+              - ${DEMYX_APP_PREFIX}_custom:/etc/demyx/custom
+              - ${DEMYX_APP_PREFIX}_log:/var/log/demyx
               $DEMYX_YML_NGINX_PHP_DEV_VOLUME
         volumes:
-          ${DEMYX_APP_VOLUME_PREFIX}:
+          ${DEMYX_APP_WP_VOLUME}:
             external: true
-            name: ${DEMYX_APP_VOLUME_PREFIX}
-          ${DEMYX_APP_VOLUME_PREFIX}_code:
+            name: ${DEMYX_APP_WP_VOLUME}
+          ${DEMYX_APP_PREFIX}_code:
             external: true
-            name: ${DEMYX_APP_VOLUME_PREFIX}_code
-          ${DEMYX_APP_VOLUME_PREFIX}_custom:
+            name: ${DEMYX_APP_PREFIX}_code
+          ${DEMYX_APP_PREFIX}_custom:
             external: true
-            name: ${DEMYX_APP_VOLUME_PREFIX}_custom
-          ${DEMYX_APP_VOLUME_PREFIX}_db:
+            name: ${DEMYX_APP_PREFIX}_custom
+          ${DEMYX_APP_PREFIX}_db:
             external: true
-            name: ${DEMYX_APP_VOLUME_PREFIX}_db
-          ${DEMYX_APP_VOLUME_PREFIX}_log:
+            name: ${DEMYX_APP_PREFIX}_db
+          ${DEMYX_APP_PREFIX}_log:
             external: true
-            name: ${DEMYX_APP_VOLUME_PREFIX}_log
-          ${DEMYX_APP_VOLUME_PREFIX}_sftp:
+            name: ${DEMYX_APP_PREFIX}_log
+          ${DEMYX_APP_PREFIX}_sftp:
             external: true
-            name: ${DEMYX_APP_VOLUME_PREFIX}_sftp
+            name: ${DEMYX_APP_PREFIX}_sftp
         " | sed "s|        ||g" > "$DEMYX_APP_PATH"/docker-compose.yml
 }
 #
@@ -570,7 +575,7 @@ demyx_yml_ols() {
         DEMYX_APP_ID
         DEMYX_APP_PATH
         DEMYX_APP_TYPE
-        DEMYX_APP_VOLUME_PREFIX
+        DEMYX_APP_PREFIX
     "
 
     local DEMYX_YML_OLS_DEV_CPU="\${DEMYX_APP_WP_CPU}"
@@ -588,7 +593,7 @@ demyx_yml_ols() {
         DEMYX_YML_OLS_DEV_CPU=".80"
         DEMYX_YML_OLS_DEV_MEM="$(demyx_yml_memory)"
         DEMYX_YML_OLS_DEV_PASSWORD="- DEMYX_CODE_PASSWORD=\${DEMYX_APP_DEV_PASSWORD}"
-        DEMYX_YML_OLS_DEV_VOLUME="- ${DEMYX_APP_VOLUME_PREFIX}_code:/home/demyx"
+        DEMYX_YML_OLS_DEV_VOLUME="- ${DEMYX_APP_PREFIX}_code:/home/demyx"
         DEMYX_YML_OLS_IMAGE=demyx/code-server:openlitespeed
         DEMYX_YML_OLS_PORT=8081
 
@@ -710,32 +715,32 @@ demyx_yml_ols() {
               - demyx
             restart: unless-stopped
             volumes:
-              - ${DEMYX_APP_VOLUME_PREFIX}:/demyx
-              - ${DEMYX_APP_VOLUME_PREFIX}_custom:/etc/demyx/custom
-              - ${DEMYX_APP_VOLUME_PREFIX}_log:/var/log/demyx
+              - ${DEMYX_APP_PREFIX}:/demyx
+              - ${DEMYX_APP_PREFIX}_custom:/etc/demyx/custom
+              - ${DEMYX_APP_PREFIX}_log:/var/log/demyx
               $DEMYX_YML_OLS_DEV_VOLUME
           $(demyx_yml_service_pma)
           $(demyx_yml_service_redis)
           $(demyx_yml_service_sftp)
         volumes:
-          ${DEMYX_APP_VOLUME_PREFIX}:
+          ${DEMYX_APP_PREFIX}:
             external: true
-            name: ${DEMYX_APP_VOLUME_PREFIX}
-          ${DEMYX_APP_VOLUME_PREFIX}_code:
+            name: ${DEMYX_APP_PREFIX}
+          ${DEMYX_APP_PREFIX}_code:
             external: true
-            name: ${DEMYX_APP_VOLUME_PREFIX}_code
-          ${DEMYX_APP_VOLUME_PREFIX}_custom:
+            name: ${DEMYX_APP_PREFIX}_code
+          ${DEMYX_APP_PREFIX}_custom:
             external: true
-            name: ${DEMYX_APP_VOLUME_PREFIX}_custom
-          ${DEMYX_APP_VOLUME_PREFIX}_db:
+            name: ${DEMYX_APP_PREFIX}_custom
+          ${DEMYX_APP_PREFIX}_db:
             external: true
-            name: ${DEMYX_APP_VOLUME_PREFIX}_db
-          ${DEMYX_APP_VOLUME_PREFIX}_log:
+            name: ${DEMYX_APP_PREFIX}_db
+          ${DEMYX_APP_PREFIX}_log:
             external: true
-            name: ${DEMYX_APP_VOLUME_PREFIX}_log
-          ${DEMYX_APP_VOLUME_PREFIX}_sftp:
+            name: ${DEMYX_APP_PREFIX}_log
+          ${DEMYX_APP_PREFIX}_sftp:
             external: true
-            name: ${DEMYX_APP_VOLUME_PREFIX}_sftp
+            name: ${DEMYX_APP_PREFIX}_sftp
         " | sed "s|        ||g" > "$DEMYX_APP_PATH"/docker-compose.yml
 }
 #
@@ -749,7 +754,7 @@ demyx_yml_ols_bedrock() {
         DEMYX_APP_ID
         DEMYX_APP_PATH
         DEMYX_APP_TYPE
-        DEMYX_APP_VOLUME_PREFIX
+        DEMYX_APP_PREFIX
     "
 
     local DEMYX_YML_OLS_DEV_CPU="\${DEMYX_APP_WP_CPU}"
@@ -767,7 +772,7 @@ demyx_yml_ols_bedrock() {
         DEMYX_YML_OLS_DEV_CPU=".80"
         DEMYX_YML_OLS_DEV_MEM="$(demyx_yml_memory)"
         DEMYX_YML_OLS_DEV_PASSWORD="- DEMYX_CODE_PASSWORD=\${DEMYX_APP_DEV_PASSWORD}"
-        DEMYX_YML_OLS_DEV_VOLUME="- ${DEMYX_APP_VOLUME_PREFIX}_code:/home/demyx"
+        DEMYX_YML_OLS_DEV_VOLUME="- ${DEMYX_APP_PREFIX}_code:/home/demyx"
         DEMYX_YML_OLS_IMAGE=demyx/code-server:openlitespeed-bedrock
         DEMYX_YML_OLS_PORT=8081
 
@@ -915,32 +920,32 @@ demyx_yml_ols_bedrock() {
               - demyx
             restart: unless-stopped
             volumes:
-              - ${DEMYX_APP_VOLUME_PREFIX}:/demyx
-              - ${DEMYX_APP_VOLUME_PREFIX}_custom:/etc/demyx/custom
-              - ${DEMYX_APP_VOLUME_PREFIX}_log:/var/log/demyx
+              - ${DEMYX_APP_PREFIX}:/demyx
+              - ${DEMYX_APP_PREFIX}_custom:/etc/demyx/custom
+              - ${DEMYX_APP_PREFIX}_log:/var/log/demyx
               $DEMYX_YML_OLS_DEV_VOLUME
           $(demyx_yml_service_pma)
           $(demyx_yml_service_redis)
           $(demyx_yml_service_sftp)
         volumes:
-          ${DEMYX_APP_VOLUME_PREFIX}:
+          ${DEMYX_APP_PREFIX}:
             external: true
-            name: ${DEMYX_APP_VOLUME_PREFIX}
-          ${DEMYX_APP_VOLUME_PREFIX}_code:
+            name: ${DEMYX_APP_PREFIX}
+          ${DEMYX_APP_PREFIX}_code:
             external: true
-            name: ${DEMYX_APP_VOLUME_PREFIX}_code
-          ${DEMYX_APP_VOLUME_PREFIX}_custom:
+            name: ${DEMYX_APP_PREFIX}_code
+          ${DEMYX_APP_PREFIX}_custom:
             external: true
-            name: ${DEMYX_APP_VOLUME_PREFIX}_custom
-          ${DEMYX_APP_VOLUME_PREFIX}_db:
+            name: ${DEMYX_APP_PREFIX}_custom
+          ${DEMYX_APP_PREFIX}_db:
             external: true
-            name: ${DEMYX_APP_VOLUME_PREFIX}_db
-          ${DEMYX_APP_VOLUME_PREFIX}_log:
+            name: ${DEMYX_APP_PREFIX}_db
+          ${DEMYX_APP_PREFIX}_log:
             external: true
-            name: ${DEMYX_APP_VOLUME_PREFIX}_log
-          ${DEMYX_APP_VOLUME_PREFIX}_sftp:
+            name: ${DEMYX_APP_PREFIX}_log
+          ${DEMYX_APP_PREFIX}_sftp:
             external: true
-            name: ${DEMYX_APP_VOLUME_PREFIX}_sftp
+            name: ${DEMYX_APP_PREFIX}_sftp
         " | sed "s|        ||g" > "$DEMYX_APP_PATH"/docker-compose.yml
 }
 #
@@ -963,12 +968,14 @@ demyx_yml_service_bs() {
     demyx_event
     demyx_app_env wp "
         DEMYX_APP_COMPOSE_PROJECT
+        DEMYX_APP_CONTAINER
         DEMYX_APP_DOMAIN
         DEMYX_APP_ID
         DEMYX_APP_NX_CONTAINER
         DEMYX_APP_STACK
-        DEMYX_APP_VOLUME_PREFIX
+        DEMYX_APP_PREFIX
         DEMYX_APP_WP_CONTAINER
+        DEMYX_APP_WP_VOLUME
     "
 
     if [[ "$DEMYX_APP_DEV" = true ]]; then
@@ -1004,6 +1011,7 @@ demyx_yml_service_bs() {
         fi
 
         echo "bs_${DEMYX_APP_ID}:
+            container_name: \${DEMYX_APP_CONTAINER}_bs
             cpus: \${DEMYX_APP_WP_CPU}
             depends_on:
               - db_${DEMYX_APP_ID}
@@ -1036,7 +1044,7 @@ demyx_yml_service_bs() {
               - demyx
             restart: unless-stopped
             volumes:
-              - ${DEMYX_APP_VOLUME_PREFIX}:/demyx"
+              - ${DEMYX_APP_WP_VOLUME}:/demyx"
     fi
 }
 #
@@ -1045,12 +1053,14 @@ demyx_yml_service_bs() {
 demyx_yml_service_mariadb() {
     demyx_event
     demyx_app_env wp "
+        DEMYX_APP_DB_CONTAINER
         DEMYX_APP_ID
         DEMYX_APP_TYPE
-        DEMYX_APP_VOLUME_PREFIX
+        DEMYX_APP_PREFIX
     "
 
     echo "db_${DEMYX_APP_ID}:
+            container_name: \${DEMYX_APP_DB_CONTAINER}
             cpus: \${DEMYX_APP_DB_CPU}
             environment:
               - DEMYX_DOMAIN=\${DEMYX_APP_DOMAIN}
@@ -1088,8 +1098,8 @@ demyx_yml_service_mariadb() {
               - demyx
             restart: unless-stopped
             volumes:
-              - ${DEMYX_APP_VOLUME_PREFIX}_db:/demyx
-              - ${DEMYX_APP_VOLUME_PREFIX}_log:/var/log/demyx"
+              - ${DEMYX_APP_PREFIX}_db:/demyx
+              - ${DEMYX_APP_PREFIX}_log:/var/log/demyx"
 }
 #
 #   YAML template for the phpMyAdmin service.
@@ -1099,6 +1109,7 @@ demyx_yml_service_pma() {
     demyx_app_env wp "
         DEMYX_APP_ID
         DEMYX_APP_PMA
+        DEMYX_APP_PREFIX
     "
 
     if [[ "$(demyx_app_proto)" = https ]]; then
@@ -1110,6 +1121,7 @@ demyx_yml_service_pma() {
 
     if [[ "$DEMYX_APP_PMA" = true ]]; then
         echo "pma_${DEMYX_APP_ID}:
+            container_name: \${DEMYX_APP_PREFIX}_pma
             cpus: \${DEMYX_APP_DB_CPU}
             environment:
               - MYSQL_ROOT_PASSWORD=\${MARIADB_ROOT_PASSWORD}
@@ -1138,11 +1150,13 @@ demyx_yml_service_redis() {
     demyx_event
     demyx_app_env wp "
         DEMYX_APP_ID
+        DEMYX_APP_PREFIX
         DEMYX_APP_REDIS
     "
 
     if [[ "$DEMYX_APP_REDIS" = true ]]; then
         echo "rd_${DEMYX_APP_ID}:
+            container_name: \${DEMYX_APP_PREFIX}_rd
             cpus: \${DEMYX_APP_DB_CPU}
             image: redis:alpine3.18
             mem_limit: \${DEMYX_APP_DB_MEM}
@@ -1160,11 +1174,12 @@ demyx_yml_service_sftp() {
         DEMYX_APP_COMPOSE_PROJECT
         DEMYX_APP_DOMAIN
         DEMYX_APP_ID
+        DEMYX_APP_PREFIX
         DEMYX_APP_SFTP
         DEMYX_APP_SFTP_PASSWORD
         DEMYX_APP_SFTP_USERNAME
         DEMYX_APP_TYPE
-        DEMYX_APP_VOLUME_PREFIX
+        DEMYX_APP_WP_VOLUME
     "
 
     if [[ "$DEMYX_APP_SFTP" = true ]]; then
@@ -1179,6 +1194,7 @@ demyx_yml_service_sftp() {
         DEMYX_YML_SERVICE_SFTP_PORTS="$(cat < "$DEMYX_TMP"/"$DEMYX_APP_DOMAIN"_sftp)"
 
         echo "sftp_${DEMYX_APP_ID}:
+            container_name: \${DEMYX_APP_PREFIX}_sftp
             cpus: \${DEMYX_APP_DB_CPU}
             environment:
               - DEMYX_DOMAIN=\${DEMYX_APP_DOMAIN}
@@ -1193,9 +1209,9 @@ demyx_yml_service_sftp() {
               - ${DEMYX_YML_SERVICE_SFTP_PORTS}:2222
             restart: unless-stopped
             volumes:
-              - ${DEMYX_APP_VOLUME_PREFIX}:/demyx
-              - ${DEMYX_APP_VOLUME_PREFIX}_log:/var/log/demyx
-              - ${DEMYX_APP_VOLUME_PREFIX}_sftp:/home"
+              - ${DEMYX_APP_WP_VOLUME}:/demyx
+              - ${DEMYX_APP_PREFIX}_log:/var/log/demyx
+              - ${DEMYX_APP_PREFIX}_sftp:/home"
     fi
 }
 #

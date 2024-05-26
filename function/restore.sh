@@ -115,10 +115,11 @@ demyx_restore_app() {
         DEMYX_APP_DOMAIN
         DEMYX_APP_ID
         DEMYX_APP_PATH
+        DEMYX_APP_PREFIX
         DEMYX_APP_TYPE
-        DEMYX_APP_VOLUME_PREFIX
         DEMYX_APP_DB_CONTAINER
         DEMYX_APP_WP_CONTAINER
+        DEMYX_APP_WP_VOLUME
         WORDPRESS_DB_PASSWORD
         WORDPRESS_DB_USER
     "
@@ -126,33 +127,33 @@ demyx_restore_app() {
     demyx_config "$DEMYX_APP_DOMAIN" --healthcheck=false
 
     demyx_execute "Creating volumes" \
-        "docker volume create ${DEMYX_APP_VOLUME_PREFIX}; \
-        docker volume create ${DEMYX_APP_VOLUME_PREFIX}_code; \
-        docker volume create ${DEMYX_APP_VOLUME_PREFIX}_custom; \
-        docker volume create ${DEMYX_APP_VOLUME_PREFIX}_db; \
-        docker volume create ${DEMYX_APP_VOLUME_PREFIX}_log; \
-        docker volume create ${DEMYX_APP_VOLUME_PREFIX}_sftp"
+        "docker volume create ${DEMYX_APP_PREFIX}_code; \
+        docker volume create ${DEMYX_APP_PREFIX}_custom; \
+        docker volume create ${DEMYX_APP_PREFIX}_db; \
+        docker volume create ${DEMYX_APP_PREFIX}_log; \
+        docker volume create ${DEMYX_APP_PREFIX}_sftp; \
+        docker volume create ${DEMYX_APP_WP_VOLUME}"
 
     if [[ -d "$DEMYX_APP_PATH"/demyx-code ]]; then
-        demyx_execute "Restoring ${DEMYX_APP_VOLUME_PREFIX}_code" \
+        demyx_execute "Restoring ${DEMYX_APP_PREFIX}_code" \
             "docker run -t \
                 --rm \
                 --entrypoint=bash \
                 --user=root \
                 -v demyx:$DEMYX \
-                -v ${DEMYX_APP_VOLUME_PREFIX}_code:/${DEMYX_APP_VOLUME_PREFIX}_code \
-                demyx/demyx -c 'cp -rp ${DEMYX_APP_PATH}/demyx-code/. /${DEMYX_APP_VOLUME_PREFIX}_code'"
+                -v ${DEMYX_APP_PREFIX}_code:/${DEMYX_APP_PREFIX}_code \
+                demyx/demyx -c 'cp -rp ${DEMYX_APP_PATH}/demyx-code/. /${DEMYX_APP_PREFIX}_code'"
     fi
 
     if [[ -d "$DEMYX_APP_PATH"/demyx-sftp ]]; then
-        demyx_execute "Restoring ${DEMYX_APP_VOLUME_PREFIX}_sftp" \
+        demyx_execute "Restoring ${DEMYX_APP_PREFIX}_sftp" \
             "docker run -t \
                 --rm \
                 --entrypoint=bash \
                 --user=root \
                 -v demyx:$DEMYX \
-                -v ${DEMYX_APP_VOLUME_PREFIX}_sftp:/${DEMYX_APP_VOLUME_PREFIX}_sftp \
-                demyx/demyx -c 'cp -rp ${DEMYX_APP_PATH}/demyx-sftp/. /${DEMYX_APP_VOLUME_PREFIX}_sftp'"
+                -v ${DEMYX_APP_PREFIX}_sftp:/${DEMYX_APP_PREFIX}_sftp \
+                demyx/demyx -c 'cp -rp ${DEMYX_APP_PATH}/demyx-sftp/. /${DEMYX_APP_PREFIX}_sftp'"
     fi
 
     demyx_compose "$DEMYX_APP_DOMAIN" -d up -d
@@ -165,9 +166,9 @@ demyx_restore_app() {
             --name=$DEMYX_APP_WP_CONTAINER \
             --network=demyx \
             --entrypoint=bash \
-            -v ${DEMYX_APP_VOLUME_PREFIX}:/demyx \
-            -v ${DEMYX_APP_VOLUME_PREFIX}_custom:/etc/demyx/custom \
-            -v ${DEMYX_APP_VOLUME_PREFIX}_log:/var/log/demyx \
+            -v ${DEMYX_APP_WP_VOLUME}:/demyx \
+            -v ${DEMYX_APP_PREFIX}_custom:/etc/demyx/custom \
+            -v ${DEMYX_APP_PREFIX}_log:/var/log/demyx \
             demyx/wordpress; \
         docker cp ${DEMYX_APP_PATH}/demyx-wp/. ${DEMYX_APP_WP_CONTAINER}:/demyx; \
         docker cp ${DEMYX_APP_PATH}/demyx-custom/. ${DEMYX_APP_WP_CONTAINER}:/etc/demyx/custom; \
@@ -218,8 +219,8 @@ demyx_restore_db() {
         DEMYX_APP_DB_CONTAINER
         DEMYX_APP_ID
         DEMYX_APP_NX_CONTAINER
+        DEMYX_APP_PREFIX
         DEMYX_APP_STACK
-        DEMYX_APP_VOLUME_PREFIX
         DEMYX_APP_WP_CONTAINER
     "
 
@@ -266,7 +267,7 @@ demyx_restore_db() {
     demyx_execute "Deleting old database" \
         "docker stop ${DEMYX_APP_DB_CONTAINER}; \
             docker rm ${DEMYX_APP_DB_CONTAINER}; \
-            docker volume rm ${DEMYX_APP_VOLUME_PREFIX}_db"
+            docker volume rm ${DEMYX_APP_PREFIX}_db"
 
     demyx_compose "$DEMYX_APP_DOMAIN" -d up -d
 
