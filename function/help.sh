@@ -12,6 +12,7 @@ demyx_help() {
             echo
             echo "demyx backup <app> <args>             Backup specific app."
             echo "             all                      Backup all apps in a loop."
+            echo "             traefik                  Backup Traefik's acme.json and docker-compose.yml files."
             echo "                   -c                 Backup only the configs (docker-compose.yml and .env)."
             echo "                   -d                 Backup only the database."
             echo "                   -l                 List all backups with file size shown."

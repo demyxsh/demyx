@@ -52,6 +52,9 @@ demyx_backup() {
         all)
             demyx_backup_all
         ;;
+        traefik)
+            demyx_backup_traefik
+        ;;
         *)
             demyx_arg_valid
 
@@ -250,4 +253,15 @@ demyx_backup_list() {
 
     demyx_divider_title "DEMYX - BACKUP" "$DEMYX_ARG_2 - Count: $DEMYX_BACKUP_LIST_COUNT - Total Size: $DEMYX_BACKUP_LIST_TOTAL_SIZE"
     cat < "$DEMYX_BACKUP_LIST"
+}
+#
+#   Backup Traefik only.
+#
+demyx_backup_traefik() {
+    demyx_event
+
+    demyx_execute "Backing up Traefik" \
+        "docker cp demyx_traefik:/demyx/acme.json ${DEMYX_TRAEFIK}; \
+        tar -czf ${DEMYX_BACKUP}/traefik.tgz -C ${DEMYX_APP} traefik; \
+        rm -f ${DEMYX_TRAEFIK}/acme.json"
 }
