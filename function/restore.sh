@@ -55,7 +55,9 @@ demyx_restore() {
     DEMYX_RESTORE_CHECK="$(find "$DEMYX_BACKUP" -type f -name "*${DEMYX_ARG_2}*.tgz" )"
 
     if [[ -n "$DEMYX_ARG_2" ]]; then
-        if [[ "$DEMYX_RESTORE_FLAG_DB" = true ]]; then
+        if [[ "$DEMYX_ARG_2" = traefik ]]; then
+            demyx_restore_traefik
+        elif [[ "$DEMYX_RESTORE_FLAG_DB" = true ]]; then
             demyx_restore_db
         elif [[ -n "$DEMYX_RESTORE_CHECK" ]]; then
             if [[ "$DEMYX_RESTORE_FLAG_CONFIG" = true ]]; then
@@ -285,4 +287,16 @@ demyx_restore_db() {
 
     demyx_execute "Cleaning up" \
         "docker exec $DEMYX_APP_WP_CONTAINER rm -f ${DEMYX_APP_CONTAINER}.sql .maintenance"
+}
+#
+#   Restore Traefik's acme.json and docker-compose.yml files.
+#
+demyx_restore_traefik() {
+    demyx_event
+    demyx_execute "Restoring Traefik" \
+        "tar -xzf ${DEMYX_BACKUP}/traefik.tgz -C ${DEMYX_APP}; \
+        docker cp ${DEMYX_TRAEFIK}/acme.json demyx_traefik:/demyx; \
+        rm -f ${DEMYX_TRAEFIK}/acme.json"
+    demyx_compose traefik down
+    demyx_compose traefik up -d
 }

@@ -185,11 +185,12 @@ demyx_help() {
         ;;
         restore)
             echo
-            echo "demyx restore <app> <args>        Restore app’s configs and volumes."
-            echo "                    -c            Restores app’s docker-compose.yml and .env files only."
-            echo "                    --date        Specify which archive date you want to restore. Must be in the format of yy-mm-d."
-            echo "                    -d            Restore database only."
-            echo "                    -f            Disable prompt when restoring an app."
+            echo "demyx restore <app>       <args>        Restore app’s configs and volumes."
+            echo "demyx restore traefik                   Restore Traefik's acme.json and docker-compose.yml files."
+            echo "                          -c            Restores app’s docker-compose.yml and .env files only."
+            echo "                          --date        Specify which archive date you want to restore. Must be in the format of yy-mm-d."
+            echo "                          -d            Restore database only."
+            echo "                          -f            Disable prompt when restoring an app."
             echo
         ;;
         rm)
