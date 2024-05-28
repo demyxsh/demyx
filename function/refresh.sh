@@ -153,8 +153,7 @@ demyx_refresh_code() {
 #
 demyx_refresh_traefik() {
     demyx_event
-    demyx_execute "Backing up traefik directory to ${DEMYX_BACKUP}/traefik.tgz" \
-        "tar -czf ${DEMYX_BACKUP}/traefik.tgz -C $DEMYX_APP traefik"
+    demyx_backup traefik
 
     demyx_execute "Refreshing traefik" \
         "demyx_yml_traefik"
