@@ -151,7 +151,7 @@ demyx_rm_app() {
     demyx_compose "$DEMYX_APP_DOMAIN" kill
     demyx_compose "$DEMYX_APP_DOMAIN" rm -f
 
-    DEMYX_RM_APP_STRAGGLERS="$(docker ps -q --filter="name=$DEMYX_APP_PREFIX")"
+    DEMYX_RM_APP_STRAGGLERS="$(docker ps -q --filter="name=^${DEMYX_APP_PREFIX}")"
     if [[ -n "$DEMYX_RM_APP_STRAGGLERS" ]]; then
         for DEMYX_RM_APP_STRAGGLER in $DEMYX_RM_APP_STRAGGLERS; do
             demyx_execute "Killing $DEMYX_RM_APP_STRAGGLER" \
@@ -159,7 +159,7 @@ demyx_rm_app() {
         done
     fi
 
-    DEMYX_RM_APP_VOLUMES="$(docker volume ls -q --filter="name=$DEMYX_APP_PREFIX")"
+    DEMYX_RM_APP_VOLUMES="$(docker volume ls -q --filter="name=^${DEMYX_APP_PREFIX}")"
     for DEMYX_RM_APP_VOLUME in $DEMYX_RM_APP_VOLUMES; do
         demyx_execute "Deleting $DEMYX_RM_APP_VOLUME" \
             "docker volume rm $DEMYX_RM_APP_VOLUME"
