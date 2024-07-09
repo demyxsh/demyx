@@ -1336,21 +1336,20 @@ demyx_config_whitelist() {
     # TODO - make this work with OLS
     demyx_ols_not_supported
     demyx_app_env wp "
-        DEMYX_APP_IP_WHITELIST
+        DEMYX_APP_NX_CONTAINER
         DEMYX_APP_STACK
     "
 
-    [[ "$DEMYX_IP" = false ]] && demyx_error custom "Please update DEMYX_IP on the host"
+    [[ "${DEMYX_IP}" = false ]] && demyx_error custom "Please update DEMYX_IP on the host"
 
-    DEMYX_CONFIG_COMPOSE=true
-
-    if [[ "$DEMYX_CONFIG_FLAG_WHITELIST" = --whitelist ]]; then
+    if [[ "${DEMYX_CONFIG_FLAG_WHITELIST}" = --whitelist ]]; then
         DEMYX_CONFIG_FLAG_WHITELIST=all
     fi
 
-    demyx_execute "Setting whitelist to $DEMYX_CONFIG_FLAG_WHITELIST" \
-        "demyx_app_env_update DEMYX_APP_IP_WHITELIST=$DEMYX_CONFIG_FLAG_WHITELIST &&
-        demyx_yml $DEMYX_APP_STACK"
+    demyx_execute "Setting whitelist to ${DEMYX_CONFIG_FLAG_WHITELIST}" \
+        "docker exec -e DEMYX_WHITELIST=${DEMYX_CONFIG_FLAG_WHITELIST} ${DEMYX_APP_NX_CONTAINER} demyx-entrypoint >/dev/null 2>&1; \
+        demyx_app_env_update DEMYX_APP_IP_WHITELIST=${DEMYX_CONFIG_FLAG_WHITELIST}; \
+        demyx_yml ${DEMYX_APP_STACK}"
 }
 #
 #   Configures app's WordPress URL.
