@@ -978,13 +978,13 @@ demyx_config_rate_limit() {
     demyx_event
     demyx_ols_not_supported
     demyx_app_env wp "
+        DEMYX_APP_NX_CONTAINER
         DEMYX_APP_RATE_LIMIT
     "
 
-    DEMYX_CONFIG_COMPOSE=true
-
     demyx_execute "Setting rate limit to $DEMYX_CONFIG_FLAG_RATE_LIMIT" \
-        "demyx_app_env_update DEMYX_APP_RATE_LIMIT=$DEMYX_CONFIG_FLAG_RATE_LIMIT"
+        "docker exec -e DEMYX_RATE_LIMIT=${DEMYX_CONFIG_FLAG_RATE_LIMIT} ${DEMYX_APP_NX_CONTAINER} demyx-entrypoint >/dev/null 2>&1; \
+        demyx_app_env_update DEMYX_APP_RATE_LIMIT=$DEMYX_CONFIG_FLAG_RATE_LIMIT"
 }
 #
 #   Configures a Redis container for an app.
