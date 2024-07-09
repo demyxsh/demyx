@@ -416,16 +416,15 @@ demyx_config_auth() {
 demyx_config_auth_wp() {
     demyx_event
     demyx_app_env wp "
-        DEMYX_APP_AUTH_WP
         DEMYX_APP_AUTH_USERNAME
         DEMYX_APP_AUTH_PASSWORD
+        DEMYX_APP_NX_CONTAINER
         DEMYX_APP_STACK
     "
 
-    DEMYX_CONFIG_COMPOSE=true
-
     demyx_execute "Setting $DEMYX_CONFIG_FLAG_AUTH_WP to WordPress basic auth" \
-        "demyx_app_env_update DEMYX_APP_AUTH_WP=${DEMYX_CONFIG_FLAG_AUTH_WP}; \
+        "docker exec -e DEMYX_BASIC_AUTH_WP=${DEMYX_CONFIG_FLAG_AUTH_WP} ${DEMYX_APP_NX_CONTAINER} demyx-entrypoint >/dev/null 2>&1; \
+        demyx_app_env_update DEMYX_APP_AUTH_WP=${DEMYX_CONFIG_FLAG_AUTH_WP}; \
         demyx_yml $DEMYX_APP_STACK"
 
     if [[ "$DEMYX_CONFIG_FLAG_AUTH_WP" = true ]]; then
