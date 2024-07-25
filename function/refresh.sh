@@ -141,7 +141,9 @@ demyx_refresh_code() {
         demyx_execute "Refreshing code-server" \
             "demyx_yml_code"
 
-        demyx_compose code up -d --remove-orphans
+        if [[ -z "$DEMYX_REFRESH_FLAG_NO_COMPOSE" ]]; then
+            demyx_compose code up -d --remove-orphans
+        fi
     else
         if docker inspect demyx_code >/dev/null 2>&1; then
             demyx_compose code down
@@ -158,5 +160,7 @@ demyx_refresh_traefik() {
     demyx_execute "Refreshing traefik" \
         "demyx_yml_traefik"
 
-    demyx_compose traefik up -d --remove-orphans
+    if [[ -z "$DEMYX_REFRESH_FLAG_NO_COMPOSE" ]]; then
+        demyx_compose traefik up -d --remove-orphans
+    fi
 }
