@@ -1065,7 +1065,7 @@ demyx_config_resources() {
             "demyx_app_env_update DEMYX_APP_WP_CPU=$DEMYX_CONFIG_FLAG_RESOURCES_WP_CPU"
     fi
     if [[ -n "$DEMYX_CONFIG_FLAG_RESOURCES_WP_MEM" ]]; then
-        demyx_execute "Setting $DEMYX_APP_WP_CONTAINER cpu to $DEMYX_CONFIG_FLAG_RESOURCES_WP_MEM" \
+        demyx_execute "Setting $DEMYX_APP_WP_CONTAINER mem to $DEMYX_CONFIG_FLAG_RESOURCES_WP_MEM" \
             "demyx_app_env_update DEMYX_APP_WP_MEM=$DEMYX_CONFIG_FLAG_RESOURCES_WP_MEM"
     fi
 }
