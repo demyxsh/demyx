@@ -61,22 +61,21 @@ demyx_yml_bedrock() {
         DEMYX_APP_DOMAIN
         DEMYX_APP_DEV
         DEMYX_APP_ID
+        DEMYX_APP_NX_CONTAINER
         DEMYX_APP_PATH
-        DEMYX_APP_TYPE
         DEMYX_APP_PREFIX
+        DEMYX_APP_TYPE
+        DEMYX_APP_WP_CONTAINER
+        DEMYX_APP_WP_VOLUME
     "
 
-    local DEMYX_YML_BEDROCK_DEV_CPU="\${DEMYX_APP_WP_CPU}"
     local DEMYX_YML_BEDROCK_DEV_ENTRYPOINTS=
     local DEMYX_YML_BEDROCK_DEV_LABELS=
-    local DEMYX_YML_BEDROCK_DEV_MEM="\${DEMYX_APP_WP_MEM}"
     local DEMYX_YML_BEDROCK_DEV_PASSWORD=
     local DEMYX_YML_BEDROCK_DEV_VOLUME=
     local DEMYX_YML_BEDROCK_IMAGE=demyx/wordpress:bedrock
 
     if [[ "$DEMYX_APP_DEV" = true ]]; then
-        DEMYX_YML_BEDROCK_DEV_CPU=".80"
-        DEMYX_YML_BEDROCK_DEV_MEM="$(demyx_yml_memory)"
         DEMYX_YML_BEDROCK_DEV_PASSWORD="- DEMYX_CODE_PASSWORD=\${DEMYX_APP_DEV_PASSWORD}"
         DEMYX_YML_BEDROCK_DEV_VOLUME="- ${DEMYX_APP_PREFIX}_code:/home/demyx"
         DEMYX_YML_BEDROCK_IMAGE=demyx/code-server:bedrock
@@ -136,37 +135,39 @@ demyx_yml_bedrock() {
             depends_on:
               - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}
             environment:
-              $(demyx_yml_nginx_basic_auth)
-              $(demyx_yml_nginx_whitelist)
+              - DEMYX_BASIC_AUTH=\${DEMYX_APP_AUTH}
+              - DEMYX_BASIC_AUTH_PASSWORD=\${DEMYX_APP_AUTH_PASSWORD}
+              - DEMYX_BASIC_AUTH_USERNAME=\${DEMYX_APP_AUTH_USERNAME}
+              - DEMYX_BASIC_AUTH_WP=\${DEMYX_APP_AUTH_WP}
+              - DEMYX_BEDROCK=true
               - DEMYX_CACHE_INACTIVE=\${DEMYX_APP_CACHE_INACTIVE}
               - DEMYX_CACHE_TYPE=\${DEMYX_APP_CACHE_TYPE}
-              - NGINX_CACHE=\${DEMYX_APP_CACHE}
-              - NGINX_DOMAIN=\${DEMYX_APP_DOMAIN}
-              - NGINX_RATE_LIMIT=\${DEMYX_APP_RATE_LIMIT}
-              - NGINX_UPLOAD_LIMIT=\${DEMYX_APP_UPLOAD_LIMIT}
-              - NGINX_XMLRPC=\${DEMYX_APP_XMLRPC}
+              - DEMYX_CACHE=\${DEMYX_APP_CACHE}
+              - DEMYX_DOMAIN=\${DEMYX_APP_DOMAIN}
+              - DEMYX_RATE_LIMIT=\${DEMYX_APP_RATE_LIMIT}
+              - DEMYX_UPLOAD_LIMIT=\${DEMYX_APP_UPLOAD_LIMIT}
+              - DEMYX_WHITELIST=\${DEMYX_APP_IP_WHITELIST}
+              - DEMYX_WHITELIST_IP=${DEMYX_IP}
+              - DEMYX_WORDPRESS_CONTAINER=\${DEMYX_APP_WP_CONTAINER}
+              - DEMYX_XMLRPC=\${DEMYX_APP_XMLRPC}
               - TZ=$TZ
-              - WORDPRESS=true
-              - WORDPRESS_BEDROCK=true
-              - WORDPRESS_CONTAINER=\${DEMYX_APP_WP_CONTAINER}
             image: demyx/nginx
             labels:
               - \"traefik.enable=true\"
-              $(demyx_yml_auth_label)
               $(demyx_yml_http_labels)
             mem_limit: \${DEMYX_APP_WP_MEM}
             networks:
               - demyx
             restart: unless-stopped
             volumes:
-              - ${DEMYX_APP_PREFIX}:/demyx
+              - ${DEMYX_APP_WP_VOLUME}:/demyx
               - ${DEMYX_APP_PREFIX}_custom:/etc/demyx/custom
               - ${DEMYX_APP_PREFIX}_log:/var/log/demyx
           $(demyx_yml_service_pma)
           $(demyx_yml_service_redis)
           $(demyx_yml_service_sftp)
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}:
-            cpus: $DEMYX_YML_BEDROCK_DEV_CPU
+            cpus: \${DEMYX_APP_WP_MEM}
             depends_on:
               - db_\${DEMYX_APP_ID}
             environment:
@@ -215,14 +216,14 @@ demyx_yml_bedrock() {
               - demyx
             restart: unless-stopped
             volumes:
-              - ${DEMYX_APP_PREFIX}:/demyx
+              - ${DEMYX_APP_WP_VOLUME}:/demyx
               - ${DEMYX_APP_PREFIX}_custom:/etc/demyx/custom
               - ${DEMYX_APP_PREFIX}_log:/var/log/demyx
               $DEMYX_YML_BEDROCK_DEV_VOLUME
         volumes:
-          ${DEMYX_APP_PREFIX}:
+          ${DEMYX_APP_WP_VOLUME}:
             external: true
-            name: ${DEMYX_APP_PREFIX}
+            name: ${DEMYX_APP_WP_VOLUME}
           ${DEMYX_APP_PREFIX}_code:
             external: true
             name: ${DEMYX_APP_PREFIX}_code
@@ -393,17 +394,13 @@ demyx_yml_nginx_php() {
         DEMYX_APP_WP_VOLUME
     "
 
-    local DEMYX_YML_NGINX_PHP_DEV_CPU="\${DEMYX_APP_WP_CPU}"
     local DEMYX_YML_NGINX_PHP_DEV_ENTRYPOINTS=
     local DEMYX_YML_NGINX_PHP_DEV_LABELS=
-    local DEMYX_YML_NGINX_PHP_DEV_MEM="\${DEMYX_APP_WP_MEM}"
     local DEMYX_YML_NGINX_PHP_DEV_PASSWORD=
     local DEMYX_YML_NGINX_PHP_DEV_VOLUME=
     local DEMYX_YML_NGINX_PHP_IMAGE=demyx/wordpress
 
     if [[ "$DEMYX_APP_DEV" = true ]]; then
-        DEMYX_YML_NGINX_PHP_DEV_CPU=".80"
-        DEMYX_YML_NGINX_PHP_DEV_MEM="$(demyx_yml_memory)"
         DEMYX_YML_NGINX_PHP_DEV_PASSWORD="- DEMYX_CODE_PASSWORD=\${DEMYX_APP_DEV_PASSWORD}"
         DEMYX_YML_NGINX_PHP_DEV_VOLUME="- ${DEMYX_APP_PREFIX}_code:/home/demyx"
         DEMYX_YML_NGINX_PHP_IMAGE=demyx/code-server:wp
@@ -440,22 +437,25 @@ demyx_yml_nginx_php() {
             depends_on:
               - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}
             environment:
-              $(demyx_yml_nginx_basic_auth)
-              $(demyx_yml_nginx_whitelist)
+              - DEMYX_BASIC_AUTH=\${DEMYX_APP_AUTH}
+              - DEMYX_BASIC_AUTH_PASSWORD=\${DEMYX_APP_AUTH_PASSWORD}
+              - DEMYX_BASIC_AUTH_USERNAME=\${DEMYX_APP_AUTH_USERNAME}
+              - DEMYX_BASIC_AUTH_WP=\${DEMYX_APP_AUTH_WP}
+              - DEMYX_BEDROCK=false
               - DEMYX_CACHE_INACTIVE=\${DEMYX_APP_CACHE_INACTIVE}
               - DEMYX_CACHE_TYPE=\${DEMYX_APP_CACHE_TYPE}
-              - NGINX_CACHE=\${DEMYX_APP_CACHE}
-              - NGINX_DOMAIN=\${DEMYX_APP_DOMAIN}
-              - NGINX_RATE_LIMIT=\${DEMYX_APP_RATE_LIMIT}
-              - NGINX_UPLOAD_LIMIT=\${DEMYX_APP_UPLOAD_LIMIT}
-              - NGINX_XMLRPC=\${DEMYX_APP_XMLRPC}
+              - DEMYX_CACHE=\${DEMYX_APP_CACHE}
+              - DEMYX_DOMAIN=\${DEMYX_APP_DOMAIN}
+              - DEMYX_RATE_LIMIT=\${DEMYX_APP_RATE_LIMIT}
+              - DEMYX_UPLOAD_LIMIT=\${DEMYX_APP_UPLOAD_LIMIT}
+              - DEMYX_WHITELIST=\${DEMYX_APP_IP_WHITELIST}
+              - DEMYX_WHITELIST_IP=${DEMYX_IP}
+              - DEMYX_WORDPRESS_CONTAINER=\${DEMYX_APP_WP_CONTAINER}
+              - DEMYX_XMLRPC=\${DEMYX_APP_XMLRPC}
               - TZ=$TZ
-              - WORDPRESS=true
-              - WORDPRESS_CONTAINER=\${DEMYX_APP_WP_CONTAINER}
             image: demyx/nginx
             labels:
               - \"traefik.enable=true\"
-              $(demyx_yml_auth_label)
               $(demyx_yml_http_labels)
             mem_limit: \${DEMYX_APP_WP_MEM}
             networks:
@@ -470,7 +470,7 @@ demyx_yml_nginx_php() {
           $(demyx_yml_service_sftp)
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}:
             container_name: \${DEMYX_APP_WP_CONTAINER}
-            cpus: $DEMYX_YML_NGINX_PHP_DEV_CPU
+            cpus: \${DEMYX_APP_WP_CPU}
             depends_on:
               - db_\${DEMYX_APP_ID}
             environment:
@@ -511,7 +511,7 @@ demyx_yml_nginx_php() {
             hostname: \${DEMYX_APP_COMPOSE_PROJECT}
             image: $DEMYX_YML_NGINX_PHP_IMAGE
             $DEMYX_YML_NGINX_PHP_DEV_LABELS
-            mem_limit: $DEMYX_YML_NGINX_PHP_DEV_MEM
+            mem_limit: \${DEMYX_APP_WP_MEM}
             networks:
               - demyx
             restart: unless-stopped
