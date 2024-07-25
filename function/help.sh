@@ -178,7 +178,7 @@ demyx_help() {
             echo "              code                    Regenerate docker-compose.yml and .env for the code-server service."
             echo "              traefik                 Regenerate docker-compose.yml and for the traefik service and backup acme.json."
             echo "                          -f          Delete and regenerate app's non-sensitive environment variables between two points. Does not work with code-server and traefik service."
-            echo "                          -fr         Regenerate docker-compose.yml and .env files and execute docker compose up -d --force-recreate --remove-orphans."            
+            echo "                          -fr         Regenerate docker-compose.yml and .env files and execute docker compose up -d --force-recreate --remove-orphans."
             echo "                          -nc         Regenerate docker-compose.yml and .env files only, no docker compose commands will be executed."
             echo "                          -s          Regenerate docker-compose.yml and .env files and skip app's config backup."
             echo
