@@ -131,6 +131,7 @@ demyx_yml_bedrock() {
         services:
           $(demyx_yml_service_mariadb)
           nx_${DEMYX_APP_ID}:
+            container_name: \${DEMYX_APP_NX_CONTAINER}
             cpus: \${DEMYX_APP_WP_CPU}
             depends_on:
               - \${DEMYX_APP_TYPE}_\${DEMYX_APP_ID}
@@ -167,6 +168,7 @@ demyx_yml_bedrock() {
           $(demyx_yml_service_redis)
           $(demyx_yml_service_sftp)
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}:
+            container_name: \${DEMYX_APP_WP_CONTAINER}
             cpus: \${DEMYX_APP_WP_MEM}
             depends_on:
               - db_\${DEMYX_APP_ID}
