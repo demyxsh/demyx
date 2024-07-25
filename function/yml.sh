@@ -274,7 +274,7 @@ demyx_yml_code() {
         services:
           code:
             container_name: demyx_code
-            cpus: .80
+            cpus: \${DEMYX_APP_CPU:-0}
             environment:
               - PASSWORD=$DEMYX_CODE_PASSWORD
               - TZ=$TZ
@@ -288,7 +288,7 @@ demyx_yml_code() {
               - \"traefik.http.services.demyx-code-http-port.loadbalancer.server.port=8080\"
               $DEMYX_YML_CODE_LABELS
               $DEMYX_YML_CODE_WHITELIST
-            mem_limit: $(demyx_yml_memory)
+            mem_limit: \${DEMYX_APP_MEM:-0}
             networks:
               - demyx
               - demyx_socket
