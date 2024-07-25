@@ -213,7 +213,7 @@ demyx_yml_bedrock() {
             hostname: \${DEMYX_APP_COMPOSE_PROJECT}
             image: $DEMYX_YML_BEDROCK_IMAGE
             $DEMYX_YML_BEDROCK_DEV_LABELS
-            mem_limit: $DEMYX_YML_BEDROCK_DEV_MEM
+            mem_limit: \${DEMYX_APP_WP_MEM}
             networks:
               - demyx
             restart: unless-stopped
