@@ -271,6 +271,12 @@ demyx_yml_code() {
         DEMYX_YML_CODE_PASSWORD="- DEMYX_CODE_AUTH=none"
     fi
 
+    # Create demyx_user volume if it doesn't exist
+    DEMYX_YML_CODE_VOLUME="$(docker volume ls --filter=name="demyx_user" -q)"
+    if [[ -z "${DEMYX_YML_CODE_VOLUME}" ]]; then
+        docker volume create demyx_user
+    fi
+
     echo "# DEMYX $DEMYX_VERSION
         networks:
           demyx:
