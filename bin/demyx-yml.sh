@@ -31,8 +31,8 @@ demyx_yml() {
             DEMYX_CODE_SSL=false
 
             # CONTAINER CPU/MEM
-            DEMYX_CPU=.50
-            DEMYX_MEM=256m
+            DEMYX_CPU=0
+            DEMYX_MEM=0
 
             # LOGROTATE
             DEMYX_LOGROTATE=daily
