@@ -225,7 +225,7 @@ services:
       - DEMYX_MATRIX_KEY=\${DEMYX_MATRIX_KEY}
       - DEMYX_MATRIX_URL=\${DEMYX_MATRIX_URL}
       - DEMYX_MEM=\${DEMYX_MEM}
-      - DEMYX_SERVER_IP=$(ifconfig eth0 | grep -w inet | awk '{print $2}' | cut -f2 -d':')
+      - DEMYX_SERVER_IP=$(dig @ns1.google.com -t txt o-o.myaddr.l.google.com +short | sed 's|"||g')
       - DEMYX_SMTP=\${DEMYX_SMTP}
       - DEMYX_SMTP_HOST=\${DEMYX_SMTP_HOST}
       - DEMYX_SMTP_FROM=\${DEMYX_SMTP_FROM}
