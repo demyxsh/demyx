@@ -466,47 +466,28 @@ demyx_pm_calc() {
         utility
     "
 
-    demyx_app_env wp "
-        DEMYX_APP_DOMAIN
-        DEMYX_APP_PHP_PM
-        DEMYX_APP_WP_CONTAINER
-    "
+    demyx_app_env wp DEMYX_APP_PHP_PM_AVERAGE
 
     local DEMYX_PM_CALC="${1:-}"
-    local DEMYX_PM_CALC_AVERAGE=
-    local DEMYX_PM_CALC_FILE="$DEMYX_TMP"/demyx_pm_calc
     local DEMYX_PM_CALC_MEMORY=
-    DEMYX_PM_CALC_MEMORY="$(docker inspect "$DEMYX_APP_WP_CONTAINER" | jq '.[].HostConfig.Memory' | awk '{ byte =$1 /1024/1024; print byte }')"
+    DEMYX_PM_CALC_MEMORY="$(free | grep Mem | awk -F ' ' '{print $2}')"
     local DEMYX_PM_CALC_MEMORY_BUFFER=
-    DEMYX_PM_CALC_MEMORY_BUFFER="$(echo "${DEMYX_PM_CALC_MEMORY}*10/100" | bc)"
-    DEMYX_PM_CALC_MEMORY="$(echo "${DEMYX_PM_CALC_MEMORY}-${DEMYX_PM_CALC_MEMORY_BUFFER}" | bc)"
+    DEMYX_PM_CALC_MEMORY_BUFFER="$(( "${DEMYX_PM_CALC_MEMORY}" * 10 /100 ))"
+    DEMYX_PM_CALC_MEMORY="$(( "${DEMYX_PM_CALC_MEMORY}" - "${DEMYX_PM_CALC_MEMORY_BUFFER}" - "${DEMYX_PM_CALC_MEMORY_BUFFER}" ))"
+    local DEMYX_PM_CALC_MAX_CHILDREN="$(( "${DEMYX_PM_CALC_MEMORY}" / "${DEMYX_APP_PHP_PM_AVERAGE}" ))"
 
     case "$DEMYX_PM_CALC" in
         max-children)
-            # Loop until php-fpm child process is spawned
-            while true; do
-                curl -sL http://"$DEMYX_APP_DOMAIN"/wp-admin/?demyx-"$(demyx_utility id -r)" -o /dev/null || true
-                docker exec "$DEMYX_APP_WP_CONTAINER" ps -o rss,args > "$DEMYX_TMP"/demyx_pm_calc_ps
-                DEMYX_PM_CALC="$(grep "php-fpm: pool" "$DEMYX_TMP"/demyx_pm_calc_ps)"
-
-                if [[ -n "$DEMYX_PM_CALC" ]]; then
-                    DEMYX_PM_CALC_AVERAGE="$(grep "m {" "$DEMYX_TMP"/demyx_pm_calc_ps | head -c -1 | awk '{print $1}' | head -c -1 | sed 's|m||g' | jq -s add/length | awk -F '.' '{print $1}')"
-                    echo "${DEMYX_PM_CALC_MEMORY}/${DEMYX_PM_CALC_AVERAGE}" | bc | tee "$DEMYX_PM_CALC_FILE"
-                    break
-                fi
-            done
+            echo "${DEMYX_PM_CALC_MAX_CHILDREN}"
         ;;
         max-spare)
-            DEMYX_PM_CALC="$(cat < "$DEMYX_PM_CALC_FILE")*75/100"
-            echo "$DEMYX_PM_CALC" | bc
+            echo "$(( "$DEMYX_PM_CALC_MAX_CHILDREN" * 75 / 100 ))"
         ;;
         min-spare)
-            DEMYX_PM_CALC="$(cat < "$DEMYX_PM_CALC_FILE")*25/100"
-            echo "$DEMYX_PM_CALC" | bc
+            echo "$(( "$DEMYX_PM_CALC_MAX_CHILDREN" * 25 / 100 ))"
         ;;
         start-server)
-            DEMYX_PM_CALC="$(cat < "$DEMYX_PM_CALC_FILE")*25/100"
-            echo "$DEMYX_PM_CALC" | bc
+            echo "$(( "$DEMYX_PM_CALC_MAX_CHILDREN" * 75 / 100 ))"
         ;;
     esac
 }
