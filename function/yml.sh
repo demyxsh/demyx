@@ -246,6 +246,7 @@ demyx_yml_bedrock() {
 demyx_yml_code() {
     demyx_event
     local DEMYX_YML_CODE_LABELS=
+    local DEMYX_YML_CODE_PASSWORD="- PASSWORD=${DEMYX_CODE_PASSWORD}"
     local DEMYX_YML_CODE_WHITELIST=
 
     if [[ "$DEMYX_IP" != false ]]; then
@@ -263,6 +264,10 @@ demyx_yml_code() {
               - \"traefik.http.services.demyx-code-https-port.loadbalancer.server.port=8080\""
     fi
 
+    if [[ "${DEMYX_CODE_PASSWORD}" = false ]]; then
+        DEMYX_YML_CODE_PASSWORD="- DEMYX_CODE_AUTH=none"
+    fi
+
     echo "# DEMYX $DEMYX_VERSION
         networks:
           demyx:
@@ -276,7 +281,7 @@ demyx_yml_code() {
             container_name: demyx_code
             cpus: \${DEMYX_APP_CPU:-0}
             environment:
-              - PASSWORD=$DEMYX_CODE_PASSWORD
+              ${DEMYX_YML_CODE_PASSWORD}
               - TZ=$TZ
             hostname: code-${DEMYX_HOSTNAME}
             image: demyx/code-server:browse
