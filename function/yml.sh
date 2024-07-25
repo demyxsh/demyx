@@ -537,34 +537,6 @@ demyx_yml_nginx_php() {
         " | sed "s|        ||g" > "$DEMYX_APP_PATH"/docker-compose.yml
 }
 #
-#   NGINX basic auth environment variables.
-#
-demyx_yml_nginx_basic_auth() {
-    demyx_event
-    demyx_app_env wp "
-        DEMYX_APP_AUTH_WP
-        DEMYX_APP_AUTH_PASSWORD
-        DEMYX_APP_AUTH_USERNAME
-    "
-
-    if [[ "$DEMYX_APP_AUTH_WP" = true ]]; then
-        echo "- NGINX_BASIC_AUTH=\${DEMYX_APP_AUTH_WP}
-              - NGINX_BASIC_AUTH_HTPASSWD=$(demyx_utility htpasswd -r "$DEMYX_APP_AUTH_USERNAME" "$DEMYX_APP_AUTH_PASSWORD" | sed "s|\\$|\$$|g")"
-    fi
-}
-#
-#   NGINX whitelist environment variables.
-#
-demyx_yml_nginx_whitelist() {
-    demyx_event
-    demyx_app_env wp DEMYX_APP_IP_WHITELIST
-
-    if [[ "$DEMYX_APP_IP_WHITELIST" != false ]]; then
-        echo "- NGINX_WHITELIST=\${DEMYX_APP_IP_WHITELIST}
-              - NGINX_WHITELIST_IP=$DEMYX_IP"
-    fi
-}
-#
 #   YAML template for the ols stack.
 #
 demyx_yml_ols() {
