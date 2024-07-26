@@ -212,6 +212,11 @@ demyx_arg_valid() {
         demyx_error custom "That domain is reserved"
     fi
 
+    # Checks if DEMYX_ARG_2 has a period to indicate it's a domain
+    if [[ ! "${DEMYX_ARG_2}" =~ \. ]]; then
+        demyx_error custom "Not a valid domain"
+    fi
+
     local DEMYX_ARG_PATH_CHECK=
     DEMYX_ARG_PATH_CHECK="$(find "$DEMYX_APP" -name "$DEMYX_ARG_2" || true)"
 
