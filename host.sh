@@ -350,11 +350,11 @@ demyx_host_upgrade() {
         # Use new images
         demyx_host_exec refresh all
 
-        # Remove old images
-        docker images --filter=dangling=true -q | xargs docker rmi || true
-
         # Update cache
         demyx_host_exec update
+
+        # Remove old images
+        docker images --filter=dangling=true -q | xargs docker rmi || true
 
         # Empty out this variable to suppress update message
         DEMYX_HOST_COUNT=0
