@@ -147,7 +147,7 @@ demyx_config() {
             --opcache=false)
                 DEMYX_CONFIG_FLAG_OPCACHE=false
             ;;
-            --php=8.1|--php=8.2)
+            --php=8.2|--php=8.3)
                 DEMYX_CONFIG_FLAG_PHP=true
                 DEMYX_CONFIG_FLAG_PHP_VERSION="${DEMYX_CONFIG_FLAG#*=}"
             ;;
