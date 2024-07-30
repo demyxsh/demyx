@@ -855,16 +855,7 @@ demyx_config_maintenance() {
 #
 demyx_config_opcache() {
     demyx_event
-    demyx_app_env wp "
-        DEMYX_APP_DOMAIN
-        DEMYX_APP_PHP_OPCACHE_ENABLE
-        DEMYX_APP_PHP_OPCACHE_ENABLE_CLI
-        DEMYX_APP_STACK
-        DEMYX_APP_PHP_OPCACHE
-        DEMYX_APP_WP_CONTAINER
-    "
-
-    DEMYX_CONFIG_COMPOSE=true
+    demyx_app_env wp DEMYX_APP_WP_CONTAINER
 
     demyx_execute "Setting $DEMYX_CONFIG_FLAG_OPCACHE to opcache" \
         "demyx_app_env_update DEMYX_APP_PHP_OPCACHE=${DEMYX_CONFIG_FLAG_OPCACHE}"
@@ -872,9 +863,19 @@ demyx_config_opcache() {
     if [[ "$DEMYX_CONFIG_FLAG_OPCACHE" = true ]]; then
         demyx_app_env_update DEMYX_APP_PHP_OPCACHE_ENABLE=1
         demyx_app_env_update DEMYX_APP_PHP_OPCACHE_ENABLE_CLI=1
+        docker exec \
+            -e DEMYX_OPCACHE="${DEMYX_CONFIG_FLAG_OPCACHE}" \
+            -e DEMYX_OPCACHE_ENABLE=1 \
+            -e DEMYX_OPCACHE_ENABLE_CLI=1 \
+        "${DEMYX_APP_WP_CONTAINER}" demyx-entrypoint
     elif [[ "$DEMYX_CONFIG_FLAG_OPCACHE" = false ]]; then
         demyx_app_env_update DEMYX_APP_PHP_OPCACHE_ENABLE=0
         demyx_app_env_update DEMYX_APP_PHP_OPCACHE_ENABLE_CLI=0
+        docker exec \
+            -e DEMYX_OPCACHE="${DEMYX_CONFIG_FLAG_OPCACHE}" \
+            -e DEMYX_OPCACHE_ENABLE=0 \
+            -e DEMYX_OPCACHE_ENABLE_CLI=0 \
+        "${DEMYX_APP_WP_CONTAINER}" demyx-entrypoint
     fi
 }
 #
