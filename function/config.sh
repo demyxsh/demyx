@@ -931,13 +931,28 @@ demyx_config_php() {
 demyx_config_pm() {
     demyx_event
     demyx_ols_not_supported
-    DEMYX_CONFIG_COMPOSE=true
+    demyx_app_env wp DEMYX_APP_WP_CONTAINER
+
+    local DEMYX_CONFIG_PM_MAX_CHILDREN=
+    local DEMYX_CONFIG_PM_MAX_SPARE_SERVERS=
+    local DEMYX_CONFIG_PM_MIN_SPARE_SERVERS=
+    local DEMYX_CONFIG_PM_START_SERVERS=
+    DEMYX_CONFIG_PM_MAX_CHILDREN="$(demyx_pm_calc max-children)"
+    DEMYX_CONFIG_PM_MAX_SPARE_SERVERS="$(demyx_pm_calc max-spare)"
+    DEMYX_CONFIG_PM_MIN_SPARE_SERVERS="$(demyx_pm_calc min-spare)"
+    DEMYX_CONFIG_PM_START_SERVERS="$(demyx_pm_calc start-server)"
 
     demyx_execute "Configuring php-fpm values" \
-        "demyx_app_env_update DEMYX_APP_PHP_PM_MAX_CHILDREN=$(demyx_pm_calc max-children); \
-        demyx_app_env_update DEMYX_APP_PHP_PM_MAX_SPARE_SERVERS=$(demyx_pm_calc max-spare); \
-        demyx_app_env_update DEMYX_APP_PHP_PM_MIN_SPARE_SERVERS=$(demyx_pm_calc min-spare); \
-        demyx_app_env_update DEMYX_APP_PHP_PM_START_SERVERS=$(demyx_pm_calc start-server)"
+        "docker exec \
+            -e DEMYX_PM_MAX_CHILDREN=${DEMYX_CONFIG_PM_MAX_CHILDREN} \
+            -e DEMYX_PM_MAX_SPARE_SERVERS=${DEMYX_CONFIG_PM_MAX_SPARE_SERVERS} \
+            -e DEMYX_PM_MIN_SPARE_SERVERS=${DEMYX_CONFIG_PM_MIN_SPARE_SERVERS} \
+            -e DEMYX_PM_START_SERVERS=${DEMYX_CONFIG_PM_START_SERVERS} \
+        ${DEMYX_APP_WP_CONTAINER} demyx-entrypoint; \
+        demyx_app_env_update DEMYX_APP_PHP_PM_MAX_CHILDREN=${DEMYX_CONFIG_PM_MAX_CHILDREN}; \
+        demyx_app_env_update DEMYX_APP_PHP_PM_MAX_SPARE_SERVERS=${DEMYX_CONFIG_PM_MAX_SPARE_SERVERS}; \
+        demyx_app_env_update DEMYX_APP_PHP_PM_MIN_SPARE_SERVERS=${DEMYX_CONFIG_PM_MIN_SPARE_SERVERS}; \
+        demyx_app_env_update DEMYX_APP_PHP_PM_START_SERVERS=${DEMYX_CONFIG_PM_START_SERVERS}"
 }
 #
 #   Configures a phpMyAdmin container for an app.
