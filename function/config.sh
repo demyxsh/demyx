@@ -930,6 +930,9 @@ demyx_config_php() {
 #   Configure php-fpm values based on app's defined memory.
 #
 demyx_config_pm() {
+    # Disable for now
+    demyx_warning "This feature is disabled for now" true
+
     demyx_event
     demyx_ols_not_supported
     demyx_app_env wp DEMYX_APP_WP_CONTAINER
