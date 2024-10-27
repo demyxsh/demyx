@@ -1240,7 +1240,7 @@ demyx_yml_traefik() {
         services:
           traefik:
             container_name: demyx_traefik
-            cpus: $DEMYX_CPU
+            cpus: \${DEMYX_APP_CPU:-0}
             environment:
               - CF_API_EMAIL=$DEMYX_EMAIL
               - CF_API_KEY=$DEMYX_CF_KEY
@@ -1252,7 +1252,7 @@ demyx_yml_traefik() {
             $DEMYX_YML_TRAEFIK_DASHBOARD
             $DEMYX_YML_TRAEFIK_LABELS
             $DEMYX_YML_TRAEFIK_SECURITY
-            mem_limit: $DEMYX_MEM
+            mem_limit: \${DEMYX_APP_MEM:-0}
             networks:
               - demyx
               - demyx_socket
