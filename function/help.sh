@@ -94,6 +94,11 @@ demyx_help() {
             echo "           weekly             Weekly cron that will execute a custom weekly callback script for now."
             echo
         ;;
+        down)
+            echo
+            echo "demyx down <app>        Shortcut for docker compose down"
+            echo
+        ;;
         edit)
             echo
             echo "demyx edit <app>      <args>          Executes 'nano /demyx/app/wp/<app>/.env' inside the Demyx container."
@@ -223,6 +228,11 @@ demyx_help() {
         smtp)
             echo
             echo "demyx smtp        Sends out a success email if SMTP is configured properly."
+            echo
+        ;;
+        up)
+            echo
+            echo "demyx up <app>        Shortcut for docker compose up -d"
             echo
         ;;
         update)

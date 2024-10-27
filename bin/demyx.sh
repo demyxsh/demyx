@@ -33,6 +33,10 @@ demyx() {
         cron) shift
             demyx_cron "$@"
         ;;
+        down) shift
+            . "${DEMYX_FUNCTION}"/compose.sh
+            demyx_compose "${DEMYX_ARG_2}" down
+        ;;
         edit) shift
             demyx_edit "$@"
         ;;
@@ -71,6 +75,10 @@ demyx() {
         ;;
         smtp) shift
             demyx_smtp "$@"
+        ;;
+        up) shift
+            . "${DEMYX_FUNCTION}"/compose.sh
+            demyx_compose "${DEMYX_ARG_2}" up -d
         ;;
         update) shift
             demyx_update "$@"
