@@ -166,8 +166,8 @@ demyx_yml() {
 services:
   socket:
     image: demyx/docker-socket-proxy
-    cpus: .50
-    mem_limit: 256m
+    cpus: \${DEMYX_CPU:-0}
+    mem_limit: \${DEMYX_MEM:-0}
     container_name: demyx_socket
     restart: unless-stopped
     networks:
@@ -185,8 +185,8 @@ services:
       - VOLUMES=1
   demyx:
     image: demyx/demyx:\${DEMYX_IMAGE_VERSION}
-    cpus: \${DEMYX_CPU:-.50}
-    mem_limit: \${DEMYX_MEM:-256m}
+    cpus: \${DEMYX_CPU:-0}
+    mem_limit: \${DEMYX_MEM:-0}
     container_name: demyx
     restart: unless-stopped
     hostname: \${DEMYX_HOSTNAME}
