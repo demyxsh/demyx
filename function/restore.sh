@@ -289,7 +289,7 @@ demyx_restore_db() {
         "docker exec $DEMYX_APP_WP_CONTAINER rm -f ${DEMYX_APP_CONTAINER}.sql .maintenance"
 }
 #
-#   Restore Traefik's acme.json and docker-compose.yml files.
+#   Restore Traefik's acme.json and compose.yml files.
 #
 demyx_restore_traefik() {
     demyx_event

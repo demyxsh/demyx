@@ -56,6 +56,14 @@ demyx_compose_app() {
         demyx_error app
     fi
 
+    # TEMPORARY
+    if [[ -f "${DEMYX_APP_PATH}/docker-compose.yml" ]]; then
+        mv "${DEMYX_APP_PATH}/docker-compose.yml" "${DEMYX_APP_PATH}/compose.yml"
+    fi
+    if [[ -f "${DEMYX_APP_PATH}/docker-compose.override.yml" ]]; then
+        mv "${DEMYX_APP_PATH}/docker-compose.override.yml" "${DEMYX_APP_PATH}/compose.override.yml"
+    fi
+
     cd "$DEMYX_APP_PATH" || exit
 
     case "$DEMYX_COMPOSE_TYPE" in

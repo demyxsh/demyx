@@ -72,7 +72,7 @@ demyx_rm_all() {
 
         for DEMYX_RM_ALL in *; do
             if [[   -f "$DEMYX_HTML"/"$DEMYX_RM_ALL"/.env &&
-                    -f "$DEMYX_HTML"/"$DEMYX_RM_ALL"/docker-compose.yml ]]; then
+                    -f "$DEMYX_HTML"/"$DEMYX_RM_ALL"/compose.yml ]]; then
                 demyx_echo "Removing $DEMYX_RM_ALL"
                 eval demyx_rm "$DEMYX_RM_ALL" -f
             fi
@@ -87,7 +87,7 @@ demyx_rm_all() {
 
         for DEMYX_RM_ALL in *; do
             if [[   -f "$DEMYX_PHP"/"$DEMYX_RM_ALL"/.env &&
-                    -f "$DEMYX_PHP"/"$DEMYX_RM_ALL"/docker-compose.yml ]]; then
+                    -f "$DEMYX_PHP"/"$DEMYX_RM_ALL"/compose.yml ]]; then
                 demyx_echo "Removing $DEMYX_RM_ALL"
                 eval demyx_rm "$DEMYX_RM_ALL" -f
             fi
@@ -102,7 +102,7 @@ demyx_rm_all() {
 
         for DEMYX_RM_ALL in *; do
             if [[   -f "$DEMYX_WP"/"$DEMYX_RM_ALL"/.env &&
-                    -f "$DEMYX_WP"/"$DEMYX_RM_ALL"/docker-compose.yml ]]; then
+                    -f "$DEMYX_WP"/"$DEMYX_RM_ALL"/compose.yml ]]; then
                 demyx_echo "Removing $DEMYX_RM_ALL"
                 eval demyx_rm "$DEMYX_RM_ALL" -f
             fi

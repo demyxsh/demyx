@@ -67,7 +67,7 @@ demyx_motd_warning() {
                 DEMYX_APP_PATH
             "
 
-            if [[ "$DEMYX_APP_DEV" = true && -f "$DEMYX_APP_PATH"/.env && -f "$DEMYX_APP_PATH"/docker-compose.yml ]]; then
+            if [[ "$DEMYX_APP_DEV" = true && -f "$DEMYX_APP_PATH"/.env && -f "$DEMYX_APP_PATH"/compose.yml ]]; then
                 demyx_warning "$DEMYX_MOTD_WARNING_I is in development mode"
             fi
         done

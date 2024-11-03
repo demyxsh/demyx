@@ -241,7 +241,7 @@ demyx_yml_bedrock() {
           ${DEMYX_APP_PREFIX}_sftp:
             external: true
             name: ${DEMYX_APP_PREFIX}_sftp
-        " | sed "s|        ||g" > "$DEMYX_APP_PATH"/docker-compose.yml
+        " | sed "s|        ||g" > "$DEMYX_APP_PATH"/compose.yml
 }
 #
 #   YAML template for code-server.
@@ -320,7 +320,7 @@ demyx_yml_code() {
             name: demyx_log
           demyx_user:
             external: true
-            name: demyx_user" | sed "s|        ||g" > "$DEMYX_CODE"/docker-compose.yml
+            name: demyx_user" | sed "s|        ||g" > "$DEMYX_CODE"/compose.yml
 }
 #
 #   YAML template for traefik http labels.
@@ -547,7 +547,7 @@ demyx_yml_nginx_php() {
           ${DEMYX_APP_PREFIX}_sftp:
             external: true
             name: ${DEMYX_APP_PREFIX}_sftp
-        " | sed "s|        ||g" > "$DEMYX_APP_PATH"/docker-compose.yml
+        " | sed "s|        ||g" > "$DEMYX_APP_PATH"/compose.yml
 }
 #
 #   YAML template for the ols stack.
@@ -726,7 +726,7 @@ demyx_yml_ols() {
           ${DEMYX_APP_PREFIX}_sftp:
             external: true
             name: ${DEMYX_APP_PREFIX}_sftp
-        " | sed "s|        ||g" > "$DEMYX_APP_PATH"/docker-compose.yml
+        " | sed "s|        ||g" > "$DEMYX_APP_PATH"/compose.yml
 }
 #
 #   YAML template for the ols-bedrock stack.
@@ -931,7 +931,7 @@ demyx_yml_ols_bedrock() {
           ${DEMYX_APP_PREFIX}_sftp:
             external: true
             name: ${DEMYX_APP_PREFIX}_sftp
-        " | sed "s|        ||g" > "$DEMYX_APP_PATH"/docker-compose.yml
+        " | sed "s|        ||g" > "$DEMYX_APP_PATH"/compose.yml
 }
 #
 #   Traefik resolver.
@@ -1271,5 +1271,5 @@ demyx_yml_traefik() {
             name: demyx_log
           demyx_traefik:
             $(demyx_external_volume traefik)
-            name: demyx_traefik" | sed "s|        ||g" > "$DEMYX_TRAEFIK"/docker-compose.yml
+            name: demyx_traefik" | sed "s|        ||g" > "$DEMYX_TRAEFIK"/compose.yml
 }

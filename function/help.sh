@@ -12,11 +12,11 @@ demyx_help() {
             echo
             echo "demyx backup <app> <args>             Backup specific app."
             echo "             all                      Backup all apps in a loop."
-            echo "             traefik                  Backup Traefik's acme.json and docker-compose.yml files."
-            echo "                   -c                 Backup only the configs (docker-compose.yml and .env)."
+            echo "             traefik                  Backup Traefik's acme.json and compose.yml files."
+            echo "                   -c                 Backup only the configs (compose.yml and .env)."
             echo "                   -d                 Backup only the database."
             echo "                   -l                 List all backups with file size shown."
-            echo "                   --path             For advance users where the main docker-compose.yml has been extended with a custom volume path. (Usage: --path=/custom/path)"
+            echo "                   --path             For advance users where the main compose.yml has been extended with a custom volume path. (Usage: --path=/custom/path)"
             echo
         ;;
         compose)
@@ -103,7 +103,7 @@ demyx_help() {
             echo
             echo "demyx edit <app>      <args>          Executes 'nano /demyx/app/wp/<app>/.env' inside the Demyx container."
             # TODO - echo "           traefik                    Edit Traefik's .env"
-            echo "                      -r              Use this flag to refresh the app’s docker-compose.yml and .env files. App’s containers will be recreated."
+            echo "                      -r              Use this flag to refresh the app’s compose.yml and .env files. App’s containers will be recreated."
             echo
         ;;
         exec)
@@ -178,21 +178,21 @@ demyx_help() {
         ;;
         refresh)
             echo
-            echo "demyx refresh <app>       <args>      Regenerate docker-compose.yml and .env files."
-            echo "              all                     Regenerate all app's .env/docker-compose.yml files."
-            echo "              code                    Regenerate docker-compose.yml and .env for the code-server service."
-            echo "              traefik                 Regenerate docker-compose.yml and for the traefik service and backup acme.json."
+            echo "demyx refresh <app>       <args>      Regenerate compose.yml and .env files."
+            echo "              all                     Regenerate all app's .env/compose.yml files."
+            echo "              code                    Regenerate compose.yml and .env for the code-server service."
+            echo "              traefik                 Regenerate compose.yml and for the traefik service and backup acme.json."
             echo "                          -f          Delete and regenerate app's non-sensitive environment variables between two points. Does not work with code-server and traefik service."
-            echo "                          -fr         Regenerate docker-compose.yml and .env files and execute docker compose up -d --force-recreate --remove-orphans."
-            echo "                          -nc         Regenerate docker-compose.yml and .env files only, no docker compose commands will be executed."
-            echo "                          -s          Regenerate docker-compose.yml and .env files and skip app's config backup."
+            echo "                          -fr         Regenerate compose.yml and .env files and execute docker compose up -d --force-recreate --remove-orphans."
+            echo "                          -nc         Regenerate compose.yml and .env files only, no docker compose commands will be executed."
+            echo "                          -s          Regenerate compose.yml and .env files and skip app's config backup."
             echo
         ;;
         restore)
             echo
             echo "demyx restore <app>       <args>        Restore app’s configs and volumes."
-            echo "demyx restore traefik                   Restore Traefik's acme.json and docker-compose.yml files."
-            echo "                          -c            Restores app’s docker-compose.yml and .env files only."
+            echo "demyx restore traefik                   Restore Traefik's acme.json and compose.yml files."
+            echo "                          -c            Restores app’s compose.yml and .env files only."
             echo "                          --date        Specify which archive date you want to restore. Must be in the format of yy-mm-d."
             echo "                          -d            Restore database only."
             echo "                          -f            Disable prompt when restoring an app."
@@ -275,7 +275,7 @@ demyx_help() {
             echo "      log                     Main command to print various logs."
             echo "      motd                    Message of the day."
             echo "      pull                    Pull available specific Demyx or third party images to update them manually."
-            echo "      refresh                 Regenerate docker-compose.yml and .env files."
+            echo "      refresh                 Regenerate compose.yml and .env files."
             echo "      restore                 Restore app’s configs and volumes."
             echo "      rm                      Delete an app’s configs and volumes."
             echo "      run                     Creates an app."

@@ -57,10 +57,10 @@ demyx_app_env() {
         fi
 
         # TEMPORARY
-        if [[ -f "$DEMYX_WP"/"$DEMYX_ARG_2"/docker-compose.yml ]]; then
-            DEMYX_APP_ENV_REMOVE_COMPOSE="$(grep DEMYX_APP_AUTH_HTPASSWD "$DEMYX_WP"/"$DEMYX_ARG_2"/docker-compose.yml || true)"
+        if [[ -f "${DEMYX_WP}/${DEMYX_ARG_2}/compose" ]]; then
+            DEMYX_APP_ENV_REMOVE_COMPOSE="$(grep DEMYX_APP_AUTH_HTPASSWD "${DEMYX_WP}/${DEMYX_ARG_2}/compose" || true)"
             if [[ -n "$DEMYX_APP_ENV_REMOVE_COMPOSE" ]]; then
-                sed -i "/DEMYX_APP_AUTH_HTPASSWD/d" "$DEMYX_WP"/"$DEMYX_ARG_2"/docker-compose.yml
+                sed -i "/DEMYX_APP_AUTH_HTPASSWD/d" "${DEMYX_WP}/${DEMYX_ARG_2}/compose"
             fi
         fi
 
@@ -222,7 +222,7 @@ demyx_arg_valid() {
 
     # shellcheck disable=SC2153
     if [[ "$DEMYX_ARG_1" != run && "$DEMYX_ARG_1" != restore ]]; then
-        if [[ ! -d "$DEMYX_ARG_PATH_CHECK" && ! -f "$DEMYX_ARG_PATH_CHECK"/.env && ! -f "$DEMYX_ARG_PATH_CHECK"/docker-compose.yml ]]; then
+        if [[ ! -d "$DEMYX_ARG_PATH_CHECK" && ! -f "$DEMYX_ARG_PATH_CHECK"/.env && ! -f "$DEMYX_ARG_PATH_CHECK"/compose.yml ]]; then
             demyx_error app
         fi
     fi

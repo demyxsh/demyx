@@ -23,10 +23,10 @@ demyx_env() {
         fi
 
         # TODO - TEMPORARY
-        if [[ -f "$DEMYX_ENV"/docker-compose.yml ]]; then
-            DEMYX_APP_ENV_REMOVE_COMPOSE="$(grep DEMYX_APP_AUTH_HTPASSWD "$DEMYX_ENV"/docker-compose.yml || true)"
+        if [[ -f "${DEMYX_ENV}/compose" ]]; then
+            DEMYX_APP_ENV_REMOVE_COMPOSE="$(grep DEMYX_APP_AUTH_HTPASSWD "${DEMYX_ENV}/compose" || true)"
             if [[ -n "$DEMYX_APP_ENV_REMOVE_COMPOSE" ]]; then
-                sed -i "/DEMYX_APP_AUTH_HTPASSWD/d" "$DEMYX_ENV"/docker-compose.yml
+                sed -i "/DEMYX_APP_AUTH_HTPASSWD/d" "${DEMYX_ENV}/compose"
             fi
         fi
 

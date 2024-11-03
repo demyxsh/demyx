@@ -161,7 +161,12 @@ demyx_yml() {
         DEMYX_YML_NETWORK="external: true"
     fi
 
-    # Generate /demyx/docker-compose.yml
+    # TEMPORARY
+    if [[ -f "${DEMYX}/docker-compose.yml" ]]; then
+        rm -f "${DEMYX}/docker-compose.yml"
+    fi
+
+    # Generate /demyx/compose.yml
     echo "# DEMYX $DEMYX_VERSION
 services:
   socket:
@@ -255,7 +260,7 @@ networks:
   demyx_socket:
     $DEMYX_YML_NETWORK
     name: demyx_socket
-" > "$DEMYX"/docker-compose.yml
+" > "${DEMYX}/compose.yml"
 }
 #
 #   Grabs env variable without sourcing.
