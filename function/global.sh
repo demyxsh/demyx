@@ -461,42 +461,6 @@ demyx_open_port() {
     echo "$DEMYX_OPEN_PORT" > "$DEMYX_TMP"/"$DEMYX_ARG_2"_sftp
 }
 #
-#   Calculates php-fpm's pm values based on app container's memory.
-#   Reference: https://chrismoore.ca/2018/10/finding-the-correct-pm-max-children-settings-for-php-fpm/
-#
-demyx_pm_calc() {
-    demyx_event
-    demyx_source "
-        exec
-        utility
-    "
-
-    demyx_app_env wp DEMYX_APP_PHP_PM_AVERAGE
-
-    local DEMYX_PM_CALC="${1:-}"
-    local DEMYX_PM_CALC_MEMORY=
-    DEMYX_PM_CALC_MEMORY="$(free | grep Mem | awk -F ' ' '{print $2}')"
-    local DEMYX_PM_CALC_MEMORY_BUFFER=
-    DEMYX_PM_CALC_MEMORY_BUFFER="$(( "${DEMYX_PM_CALC_MEMORY}" * 10 /100 ))"
-    DEMYX_PM_CALC_MEMORY="$(( "${DEMYX_PM_CALC_MEMORY}" - "${DEMYX_PM_CALC_MEMORY_BUFFER}" - "${DEMYX_PM_CALC_MEMORY_BUFFER}" ))"
-    local DEMYX_PM_CALC_MAX_CHILDREN="$(( "${DEMYX_PM_CALC_MEMORY}" / "${DEMYX_APP_PHP_PM_AVERAGE}" ))"
-
-    case "$DEMYX_PM_CALC" in
-        max-children)
-            echo "${DEMYX_PM_CALC_MAX_CHILDREN}"
-        ;;
-        max-spare)
-            echo "$(( "$DEMYX_PM_CALC_MAX_CHILDREN" * 75 / 100 ))"
-        ;;
-        min-spare)
-            echo "$(( "$DEMYX_PM_CALC_MAX_CHILDREN" * 25 / 100 ))"
-        ;;
-        start-server)
-            echo "$(( "$DEMYX_PM_CALC_MAX_CHILDREN" * 75 / 100 ))"
-        ;;
-    esac
-}
-#
 #   Properizes files/directories.
 #
 demyx_proper() {

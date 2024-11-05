@@ -32,7 +32,6 @@ demyx_config() {
     local DEMYX_CONFIG_FLAG_PHP_MAX_SPARE_SERVERS=
     local DEMYX_CONFIG_FLAG_PHP_MIN_SPARE_SERVERS=
     local DEMYX_CONFIG_FLAG_PHP_PM=
-    local DEMYX_CONFIG_FLAG_PHP_PM_CALC=
     local DEMYX_CONFIG_FLAG_PHP_PROCESS_IDLE_TIMEOUT=
     local DEMYX_CONFIG_FLAG_PHP_START_SERVERS=
     local DEMYX_CONFIG_FLAG_PHP_VERSION=
@@ -171,9 +170,6 @@ demyx_config() {
                 DEMYX_CONFIG_FLAG_PHP=true
                 DEMYX_CONFIG_FLAG_PHP_PM="${DEMYX_CONFIG_FLAG#*=}"
             ;;
-            --php-pm-calc)
-                DEMYX_CONFIG_FLAG_PHP_PM_CALC=true
-            ;;
             --php-process-idle-timeout=?*)
                 DEMYX_CONFIG_FLAG_PHP=true
                 DEMYX_CONFIG_FLAG_PHP_PROCESS_IDLE_TIMEOUT="${DEMYX_CONFIG_FLAG#*=}"
@@ -311,9 +307,6 @@ demyx_config() {
                 fi
                 if [[ -n "$DEMYX_CONFIG_FLAG_PHP" ]]; then
                     demyx_config_php
-                fi
-                if [[ -n "$DEMYX_CONFIG_FLAG_PHP_PM_CALC" ]]; then
-                    demyx_config_pm
                 fi
                 if [[ -n "$DEMYX_CONFIG_FLAG_PMA" ]]; then
                     demyx_config_pma
@@ -925,38 +918,6 @@ demyx_config_php() {
             "demyx_app_env_update DEMYX_APP_PHP=${DEMYX_CONFIG_FLAG_PHP_VERSION}; \
             demyx_app_env_update DEMYX_APP_OLS_LSPHP=${DEMYX_CONFIG_FLAG_PHP_VERSION}"
     fi
-}
-#
-#   Configure php-fpm values based on app's defined memory.
-#
-demyx_config_pm() {
-    # Disable for now
-    demyx_warning "This feature is disabled for now" true
-
-    demyx_event
-    demyx_ols_not_supported
-    demyx_app_env wp DEMYX_APP_WP_CONTAINER
-
-    local DEMYX_CONFIG_PM_MAX_CHILDREN=
-    local DEMYX_CONFIG_PM_MAX_SPARE_SERVERS=
-    local DEMYX_CONFIG_PM_MIN_SPARE_SERVERS=
-    local DEMYX_CONFIG_PM_START_SERVERS=
-    DEMYX_CONFIG_PM_MAX_CHILDREN="$(demyx_pm_calc max-children)"
-    DEMYX_CONFIG_PM_MAX_SPARE_SERVERS="$(demyx_pm_calc max-spare)"
-    DEMYX_CONFIG_PM_MIN_SPARE_SERVERS="$(demyx_pm_calc min-spare)"
-    DEMYX_CONFIG_PM_START_SERVERS="$(demyx_pm_calc start-server)"
-
-    demyx_execute "Configuring php-fpm values" \
-        "docker exec \
-            -e DEMYX_PM_MAX_CHILDREN=${DEMYX_CONFIG_PM_MAX_CHILDREN} \
-            -e DEMYX_PM_MAX_SPARE_SERVERS=${DEMYX_CONFIG_PM_MAX_SPARE_SERVERS} \
-            -e DEMYX_PM_MIN_SPARE_SERVERS=${DEMYX_CONFIG_PM_MIN_SPARE_SERVERS} \
-            -e DEMYX_PM_START_SERVERS=${DEMYX_CONFIG_PM_START_SERVERS} \
-        ${DEMYX_APP_WP_CONTAINER} demyx-entrypoint; \
-        demyx_app_env_update DEMYX_APP_PHP_PM_MAX_CHILDREN=${DEMYX_CONFIG_PM_MAX_CHILDREN}; \
-        demyx_app_env_update DEMYX_APP_PHP_PM_MAX_SPARE_SERVERS=${DEMYX_CONFIG_PM_MAX_SPARE_SERVERS}; \
-        demyx_app_env_update DEMYX_APP_PHP_PM_MIN_SPARE_SERVERS=${DEMYX_CONFIG_PM_MIN_SPARE_SERVERS}; \
-        demyx_app_env_update DEMYX_APP_PHP_PM_START_SERVERS=${DEMYX_CONFIG_PM_START_SERVERS}"
 }
 #
 #   Configures a phpMyAdmin container for an app.

@@ -56,7 +56,6 @@ demyx_help() {
             echo "                   --php-max-spare-servers            Update php-fpm max idle server processes. (Usage: --php-max-spare=4)"
             echo "                   --php-min-spare-servers            Update php-fpm minimum idle server processes. (Usage: --php-min-spare=1)"
             echo "                   --php-pm                           Update php-fpm process manager. (Usage: --php-pm=<static|ondemand|dynamic>)"
-            echo "                   --php-pm-calc                      Automatically adjust php-fpm values based on container's memory."
             echo "                   --php-process-idle-timeout         Update php-fpm duration when killing an idle process. (Usage: --php-process-idle-timeout=3s)"
             echo "                   --php-start-servers                Update php-fpm initial child processes on startup. (Usage: --php-start-servers=1)"
             echo "                   --pma                              Enable/disable phpMyAdmin service."
