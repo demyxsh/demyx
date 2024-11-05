@@ -1061,6 +1061,7 @@ demyx_yml_service_mariadb() {
               - demyx
             restart: unless-stopped
             volumes:
+              - ${DEMYX_APP_PREFIX}_custom:/etc/demyx/custom
               - ${DEMYX_APP_PREFIX}_db:/demyx
               - ${DEMYX_APP_PREFIX}_log:/var/log/demyx"
 }
@@ -1172,6 +1173,7 @@ demyx_yml_service_sftp() {
               - ${DEMYX_YML_SERVICE_SFTP_PORTS}:2222
             restart: unless-stopped
             volumes:
+              - ${DEMYX_APP_PREFIX}_custom:/etc/demyx/custom
               - ${DEMYX_APP_WP_VOLUME}:/demyx
               - ${DEMYX_APP_PREFIX}_log:/var/log/demyx
               - ${DEMYX_APP_PREFIX}_sftp:/home"
