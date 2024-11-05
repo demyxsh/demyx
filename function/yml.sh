@@ -616,7 +616,7 @@ demyx_yml_ols() {
           $(demyx_yml_service_bs)
           $(demyx_yml_service_mariadb)
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}:
-            cpus: $DEMYX_YML_OLS_DEV_CPU
+            container_name: \${DEMYX_APP_WP_CONTAINER}
             cpus: \${DEMYX_APP_WP_CPU}
             depends_on:
               - db_\${DEMYX_APP_ID}
@@ -818,6 +818,7 @@ demyx_yml_ols_bedrock() {
         services:
           $(demyx_yml_service_mariadb)
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}:
+            container_name: \${DEMYX_APP_WP_CONTAINER}
             cpus: \${DEMYX_APP_WP_CPU}
             depends_on:
               - db_\${DEMYX_APP_ID}
