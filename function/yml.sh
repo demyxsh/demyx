@@ -250,6 +250,7 @@ demyx_yml_code() {
     demyx_event
     local DEMYX_YML_CODE_LABELS=
     local DEMYX_YML_CODE_PASSWORD="- PASSWORD=${DEMYX_CODE_PASSWORD}"
+    local DEMYX_YML_CODE_VOLUME=
     local DEMYX_YML_CODE_WHITELIST=
 
     if [[ "$DEMYX_IP" != false ]]; then
@@ -559,14 +560,14 @@ demyx_yml_ols() {
         DEMYX_APP_DEV
         DEMYX_APP_ID
         DEMYX_APP_PATH
-        DEMYX_APP_TYPE
         DEMYX_APP_PREFIX
+        DEMYX_APP_TYPE
+        DEMYX_APP_WP_CONTAINER
+        DEMYX_APP_WP_VOLUME
     "
 
-    local DEMYX_YML_OLS_DEV_CPU="\${DEMYX_APP_WP_CPU}"
     local DEMYX_YML_OLS_DEV_ENTRYPOINTS=
     local DEMYX_YML_OLS_DEV_LABELS=
-    local DEMYX_YML_OLS_DEV_MEM="\${DEMYX_APP_WP_MEM}"
     local DEMYX_YML_OLS_DEV_PASSWORD=
     local DEMYX_YML_OLS_DEV_VOLUME=
     local DEMYX_YML_OLS_IMAGE=demyx/openlitespeed
@@ -575,8 +576,6 @@ demyx_yml_ols() {
     local DEMYX_YML_OLS_PORT=8080
 
     if [[ "$DEMYX_APP_DEV" = true ]]; then
-        DEMYX_YML_OLS_DEV_CPU=".80"
-        DEMYX_YML_OLS_DEV_MEM="$(demyx_yml_memory)"
         DEMYX_YML_OLS_DEV_PASSWORD="- DEMYX_CODE_PASSWORD=\${DEMYX_APP_DEV_PASSWORD}"
         DEMYX_YML_OLS_DEV_VOLUME="- ${DEMYX_APP_PREFIX}_code:/home/demyx"
         DEMYX_YML_OLS_IMAGE=demyx/code-server:openlitespeed
@@ -618,6 +617,7 @@ demyx_yml_ols() {
           $(demyx_yml_service_mariadb)
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}:
             cpus: $DEMYX_YML_OLS_DEV_CPU
+            cpus: \${DEMYX_APP_WP_CPU}
             depends_on:
               - db_\${DEMYX_APP_ID}
             environment:
@@ -695,12 +695,12 @@ demyx_yml_ols() {
               $DEMYX_YML_OLS_LABEL_ASSETS
               - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-ols-assets.priority=99\"
               $DEMYX_YML_OLS_DEV_LABELS
-            mem_limit: $DEMYX_YML_OLS_DEV_MEM
+            mem_limit: \${DEMYX_APP_WP_MEM}
             networks:
               - demyx
             restart: unless-stopped
             volumes:
-              - ${DEMYX_APP_PREFIX}:/demyx
+              - ${DEMYX_APP_WP_VOLUME}:/demyx
               - ${DEMYX_APP_PREFIX}_custom:/etc/demyx/custom
               - ${DEMYX_APP_PREFIX}_log:/var/log/demyx
               $DEMYX_YML_OLS_DEV_VOLUME
@@ -708,9 +708,9 @@ demyx_yml_ols() {
           $(demyx_yml_service_redis)
           $(demyx_yml_service_sftp)
         volumes:
-          ${DEMYX_APP_PREFIX}:
+          ${DEMYX_APP_WP_VOLUME}:
             external: true
-            name: ${DEMYX_APP_PREFIX}
+            name: ${DEMYX_APP_WP_VOLUME}
           ${DEMYX_APP_PREFIX}_code:
             external: true
             name: ${DEMYX_APP_PREFIX}_code
@@ -738,14 +738,14 @@ demyx_yml_ols_bedrock() {
         DEMYX_APP_DEV
         DEMYX_APP_ID
         DEMYX_APP_PATH
-        DEMYX_APP_TYPE
         DEMYX_APP_PREFIX
+        DEMYX_APP_TYPE
+        DEMYX_APP_WP_CONTAINER
+        DEMYX_APP_WP_VOLUME
     "
 
-    local DEMYX_YML_OLS_DEV_CPU="\${DEMYX_APP_WP_CPU}"
     local DEMYX_YML_OLS_DEV_ENTRYPOINTS=
     local DEMYX_YML_OLS_DEV_LABELS=
-    local DEMYX_YML_OLS_DEV_MEM="\${DEMYX_APP_WP_MEM}"
     local DEMYX_YML_OLS_DEV_PASSWORD=
     local DEMYX_YML_OLS_DEV_VOLUME=
     local DEMYX_YML_OLS_IMAGE=demyx/openlitespeed:bedrock
@@ -754,8 +754,6 @@ demyx_yml_ols_bedrock() {
     local DEMYX_YML_OLS_PORT=8080
 
     if [[ "$DEMYX_APP_DEV" = true ]]; then
-        DEMYX_YML_OLS_DEV_CPU=".80"
-        DEMYX_YML_OLS_DEV_MEM="$(demyx_yml_memory)"
         DEMYX_YML_OLS_DEV_PASSWORD="- DEMYX_CODE_PASSWORD=\${DEMYX_APP_DEV_PASSWORD}"
         DEMYX_YML_OLS_DEV_VOLUME="- ${DEMYX_APP_PREFIX}_code:/home/demyx"
         DEMYX_YML_OLS_IMAGE=demyx/code-server:openlitespeed-bedrock
@@ -820,7 +818,7 @@ demyx_yml_ols_bedrock() {
         services:
           $(demyx_yml_service_mariadb)
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}:
-            cpus: $DEMYX_YML_OLS_DEV_CPU
+            cpus: \${DEMYX_APP_WP_CPU}
             depends_on:
               - db_\${DEMYX_APP_ID}
             environment:
@@ -900,12 +898,12 @@ demyx_yml_ols_bedrock() {
               $DEMYX_YML_OLS_LABEL_ASSETS
               - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-ols-assets.priority=99\"
               $DEMYX_YML_OLS_DEV_LABELS
-            mem_limit: $DEMYX_YML_OLS_DEV_MEM
+            mem_limit: \${DEMYX_APP_WP_MEM}
             networks:
               - demyx
             restart: unless-stopped
             volumes:
-              - ${DEMYX_APP_PREFIX}:/demyx
+              - ${DEMYX_APP_WP_VOLUME}:/demyx
               - ${DEMYX_APP_PREFIX}_custom:/etc/demyx/custom
               - ${DEMYX_APP_PREFIX}_log:/var/log/demyx
               $DEMYX_YML_OLS_DEV_VOLUME
@@ -913,9 +911,9 @@ demyx_yml_ols_bedrock() {
           $(demyx_yml_service_redis)
           $(demyx_yml_service_sftp)
         volumes:
-          ${DEMYX_APP_PREFIX}:
+          ${DEMYX_APP_WP_VOLUME}:
             external: true
-            name: ${DEMYX_APP_PREFIX}
+            name: ${DEMYX_APP_WP_VOLUME}
           ${DEMYX_APP_PREFIX}_code:
             external: true
             name: ${DEMYX_APP_PREFIX}_code
