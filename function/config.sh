@@ -27,13 +27,7 @@ demyx_config() {
     local DEMYX_CONFIG_FLAG_NO_COMPOSE=
     local DEMYX_CONFIG_FLAG_OPCACHE=
     local DEMYX_CONFIG_FLAG_PHP=
-    local DEMYX_CONFIG_FLAG_PHP_MAX_CHILDREN=
     local DEMYX_CONFIG_FLAG_PHP_MAX_REQUESTS=
-    local DEMYX_CONFIG_FLAG_PHP_MAX_SPARE_SERVERS=
-    local DEMYX_CONFIG_FLAG_PHP_MIN_SPARE_SERVERS=
-    local DEMYX_CONFIG_FLAG_PHP_PM=
-    local DEMYX_CONFIG_FLAG_PHP_PROCESS_IDLE_TIMEOUT=
-    local DEMYX_CONFIG_FLAG_PHP_START_SERVERS=
     local DEMYX_CONFIG_FLAG_PHP_VERSION=
     local DEMYX_CONFIG_FLAG_PMA=
     local DEMYX_CONFIG_FLAG_RATE_LIMIT=
@@ -150,33 +144,9 @@ demyx_config() {
                 DEMYX_CONFIG_FLAG_PHP=true
                 DEMYX_CONFIG_FLAG_PHP_VERSION="${DEMYX_CONFIG_FLAG#*=}"
             ;;
-            --php-max-children=?*)
-                DEMYX_CONFIG_FLAG_PHP=true
-                DEMYX_CONFIG_FLAG_PHP_MAX_CHILDREN="${DEMYX_CONFIG_FLAG#*=}"
-            ;;
             --php-max-requests=?*)
                 DEMYX_CONFIG_FLAG_PHP=true
                 DEMYX_CONFIG_FLAG_PHP_MAX_REQUESTS="${DEMYX_CONFIG_FLAG#*=}"
-            ;;
-            --php-max-spare-servers=?*)
-                DEMYX_CONFIG_FLAG_PHP=true
-                DEMYX_CONFIG_FLAG_PHP_MAX_SPARE_SERVERS="${DEMYX_CONFIG_FLAG#*=}"
-            ;;
-            --php-min-spare-servers=?*)
-                DEMYX_CONFIG_FLAG_PHP=true
-                DEMYX_CONFIG_FLAG_PHP_MIN_SPARE_SERVERS="${DEMYX_CONFIG_FLAG#*=}"
-            ;;
-            --php-pm=?*)
-                DEMYX_CONFIG_FLAG_PHP=true
-                DEMYX_CONFIG_FLAG_PHP_PM="${DEMYX_CONFIG_FLAG#*=}"
-            ;;
-            --php-process-idle-timeout=?*)
-                DEMYX_CONFIG_FLAG_PHP=true
-                DEMYX_CONFIG_FLAG_PHP_PROCESS_IDLE_TIMEOUT="${DEMYX_CONFIG_FLAG#*=}"
-            ;;
-            --php-start-servers=?*)
-                DEMYX_CONFIG_FLAG_PHP=true
-                DEMYX_CONFIG_FLAG_PHP_START_SERVERS="${DEMYX_CONFIG_FLAG#*=}"
             ;;
             --pma|--pma=true)
                 DEMYX_CONFIG_FLAG_PMA=true
@@ -876,42 +846,10 @@ demyx_config_opcache() {
 #
 demyx_config_php() {
     demyx_event
-    DEMYX_CONFIG_COMPOSE=true
-
-    if [[ -n "$DEMYX_CONFIG_FLAG_PHP_PM" ]]; then
-        demyx_ols_not_supported
-        demyx_execute "Updating pm $DEMYX_CONFIG_FLAG_PHP_PM" \
-            "demyx_app_env_update DEMYX_APP_PHP_PM=$DEMYX_CONFIG_FLAG_PHP_PM"
-    fi
-    if [[ -n "$DEMYX_CONFIG_FLAG_PHP_MAX_CHILDREN" ]]; then
-        demyx_ols_not_supported
-        demyx_execute "Updating pm.max_children $DEMYX_CONFIG_FLAG_PHP_MAX_CHILDREN" \
-            "demyx_app_env_update DEMYX_APP_PHP_PM_MAX_CHILDREN=$DEMYX_CONFIG_FLAG_PHP_MAX_CHILDREN"
-    fi
     if [[ -n "$DEMYX_CONFIG_FLAG_PHP_MAX_REQUESTS" ]]; then
         demyx_ols_not_supported
         demyx_execute "Updating pm.max_requests $DEMYX_CONFIG_FLAG_PHP_MAX_REQUESTS" \
             "demyx_app_env_update DEMYX_APP_PHP_PM_MAX_REQUESTS=$DEMYX_CONFIG_FLAG_PHP_MAX_REQUESTS"
-    fi
-    if [[ -n "$DEMYX_CONFIG_FLAG_PHP_MAX_SPARE_SERVERS" ]]; then
-        demyx_ols_not_supported
-        demyx_execute "Updating pm.max_spare_servers $DEMYX_CONFIG_FLAG_PHP_MAX_SPARE_SERVERS" \
-            "demyx_app_env_update DEMYX_APP_PHP_PM_MAX_SPARE_SERVERS=$DEMYX_CONFIG_FLAG_PHP_MAX_SPARE_SERVERS"
-    fi
-    if [[ -n "$DEMYX_CONFIG_FLAG_PHP_MIN_SPARE_SERVERS" ]]; then
-        demyx_ols_not_supported
-        demyx_execute "Updating pm.min_spare_servers $DEMYX_CONFIG_FLAG_PHP_MIN_SPARE_SERVERS" \
-            "demyx_app_env_update DEMYX_APP_PHP_PM_MIN_SPARE_SERVERS=$DEMYX_CONFIG_FLAG_PHP_MIN_SPARE_SERVERS"
-    fi
-    if [[ -n "$DEMYX_CONFIG_FLAG_PHP_PROCESS_IDLE_TIMEOUT" ]]; then
-        demyx_ols_not_supported
-        demyx_execute "Updating pm.process_idle_timeout $DEMYX_CONFIG_FLAG_PHP_PROCESS_IDLE_TIMEOUT" \
-            "demyx_app_env_update DEMYX_APP_PHP_PM_PROCESS_IDLE_TIMEOUT=$DEMYX_CONFIG_FLAG_PHP_PROCESS_IDLE_TIMEOUT"
-    fi
-    if [[ -n "$DEMYX_CONFIG_FLAG_PHP_START_SERVERS" ]]; then
-        demyx_ols_not_supported
-        demyx_execute "Updating pm.start_servers $DEMYX_CONFIG_FLAG_PHP_START_SERVERS" \
-            "demyx_app_env_update DEMYX_APP_PHP_PM_START_SERVERS=$DEMYX_CONFIG_FLAG_PHP_START_SERVERS"
     fi
     if [[ -n "$DEMYX_CONFIG_FLAG_PHP_VERSION" ]]; then
         demyx_execute "Updating php to version $DEMYX_CONFIG_FLAG_PHP_VERSION" \
