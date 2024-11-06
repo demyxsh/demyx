@@ -27,6 +27,7 @@ demyx_config() {
     local DEMYX_CONFIG_FLAG_NO_COMPOSE=
     local DEMYX_CONFIG_FLAG_OPCACHE=
     local DEMYX_CONFIG_FLAG_PHP=
+    local DEMYX_CONFIG_FLAG_PHP_AVERAGE=
     local DEMYX_CONFIG_FLAG_PHP_MAX_REQUESTS=
     local DEMYX_CONFIG_FLAG_PHP_VERSION=
     local DEMYX_CONFIG_FLAG_PMA=
@@ -143,6 +144,10 @@ demyx_config() {
             --php=8.2|--php=8.3)
                 DEMYX_CONFIG_FLAG_PHP=true
                 DEMYX_CONFIG_FLAG_PHP_VERSION="${DEMYX_CONFIG_FLAG#*=}"
+            ;;
+            --php-average=?*)
+                DEMYX_CONFIG_FLAG_PHP=true
+                DEMYX_CONFIG_FLAG_PHP_AVERAGE="${DEMYX_CONFIG_FLAG#*=}"
             ;;
             --php-max-requests=?*)
                 DEMYX_CONFIG_FLAG_PHP=true
@@ -846,6 +851,12 @@ demyx_config_opcache() {
 #
 demyx_config_php() {
     demyx_event
+    if [[ -n "${DEMYX_CONFIG_FLAG_PHP_AVERAGE}" ]]; then
+        demyx_ols_not_supported
+        demyx_execute "Updating pm average memory usage $DEMYX_CONFIG_FLAG_PHP_AVERAGE" \
+            "demyx_app_env_update DEMYX_APP_PHP_PM_AVERAGE=$DEMYX_CONFIG_FLAG_PHP_AVERAGE"
+        DEMYX_CONFIG_PHP+="-e DEMYX_PM_AVERAGE=${DEMYX_CONFIG_FLAG_PHP_AVERAGE} "
+    fi
     if [[ -n "$DEMYX_CONFIG_FLAG_PHP_MAX_REQUESTS" ]]; then
         demyx_ols_not_supported
         demyx_execute "Updating pm.max_requests $DEMYX_CONFIG_FLAG_PHP_MAX_REQUESTS" \
