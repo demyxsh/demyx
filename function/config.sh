@@ -851,6 +851,12 @@ demyx_config_opcache() {
 #
 demyx_config_php() {
     demyx_event
+    demyx_app_env wp "
+        DEMYX_APP_WP_CONTAINER
+    "
+
+    local DEMYX_CONFIG_PHP=
+
     if [[ -n "${DEMYX_CONFIG_FLAG_PHP_AVERAGE}" ]]; then
         demyx_ols_not_supported
         demyx_execute "Updating pm average memory usage $DEMYX_CONFIG_FLAG_PHP_AVERAGE" \
@@ -861,11 +867,16 @@ demyx_config_php() {
         demyx_ols_not_supported
         demyx_execute "Updating pm.max_requests $DEMYX_CONFIG_FLAG_PHP_MAX_REQUESTS" \
             "demyx_app_env_update DEMYX_APP_PHP_PM_MAX_REQUESTS=$DEMYX_CONFIG_FLAG_PHP_MAX_REQUESTS"
+        DEMYX_CONFIG_PHP+="-e DEMYX_PM_MAX_REQUESTS=${DEMYX_CONFIG_FLAG_PHP_MAX_REQUESTS} "
     fi
     if [[ -n "$DEMYX_CONFIG_FLAG_PHP_VERSION" ]]; then
         demyx_execute "Updating php to version $DEMYX_CONFIG_FLAG_PHP_VERSION" \
             "demyx_app_env_update DEMYX_APP_PHP=${DEMYX_CONFIG_FLAG_PHP_VERSION}; \
             demyx_app_env_update DEMYX_APP_OLS_LSPHP=${DEMYX_CONFIG_FLAG_PHP_VERSION}"
+        DEMYX_CONFIG_PHP+="-e DEMYX_PHP=${DEMYX_CONFIG_FLAG_PHP_VERSION} -e DEMYX_LSPHP=${DEMYX_CONFIG_FLAG_PHP_VERSION} "
+    fi
+    if [[ -n "${DEMYX_CONFIG_PHP}" ]]; then
+        eval "docker exec ${DEMYX_CONFIG_PHP} ${DEMYX_APP_WP_CONTAINER} demyx-entrypoint"
     fi
 }
 #
