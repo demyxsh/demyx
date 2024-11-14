@@ -69,16 +69,18 @@ demyx_yml_bedrock() {
         DEMYX_APP_WP_VOLUME
     "
 
+    local DEMYX_YML_BEDROCK_CPU="\${DEMYX_APP_WP_CPU}"
     local DEMYX_YML_BEDROCK_DEV_ENTRYPOINTS=
     local DEMYX_YML_BEDROCK_DEV_LABELS=
     local DEMYX_YML_BEDROCK_DEV_PASSWORD=
     local DEMYX_YML_BEDROCK_DEV_VOLUME=
-    local DEMYX_YML_BEDROCK_IMAGE=demyx/wordpress:bedrock
+    local DEMYX_YML_BEDROCK_MEM="\${DEMYX_APP_WP_MEM}"
 
     if [[ "$DEMYX_APP_DEV" = true ]]; then
+        DEMYX_YML_BEDROCK_CPU="$(demyx_yml_resource cpu)"
         DEMYX_YML_BEDROCK_DEV_PASSWORD="- DEMYX_CODE_PASSWORD=\${DEMYX_APP_DEV_PASSWORD}"
         DEMYX_YML_BEDROCK_DEV_VOLUME="- ${DEMYX_APP_PREFIX}_code:/home/demyx"
-        DEMYX_YML_BEDROCK_IMAGE=demyx/code-server:bedrock
+        DEMYX_YML_BEDROCK_MEM="$(demyx_yml_resource mem)"
 
         if [[ "$(demyx_app_proto)" = https ]]; then
             DEMYX_YML_BEDROCK_DEV_ENTRYPOINTS="- \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-cs.entrypoints=https\"
@@ -169,7 +171,7 @@ demyx_yml_bedrock() {
           $(demyx_yml_service_sftp)
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}:
             container_name: \${DEMYX_APP_WP_CONTAINER}
-            cpus: \${DEMYX_APP_WP_MEM}
+            cpus: ${DEMYX_YML_BEDROCK_CPU}
             depends_on:
               - db_\${DEMYX_APP_ID}
             environment:
@@ -208,7 +210,7 @@ demyx_yml_bedrock() {
             hostname: \${DEMYX_APP_COMPOSE_PROJECT}
             image: $DEMYX_YML_BEDROCK_IMAGE
             $DEMYX_YML_BEDROCK_DEV_LABELS
-            mem_limit: \${DEMYX_APP_WP_MEM}
+            mem_limit: ${DEMYX_YML_BEDROCK_MEM}
             networks:
               - demyx
             restart: unless-stopped
@@ -284,7 +286,7 @@ demyx_yml_code() {
         services:
           code:
             container_name: demyx_code
-            cpus: \${DEMYX_APP_CPU:-0}
+            cpus: \${DEMYX_APP_CPU:-$(demyx_yml_resource cpu)}
             environment:
               ${DEMYX_YML_CODE_PASSWORD}
               - TZ=$TZ
@@ -298,7 +300,7 @@ demyx_yml_code() {
               - \"traefik.http.services.demyx-code-http-port.loadbalancer.server.port=8080\"
               $DEMYX_YML_CODE_LABELS
               $DEMYX_YML_CODE_WHITELIST
-            mem_limit: \${DEMYX_APP_MEM:-0}
+            mem_limit: \${DEMYX_APP_MEM:-$(demyx_yml_resource mem)}
             networks:
               - demyx
               - demyx_socket
@@ -374,14 +376,6 @@ demyx_yml_http_labels() {
     fi
 }
 #
-#   Calculates half the total memory for code-server services.
-#
-demyx_yml_memory() {
-    local DEMYX_YML_MEMORY=
-    DEMYX_YML_MEMORY="$(grep MemTotal /proc/meminfo | awk -F ' ' '{print $2}')"
-    echo "$(( DEMYX_YML_MEMORY / 2 ))k"
-}
-#
 #   YAML template for the nginx-php stack.
 #
 demyx_yml_nginx_php() {
@@ -398,16 +392,19 @@ demyx_yml_nginx_php() {
         DEMYX_APP_WP_VOLUME
     "
 
+    local DEMYX_YML_NGINX_PHP_CPU="\${DEMYX_APP_WP_CPU}"
     local DEMYX_YML_NGINX_PHP_DEV_ENTRYPOINTS=
     local DEMYX_YML_NGINX_PHP_DEV_LABELS=
     local DEMYX_YML_NGINX_PHP_DEV_PASSWORD=
     local DEMYX_YML_NGINX_PHP_DEV_VOLUME=
-    local DEMYX_YML_NGINX_PHP_IMAGE=demyx/wordpress
+    local DEMYX_YML_NGINX_PHP_MEM="\${DEMYX_APP_WP_MEM}"
 
     if [[ "$DEMYX_APP_DEV" = true ]]; then
+        DEMYX_YML_NGINX_PHP_CPU="$(demyx_yml_resource cpu)"
         DEMYX_YML_NGINX_PHP_DEV_PASSWORD="- DEMYX_CODE_PASSWORD=\${DEMYX_APP_DEV_PASSWORD}"
         DEMYX_YML_NGINX_PHP_DEV_VOLUME="- ${DEMYX_APP_PREFIX}_code:/home/demyx"
         DEMYX_YML_NGINX_PHP_IMAGE=demyx/code-server:wp
+        DEMYX_YML_NGINX_PHP_MEM="$(demyx_yml_resource mem)"
 
         if [[ "$(demyx_app_proto)" = https ]]; then
             DEMYX_YML_NGINX_PHP_DEV_ENTRYPOINTS="- \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-cs.entrypoints=https\"
@@ -474,7 +471,7 @@ demyx_yml_nginx_php() {
           $(demyx_yml_service_sftp)
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}:
             container_name: \${DEMYX_APP_WP_CONTAINER}
-            cpus: \${DEMYX_APP_WP_CPU}
+            cpus: ${DEMYX_YML_NGINX_PHP_CPU}
             depends_on:
               - db_\${DEMYX_APP_ID}
             environment:
@@ -510,7 +507,7 @@ demyx_yml_nginx_php() {
             hostname: \${DEMYX_APP_COMPOSE_PROJECT}
             image: $DEMYX_YML_NGINX_PHP_IMAGE
             $DEMYX_YML_NGINX_PHP_DEV_LABELS
-            mem_limit: \${DEMYX_APP_WP_MEM}
+            mem_limit: ${DEMYX_YML_NGINX_PHP_MEM}
             networks:
               - demyx
             restart: unless-stopped
@@ -556,19 +553,21 @@ demyx_yml_ols() {
         DEMYX_APP_WP_VOLUME
     "
 
+    local DEMYX_YML_OLS_CPU="\${DEMYX_APP_WP_CPU}"
     local DEMYX_YML_OLS_DEV_ENTRYPOINTS=
     local DEMYX_YML_OLS_DEV_LABELS=
     local DEMYX_YML_OLS_DEV_PASSWORD=
     local DEMYX_YML_OLS_DEV_VOLUME=
-    local DEMYX_YML_OLS_IMAGE=demyx/openlitespeed
+    local DEMYX_YML_OLS_MEM="\${DEMYX_APP_WP_MEM}"
     local DEMYX_YML_OLS_LABEL_ADMIN=
     local DEMYX_YML_OLS_LABEL_ASSETS=
     local DEMYX_YML_OLS_PORT=8080
 
     if [[ "$DEMYX_APP_DEV" = true ]]; then
+        DEMYX_YML_OLS_CPU="$(demyx_yml_resource cpu)"
         DEMYX_YML_OLS_DEV_PASSWORD="- DEMYX_CODE_PASSWORD=\${DEMYX_APP_DEV_PASSWORD}"
         DEMYX_YML_OLS_DEV_VOLUME="- ${DEMYX_APP_PREFIX}_code:/home/demyx"
-        DEMYX_YML_OLS_IMAGE=demyx/code-server:openlitespeed
+        DEMYX_YML_OLS_MEM="$(demyx_yml_resource mem)"
         DEMYX_YML_OLS_PORT=8081
 
         if [[ "$(demyx_app_proto)" = https ]]; then
@@ -607,7 +606,7 @@ demyx_yml_ols() {
           $(demyx_yml_service_mariadb)
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}:
             container_name: \${DEMYX_APP_WP_CONTAINER}
-            cpus: \${DEMYX_APP_WP_CPU}
+            cpus: ${DEMYX_YML_OLS_CPU}
             depends_on:
               - db_\${DEMYX_APP_ID}
             environment:
@@ -685,7 +684,7 @@ demyx_yml_ols() {
               $DEMYX_YML_OLS_LABEL_ASSETS
               - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-ols-assets.priority=99\"
               $DEMYX_YML_OLS_DEV_LABELS
-            mem_limit: \${DEMYX_APP_WP_MEM}
+            mem_limit: ${DEMYX_YML_OLS_MEM}
             networks:
               - demyx
             restart: unless-stopped
@@ -734,19 +733,21 @@ demyx_yml_ols_bedrock() {
         DEMYX_APP_WP_VOLUME
     "
 
+    local DEMYX_YML_OLS_CPU="\${DEMYX_APP_WP_CPU}"
     local DEMYX_YML_OLS_DEV_ENTRYPOINTS=
     local DEMYX_YML_OLS_DEV_LABELS=
     local DEMYX_YML_OLS_DEV_PASSWORD=
     local DEMYX_YML_OLS_DEV_VOLUME=
-    local DEMYX_YML_OLS_IMAGE=demyx/openlitespeed:bedrock
+    local DEMYX_YML_OLS_MEM="\${DEMYX_APP_WP_MEM}"
     local DEMYX_YML_OLS_LABEL_ADMIN=
     local DEMYX_YML_OLS_LABEL_ASSETS=
     local DEMYX_YML_OLS_PORT=8080
 
     if [[ "$DEMYX_APP_DEV" = true ]]; then
+        DEMYX_YML_OLS_CPU="$(demyx_yml_resource cpu)"
         DEMYX_YML_OLS_DEV_PASSWORD="- DEMYX_CODE_PASSWORD=\${DEMYX_APP_DEV_PASSWORD}"
         DEMYX_YML_OLS_DEV_VOLUME="- ${DEMYX_APP_PREFIX}_code:/home/demyx"
-        DEMYX_YML_OLS_IMAGE=demyx/code-server:openlitespeed-bedrock
+        DEMYX_YML_OLS_MEM="$(demyx_yml_resource mem)"
         DEMYX_YML_OLS_PORT=8081
 
         if [[ "$(demyx_app_proto)" = https ]]; then
@@ -809,7 +810,7 @@ demyx_yml_ols_bedrock() {
           $(demyx_yml_service_mariadb)
           ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}:
             container_name: \${DEMYX_APP_WP_CONTAINER}
-            cpus: \${DEMYX_APP_WP_CPU}
+            cpus: ${DEMYX_YML_OLS_CPU}
             depends_on:
               - db_\${DEMYX_APP_ID}
             environment:
@@ -889,7 +890,7 @@ demyx_yml_ols_bedrock() {
               $DEMYX_YML_OLS_LABEL_ASSETS
               - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-ols-assets.priority=99\"
               $DEMYX_YML_OLS_DEV_LABELS
-            mem_limit: \${DEMYX_APP_WP_MEM}
+            mem_limit: ${DEMYX_YML_OLS_MEM}
             networks:
               - demyx
             restart: unless-stopped
@@ -934,6 +935,25 @@ demyx_yml_resolver() {
     fi
 
     echo "$DEMYX_YML_RESOLVER"
+}
+#
+#   Calculates half the total cpu/memory for code-server services.
+#
+demyx_yml_resource() {
+    local DEMYX_YML_RESOURCE="${1:-}"
+    local DEMYX_YML_RESOURCE_CPU=
+
+    if [[ "${DEMYX_YML_RESOURCE}" = cpu ]]; then
+        DEMYX_YML_RESOURCE_CPU="$(nproc)"
+
+        if [[ "${DEMYX_YML_RESOURCE_CPU}" = 1 ]]; then
+            echo ".5"
+        else
+            echo "$(($(nproc) / 2))"
+        fi
+    elif [[ "${DEMYX_YML_RESOURCE}" = mem ]]; then
+        echo "$(( $(free -m | grep Mem | awk -F ' ' '{print $2}') / 2 ))m"
+    fi
 }
 #
 #   YAML template for the browser-sync service.
