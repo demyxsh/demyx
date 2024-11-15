@@ -107,7 +107,7 @@ EOF
 
     # Generate /demyx/compose.yml
     cat << EOF > "${DEMYX}/compose.yml"
-# DEMYX $DEMYX_VERSION
+# DEMYX ${DEMYX_VERSION}
 services:
   socket:
     image: demyx/docker-socket-proxy
@@ -164,15 +164,16 @@ services:
       - DEMYX_HEALTHCHECK_DISK_THRESHOLD=\${DEMYX_HEALTHCHECK_DISK_THRESHOLD}
       - DEMYX_HEALTHCHECK_LOAD=\${DEMYX_HEALTHCHECK_LOAD}
       - DEMYX_HOSTNAME=\${DEMYX_HOSTNAME}
-      - DEMYX_IMAGE_VERSION=\${DEMYX_IMAGE_VERSION}
       - DEMYX_IP=\${DEMYX_IP}
       - DEMYX_MATRIX=\${DEMYX_MATRIX}
       - DEMYX_MATRIX_KEY=\${DEMYX_MATRIX_KEY}
       - DEMYX_MATRIX_URL=\${DEMYX_MATRIX_URL}
       - DEMYX_MEM=\${DEMYX_MEM}
+      - DEMYX_MODE=\${DEMYX_MODE}
       - DEMYX_SERVER_IP=$(dig @ns1.google.com -t txt o-o.myaddr.l.google.com +short | sed 's|"||g')
       - DEMYX_SMTP=\${DEMYX_SMTP}
       - DEMYX_SMTP_HOST=\${DEMYX_SMTP_HOST}
+      - DEMYX_SMTP_PORT=\${DEMYX_SMTP_PORT}
       - DEMYX_SMTP_FROM=\${DEMYX_SMTP_FROM}
       - DEMYX_SMTP_PASSWORD=\${DEMYX_SMTP_PASSWORD}
       - DEMYX_SMTP_USERNAME=\${DEMYX_SMTP_USERNAME}

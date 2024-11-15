@@ -31,8 +31,7 @@ ENV DEMYX_CODE_ENABLE                   false
 ENV DEMYX_CODE_PASSWORD                 demyx
 ENV DEMYX_CODE_SSL                      false
 ENV DEMYX_CF_KEY                        false
-ENV DEMYX_CPU                           .50
-ENV DEMYX_DOCKER_COMPOSE                2.4
+ENV DEMYX_CPU                           0
 ENV DEMYX_DOMAIN                        localhost
 ENV DEMYX_EMAIL                         info@localhost
 ENV DEMYX_HEALTHCHECK                   true
@@ -48,7 +47,7 @@ ENV DEMYX_LOGROTATE_SIZE                10M
 ENV DEMYX_MATRIX                        false
 ENV DEMYX_MATRIX_KEY                    false
 ENV DEMYX_MATRIX_URL                    false
-ENV DEMYX_MEM                           512m
+ENV DEMYX_MEM                           0
 ENV DEMYX_SERVER_IP                     false
 ENV DEMYX_SMTP                          false
 ENV DEMYX_SMTP_HOST                     false

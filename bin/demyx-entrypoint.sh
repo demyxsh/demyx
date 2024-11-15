@@ -43,7 +43,7 @@ demyx_entrypoint_init() {
             FromLineOverride=YES
             UseSTARTTLS=YES
             hostname=$DEMYX_DOMAIN
-            mailhub=${DEMYX_SMTP_HOST}:587
+            mailhub=${DEMYX_SMTP_HOST}:${DEMYX_SMTP_PORT}
             rewriteDomain=$DEMYX_DOMAIN
             root=$DEMYX_EMAIL
         " | sed 's/[[:blank:]]//g' > /etc/ssmtp/ssmtp.conf
