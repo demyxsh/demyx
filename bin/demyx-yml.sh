@@ -110,7 +110,7 @@ EOF
 # DEMYX ${DEMYX_VERSION}
 services:
   socket:
-    image: demyx/docker-socket-proxy
+    image: $(demyx_yml_tag demyx/docker-socket-proxy)
     cpus: \${DEMYX_CPU:-0}
     mem_limit: \${DEMYX_MEM:-0}
     container_name: demyx_socket
@@ -129,7 +129,7 @@ services:
       - POST=1
       - VOLUMES=1
   demyx:
-    image: demyx/demyx:\${DEMYX_IMAGE_VERSION}
+    image: $(demyx_yml_tag demyx/demyx)
     cpus: \${DEMYX_CPU:-0}
     mem_limit: \${DEMYX_MEM:-0}
     container_name: demyx
@@ -214,6 +214,20 @@ demyx_yml_env() {
 
     if [[ -n "$DEMYX_YML_GREP" ]]; then
         echo "$DEMYX_YML_GREP"
+    fi
+}
+#
+#   Outputs tag based on DEMYX_MODE, defaults to latest.
+#
+demyx_yml_tag() {
+    local DEMYX_YML_TAG="${1:-}"
+
+    if [[ "${DEMYX_MODE}" = dev && "${DEMYX_YML_TAG}" == *":"* ]]; then
+        echo "${DEMYX_YML_TAG//:/:dev-}"
+    elif [[ "${DEMYX_MODE}" = dev && "${DEMYX_YML_TAG}" != *":"* ]]; then
+        echo "${DEMYX_YML_TAG}:dev"
+    else
+        echo "${DEMYX_YML_TAG}":latest
     fi
 }
 #
