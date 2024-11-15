@@ -39,6 +39,7 @@ demyx_pull_all() {
         demyx/mariadb
         demyx/nginx
         demyx/openlitespeed
+        demyx/openlitespeed:bedrock
         demyx/ssh
         demyx/traefik
         demyx/utilities
