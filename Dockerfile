@@ -39,7 +39,6 @@ ENV DEMYX_HEALTHCHECK_DISK              /demyx
 ENV DEMYX_HEALTHCHECK_DISK_THRESHOLD    80
 ENV DEMYX_HEALTHCHECK_LOAD              10
 ENV DEMYX_HOSTNAME                      demyx
-ENV DEMYX_IMAGE_VERSION                 latest
 ENV DEMYX_IP                            false
 ENV DEMYX_LOGROTATE                     daily
 ENV DEMYX_LOGROTATE_INTERVAL            7
@@ -48,6 +47,7 @@ ENV DEMYX_MATRIX                        false
 ENV DEMYX_MATRIX_KEY                    false
 ENV DEMYX_MATRIX_URL                    false
 ENV DEMYX_MEM                           0
+ENV DEMYX_MODE                          stable
 ENV DEMYX_SERVER_IP                     false
 ENV DEMYX_SMTP                          false
 ENV DEMYX_SMTP_HOST                     false
