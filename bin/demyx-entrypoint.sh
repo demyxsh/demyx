@@ -152,6 +152,9 @@ demyx_entrypoint_skeleton() {
     if [[ ! -f "$DEMYX_LOG"/error.log ]]; then
         touch "$DEMYX_LOG"/error.log
     fi
+
+    # Generate .env/.yml only if it doesn't exist
+    demyx-yml
 }
 #
 #   # TODO - Check for domains with www and remove it.
