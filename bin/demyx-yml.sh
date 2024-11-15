@@ -17,66 +17,67 @@ demyx_yml() {
     [[ -f "${DEMYX_YML_ENV}" ]] && source "${DEMYX_YML_ENV}"
 
         cat << EOF > "${DEMYX_YML_ENV}"
+# DEMYX ${DEMYX_VERSION}
 
             # HTTP AUTH
-            DEMYX_AUTH_USERNAME=$(demyx_yml_env DEMYX_HOST_AUTH_USERNAME /tmp/.demyx)
-            DEMYX_AUTH_PASSWORD=$(demyx_yml_env DEMYX_HOST_AUTH_PASSWORD /tmp/.demyx)
+DEMYX_AUTH_USERNAME=${DEMYX_AUTH_USERNAME:-$(demyx utility username -r)}
+DEMYX_AUTH_PASSWORD=${DEMYX_AUTH_PASSWORD:-$(demyx utility password -r)}
 
             # BACKUP
-            DEMYX_BACKUP_ENABLE=$(demyx_yml_env DEMYX_HOST_BACKUP /tmp/.demyx)
-            DEMYX_BACKUP_LIMIT=$(demyx_yml_env DEMYX_HOST_BACKUP_LIMIT /tmp/.demyx)
+DEMYX_BACKUP_ENABLE=${DEMYX_BACKUP_ENABLE:-true}
+DEMYX_BACKUP_LIMIT=${DEMYX_BACKUP_LIMIT:-7}
 
             # CODE-SERVER
-            DEMYX_CODE_DOMAIN=$(demyx_yml_env DEMYX_HOST_CODE_DOMAIN /tmp/.demyx)
-            DEMYX_CODE_ENABLE=$(demyx_yml_env DEMYX_HOST_CODE /tmp/.demyx)
-            DEMYX_CODE_PASSWORD=$(demyx_yml_env DEMYX_HOST_CODE_PASSWORD /tmp/.demyx)
-            DEMYX_CODE_SSL=false
+DEMYX_CODE_DOMAIN=${DEMYX_CODE_DOMAIN:-code}
+DEMYX_CODE_ENABLE=${DEMYX_CODE_ENABLE:-false}
+DEMYX_CODE_PASSWORD=${DEMYX_CODE_PASSWORD:-$(demyx utility password -r)}
+DEMYX_CODE_SSL=${DEMYX_CODE_SSL:-false}
 
             # CONTAINER CPU/MEM
-            DEMYX_CPU=$(demyx_yml_env DEMYX_HOST_CPU /tmp/.demyx)
-            DEMYX_MEM=$(demyx_yml_env DEMYX_HOST_MEM /tmp/.demyx)
+DEMYX_CPU=${DEMYX_CPU:-0}
+DEMYX_MEM=${DEMYX_MEM:-0}
 
             # LOGROTATE
-            DEMYX_LOGROTATE=daily
-            DEMYX_LOGROTATE_INTERVAL=7
-            DEMYX_LOGROTATE_SIZE=10M
+DEMYX_LOGROTATE=${DEMYX_LOGROTATE:-daily}
+DEMYX_LOGROTATE_INTERVAL=${DEMYX_LOGROTATE_INTERVAL:-7}
+DEMYX_LOGROTATE_SIZE=${DEMYX_LOGROTATE_SIZE:-10M}
 
             # HEALTHCHECK
-            DEMYX_HEALTHCHECK=$(demyx_yml_env DEMYX_HOST_HEALTHCHECK /tmp/.demyx)
-            DEMYX_HEALTHCHECK_DISK=/demyx
-            DEMYX_HEALTHCHECK_DISK_THRESHOLD=80
-            DEMYX_HEALTHCHECK_LOAD=10
+DEMYX_HEALTHCHECK=${DEMYX_HEALTHCHECK:-true}
+DEMYX_HEALTHCHECK_DISK=${DEMYX_HEALTHCHECK_DISK:-/demyx}
+DEMYX_HEALTHCHECK_DISK_THRESHOLD=${DEMYX_HEALTHCHECK_DISK_THRESHOLD:-80}
+DEMYX_HEALTHCHECK_LOAD=${DEMYX_HEALTHCHECK_LOAD:-10}
 
             # MATRIX
-            DEMYX_MATRIX=false
-            DEMYX_MATRIX_KEY=false
-            DEMYX_MATRIX_URL=false
+DEMYX_MATRIX=${DEMYX_MATRIX:-false}
+DEMYX_MATRIX_KEY=${DEMYX_MATRIX_KEY:-false}
+DEMYX_MATRIX_URL=${DEMYX_MATRIX_URL:-false}
 
             # SMTP
-            DEMYX_SMTP=false
-            DEMYX_SMTP_HOST=false
-            DEMYX_SMTP_FROM=false
-            DEMYX_SMTP_PASSWORD=false
-            DEMYX_SMTP_USERNAME=false
-            DEMYX_SMTP_TO=false
+DEMYX_SMTP=${DEMYX_SMTP:-false}
+DEMYX_SMTP_HOST=${DEMYX_SMTP_HOST:-false}
+DEMYX_SMTP_PORT=${DEMYX_SMTP_PORT:-false}
+DEMYX_SMTP_FROM=${DEMYX_SMTP_FROM:-false}
+DEMYX_SMTP_PASSWORD=${DEMYX_SMTP_PASSWORD:-false}
+DEMYX_SMTP_USERNAME=${DEMYX_SMTP_USERNAME:-false}
+DEMYX_SMTP_TO=${DEMYX_SMTP_TO:-false}
 
             # TRAEFIK
-            DEMYX_TRAEFIK_DASHBOARD=$(demyx_yml_env DEMYX_HOST_TRAEFIK_DASHBOARD /tmp/.demyx)
-            DEMYX_TRAEFIK_DASHBOARD_DOMAIN=$(demyx_yml_env DEMYX_HOST_TRAEFIK_DASHBOARD_DOMAIN /tmp/.demyx)
-            DEMYX_TRAEFIK_LOG=$(demyx_yml_env DEMYX_HOST_TRAEFIK_LOG /tmp/.demyx)
-            DEMYX_TRAEFIK_SSL=false
+DEMYX_TRAEFIK_DASHBOARD=${DEMYX_TRAEFIK_DASHBOARD:-false}
+DEMYX_TRAEFIK_DASHBOARD_DOMAIN=${DEMYX_TRAEFIK_DASHBOARD_DOMAIN:-traefik}
+DEMYX_TRAEFIK_LOG=${DEMYX_TRAEFIK_LOG:-INFO}
+DEMYX_TRAEFIK_SSL=${DEMYX_TRAEFIK_SSL:-false}
 
             # MISC
-            DEMYX_CF_KEY=$(demyx_yml_env DEMYX_HOST_CF_KEY /tmp/.demyx)
-            DEMYX_DOMAIN=$(demyx_yml_env DEMYX_HOST_DOMAIN /tmp/.demyx)
-            DEMYX_EMAIL=$(demyx_yml_env DEMYX_HOST_EMAIL /tmp/.demyx)
-            DEMYX_IMAGE_VERSION=$(demyx_yml_env DEMYX_HOST_IMAGE_VERSION /tmp/.demyx)
-            DEMYX_IP=$(demyx_yml_env DEMYX_HOST_IP /tmp/.demyx)
-            DEMYX_HOSTNAME=$(demyx_yml_env DEMYX_HOST_HOSTNAME /tmp/.demyx)
-            DEMYX_TELEMETRY=$(demyx_yml_env DEMYX_HOST_TELEMETRY /tmp/.demyx)
-            DEMYX_TZ=$(demyx_yml_env DEMYX_HOST_TZ /tmp/.demyx)
-        " | sed "s|            ||g" > "$DEMYX"/.env
-    fi
+DEMYX_CF_KEY=${DEMYX_CF_KEY:-false}
+DEMYX_DOMAIN=${DEMYX_DOMAIN:-localhost}
+DEMYX_EMAIL=${DEMYX_EMAIL:-info@localhost}
+DEMYX_HOSTNAME=${DEMYX_HOSTNAME:-$(hostname)}
+DEMYX_IP=${DEMYX_IP:-false}
+DEMYX_MODE=${DEMYX_MODE:-stable}
+DEMYX_TELEMETRY=${DEMYX_TELEMETRY:-true}
+DEMYX_TZ=${DEMYX_TZ:-America/Los_Angeles}
+EOF
 
     # GitHub Action and existing volume warning fix
     if [[ ! -f "$DEMYX"/github_action ]]; then
