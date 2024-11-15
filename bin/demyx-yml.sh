@@ -6,79 +6,17 @@ set -euo pipefail
 #   Main.
 #
 demyx_yml() {
+    local DEMYX_YML_ENV="${DEMYX}/.env"
     local DEMYX_YML_NETWORK=
     local DEMYX_YML_VOLUME=
     local DEMYX_YML_VOLUME_DEMYX=
     local DEMYX_YML_VOLUME_LOG=
     local DEMYX_YML_VOLUME_USER=
 
-    # TODO - Generate .env
-    if [[ ! -f "$DEMYX"/.env ]]; then
-        echo "# DEMYX ENV - AUTO GENERATED
+    # shellcheck disable=SC1090
+    [[ -f "${DEMYX_YML_ENV}" ]] && source "${DEMYX_YML_ENV}"
 
-            # HTTP AUTH
-            DEMYX_AUTH_USERNAME=$(demyx utility username -r)
-            DEMYX_AUTH_PASSWORD=$(demyx utility password -r)
-
-            # BACKUP
-            DEMYX_BACKUP_ENABLE=true
-            DEMYX_BACKUP_LIMIT=7
-
-            # CODE-SERVER
-            DEMYX_CODE_DOMAIN=code
-            DEMYX_CODE_ENABLE=false
-            DEMYX_CODE_PASSWORD=$(demyx utility password -r)
-            DEMYX_CODE_SSL=false
-
-            # CONTAINER CPU/MEM
-            DEMYX_CPU=0
-            DEMYX_MEM=0
-
-            # LOGROTATE
-            DEMYX_LOGROTATE=daily
-            DEMYX_LOGROTATE_INTERVAL=7
-            DEMYX_LOGROTATE_SIZE=10M
-
-            # HEALTHCHECK
-            DEMYX_HEALTHCHECK=true
-            DEMYX_HEALTHCHECK_DISK=/demyx
-            DEMYX_HEALTHCHECK_DISK_THRESHOLD=80
-            DEMYX_HEALTHCHECK_LOAD=10
-
-            # MATRIX
-            DEMYX_MATRIX=false
-            DEMYX_MATRIX_KEY=false
-            DEMYX_MATRIX_URL=false
-
-            # SMTP
-            DEMYX_SMTP=false
-            DEMYX_SMTP_HOST=false
-            DEMYX_SMTP_FROM=false
-            DEMYX_SMTP_PASSWORD=false
-            DEMYX_SMTP_USERNAME=false
-            DEMYX_SMTP_TO=false
-
-            # TRAEFIK
-            DEMYX_TRAEFIK_DASHBOARD=false
-            DEMYX_TRAEFIK_DASHBOARD_DOMAIN=traefik
-            DEMYX_TRAEFIK_LOG=INFO
-            DEMYX_TRAEFIK_SSL=false
-
-            # MISC
-            DEMYX_CF_KEY=false
-            DEMYX_DOMAIN=localhost
-            DEMYX_EMAIL=info@localhost
-            DEMYX_IMAGE_VERSION=latest
-            DEMYX_IP=false
-            DEMYX_HOSTNAME=$(hostname)
-            DEMYX_TELEMETRY=true
-            DEMYX_TZ=America/Los_Angeles
-        " | sed "s|            ||g" > "$DEMYX"/.env
-    fi
-
-    # TODO - TEMPORARY
-    if [[ -f /tmp/.demyx ]]; then
-        echo "# DEMYX ENV - AUTO GENERATED
+        cat << EOF > "${DEMYX_YML_ENV}"
 
             # HTTP AUTH
             DEMYX_AUTH_USERNAME=$(demyx_yml_env DEMYX_HOST_AUTH_USERNAME /tmp/.demyx)
