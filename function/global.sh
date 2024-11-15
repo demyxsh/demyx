@@ -357,6 +357,20 @@ demyx_external_volume() {
     fi
 }
 #
+#   Outputs tag based on DEMYX_MODE, defaults to latest.
+#
+demyx_image_tag() {
+    local DEMYX_IMAGE_TAG_ARG="${1:-}"
+
+    if [[ "${DEMYX_MODE}" = dev && "${DEMYX_IMAGE_TAG_ARG}" == *":"* ]]; then
+        echo "${DEMYX_IMAGE_TAG_ARG//:/:dev-}"
+    elif [[ "${DEMYX_MODE}" = dev && "${DEMYX_IMAGE_TAG_ARG}" != *":"* ]]; then
+        echo "${DEMYX_IMAGE_TAG_ARG}:dev"
+    else
+        echo "${DEMYX_IMAGE_TAG_ARG}"
+    fi
+}
+#
 #   Output `docker images` to a file for performance and outputs contents to stdout.
 #
 demyx_images() {
