@@ -173,9 +173,12 @@ demyx_cron_six_hour() {
 #
 demyx_cron_weekly() {
     demyx_event
+
+    if [[ "${DEMYX_MODE}" = stable ]]; then
     # Check for updates
     demyx_execute "[CROND WEEKLY] Updating cache" \
         "demyx_update"
+fi
 
     # Execute custom cron
     if [[ -f "$DEMYX"/custom/cron/weekly.sh ]]; then

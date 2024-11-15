@@ -17,6 +17,10 @@ demyx_update() {
     DEMYX_UPDATE_IMAGES="$(demyx_images cat)"
     local DEMYX_UPDATE_TRANSIENT="$DEMYX_TMP"/demyx_transient
 
+    if [[ "${DEMYX_MODE}" = dev ]]; then
+        demyx_error custom "This feature is unavailable when DEMYX_MODE is set to dev"
+    fi
+
     while :; do
         DEMYX_UPDATE_FLAG="${1:-}"
         case "$DEMYX_UPDATE_FLAG" in
