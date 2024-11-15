@@ -155,7 +155,13 @@ demyx_refresh_code() {
 #
 demyx_refresh_traefik() {
     demyx_event
-    demyx_backup traefik
+
+    local DEMYX_REFRESH_TRAEFIK_CHECK=
+    DEMYX_REFRESH_TRAEFIK_CHECK="$(docker inspect demyx_traefik | jq -r '.[] | .State.Status' || true)"
+
+    if [[ "${DEMYX_REFRESH_TRAEFIK_CHECK}" = running ]]; then
+        demyx_backup traefik
+    fi
 
     demyx_execute "Refreshing traefik" \
         "demyx_yml_traefik"
