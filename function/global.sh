@@ -514,9 +514,11 @@ demyx_source() {
         if [[ -f "$DEMYX_SOURCE_FUNCTION" ]]; then
             # Source only if function isn't found.
             if ! declare -F demyx_"$DEMYX_SOURCE_I" &>/dev/null; then
+                # shellcheck disable=SC1090
                 . "$DEMYX_SOURCE_FUNCTION"
             fi
         elif [[ -f "$DEMYX_SOURCE_APP"/.env ]]; then
+            # shellcheck disable=SC1091
             . "$DEMYX_SOURCE_APP"/.env
         fi
     done
@@ -556,6 +558,7 @@ demyx_trap() {
         done
 
         DEMYX_TRAP_I="$(echo "${DEMYX_TRAP_INDEX[@]}" | wc -w)"
+        # shellcheck disable=SC2153
         echo "#$((DEMYX_TRAP_I-1)) $DEMYX_ARGS"
         echo
     } > "$DEMYX_TMP"/demyx_trace

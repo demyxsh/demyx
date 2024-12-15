@@ -283,6 +283,7 @@ demyx_run_init() {
 
         # Clear out environment variables in the scope.
         sed -i 's|=.*|=|g' "$DEMYX_LOG"/"$DEMYX_ARG_2".env
+        # shellcheck disable=SC1090
         . "$DEMYX_LOG"/"$DEMYX_ARG_2".env
         rm -f "$DEMYX_LOG"/"$DEMYX_ARG_2".env
     fi
