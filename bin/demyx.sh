@@ -2,14 +2,13 @@
 # Demyx
 # https://demyx.sh
 set -eEuo pipefail
+# shellcheck disable=SC2034,SC1091
 #
 #   demyx <command> <args>
 #
 demyx() {
-    # shellcheck disable=2034
     local DEMYX_ARGS="${*:-}"
     local DEMYX_ARG_1="${1:-}"
-    # shellcheck disable=2034
     local DEMYX_ARG_2="${2:-}"
     . "$DEMYX_FUNCTION"/global.sh
     . "$DEMYX_FUNCTION"/help.sh
