@@ -19,8 +19,8 @@ demyx_host() {
     local DEMYX_HOST_DEV=
     local DEMYX_HOST_HOSTNAME=
     DEMYX_HOST_HOSTNAME="$(hostname)"
-    local DEMYX_HOST_DEMYX_PS=
-    DEMYX_HOST_DEMYX_PS="$(docker ps)"
+    local DEMYX_HOST_DEMYX_CHECK=
+    DEMYX_HOST_DEMYX_CHECK="$(docker ps -q --filter="name=^demyx$")"
 
     case "$DEMYX_HOST_ARG_1" in
         shell) shift
@@ -133,7 +133,7 @@ demyx_host_compose() {
 #   Count how many updates.
 #
 demyx_host_count() {
-    [[ "$DEMYX_HOST_DEMYX_PS" == *"demyx/demyx"* ]] && \
+    [[ -n "${DEMYX_HOST_DEMYX_CHECK}" ]] && \
         DEMYX_HOST_COUNT_IMAGES="$(docker exec -t --user=root demyx bash -c "[[ -f /demyx/.update_image ]] && cat /demyx/.update_image | sed 's|\r$||g' || true")"
 
     if [[ -n "$DEMYX_HOST_COUNT_IMAGES" ]]; then
@@ -233,9 +233,9 @@ demyx_host_motd() {
 #   Notify user demyx container isn't running.
 #
 demyx_host_not_running() {
-    if [[ "$DEMYX_HOST_DEMYX_PS" != *"demyx/demyx"* ]]; then
-        echo -e "\e[31m[ERROR]\e[39m Demyx isn't running, please run: demyx host restart"
-        exit 1
+    if [[ -z "${DEMYX_HOST_DEMYX_CHECK}" ]]; then
+        demyx_host_remove
+        demyx_host_run
     fi
 }
 #
@@ -283,8 +283,10 @@ demyx_host_remove() {
             demyx_host_compose rm -f
         ;;
         *)
+if [[ -n "${DEMYX_HOST_DEMYX_CHECK}" ]]; then
             docker stop demyx
             docker rm demyx
+fi
         ;;
     esac
 }
@@ -293,7 +295,7 @@ demyx_host_remove() {
 #
 demyx_host_update() {
     demyx_host_count
-    if [[ "$DEMYX_HOST_DEMYX_PS" == *"demyx/demyx"* ]]; then
+    if [[ -n "${DEMYX_HOST_DEMYX_CHECK}" && "${DEMYX_HOST_TAG}" != dev ]]; then
         if [[ "$DEMYX_HOST_COUNT" != 0 ]]; then
             echo -e "\e[32m[UPDATE]\e[39m $DEMYX_HOST_COUNT update(s) available!"
             echo -e "\e[32m[UPDATE]\e[39m View update(s): demyx update -l"
