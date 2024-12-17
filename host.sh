@@ -21,6 +21,8 @@ demyx_host() {
     DEMYX_HOST_HOSTNAME="$(hostname)"
     local DEMYX_HOST_DEMYX_CHECK=
     DEMYX_HOST_DEMYX_CHECK="$(docker ps -q --filter="name=^demyx$")"
+    local DEMYX_HOST_TAG=latest
+    [[ -f /tmp/demyx_dev ]] && DEMYX_HOST_TAG=dev
 
     demyx_host_not_running
 
@@ -48,12 +50,43 @@ demyx_host() {
                     shift 2
                     DEMYX_HOST_DEV="${1:-false}"
 
-                    if [[ "$DEMYX_HOST_DEV" = true ]]; then
+                    if [[ "${DEMYX_HOST_DEV}" = true ]]; then
                         echo -e "\e[33m[WARNING]\e[39m Enabling developer mode"
-                        docker exec --user=root demyx bash -c 'sed -i "s|-eEuo|-eEuox|g" /etc/demyx/bin/demyx.sh'
-                    elif [[ "$DEMYX_HOST_DEV" = false ]]; then
-                        echo -e "\e[34m[INFO]\e[39m  Disabling developer mode"
-                        docker exec --user=root demyx bash -c 'sed -i "s|-eEuox|-eEuo|g" /etc/demyx/bin/demyx.sh'
+                        touch /tmp/demyx_dev
+                        docker pull demyx/demyx:dev
+                        docker pull demyx/docker-socket-proxy:dev
+                        docker pull demyx/mariadb:dev
+                        docker pull demyx/nginx:dev
+                        docker pull demyx/traefik:dev
+                        docker pull demyx/utilities:dev
+                        docker pull demyx/wordpress:dev
+                        docker run -t --rm \
+                            -v demyx:/demyx \
+                            -v /usr/local/bin:/tmp \
+                            -v /var/run/docker.sock:/var/run/docker.sock \
+                            -e DEMYX_HOST_MODE=dev \
+                            -e DOCKER_HOST="" \
+                            --user=root \
+                            --entrypoint=bash \
+                            demyx/demyx:dev -c 'demyx-yml; cp -f /etc/demyx/host.sh /tmp/demyx; chmod +x /tmp/demyx'
+                        if [[ -n "${DEMYX_HOST_DEMYX_CHECK}" ]]; then
+                            exec demyx host restart
+                        fi
+                    elif [[ "${DEMYX_HOST_DEV}" = false ]]; then
+                        echo -e "\e[34m[INFO]\e[39m Disabling developer mode"
+                        rm -f /tmp/demyx_dev
+                        docker run -t --rm \
+                            -v demyx:/demyx \
+                            -v /usr/local/bin:/tmp \
+                            -v /var/run/docker.sock:/var/run/docker.sock \
+                            -e DEMYX_HOST_MODE=latest \
+                            -e DOCKER_HOST="" \
+                            --user=root \
+                            --entrypoint=bash \
+                            demyx/demyx:dev -c 'demyx-yml; cp -f /etc/demyx/host.sh /tmp/demyx; chmod +x /tmp/demyx'
+                        if [[ -n "${DEMYX_HOST_DEMYX_CHECK}" ]]; then
+                            exec demyx host restart
+                        fi
                     fi
                 ;;
                 edit)
@@ -62,7 +95,7 @@ demyx_host() {
                         --user=root \
                         --entrypoint=nano \
                         -v demyx:/demyx \
-                        demyx/demyx .env
+                        "demyx/demyx:${DEMYX_HOST_TAG}" .env
 
                     demyx_host_remove
                     demyx_host_run
@@ -212,7 +245,7 @@ demyx_host_motd() {
             -v /etc/profile.d:/tmp \
             --user=root \
             --entrypoint=bash \
-            demyx/demyx -c "rm -f /tmp/demyx-motd.sh"
+            "demyx/demyx:${DEMYX_HOST_TAG}" -c "rm -f /tmp/demyx-motd.sh"
     fi
 
     if [[ -f ~/.bashrc ]]; then
@@ -252,7 +285,7 @@ demyx_host_run() {
             -v "$HOME"/.demyx:/tmp/.demyx \
             -v /var/run/docker.sock:/var/run/docker.sock:ro \
             -e DOCKER_HOST= \
-            demyx/demyx
+            "demyx/demyx:${DEMYX_HOST_TAG}"
 
         mv ~/.demyx ~/.demyx.bak
     else
@@ -365,7 +398,9 @@ demyx_host_upgrade() {
     demyx_host_exec refresh all
 
     # Update cache
+if [[ "${DEMYX_HOST_TAG}" != dev ]]; then
     demyx_host_exec update
+fi
 
     # Remove old images
     docker images --filter=dangling=true -q | xargs docker rmi || true
