@@ -9,7 +9,6 @@ demyx_install() {
     local DEMYX_INSTALL="${1:-}"
 
     docker pull demyx/demyx
-    docker pull demyx/docker-compose
     docker pull demyx/docker-socket-proxy
     docker pull demyx/mariadb
     docker pull demyx/nginx
