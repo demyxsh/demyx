@@ -1,6 +1,7 @@
 #!/bin/bash
 # Demyx
 # https://demyx.sh
+# shellcheck disable=2001
 set -eEuo pipefail
 #
 #   Main.
@@ -179,7 +180,6 @@ demyx_host_count() {
 demyx_host_error() {
     local DEMYX_HOST_ERROR=
     DEMYX_HOST_ERROR="$(docker exec -t --user=root demyx bash -c "[[ -f /demyx/tmp/demyx_log_error ]] && echo true" || true)"
-    # shellcheck disable=2001
     DEMYX_HOST_ERROR="$(echo "$DEMYX_HOST_ERROR" | sed 's|\r$||g')"
 
     if [[ "$DEMYX_HOST_ERROR" = true ]]; then
