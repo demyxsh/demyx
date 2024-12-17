@@ -120,7 +120,7 @@ demyx_host() {
             esac
         ;;
         *)
-                demyx_host_exec "$@"
+            demyx_host_exec "$@"
         ;;
     esac
 
@@ -301,10 +301,10 @@ demyx_host_remove() {
             demyx_host_compose rm -f
         ;;
         *)
-if [[ -n "${DEMYX_HOST_DEMYX_CHECK}" ]]; then
-            docker stop demyx
-            docker rm demyx
-fi
+            if [[ -n "${DEMYX_HOST_DEMYX_CHECK}" ]]; then
+                docker stop demyx
+                docker rm demyx
+            fi
         ;;
     esac
 }
@@ -328,16 +328,16 @@ demyx_host_upgrade() {
     local DEMYX_HOST_UPGRADE_FORCE=
     local DEMYX_HOST_UPGRADE_CHECK=
     DEMYX_HOST_UPGRADE_FORCE="$(echo "$DEMYX_HOST_ARGS" | grep -e "-f" || true)"
-local DEMYX_HOST_UPGRADE_BUILD=
+    local DEMYX_HOST_UPGRADE_BUILD=
 
-if [[ "${DEMYX_HOST_TAG}" != dev ]]; then
+    if [[ "${DEMYX_HOST_TAG}" != dev ]]; then
         DEMYX_HOST_UPGRADE_BUILD="$(docker exec --user=root demyx bash -c 'echo $DEMYX_VERSION')"
-    demyx_host_exec pull demyx
+        demyx_host_exec pull demyx
         DEMYX_HOST_UPGRADE_CHECK="$(docker run -t --rm \
             -v /usr/local/bin:/tmp \
             --user=root \
             --entrypoint=bash \
-"demyx/demyx:${DEMYX_HOST_TAG}" -c 'echo $DEMYX_VERSION')"
+            "demyx/demyx:${DEMYX_HOST_TAG}" -c 'echo $DEMYX_VERSION')"
 
         if [[ "${DEMYX_HOST_UPGRADE_BUILD}" != "${DEMYX_HOST_UPGRADE_CHECK}" ]]; then
             docker run -t --rm \
@@ -346,29 +346,29 @@ if [[ "${DEMYX_HOST_TAG}" != dev ]]; then
                 --entrypoint=bash \
                 "demyx/demyx:${DEMYX_HOST_TAG}" -c 'cp -f /etc/demyx/host.sh /tmp/demyx; chmod +x /tmp/demyx'
 
-        demyx_host_remove
-        demyx_host_run
-        echo
-        echo -e "\e[33m[WARNING]\e[39m Helper script has been updated, re-running: demyx host upgrade"
-        exec demyx host upgrade
-    fi
+            demyx_host_remove
+            demyx_host_run
+            echo
+            echo -e "\e[33m[WARNING]\e[39m Helper script has been updated, re-running: demyx host upgrade"
+            exec demyx host upgrade
+        fi
 
-    demyx_host_count
-    # Exit if no updates are available
-    if [[ "$DEMYX_HOST_COUNT" = 0 && -z "$DEMYX_HOST_UPGRADE_FORCE" ]]; then
-        echo -e "\e[34m[INFO]\e[39m No updates available"
-        exit
-    fi
+        demyx_host_count
+        # Exit if no updates are available
+        if [[ "$DEMYX_HOST_COUNT" = 0 && -z "$DEMYX_HOST_UPGRADE_FORCE" ]]; then
+            echo -e "\e[34m[INFO]\e[39m No updates available"
+            exit
+        fi
 
-    if [[ -z "$DEMYX_HOST_UPGRADE_FORCE" ]]; then
-        echo -en "\e[33m"
-        read -rep "[WARNING] Depending on the update, services may be temporarily disrupted. Continue? [yY]: " DEMYX_HOST_CONFIRM
-        echo -en "\e[39m"
+        if [[ -z "$DEMYX_HOST_UPGRADE_FORCE" ]]; then
+            echo -en "\e[33m"
+            read -rep "[WARNING] Depending on the update, services may be temporarily disrupted. Continue? [yY]: " DEMYX_HOST_CONFIRM
+            echo -en "\e[39m"
 
-        if [[ "$DEMYX_HOST_CONFIRM" != [yY] ]]; then
-            echo -e "\e[31m[ERROR]\e[39m Update cancelled"
-            exit 1
-fi
+            if [[ "$DEMYX_HOST_CONFIRM" != [yY] ]]; then
+                echo -e "\e[31m[ERROR]\e[39m Update cancelled"
+                exit 1
+            fi
         fi
     fi
 
@@ -386,9 +386,9 @@ fi
     demyx_host_exec refresh all
 
     # Update cache
-if [[ "${DEMYX_HOST_TAG}" != dev ]]; then
-    demyx_host_exec update
-fi
+    if [[ "${DEMYX_HOST_TAG}" != dev ]]; then
+        demyx_host_exec update
+    fi
 
     # Remove old images
     docker images --filter=dangling=true -q | xargs docker rmi || true
