@@ -115,18 +115,12 @@ demyx_host() {
                     demyx_host_run
                 ;;
                 upgrade)
-                    demyx_host_not_running
                     demyx_host_upgrade
                 ;;
             esac
         ;;
         *)
-            if [[ "$DEMYX_HOST_DEMYX_PS" != *"demyx/demyx"* ]]; then
-                demyx_host_run
                 demyx_host_exec "$@"
-            else
-                demyx_host_exec "$@"
-            fi
         ;;
     esac
 
@@ -135,6 +129,7 @@ demyx_host() {
     demyx_host_error
 }
 #
+#   TODO
 #   Checks if database needs upgrading.
 #
 demyx_host_app_upgrade() {
@@ -288,16 +283,6 @@ demyx_host_run() {
             "demyx/demyx:${DEMYX_HOST_TAG}"
 
         mv ~/.demyx ~/.demyx.bak
-    else
-        docker run -t --rm \
-            --network=host \
-            --hostname="$DEMYX_HOST_HOSTNAME" \
-            --user=root \
-            --entrypoint=demyx-yml \
-            -v demyx:/demyx \
-            -v /var/run/docker.sock:/var/run/docker.sock:ro \
-            -e DOCKER_HOST= \
-            demyx/demyx
     fi
 
     demyx_host_compose up -d
