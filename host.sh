@@ -22,10 +22,10 @@ demyx_host() {
     local DEMYX_HOST_DEMYX_CHECK=
     DEMYX_HOST_DEMYX_CHECK="$(docker ps -q --filter="name=^demyx$")"
 
+    demyx_host_not_running
+
     case "$DEMYX_HOST_ARG_1" in
         shell) shift
-            demyx_host_not_running
-
             if [[ -z "$DEMYX_HOST_ARG_2" ]]; then
                 docker exec -it --user=root demyx bash
             else
