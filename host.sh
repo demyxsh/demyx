@@ -343,27 +343,29 @@ demyx_host_upgrade() {
     local DEMYX_HOST_UPGRADE_FORCE=
     local DEMYX_HOST_UPGRADE_CHECK=
     DEMYX_HOST_UPGRADE_FORCE="$(echo "$DEMYX_HOST_ARGS" | grep -e "-f" || true)"
+local DEMYX_HOST_UPGRADE_BUILD=
 
+if [[ "${DEMYX_HOST_TAG}" != dev ]]; then
+        DEMYX_HOST_UPGRADE_BUILD="$(docker exec --user=root demyx bash -c 'echo $DEMYX_VERSION')"
     demyx_host_exec pull demyx
-
-    DEMYX_HOST_UPGRADE_CHECK="$(docker run --rm \
-        -v /usr/local/bin:/tmp \
-        --user=root \
-        --entrypoint=bash \
-        demyx/demyx -c 'diff /etc/demyx/host.sh /tmp/demyx' || true)"
-
-    if [[ -n "${DEMYX_HOST_UPGRADE_CHECK}" ]]; then
-        docker run -t --rm \
+        DEMYX_HOST_UPGRADE_CHECK="$(docker run -t --rm \
             -v /usr/local/bin:/tmp \
             --user=root \
             --entrypoint=bash \
-            demyx/demyx -c 'cp -f /etc/demyx/host.sh /tmp/demyx; chmod +x /tmp/demyx'
+"demyx/demyx:${DEMYX_HOST_TAG}" -c 'echo $DEMYX_VERSION')"
+
+        if [[ "${DEMYX_HOST_UPGRADE_BUILD}" != "${DEMYX_HOST_UPGRADE_CHECK}" ]]; then
+            docker run -t --rm \
+                -v /usr/local/bin:/tmp \
+                --user=root \
+                --entrypoint=bash \
+                "demyx/demyx:${DEMYX_HOST_TAG}" -c 'cp -f /etc/demyx/host.sh /tmp/demyx; chmod +x /tmp/demyx'
 
         demyx_host_remove
         demyx_host_run
         echo
-        echo -e "\e[33m[WARNING]\e[39m Helper script has been updated, please rerun: demyx host upgrade"
-        exit 1
+        echo -e "\e[33m[WARNING]\e[39m Helper script has been updated, re-running: demyx host upgrade"
+        exec demyx host upgrade
     fi
 
     demyx_host_count
@@ -381,6 +383,7 @@ demyx_host_upgrade() {
         if [[ "$DEMYX_HOST_CONFIRM" != [yY] ]]; then
             echo -e "\e[31m[ERROR]\e[39m Update cancelled"
             exit 1
+fi
         fi
     fi
 
