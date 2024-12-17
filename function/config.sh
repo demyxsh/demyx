@@ -550,9 +550,19 @@ demyx_config_clean() {
         WORDPRESS_DB_USER
     "
 
+    local DEMYX_CONFIG_CLEAN_CONFIRM=
     local DEMYX_CONFIG_CLEAN_MARIADB_ROOT_PASSWORD=
     local DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD=
     local DEMYX_CONFIG_CLEAN_WORDPRESS_DB_USER=
+
+    echo -en "\e[33m"
+    read -rep "[WARNING] Doing a backup is highly recommended. Continue with the cleaning? [yY]: " DEMYX_CONFIG_CLEAN_CONFIRM
+    echo -en "\e[39m"
+
+    if [[ "${DEMYX_CONFIG_CLEAN_CONFIRM}" != [yY] ]]; then
+        echo -e "\e[31m[ERROR]\e[39m Cleaning cancelled"
+        exit 1
+    fi
 
     demyx_config "$DEMYX_APP_DOMAIN" --healthcheck=false --maintenance
 
@@ -600,9 +610,8 @@ demyx_config_clean() {
         "demyx_wp $DEMYX_APP_DOMAIN config shuffle-salts"
 
     demyx_execute "Cleaning up" \
-        "docker exec -t $DEMYX_APP_WP_CONTAINER sh -c 'rm ${DEMYX_APP_CONTAINER}.sql"
+        "docker exec -t $DEMYX_APP_WP_CONTAINER rm ${DEMYX_APP_CONTAINER}.sql"
 
-    demyx_compose "$DEMYX_APP_DOMAIN" fr
     demyx_config "$DEMYX_APP_DOMAIN" --healthcheck  --maintenance=false
 }
 #
