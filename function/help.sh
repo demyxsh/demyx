@@ -51,6 +51,7 @@ demyx_help() {
             # TODO - echo "                   --no-maldet                        Skip maldet commands, used with --clean"
             echo "                   --opcache                          Enable/disable PHP opcache."
             echo "                   --php                              Switch PHP/LSPHP version. (Usage: --php=<8.2|8.3>)"
+            echo "                   --php-average                      Set php-fpm child process ram average in kb. (Usage: --php-average=100000)"
             echo "                   --php-max-requests                 Update php-fpm max requests per child process. (Usage: --php-max-requests=500)"
             echo "                   --pma                              Enable/disable phpMyAdmin service."
             echo "                   --rate-limit                       Enable/disable Nginx's rate limiting for /wp-login.php and /wp-cron.php."
