@@ -3,6 +3,10 @@
 # shellcheck shell=bash
 
 #
+#   Source core environment variables.
+#
+[[ -f "${DEMYX}/.env" ]] && source "${DEMYX}/.env"
+#
 #   Checks if main app domain is www or not.
 #
 demyx_app_domain() {
