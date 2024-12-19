@@ -18,8 +18,12 @@ demyx_host() {
     local DEMYX_HOST_COUNT=0
     local DEMYX_HOST_COUNT_IMAGES=
     local DEMYX_HOST_DEV=
-    local DEMYX_HOST_DEMYX_CHECK=
-    DEMYX_HOST_DEMYX_CHECK="$(docker ps -q --filter="name=^demyx$")"
+    local DEMYX_HOST_CHECK_DEMYX=
+    DEMYX_HOST_CHECK_DEMYX="$(docker ps -q --filter="name=^demyx$")"
+    local DEMYX_HOST_CHECK_CODE=
+    DEMYX_HOST_CHECK_CODE="$(docker ps -q --filter="name=^demyx_code$")"
+    local DEMYX_HOST_CHECK_TRAEFIK=
+    DEMYX_HOST_CHECK_TRAEFIK="$(docker ps -q --filter="name=^demyx_traefik$")"
     local DEMYX_HOST_TAG=latest
     [[ -f /tmp/demyx_dev ]] && DEMYX_HOST_TAG=dev
     demyx_host_not_running
@@ -97,9 +101,9 @@ demyx_host() {
                     demyx_host_help
                 ;;
                 rs|restart)
-                    demyx_host_remove
-                    demyx_host_run
+                    [[ -n "${DEMYX_HOST_CHECK_CODE}" ]] && demyx_host_compose code up -d --force-recreate --remove-orphans
                 ;;
+                    [[ -n "${DEMYX_HOST_CHECK_CODE}" ]] && demyx_host_compose code up -d
                 upgrade)
                     demyx_host_upgrade
                 ;;
@@ -148,7 +152,7 @@ demyx_host_compose() {
 #   Count how many updates.
 #
 demyx_host_count() {
-    [[ -n "${DEMYX_HOST_DEMYX_CHECK}" ]] && \
+    [[ -n "${DEMYX_HOST_CHECK_DEMYX}" ]] && \
         DEMYX_HOST_COUNT_IMAGES="$(docker exec -t --user=root demyx bash -c "[[ -f /demyx/.update_image ]] && cat /demyx/.update_image | sed 's|\r$||g' || true")"
 
     if [[ -n "$DEMYX_HOST_COUNT_IMAGES" ]]; then
@@ -159,6 +163,7 @@ demyx_host_count() {
 #   Warns users for new error log entries.
 #
 demyx_host_error() {
+    [[ -z "${DEMYX_HOST_CHECK_DEMYX}" ]] && exit
     local DEMYX_HOST_ERROR=
     DEMYX_HOST_ERROR="$(docker exec -t --user=root demyx bash -c "[[ -f /demyx/tmp/demyx_log_error ]] && echo true" || true)"
     DEMYX_HOST_ERROR="$(echo "$DEMYX_HOST_ERROR" | sed 's|\r$||g')"
@@ -247,31 +252,10 @@ demyx_host_motd() {
 #   Notify user demyx container isn't running.
 #
 demyx_host_not_running() {
-    if [[ -z "${DEMYX_HOST_DEMYX_CHECK}" ]]; then
-        demyx_host_remove
-        demyx_host_run
+    if [[ -z "${DEMYX_HOST_CHECK_DEMYX}" ]]; then
     fi
-}
-#
-#   Generate main demyx yml and run all services.
-#
-demyx_host_run() {
-    if [[ -f ~/.demyx ]]; then
-        docker run -t --rm \
-            --network=host \
-            --hostname="$DEMYX_HOST_HOSTNAME" \
-            --user=root \
-            --entrypoint=demyx-yml \
-            -v demyx:/demyx \
-            -v "$HOME"/.demyx:/tmp/.demyx \
-            -v /var/run/docker.sock:/var/run/docker.sock:ro \
-            -e DOCKER_HOST= \
-            "demyx/demyx:${DEMYX_HOST_TAG}"
-
-        mv ~/.demyx ~/.demyx.bak
-    fi
-
-    demyx_host_compose up -d
+    if [[ -z "${DEMYX_HOST_CHECK_CODE}" ]]; then
+    if [[ -z "${DEMYX_HOST_CHECK_TRAEFIK}" ]]; then
 }
 #
 #   Stops and removes demyx container or all demyx services.
@@ -287,7 +271,7 @@ demyx_host_remove() {
             demyx_host_compose rm -f
         ;;
         *)
-            if [[ -n "${DEMYX_HOST_DEMYX_CHECK}" ]]; then
+            if [[ -n "${DEMYX_HOST_CHECK_DEMYX}" ]]; then
                 docker stop demyx
                 docker rm demyx
             fi
@@ -299,7 +283,7 @@ demyx_host_remove() {
 #
 demyx_host_update() {
     demyx_host_count
-    if [[ -n "${DEMYX_HOST_DEMYX_CHECK}" && "${DEMYX_HOST_TAG}" != dev ]]; then
+    if [[ -n "${DEMYX_HOST_CHECK_DEMYX}" && "${DEMYX_HOST_TAG}" != dev ]]; then
         if [[ "$DEMYX_HOST_COUNT" != 0 ]]; then
             echo -e "\e[32m[UPDATE]\e[39m $DEMYX_HOST_COUNT update(s) available!"
             echo -e "\e[32m[UPDATE]\e[39m View update(s): demyx update -l"
