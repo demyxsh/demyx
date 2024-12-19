@@ -30,6 +30,7 @@ demyx_env() {
             fi
         fi
 
+        # shellcheck disable=SC1091
         . "$DEMYX_ENV"/.env
 
         # Auto upgrade php to 8.2
