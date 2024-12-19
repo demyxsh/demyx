@@ -348,7 +348,7 @@ demyx_host_upgrade() {
             --entrypoint=bash \
             "demyx/demyx:${DEMYX_HOST_TAG}" -c 'echo $DEMYX_VERSION')"
 
-        if [[ "${DEMYX_HOST_UPGRADE_BUILD}" != "${DEMYX_HOST_UPGRADE_CHECK}" ]]; then
+        if [[ "${DEMYX_HOST_UPGRADE_VERSION}" != "${DEMYX_HOST_UPGRADE_CHECK}" ]]; then
             docker run -t --rm \
                 -v /usr/local/bin:/tmp \
                 --user=root \
