@@ -78,7 +78,7 @@ demyx_host() {
                             -v demyx:/demyx \
                             -v /usr/local/bin:/tmp \
                             -v /var/run/docker.sock:/var/run/docker.sock \
-                            -e DEMYX_HOST_MODE=latest \
+                            -e DEMYX_HOST_MODE=stable \
                             -e DOCKER_HOST="" \
                             --user=root \
                             --entrypoint=bash \
