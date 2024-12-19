@@ -49,7 +49,7 @@ demyx_host() {
                     fi
                 ;;
                 dev)
-                    DEMYX_HOST_DEV="${1:-false}"
+                    DEMYX_HOST_DEV="${DEMYX_HOST_ARG_3:-false}"
 
                     if [[ "${DEMYX_HOST_DEV}" = true ]]; then
                         echo -e "\e[33m[WARNING]\e[39m Enabling developer mode"
