@@ -184,6 +184,7 @@ demyx_host_compose() {
 #   Count how many updates.
 #
 demyx_host_count() {
+    [[ "${DEMYX_HOST_TAG}" = dev ]] && exit
     [[ -n "${DEMYX_HOST_CHECK_DEMYX}" ]] && \
         DEMYX_HOST_COUNT_IMAGES="$(docker exec -t --user=root demyx bash -c "[[ -f /demyx/.update_image ]] && cat /demyx/.update_image | sed 's|\r$||g' || true")"
 
