@@ -1,6 +1,6 @@
 # Demyx
 # https://demyx.sh
-# shellcheck shell=bash
+# shellcheck shell=bash disable=SC1091
 
 #
 #   Source core environment variables.
