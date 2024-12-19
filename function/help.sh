@@ -25,7 +25,7 @@ demyx_help() {
             echo "                    all                               Execute docker compose commands to all apps."
             echo "                    -d                                Targets an app’s MariaDB container."
             echo "                    down                              Executes docker compose stop and rm -f."
-            echo "                    fr                                Executes docker compose up -d –for-recreate –remove-orphans."
+            echo "                    fr                                Executes docker compose up -d –-force-recreate –-remove-orphans."
             echo "                    -n                                Target an app’s Nginx container."
             echo "                    -w                                Targets an app’s WordPress container."
             echo
