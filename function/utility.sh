@@ -152,13 +152,12 @@ demyx_utility_password() {
     demyx_event
     local DEMYX_UTILITY_PASSWORD="${1:-"20"}"
     local DEMYX_UTILITY_PASSWORD_PRINT=
-    local DEMYX_UTILITY_PWGEN=
+    local DEMYX_UTILITY_PWGEN='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@_-'
 
-    DEMYX_UTILITY_PWGEN=()
-    for i in {a..z} {A..Z} {0..9}; do
-        DEMYX_UTILITY_PWGEN[RANDOM]=$i
+    DEMYX_UTILITY_PASSWORD_PRINT=""
+    for ((i=0; i<DEMYX_UTILITY_PASSWORD; i++)); do
+        DEMYX_UTILITY_PASSWORD_PRINT+="${DEMYX_UTILITY_PWGEN:$((RANDOM % ${#DEMYX_UTILITY_PWGEN})):1}"
     done
-    DEMYX_UTILITY_PASSWORD_PRINT="$(printf %s "${DEMYX_UTILITY_PWGEN[@]::${DEMYX_UTILITY_PASSWORD}}" $'\n')"
 
     if [[ "$DEMYX_UTILITY_FLAG_RAW" = true ]]; then
         echo "$DEMYX_UTILITY_PASSWORD_PRINT"
