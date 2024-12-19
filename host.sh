@@ -153,15 +153,32 @@ demyx_host_app_upgrade() {
     fi
 }
 #
-#   Run demyx container to execute docker-compose.
+#   Run demyx container to execute docker compose.
 #
 demyx_host_compose() {
-    docker run -it --rm \
+    local DEMYX_HOST_COMPOSE="${1:-}"
+    local DEMYX_HOST_COMPOSE_WORKDIR=
+
+    case "${DEMYX_HOST_COMPOSE}" in
+        code) shift
+            DEMYX_HOST_COMPOSE_WORKDIR=/demyx/app/code
+        ;;
+        traefik) shift
+            DEMYX_HOST_COMPOSE_WORKDIR=/demyx/app/traefik
+        ;;
+        *)
+            DEMYX_HOST_COMPOSE_WORKDIR=/demyx
+        ;;
+    esac 
+
+    docker run -t --rm \
+        --workdir="${DEMYX_HOST_COMPOSE_WORKDIR}" \
+        --user=root \
         --entrypoint=docker \
-        --workdir=/demyx \
+        -e DOCKER_HOST= \
         -v /var/run/docker.sock:/var/run/docker.sock:ro \
         -v demyx:/demyx \
-        docker:cli compose "$@"
+        "demyx/demyx:${DEMYX_HOST_TAG}" compose "$@"
 }
 #
 #   Count how many updates.
