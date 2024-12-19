@@ -18,13 +18,10 @@ demyx_host() {
     local DEMYX_HOST_COUNT=0
     local DEMYX_HOST_COUNT_IMAGES=
     local DEMYX_HOST_DEV=
-    local DEMYX_HOST_HOSTNAME=
-    DEMYX_HOST_HOSTNAME="$(hostname)"
     local DEMYX_HOST_DEMYX_CHECK=
     DEMYX_HOST_DEMYX_CHECK="$(docker ps -q --filter="name=^demyx$")"
     local DEMYX_HOST_TAG=latest
     [[ -f /tmp/demyx_dev ]] && DEMYX_HOST_TAG=dev
-
     demyx_host_not_running
 
     case "$DEMYX_HOST_ARG_1" in
@@ -70,9 +67,6 @@ demyx_host() {
                             --user=root \
                             --entrypoint=bash \
                             demyx/demyx:dev -c 'demyx-yml; cp -f /etc/demyx/host.sh /tmp/demyx; chmod +x /tmp/demyx'
-                        if [[ -n "${DEMYX_HOST_DEMYX_CHECK}" ]]; then
-                            exec demyx host restart
-                        fi
                     elif [[ "${DEMYX_HOST_DEV}" = false ]]; then
                         echo -e "\e[34m[INFO]\e[39m Disabling developer mode"
                         rm -f /tmp/demyx_dev
@@ -95,9 +89,6 @@ demyx_host() {
                         --entrypoint=nano \
                         -v demyx:/demyx \
                         "demyx/demyx:${DEMYX_HOST_TAG}" .env
-
-                    demyx_host_remove
-                    demyx_host_run
                 ;;
                 env)
                     docker exec --user=root demyx cat .env
