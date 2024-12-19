@@ -357,8 +357,8 @@ demyx_host_upgrade() {
 
             demyx_host_compose up -d
             echo
-            echo -e "\e[33m[WARNING]\e[39m Helper script has been updated, re-running: demyx host upgrade"
-            exec demyx host upgrade
+            echo -e "\e[33m[WARNING]\e[39m Helper script has been updated, re-running: demyx host upgrade -f"
+            exec demyx host upgrade -f
         fi
 
         demyx_host_count
