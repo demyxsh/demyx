@@ -110,6 +110,8 @@ demyx_host() {
                     demyx_host_help
                 ;;
                 rs|restart)
+                    demyx_host_compose up -d --force-recreate --remove-orphans
+                    demyx_host_compose traefik up -d --force-recreate --remove-orphans
                     [[ -n "${DEMYX_HOST_CHECK_CODE}" ]] && demyx_host_compose code up -d --force-recreate --remove-orphans
                 ;;
                     [[ -n "${DEMYX_HOST_CHECK_CODE}" ]] && demyx_host_compose code up -d
