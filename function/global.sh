@@ -36,6 +36,9 @@ demyx_app_env() {
         code)
             # TODO
         ;;
+        core)
+            DEMYX_APP_FILE="${DEMYX}/.env"
+        ;;
         html)
             # TODO
         ;;
@@ -47,7 +50,9 @@ demyx_app_env() {
         ;;
     esac
 
-    if [[ -f "$DEMYX_APP_FILE" ]]; then
+    if [[ "${DEMYX_APP_ENV_1}" = core ]]; then
+        grep -w "${DEMYX_APP_ENV_2}" "${DEMYX_APP_FILE}" | awk -F '[=]' '{print $2}'
+    elif [[ -f "$DEMYX_APP_FILE" ]]; then
         local DEMYX_APP_ENV_GREP="${DEMYX_APP_ENV_2:-}"
         local DEMYX_APP_ENV_I=
         local DEMYX_APP_ENV_I_VAL=
