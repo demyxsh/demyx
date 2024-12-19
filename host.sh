@@ -49,7 +49,6 @@ demyx_host() {
                     fi
                 ;;
                 dev)
-                    shift 2
                     DEMYX_HOST_DEV="${1:-false}"
 
                     if [[ "${DEMYX_HOST_DEV}" = true ]]; then
