@@ -9,12 +9,6 @@ demyx_entrypoint() {
     # Execute skeletons.
     demyx_entrypoint_skeleton
 
-    # Refresh Traefik.
-    demyx refresh traefik
-
-    # Refresh code-server.
-    demyx refresh code
-
     # Execute reset.
     demyx_entrypoint_reset
 
