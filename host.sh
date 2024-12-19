@@ -83,6 +83,15 @@ demyx_host() {
                             --user=root \
                             --entrypoint=bash \
                             demyx/demyx:dev -c 'demyx-yml; cp -f /etc/demyx/host.sh /tmp/demyx; chmod +x /tmp/demyx'
+                    fi
+
+                    demyx_host_compose up -d
+                    # TODO - For some reason this has to be executed twice (work in progress...)
+                    demyx_host_exec refresh code
+                    demyx_host_exec refresh code
+                    demyx_host_exec refresh traefik
+                    demyx_host_exec refresh traefik
+                ;;
                 down|rm|remove)
                     demyx_host_remove "$DEMYX_HOST_ARG_3"
                 ;;
