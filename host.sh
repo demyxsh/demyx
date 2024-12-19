@@ -355,8 +355,7 @@ demyx_host_upgrade() {
                 --entrypoint=bash \
                 "demyx/demyx:${DEMYX_HOST_TAG}" -c 'cp -f /etc/demyx/host.sh /tmp/demyx; chmod +x /tmp/demyx'
 
-            demyx_host_remove
-            demyx_host_run
+            demyx_host_compose up -d
             echo
             echo -e "\e[33m[WARNING]\e[39m Helper script has been updated, re-running: demyx host upgrade"
             exec demyx host upgrade
