@@ -114,7 +114,11 @@ demyx_host() {
                     demyx_host_compose traefik up -d --force-recreate --remove-orphans
                     [[ -n "${DEMYX_HOST_CHECK_CODE}" ]] && demyx_host_compose code up -d --force-recreate --remove-orphans
                 ;;
+                up)
+                    demyx_host_compose up -d
+                    demyx_host_compose traefik up -d
                     [[ -n "${DEMYX_HOST_CHECK_CODE}" ]] && demyx_host_compose code up -d
+                ;;
                 upgrade)
                     demyx_host_upgrade
                 ;;
