@@ -82,7 +82,7 @@ EOF
 
     # GitHub Action and existing volume warning fix
     if [[ ! -f "$DEMYX"/github_action ]]; then
-        DEMYX_YML_VOLUME="$(docker volume ls)"
+        DEMYX_YML_VOLUME="$(docker volume ls || true)"
         if [[ -n "$(echo "$DEMYX_YML_VOLUME" | grep -w demyx || true)" ]]; then
             DEMYX_YML_VOLUME_DEMYX="external: true"
         fi
