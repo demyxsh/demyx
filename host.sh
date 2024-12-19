@@ -239,17 +239,17 @@ demyx_host_gatekeeper() {
 #
 demyx_host_help() {
     echo
-    echo "demyx host    <args>          Demyx helper commands"
-    echo "      shell                   Execute commands to the demyx container, leave <arg> empty to open a bash shell"
-    echo "              all             Targets both demyx and demyx_socket container, works with remove and restart"
-    echo "              ctop            htop but for contaienrs"
-    echo "              dev             Developer mode, value: <true|false>"
-    echo "              edit            Edit Demyx config (~/.demyx) on the host"
-    echo "              env             Prints the content of .env inside Demyx container"
-    echo "              install         Prompt users to enter details for ~/.demyx"
-    echo "              rm|remove       Stops and removes demyx container"
-    echo "              rs|restart      Stops, removes, and starts demyx container"
-    echo "              upgrade         Pull relevant images, refresh app configs, and delete old images"
+    echo "demyx host    <args>              Demyx helper commands"
+    echo "      shell                       Execute commands to the demyx container, leave <arg> empty to open a bash shell"
+    echo "              all                 Targets all core demyx containers, works with remove and restart"
+    echo "              ctop                htop but for contaienrs"
+    echo "              down|rm|remove      Stops and removes demyx container"
+    echo "              dev                 Developer mode, value: <true|false>"
+    echo "              edit                Edit Demyx config (~/.demyx) on the host"
+    echo "              env                 Prints the content of .env inside Demyx container"
+    echo "              rs|restart          Stops, removes, and starts demyx container"
+    echo "              up                  Starts core demyx containers"
+    echo "              upgrade             Pull relevant images, refresh app configs, and delete old images"
     echo
 }
 #
