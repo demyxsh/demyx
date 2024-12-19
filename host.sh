@@ -384,7 +384,9 @@ demyx_host_upgrade() {
     demyx_host_exec pull all
 
     # Use new images for core services
-    demyx_host_compose up -d --remove-orphans
+    demyx_host_compose up -d
+    demyx_host_exec refresh code
+    demyx_host_exec refresh traefik
 
     # TODO
     # Upgrade database if needed
