@@ -282,13 +282,20 @@ demyx_host_motd() {
     fi
 }
 #
-#   Notify user demyx container isn't running.
+#   Run demyx core services if they're not running.
 #
 demyx_host_not_running() {
     if [[ -z "${DEMYX_HOST_CHECK_DEMYX}" ]]; then
+        demyx_host_compose up -d
     fi
     if [[ -z "${DEMYX_HOST_CHECK_CODE}" ]]; then
+        local DEMYX_HOST_NOT_RUNNING_CODE=
+        DEMYX_HOST_NOT_RUNNING_CODE="$(docker exec -t --user=root demyx cat /demyx/.env | grep DEMYX_CODE_ENABLE | awk -F '[=]' '{print $2}' | sed 's|\r$||g')"
+        [[ "${DEMYX_HOST_NOT_RUNNING_CODE}" = true ]] && demyx_host_compose code up -d
+    fi
     if [[ -z "${DEMYX_HOST_CHECK_TRAEFIK}" ]]; then
+        demyx_host_compose traefik up -d
+    fi
 }
 #
 #   Stops and removes demyx container or all demyx services.
