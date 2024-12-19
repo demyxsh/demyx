@@ -305,8 +305,8 @@ demyx_host_remove() {
 
     case "$DEMYX_HOST_RM" in
         all)
-            demyx_host_exec compose code down
-            demyx_host_exec compose traefik down
+            demyx_host_compose code down
+            demyx_host_compose traefik down
             demyx_host_compose stop
             demyx_host_compose rm -f
         ;;
