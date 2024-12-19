@@ -85,10 +85,8 @@ demyx_host() {
                             --user=root \
                             --entrypoint=bash \
                             demyx/demyx:dev -c 'demyx-yml; cp -f /etc/demyx/host.sh /tmp/demyx; chmod +x /tmp/demyx'
-                        if [[ -n "${DEMYX_HOST_DEMYX_CHECK}" ]]; then
-                            exec demyx host restart
-                        fi
-                    fi
+                down|rm|remove)
+                    demyx_host_remove "$DEMYX_HOST_ARG_3"
                 ;;
                 edit)
                     # shellcheck disable=2153
@@ -106,9 +104,6 @@ demyx_host() {
                 ;;
                 help)
                     demyx_host_help
-                ;;
-                rm|remove)
-                    demyx_host_remove "$DEMYX_HOST_ARG_3"
                 ;;
                 rs|restart)
                     demyx_host_remove
