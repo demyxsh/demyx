@@ -1,6 +1,6 @@
 # Demyx
 # https://demyx.sh
-# shellcheck shell=bash
+# shellcheck shell=bash disable=SC1090,SC1091
 
 #
 #   demyx update <args>
