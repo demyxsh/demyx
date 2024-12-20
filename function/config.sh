@@ -555,8 +555,9 @@ demyx_config_clean() {
     local DEMYX_CONFIG_CLEAN_WORDPRESS_DB_PASSWORD=
     local DEMYX_CONFIG_CLEAN_WORDPRESS_DB_USER=
 
+    demyx_echo "A backup is highly recommended!"
     echo -en "\e[33m"
-    read -rep "[WARNING] Doing a backup is highly recommended. Continue with the cleaning? [yY]: " DEMYX_CONFIG_CLEAN_CONFIRM
+    read -rep "[WARNING] Continue with the cleaning? [yY]: " DEMYX_CONFIG_CLEAN_CONFIRM
     echo -en "\e[39m"
 
     if [[ "${DEMYX_CONFIG_CLEAN_CONFIRM}" != [yY] ]]; then
