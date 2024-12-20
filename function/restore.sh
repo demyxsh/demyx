@@ -136,60 +136,96 @@ demyx_restore_app() {
         docker volume create ${DEMYX_APP_PREFIX}_sftp; \
         docker volume create ${DEMYX_APP_WP_VOLUME}"
 
-    if [[ -d "$DEMYX_APP_PATH"/demyx-code ]]; then
-        demyx_execute "Restoring ${DEMYX_APP_PREFIX}_code" \
-            "docker run -t \
-                --rm \
-                --entrypoint=bash \
-                --user=root \
-                -v demyx:$DEMYX \
-                -v ${DEMYX_APP_PREFIX}_code:/${DEMYX_APP_PREFIX}_code \
-                demyx/demyx -c 'cp -rp ${DEMYX_APP_PATH}/demyx-code/. /${DEMYX_APP_PREFIX}_code'"
-    fi
-
-    if [[ -d "$DEMYX_APP_PATH"/demyx-sftp ]]; then
-        demyx_execute "Restoring ${DEMYX_APP_PREFIX}_sftp" \
-            "docker run -t \
-                --rm \
-                --entrypoint=bash \
-                --user=root \
-                -v demyx:$DEMYX \
-                -v ${DEMYX_APP_PREFIX}_sftp:/${DEMYX_APP_PREFIX}_sftp \
-                demyx/demyx -c 'cp -rp ${DEMYX_APP_PATH}/demyx-sftp/. /${DEMYX_APP_PREFIX}_sftp'"
-    fi
-
-    demyx_compose "$DEMYX_APP_DOMAIN" -d up -d
-
+    demyx_compose "${DEMYX_APP_DOMAIN}" -d up -d
     demyx_execute "Initializing MariaDB" \
         "demyx_mariadb_ready"
 
-    demyx_execute "Restoring app" \
-        "docker run -dit --rm \
-            --name=$DEMYX_APP_WP_CONTAINER \
-            --network=demyx \
-            --entrypoint=bash \
-            -v ${DEMYX_APP_WP_VOLUME}:/demyx \
-            -v ${DEMYX_APP_PREFIX}_custom:/etc/demyx/custom \
-            -v ${DEMYX_APP_PREFIX}_log:/var/log/demyx \
-            demyx/wordpress; \
-        docker cp ${DEMYX_APP_PATH}/demyx-wp/. ${DEMYX_APP_WP_CONTAINER}:/demyx; \
-        docker cp ${DEMYX_APP_PATH}/demyx-custom/. ${DEMYX_APP_WP_CONTAINER}:/etc/demyx/custom; \
-        docker cp ${DEMYX_APP_PATH}/demyx-log/. ${DEMYX_APP_WP_CONTAINER}:/var/log/demyx; \
-        demyx_wp $DEMYX_APP_DOMAIN db import ${DEMYX_APP_CONTAINER}.sql
-        docker exec -t $DEMYX_APP_WP_CONTAINER rm -f /demyx/${DEMYX_APP_CONTAINER}.sql; \
-        docker stop $DEMYX_APP_WP_CONTAINER"
+    # TODO - TEMPORARY
+    if [[ -d "${DEMYX_APP_PATH}/demyx-wp" ]]; then
+        if [[ -d "$DEMYX_APP_PATH"/demyx-code ]]; then
+            demyx_execute "Restoring ${DEMYX_APP_PREFIX}_code" \
+                "docker run -t \
+                    --rm \
+                    --entrypoint=bash \
+                    --user=root \
+                    -v demyx:$DEMYX \
+                    -v ${DEMYX_APP_PREFIX}_code:/${DEMYX_APP_PREFIX}_code \
+                    demyx/demyx -c 'cp -rp ${DEMYX_APP_PATH}/demyx-code/. /${DEMYX_APP_PREFIX}_code'"
+        fi
+
+        if [[ -d "$DEMYX_APP_PATH"/demyx-sftp ]]; then
+            demyx_execute "Restoring ${DEMYX_APP_PREFIX}_sftp" \
+                "docker run -t \
+                    --rm \
+                    --entrypoint=bash \
+                    --user=root \
+                    -v demyx:$DEMYX \
+                    -v ${DEMYX_APP_PREFIX}_sftp:/${DEMYX_APP_PREFIX}_sftp \
+                    demyx/demyx -c 'cp -rp ${DEMYX_APP_PATH}/demyx-sftp/. /${DEMYX_APP_PREFIX}_sftp'"
+        fi
+
+        demyx_execute "Restoring app" \
+            "docker run -dit --rm \
+                --name=$DEMYX_APP_WP_CONTAINER \
+                --network=demyx \
+                --entrypoint=bash \
+                -v ${DEMYX_APP_WP_VOLUME}:/demyx \
+                -v ${DEMYX_APP_PREFIX}_custom:/etc/demyx/custom \
+                -v ${DEMYX_APP_PREFIX}_log:/var/log/demyx \
+                demyx/wordpress; \
+            docker cp ${DEMYX_APP_PATH}/demyx-wp/. ${DEMYX_APP_WP_CONTAINER}:/demyx; \
+            docker cp ${DEMYX_APP_PATH}/demyx-custom/. ${DEMYX_APP_WP_CONTAINER}:/etc/demyx/custom; \
+            docker cp ${DEMYX_APP_PATH}/demyx-log/. ${DEMYX_APP_WP_CONTAINER}:/var/log/demyx; \
+            demyx_wp $DEMYX_APP_DOMAIN db import ${DEMYX_APP_CONTAINER}.sql
+            docker exec -t $DEMYX_APP_WP_CONTAINER rm -f /demyx/${DEMYX_APP_CONTAINER}.sql; \
+            docker stop $DEMYX_APP_WP_CONTAINER"
+    else
+        demyx_execute "Restoring ${DEMYX_APP_DOMAIN}" \
+            "docker run \
+                --entrypoint=bash \
+                --network=demyx \
+                --rm \
+                --user=root \
+                -v ${DEMYX_APP_PREFIX}_code:/restore/code \
+                -v ${DEMYX_APP_PREFIX}_custom:/restore/custom \
+                -v ${DEMYX_APP_PREFIX}_log:/restore/log \
+                -v ${DEMYX_APP_PREFIX}_sftp:/restore/sftp \
+                -v ${DEMYX_APP_WP_VOLUME}:/restore/wp \
+                -v demyx:/demyx \
+                $(demyx_image_tag demyx/wordpress) -c \
+                    'apk add rsync; \
+                    rsync -a --delete /${DEMYX_APP_PATH}/${DEMYX_APP_ID}-code/ /restore/code/; \
+                    rsync -a --delete /${DEMYX_APP_PATH}/${DEMYX_APP_ID}-custom/ /restore/custom/; \
+                    rsync -a --delete /${DEMYX_APP_PATH}/${DEMYX_APP_ID}-log/ /restore/log/; \
+                    rsync -a --delete /${DEMYX_APP_PATH}/${DEMYX_APP_ID}-sftp/ /restore/sftp/; \
+                    rsync -a --delete /${DEMYX_APP_PATH}/${DEMYX_APP_ID}-wp/ /restore/wp/; \
+                    wp db import /restore/wp/${DEMYX_APP_CONTAINER}.sql --path=/restore/wp --allow-root; \
+                    rm -f /restore/wp/${DEMYX_APP_CONTAINER}.sql; \
+                    chown -R demyx:demyx /restore'"
+    fi
 
     demyx_compose "$DEMYX_APP_DOMAIN" up -d
     demyx_config "$DEMYX_APP_DOMAIN" --healthcheck
 
-    demyx_execute "Cleaning up" \
-        "rm -rf ${DEMYX_APP_PATH}/demyx-wp; \
-        rm -rf ${DEMYX_APP_PATH}/demyx-log; \
-        rm -rf ${DEMYX_APP_PATH}/demyx-code; \
-        rm -rf ${DEMYX_APP_PATH}/demyx-custom; \
-        rm -rf ${DEMYX_APP_PATH}/demyx-sftp; \
-        rm -rf ${DEMYX_TMP}/${DEMYX_APP_DOMAIN}; \
-        docker exec -t $DEMYX_APP_WP_CONTAINER rm -f /demyx/${DEMYX_APP_CONTAINER}.sql"
+    # TODO - TEMPORARY
+    if [[ -d "${DEMYX_APP_PATH}/demyx-wp" ]]; then
+        demyx_execute "Cleaning up" \
+            "rm -rf ${DEMYX_APP_PATH}/demyx-wp; \
+            rm -rf ${DEMYX_APP_PATH}/demyx-log; \
+            rm -rf ${DEMYX_APP_PATH}/demyx-code; \
+            rm -rf ${DEMYX_APP_PATH}/demyx-custom; \
+            rm -rf ${DEMYX_APP_PATH}/demyx-sftp; \
+            rm -rf ${DEMYX_TMP}/${DEMYX_APP_DOMAIN}; \
+            docker exec -t $DEMYX_APP_WP_CONTAINER rm -f /demyx/${DEMYX_APP_CONTAINER}.sql"
+    else
+        demyx_execute "Cleaning up" \
+            "rm -rf ${DEMYX_APP_PATH}/${DEMYX_APP_ID}-code; \
+            rm -rf ${DEMYX_APP_PATH}/${DEMYX_APP_ID}-custom; \
+            rm -rf ${DEMYX_APP_PATH}/${DEMYX_APP_ID}-log; \
+            rm -rf ${DEMYX_APP_PATH}/${DEMYX_APP_ID}-sftp; \
+            rm -rf ${DEMYX_APP_PATH}/${DEMYX_APP_ID}-wp; \
+            rm -rf ${DEMYX_TMP}/${DEMYX_APP_DOMAIN}"
+    fi
 
     demyx_info "$DEMYX_APP_DOMAIN" -l
 }
