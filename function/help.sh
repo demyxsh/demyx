@@ -208,7 +208,7 @@ demyx_help() {
             echo "                --email                   Set custom email when creating an app instead of info@DEMYX_DOMAIN."
             echo "                -f                        Disable delete prompt when creating an app that already exist."
             echo "                --pass|--password         Set custom password when creating a new app."
-            echo "                --php                     Set specific PHP version when creating an app. PHP version is set to 8.2 by default. (Usage: --php=<8.2|8.3>)"
+            echo "                --php                     Set specific PHP version when creating an app. PHP version is set to 8.3 by default. (Usage: --php=<8.2|8.3>)"
             echo "                --redis                   Create an app with Redis enabled."
             echo "                --ssl                     Enable SSL when creating an app. SSL is false by default."
             echo "                --ssl-wildcard            Enable wildcard SSL when creating an app."

@@ -327,7 +327,7 @@ demyx_run_init() {
     DEMYX_APP_IP_WHITELIST="${DEMYX_RUN_FLAG_WHITELIST:-false}"
 
     # Define php version.
-    DEMYX_APP_PHP="${DEMYX_RUN_FLAG_PHP:-8.2}"
+    DEMYX_APP_PHP="${DEMYX_RUN_FLAG_PHP:-8.3}"
 
     # Define redis value
     DEMYX_APP_REDIS=${DEMYX_RUN_FLAG_REDIS:-false}
