@@ -629,87 +629,86 @@ demyx_config_convert() {
     "
 
     if [[ "$DEMYX_APP_PREFIX" != wp_"$DEMYX_APP_ID" ]]; then
-        demyx_error custom "This app is already using the new volume format"
-    fi
+        demyx_echo "App is already using the new volume format."
+    else
+        DEMYX_CONFIG_COMPOSE=false
 
-    DEMYX_CONFIG_COMPOSE=false
+        if [[ -z "$DEMYX_CONFIG_FLAG_FORCE" ]]; then
+            demyx_echo "This will convert the following to the new format:"
+            echo
+            echo "Container: ${DEMYX_APP_COMPOSE_PROJECT}-db_${DEMYX_APP_ID}-1       => ${DEMYX_APP_CONTAINER}_db"
+            echo "Container: ${DEMYX_APP_COMPOSE_PROJECT}-nx_${DEMYX_APP_ID}-1       => ${DEMYX_APP_CONTAINER}_nx"
+            echo "Container: ${DEMYX_APP_COMPOSE_PROJECT}-wp_${DEMYX_APP_ID}-1       => ${DEMYX_APP_CONTAINER}_wp"
+            echo "Volume: ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code                => ${DEMYX_APP_CONTAINER}_code"
+            echo "Volume: ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_custom              => ${DEMYX_APP_CONTAINER}_custom"
+            echo "Volume: ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_db                  => ${DEMYX_APP_CONTAINER}_db"
+            echo "Volume: ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_log                 => ${DEMYX_APP_CONTAINER}_log"
+            echo "Volume: ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_sftp                => ${DEMYX_APP_CONTAINER}_sftp"
+            echo "Volume: ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}                     => ${DEMYX_APP_CONTAINER}_wp"
+            echo
+            echo -en "\e[33m"
+            read -rep "[WARNING] A backup will be created first, continue conversion? [yY]: " DEMYX_CONFIG_FLAG_FORCE
+            echo -en "\e[39m"
 
-    if [[ -z "$DEMYX_CONFIG_FLAG_FORCE" ]]; then
-        echo "This will convert the following to the new format:"
-        echo
-        echo "Container: ${DEMYX_APP_COMPOSE_PROJECT}-db_${DEMYX_APP_ID}-1       => ${DEMYX_APP_CONTAINER}_db"
-        echo "Container: ${DEMYX_APP_COMPOSE_PROJECT}-nx_${DEMYX_APP_ID}-1       => ${DEMYX_APP_CONTAINER}_nx"
-        echo "Container: ${DEMYX_APP_COMPOSE_PROJECT}-wp_${DEMYX_APP_ID}-1       => ${DEMYX_APP_CONTAINER}_wp"
-        echo "Volume: ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code                => ${DEMYX_APP_CONTAINER}_code"
-        echo "Volume: ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_custom              => ${DEMYX_APP_CONTAINER}_custom"
-        echo "Volume: ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_db                  => ${DEMYX_APP_CONTAINER}_db"
-        echo "Volume: ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_log                 => ${DEMYX_APP_CONTAINER}_log"
-        echo "Volume: ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_sftp                => ${DEMYX_APP_CONTAINER}_sftp"
-        echo "Volume: ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}                     => ${DEMYX_APP_CONTAINER}_wp"
-        echo
-        echo -en "\e[33m"
-        read -rep "[WARNING] Continue conversion? [yY]: " DEMYX_CONFIG_FLAG_FORCE
-        echo -en "\e[39m"
-
-        if [[ "$DEMYX_CONFIG_FLAG_FORCE" != [yY] ]]; then
-            demyx_error cancel
+            if [[ "$DEMYX_CONFIG_FLAG_FORCE" != [yY] ]]; then
+                demyx_error cancel
+            fi
         fi
+
+        # Database dump test
+        if ! demyx wp "${DEMYX_APP_DOMAIN}" db export "${DEMYX_APP_CONTAINER}.sql"; then
+            demyx_warning "no" true
+        fi
+
+        demyx_backup "$DEMYX_APP_DOMAIN"
+        demyx_config "$DEMYX_APP_DOMAIN" --healthcheck=false --maintenance
+        demyx_execute "Converting to the new format, this may take a while" \
+            "docker volume create ${DEMYX_APP_CONTAINER}_code; \
+            docker volume create ${DEMYX_APP_CONTAINER}_custom; \
+            docker volume create ${DEMYX_APP_CONTAINER}_db; \
+            docker volume create ${DEMYX_APP_CONTAINER}_log; \
+            docker volume create ${DEMYX_APP_CONTAINER}_sftp; \
+            docker volume create ${DEMYX_APP_CONTAINER}_wp; \
+            \
+            docker run --user=root --rm \
+                -v ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code:/old/code \
+                -v ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_custom:/old/custom \
+                -v ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_db:/old/db \
+                -v ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_log:/old/log \
+                -v ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_sftp:/old/sftp \
+                -v ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}:/old/wp \
+                -v ${DEMYX_APP_CONTAINER}_code:/new/code \
+                -v ${DEMYX_APP_CONTAINER}_custom:/new/custom \
+                -v ${DEMYX_APP_CONTAINER}_db:/new/db \
+                -v ${DEMYX_APP_CONTAINER}_log:/new/log \
+                -v ${DEMYX_APP_CONTAINER}_sftp:/new/sftp \
+                -v ${DEMYX_APP_CONTAINER}_wp:/new/wp \
+                --entrypoint=bash \
+                $(demyx_image_tag demyx/utilities) -c \
+                    'rsync -avh /old/code/ /new/code/; \
+                    rsync -a /old/custom/ /new/custom/; \
+                    rsync -a /old/db/ /new/db/; \
+                    rsync -a /old/log/ /new/log/; \
+                    rsync -a /old/sftp/ /new/sftp/; \
+                    rsync -a /old/wp/ /new/wp/; \
+                    chown -R demyx:demyx /new'; \
+            \
+            demyx_app_env_update DEMYX_APP_DB_CONTAINER=${DEMYX_APP_CONTAINER}_db; \
+            demyx_app_env_update DEMYX_APP_NX_CONTAINER=${DEMYX_APP_CONTAINER}_nx; \
+            demyx_app_env_update DEMYX_APP_PREFIX=${DEMYX_APP_CONTAINER}; \
+            demyx_app_env_update DEMYX_APP_WP_CONTAINER=${DEMYX_APP_CONTAINER}_wp; \
+            demyx_app_env_update DEMYX_APP_WP_VOLUME=${DEMYX_APP_CONTAINER}_wp"
+
+        demyx_refresh "$DEMYX_APP_DOMAIN"
+        demyx_config "$DEMYX_APP_DOMAIN" --healthcheck --maintenance=false
+        demyx_execute "Cleaning up" \
+            "docker volume rm ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}; \
+            docker volume rm ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code; \
+            docker volume rm ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_custom; \
+            docker volume rm ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_db; \
+            docker volume rm ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_log; \
+            docker volume rm ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_sftp"
     fi
-
-    demyx_backup "$DEMYX_APP_DOMAIN"
-    demyx_config "$DEMYX_APP_DOMAIN" --maintenance
-    demyx_execute "Converting to the new format, this may take a while" \
-        "docker volume create ${DEMYX_APP_CONTAINER}_code; \
-        docker volume create ${DEMYX_APP_CONTAINER}_custom; \
-        docker volume create ${DEMYX_APP_CONTAINER}_db; \
-        docker volume create ${DEMYX_APP_CONTAINER}_log; \
-        docker volume create ${DEMYX_APP_CONTAINER}_sftp; \
-        docker volume create ${DEMYX_APP_CONTAINER}_wp; \
-        \
-        docker run -dit --rm \
-            --name=${DEMYX_APP_ID} \
-            -v ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code:/old/code \
-            -v ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_custom:/old/custom \
-            -v ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_db:/old/db \
-            -v ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_log:/old/log \
-            -v ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_sftp:/old/sftp \
-            -v ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}:/old/wp \
-            -v ${DEMYX_APP_CONTAINER}_code:/new/code \
-            -v ${DEMYX_APP_CONTAINER}_custom:/new/custom \
-            -v ${DEMYX_APP_CONTAINER}_db:/new/db \
-            -v ${DEMYX_APP_CONTAINER}_log:/new/log \
-            -v ${DEMYX_APP_CONTAINER}_sftp:/new/sftp \
-            -v ${DEMYX_APP_CONTAINER}_wp:/new/wp \
-            --entrypoint=bash \
-            demyx/wordpress; \
-        \
-        docker exec --user=root ${DEMYX_APP_ID} \
-            bash -c 'cp -rp /old/code/. /new/code/; \
-                cp -rp /old/custom/. /new/custom/; \
-                cp -rp /old/db/. /new/db/; \
-                cp -rp /old/log/. /new/log/; \
-                cp -rp /old/sftp/. /new/sftp/; \
-                cp -rp /old/wp/. /new/wp/; \
-                chown -R demyx:demyx /new'; \
-        \
-        docker stop ${DEMYX_APP_ID}; \
-        \
-        demyx_app_env_update DEMYX_APP_DB_CONTAINER=${DEMYX_APP_CONTAINER}_db; \
-        demyx_app_env_update DEMYX_APP_NX_CONTAINER=${DEMYX_APP_CONTAINER}_nx; \
-        demyx_app_env_update DEMYX_APP_PREFIX=${DEMYX_APP_CONTAINER}; \
-        demyx_app_env_update DEMYX_APP_WP_CONTAINER=${DEMYX_APP_CONTAINER}_wp; \
-        demyx_app_env_update DEMYX_APP_WP_VOLUME=${DEMYX_APP_CONTAINER}_wp; \
-        "
-
-    demyx_refresh "$DEMYX_APP_DOMAIN"
-    demyx_config "$DEMYX_APP_DOMAIN" --maintenance=false
-    demyx_execute "Cleaning up" \
-        "docker volume rm ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}; \
-        docker volume rm ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code; \
-        docker volume rm ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_custom; \
-        docker volume rm ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_db; \
-        docker volume rm ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_log; \
-        docker volume rm ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_sftp"
 }
 #
 #   Configures an app for development mode.
