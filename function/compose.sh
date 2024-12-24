@@ -58,7 +58,7 @@ demyx_compose_app() {
 
     # TEMPORARY
     if [[ -f "${DEMYX_APP_PATH}/docker-compose.yml" ]]; then
-        mv "${DEMYX_APP_PATH}/docker-compose.yml" "${DEMYX_APP_PATH}/compose.yml"
+        rm -f "${DEMYX_APP_PATH}/docker-compose.yml"
     fi
     if [[ -f "${DEMYX_APP_PATH}/docker-compose.override.yml" ]]; then
         mv "${DEMYX_APP_PATH}/docker-compose.override.yml" "${DEMYX_APP_PATH}/compose.override.yml"
