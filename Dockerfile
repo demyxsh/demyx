@@ -144,6 +144,9 @@ RUN set -ex; \
         compress\n\
         delaycompress\n\
         size ${DEMYX_LOGROTATE_SIZE}\n\
+        postrotate\n\
+            /usr/local/bin/docker kill --signal=USR1 demyx_traefik\n\
+        endscript\n\
     }" | sed "s|    ||g" > "$DEMYX_CONFIG"/logrotate.conf
 
 # Finalize
