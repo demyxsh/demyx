@@ -37,7 +37,7 @@ demyx_edit() {
             DEMYX_APP_PATH
         "
 
-        nano "$DEMYX_APP_PATH"/.env
+        docker exec -it --user=root demyx bash -c "nano ${DEMYX_APP_PATH}/.env"
 
         if [[ "$DEMYX_EDIT_FLAG_REFRESH" = true ]]; then
             demyx_refresh "$DEMYX_APP_DOMAIN"
