@@ -619,6 +619,7 @@ demyx_config_clean() {
 #   Convert and migrate data to new format.
 #
 demyx_config_convert() {
+    demyx_error custom "Disabled for now"
     demyx_event
     demyx_app_env wp "
         DEMYX_APP_COMPOSE_PROJECT
