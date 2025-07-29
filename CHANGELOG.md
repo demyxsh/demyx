@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `demyx backup` now uses rsync with backwards compatibility [3f6e8b9](https://github.com/demyxsh/demyx/commit/3f6e8b9e945a28ea90c748a09fe01b2ecc475046)
 - `demyx restore` now uses rsync with backwards compatibility [24979e4](https://github.com/demyxsh/demyx/commit/24979e41c8c1a1641f1b5fc332619f9ca9eb4d97)
 - Enhance demyx installation process by updating Docker run command to include volume mounts for demyx and Docker socket, and set environment variables for stable host mode. [5628d65](https://github.com/demyxsh/demyx/commit/5628d65e0c2fe382b7aa377fd49dede6080ed242)
+- Disable data conversion in demyx_config_convert function with a custom error message. [d318237](https://github.com/demyxsh/demyx/commit/d318237ad654b187900b8486873f14009be9e6bf)
 
 ### Removed
 - Remove `demyx_container_name_update()` in favor of hard coding the container names [30197cd](https://github.com/demyxsh/demyx/commit/30197cd243e27f91ab30b32ee78e0a3f4a86f434)
