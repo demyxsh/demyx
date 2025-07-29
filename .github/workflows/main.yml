@@ -38,8 +38,18 @@ jobs:
           set -x
           docker volume create demyx
           sudo touch /var/lib/docker/volumes/demyx/_data/github_action
-          sudo cp host.sh /usr/local/bin/demyx
-          sudo chmod +x /usr/local/bin/demyx
+          #sudo cp host.sh /usr/local/bin/demyx
+          #sudo chmod +x /usr/local/bin/demyx
+
+          docker run -t --rm \
+            -v demyx:/demyx \
+            -v /usr/local/bin:/tmp \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -e DEMYX_HOST_MODE=stable \
+            -e DOCKER_HOST="" \
+            --user=root \
+            --entrypoint=bash \
+            demyx/demyx:dev -c 'demyx-yml; cp -f /etc/demyx/host.sh /tmp/demyx; chmod +x /tmp/demyx'
 
           demyx
 
