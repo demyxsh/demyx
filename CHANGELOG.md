@@ -4,6 +4,52 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.0] - 2025-07-28
+
+### Added
+- New app environment variable to set when fastcgi cache will expire `DEMYX_APP_CACHE_INACTIVE` [2a554a2](https://github.com/demyxsh/demyx/commit/2a554a2ef945c5ea1b27772e934f4b59a266bf4c)
+- New flag `demyx config --maintenance` to activate WP's core maintenance mode [5cbe9c7](https://github.com/demyxsh/demyx/commit/5cbe9c773c91af1c286508630ea3e8a2611e0db4)
+- New flag `demyx config --convert` to convert container and volume names to the new format [983c243](https://github.com/demyxsh/demyx/commit/983c243c956c0de1353f24b5d82a49d663efb33d)
+- New flag `demyx config -f` to skip confirmation [04f03de](https://github.com/demyxsh/demyx/commit/04f03de28465d5d0e1e9f4f1d68e6e49f464caa4)
+- New argument `demyx exec code` to open a shell for the Browser container [23814b4](https://github.com/demyxsh/demyx/commit/23814b465b5dbc5aa0524fac8496b33d5851af3b)
+- New argument `demyx exec traefik` to open a shell for the Traefik container [cd7a87c](https://github.com/demyxsh/demyx/commit/cd7a87ca55e89d90f45561f7d36d945f718f759e)
+- New argument `demyx backup traefik` to backup acme.json and docker-compose.yml files [22318bb](https://github.com/demyxsh/demyx/commit/22318bb99ab384e7868d79af17d0741687861666)
+- New argument `demyx restore traefik` to restore acme.json and docker-compose.yml files [edf664a](https://github.com/demyxsh/demyx/commit/edf664ad9124a812a10880089bcb8a5d63d7df9f)
+- New flag `demyx config <app> --php-average` [949163e](https://github.com/demyxsh/demyx/commit/949163ee76dbf17e2a07e399de0df3af5d7d4851)
+- New commands to start up or bring down an app's containers [1ff5bd1](https://github.com/demyxsh/demyx/commit/1ff5bd18c03e59ac8fe3961ea630d6669566468d)
+- New host command `demyx host up` [bbcc620](https://github.com/demyxsh/demyx/commit/bbcc620c7871c34a0eb0899fc69892787f3b7cf8)
+- Add timeout for `demyx_app_login()` [f422b19](https://github.com/demyxsh/demyx/commit/f422b1931feb131b167d8051cbbe1e433bfd4e14)
+
+### Changed
+- `demyx refresh` doesn't force recreate by default anymore [ab393da](https://github.com/demyxsh/demyx/commit/ab393da2c57fc5c21bf80e1e6a17eef689ed11c8)
+- Enable http3/quic [22becfa](https://github.com/demyxsh/demyx/commit/22becfa8181d783954b96bd18756cd1797e8a73c)
+- A+ in SSL grade [2209f4e](https://github.com/demyxsh/demyx/commit/2209f4e8f452577015d3c8fbaafde1c733a4f101)
+- `demyx config --auth` will now take effect without restarting the nginx container [f57ac95](https://github.com/demyxsh/demyx/commit/f57ac954ac666f76df6429e7860513ecbccee534)
+- `demyx config --auth-wp` will now take effect without restarting the nginx container [f245bbd](https://github.com/demyxsh/demyx/commit/f245bbd8712e440afd30e226a6a72a4ba65eb9d6)
+- `demyx config --rate-limit` will now take effect without restarting the nginx container [8d8ad47](https://github.com/demyxsh/demyx/commit/8d8ad4733369593dfad5e5d3523ed7147f3aa7c0)
+- `demyx config --whitelist` will now take effect without restarting the nginx container [7d9d615](https://github.com/demyxsh/demyx/commit/7d9d615b5e354246d03459011bf29dbae4a2d3eb)
+- Browser's password auth can now be disabled [a32fd26](https://github.com/demyxsh/demyx/commit/a32fd2613c619b630eaed9a2e15a577862fffd8d)
+- Update default php version to 8.2/8.3 [3e94e31](https://github.com/demyxsh/demyx/commit/3e94e3133d165c10a2a908f531da00f03a7c4fa6)
+- Use dig to get server IP for better distro compatibility [7c0ba57](https://github.com/demyxsh/demyx/commit/7c0ba57bdf7870fc4d69f1d3ee4bad1008502ea0)
+- `demyx backup` now uses rsync with backwards compatibility [3f6e8b9](https://github.com/demyxsh/demyx/commit/3f6e8b9e945a28ea90c748a09fe01b2ecc475046)
+- `demyx restore` now uses rsync with backwards compatibility [24979e4](https://github.com/demyxsh/demyx/commit/24979e41c8c1a1641f1b5fc332619f9ca9eb4d97)
+
+### Removed
+- Remove `demyx_container_name_update()` in favor of hard coding the container names [30197cd](https://github.com/demyxsh/demyx/commit/30197cd243e27f91ab30b32ee78e0a3f4a86f434)
+- Remove old logging code [63794cf](https://github.com/demyxsh/demyx/commit/63794cf81bd59fb2c2f79bdd0d0cda2b2d392608)
+- Remove capitalize characters from ID generator [874a9f1](https://github.com/demyxsh/demyx/commit/874a9f149a712f536626237da56f9dca47bc2026)
+- Remove cpu/mem restrictions [ae95253](https://github.com/demyxsh/demyx/commit/ae9525355623c793fdcc6366bec0496f1660e3fe)
+- Remove `demyx_yml_nginx_basic_auth()` and `demyx_yml_nginx_whitelist()` [9167aa0](https://github.com/demyxsh/demyx/commit/9167aa058f452cf69f71cd73f7a1645e3d313382)
+- Remove these flags: `--php-max-children --php-max-spare-servers --php-min-spare-servers --php-pm --php-process-idle-timeout --php-start-servers` [fd5fa74](https://github.com/demyxsh/demyx/commit/fd5fa7499b7dc16563e6de9d2bc770e0aa918ada)
+- Remove `demyx config --php-pm-calc` [044767c](https://github.com/demyxsh/demyx/commit/044767c64fd8caf8bb1772b0041a45afbda72e16)
+
+### Fixed
+- Fix variable typo [efa2577](https://github.com/demyxsh/demyx/commit/efa25776e028700f340b689e14c4c428cb0eb95a)
+- Fix the external volume not found error [ba4eca8](https://github.com/demyxsh/demyx/commit/ba4eca8627ec69b8c3a54c57e6162927dab08959)
+- Fix typo [86d7dba](https://github.com/demyxsh/demyx/commit/86d7dba8e07d774a774aef792c3e1bd01b2d8b0f)
+- Create demyx_user volume if it doesn't exist [a16ae5e](https://github.com/demyxsh/demyx/commit/a16ae5ec85ed1881534d6bceb37b66ecd66de925)
+- Fix DEMYX_APP_WP_VOLUME assignment to use the correct container variable [5e6eb5a](https://github.com/demyxsh/demyx/commit/5e6eb5a596f41bbd5e7583ea896ee89e04ae913b)
+
 ## [1.8.3] - 2024-04-08
 ### Upgrading
 This version requries updating the host helper script first.
@@ -732,6 +778,7 @@ Yml
 - Switch to nginx-php as the default stack
 - Add hostname key and use app ID as part of volume name
 
+[1.9.0]: https://github.com/demyxsh/demyx/compare/1.8.3...1.9.0
 [1.8.3]: https://github.com/demyxsh/demyx/compare/1.8.2...1.8.3
 [1.8.2]: https://github.com/demyxsh/demyx/compare/1.8.1...1.8.2
 [1.8.1]: https://github.com/demyxsh/demyx/compare/1.8.0...1.8.1
