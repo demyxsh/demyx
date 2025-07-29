@@ -108,12 +108,16 @@ demyx_host() {
                 rs|restart)
                     demyx_host_compose up -d --force-recreate --remove-orphans
                     demyx_host_compose traefik up -d --force-recreate --remove-orphans
-                    [[ -n "${DEMYX_HOST_CHECK_CODE}" ]] && demyx_host_compose code up -d --force-recreate --remove-orphans
+                    if [[ -n "${DEMYX_HOST_CHECK_CODE}" ]]; then
+                        demyx_host_compose code up -d --force-recreate --remove-orphans
+                    fi
                 ;;
                 up)
                     demyx_host_compose up -d
                     demyx_host_compose traefik up -d
-                    [[ -n "${DEMYX_HOST_CHECK_CODE}" ]] && demyx_host_compose code up -d
+                    if [[ -n "${DEMYX_HOST_CHECK_CODE}" ]]; then
+                        demyx_host_compose code up -d
+                    fi
                 ;;
                 upgrade)
                     demyx_host_upgrade
@@ -354,8 +358,8 @@ demyx_host_upgrade() {
 
             demyx_host_compose up -d
             echo
-            echo -e "\e[33m[WARNING]\e[39m Helper script has been updated, re-running: demyx host upgrade -f"
-            exec demyx host upgrade -f
+            echo -e "\e[33m[WARNING]\e[39m Helper script has been updated, running upgrade again ..."
+            exec demyx host upgrade
         fi
 
         demyx_host_count
