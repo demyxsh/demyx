@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New commands to start up or bring down an app's containers [1ff5bd1](https://github.com/demyxsh/demyx/commit/1ff5bd18c03e59ac8fe3961ea630d6669566468d)
 - New host command `demyx host up` [bbcc620](https://github.com/demyxsh/demyx/commit/bbcc620c7871c34a0eb0899fc69892787f3b7cf8)
 - Add timeout for `demyx_app_login()` [f422b19](https://github.com/demyxsh/demyx/commit/f422b1931feb131b167d8051cbbe1e433bfd4e14)
+- Add check for Traefik compose file in demyx_entrypoint_skeleton to refresh Traefik if missing [f7c7991](https://github.com/demyxsh/demyx/commit/f7c7991b3ade2f8ad93daad0d00f5544fe563e1a)
 
 ### Changed
 - `demyx refresh` doesn't force recreate by default anymore [ab393da](https://github.com/demyxsh/demyx/commit/ab393da2c57fc5c21bf80e1e6a17eef689ed11c8)
