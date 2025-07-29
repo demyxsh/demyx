@@ -170,7 +170,7 @@ demyx_host_compose() {
         *)
             DEMYX_HOST_COMPOSE_WORKDIR=/demyx
         ;;
-    esac 
+    esac
 
     docker run -t --rm \
         --workdir="${DEMYX_HOST_COMPOSE_WORKDIR}" \
