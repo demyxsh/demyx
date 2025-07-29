@@ -22,7 +22,15 @@ demyx_install() {
     fi
 
     echo -e "\n\e[34m[INFO\e[39m] Installing demyx helper"
-    docker run -t --rm -v /usr/local/bin:/tmp --user=root --entrypoint=bash demyx/demyx -c 'cp -f /etc/demyx/host.sh /tmp/demyx; chmod +x /tmp/demyx'
+    docker run -t --rm \
+        -v demyx:/demyx \
+        -v /usr/local/bin:/tmp \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -e DEMYX_HOST_MODE=stable \
+        -e DOCKER_HOST="" \
+        --user=root \
+        --entrypoint=bash \
+        demyx/demyx:dev -c 'demyx-yml; cp -f /etc/demyx/host.sh /tmp/demyx; chmod +x /tmp/demyx'
 
     demyx
 }
