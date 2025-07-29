@@ -342,13 +342,13 @@ demyx_host_upgrade() {
     local DEMYX_HOST_UPGRADE_VERSION=
 
     if [[ "${DEMYX_HOST_TAG}" != dev ]]; then
-        DEMYX_HOST_UPGRADE_VERSION="$(docker exec --user=root demyx bash -c 'echo $DEMYX_VERSION')"
+        DEMYX_HOST_UPGRADE_VERSION="$(docker exec --user=root demyx bash -c 'echo $DEMYX_VERSION' | sed 's/\r//g')"
         demyx_host_exec pull demyx
         DEMYX_HOST_UPGRADE_CHECK="$(docker run -t --rm \
             -v /usr/local/bin:/tmp \
             --user=root \
             --entrypoint=bash \
-            "demyx/demyx:${DEMYX_HOST_TAG}" -c 'echo $DEMYX_VERSION')"
+            "demyx/demyx:${DEMYX_HOST_TAG}" -c 'echo $DEMYX_VERSION' | sed 's/\r//g')"
 
         if [[ "${DEMYX_HOST_UPGRADE_VERSION}" != "${DEMYX_HOST_UPGRADE_CHECK}" ]]; then
             docker run -t --rm \
