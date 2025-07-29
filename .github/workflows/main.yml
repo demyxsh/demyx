@@ -35,6 +35,7 @@ jobs:
         id: test
         shell: 'script -q -e -c "bash {0}"'
         run: |
+          set -x
           docker volume create demyx
           sudo touch /var/lib/docker/volumes/demyx/_data/github_action
           sudo cp host.sh /usr/local/bin/demyx
