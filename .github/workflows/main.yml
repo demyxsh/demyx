@@ -24,14 +24,12 @@ jobs:
           password: ${{ secrets.DOCKER_TOKEN }}
       - name: Build
         run: |
-          docker pull demyx/docker-compose
           docker pull demyx/docker-socket-proxy
           docker pull demyx/mariadb
           docker pull demyx/nginx
           docker pull demyx/traefik
           docker pull demyx/utilities
           docker pull demyx/wordpress
-          docker pull alpine:3.17
           docker build --build-arg DEMYX_BUILD="$(date +%F-%T)" -t demyx/${{ env.DEMYX_REPOSITORY }} -t demyx/${{ env.DEMYX_REPOSITORY }}:${{ env.DEMYX_VERSION }} .
       - name: Test
         id: test
@@ -41,6 +39,10 @@ jobs:
           sudo touch /var/lib/docker/volumes/demyx/_data/github_action
           sudo cp host.sh /usr/local/bin/demyx
           sudo chmod +x /usr/local/bin/demyx
+
+          demyx
+
+          sleep 10
 
           demyx motd
           demyx run demyx.app
