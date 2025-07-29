@@ -49,6 +49,7 @@ demyx_host() {
                     fi
                 ;;
                 dev)
+                    exit
                     DEMYX_HOST_DEV="${DEMYX_HOST_ARG_3:-false}"
 
                     if [[ "${DEMYX_HOST_DEV}" = true ]]; then
@@ -245,7 +246,7 @@ demyx_host_help() {
     echo "              all                 Targets all core demyx containers, works with remove and restart"
     echo "              ctop                htop but for contaienrs"
     echo "              down|rm|remove      Stops and removes demyx container"
-    echo "              dev                 Developer mode, value: <true|false>"
+    #echo "              dev                 Developer mode, value: <true|false>"
     echo "              edit                Edit Demyx config (~/.demyx) on the host"
     echo "              env                 Prints the content of .env inside Demyx container"
     echo "              rs|restart          Stops, removes, and starts demyx container"
