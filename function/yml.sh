@@ -1093,10 +1093,20 @@ demyx_yml_service_mariadb() {
 demyx_yml_service_pma() {
     demyx_event
     demyx_app_env wp "
+        DEMYX_APP_CONTAINER
+        DEMYX_APP_COMPOSE_PROJECT
         DEMYX_APP_ID
         DEMYX_APP_PMA
         DEMYX_APP_PREFIX
     "
+
+    local DEMYX_YML_SERVICE_PMA_CONTAINER=
+
+    if [[ "${DEMYX_APP_PREFIX}" == *"${DEMYX_APP_ID}"* ]]; then
+        DEMYX_YML_SERVICE_PMA_CONTAINER="\${DEMYX_APP_COMPOSE_PROJECT}-pma_\${DEMYX_APP_ID}-1"
+    else
+        DEMYX_YML_SERVICE_PMA_CONTAINER="\${DEMYX_APP_CONTAINER}_pma"
+    fi
 
     if [[ "$(demyx_app_proto)" = https ]]; then
         DEMYX_YML_SERVICE_PMA_LABELS="- \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-pma.entrypoints=$(demyx_app_proto)\"
@@ -1107,7 +1117,7 @@ demyx_yml_service_pma() {
 
     if [[ "$DEMYX_APP_PMA" = true ]]; then
         echo "pma_${DEMYX_APP_ID}:
-            container_name: \${DEMYX_APP_PREFIX}_pma
+            container_name: $DEMYX_YML_SERVICE_PMA_CONTAINER
             cpus: \${DEMYX_APP_DB_CPU}
             environment:
               - MYSQL_ROOT_PASSWORD=\${MARIADB_ROOT_PASSWORD}
@@ -1135,14 +1145,24 @@ demyx_yml_service_pma() {
 demyx_yml_service_redis() {
     demyx_event
     demyx_app_env wp "
+        DEMYX_APP_CONTAINER
+        DEMYX_APP_COMPOSE_PROJECT
         DEMYX_APP_ID
-        DEMYX_APP_PREFIX
         DEMYX_APP_REDIS
+        DEMYX_APP_PREFIX
     "
+
+    local DEMYX_YML_SERVICE_REDIS_CONTAINER=
+
+    if [[ "${DEMYX_APP_PREFIX}" == *"${DEMYX_APP_ID}"* ]]; then
+        DEMYX_YML_SERVICE_REDIS_CONTAINER="\${DEMYX_APP_COMPOSE_PROJECT}-rd_\${DEMYX_APP_ID}-1"
+    else
+        DEMYX_YML_SERVICE_REDIS_CONTAINER="\${DEMYX_APP_CONTAINER}_rd"
+    fi
 
     if [[ "$DEMYX_APP_REDIS" = true ]]; then
         echo "rd_${DEMYX_APP_ID}:
-            container_name: \${DEMYX_APP_PREFIX}_rd
+            container_name: $DEMYX_YML_SERVICE_REDIS_CONTAINER
             cpus: \${DEMYX_APP_DB_CPU}
             image: redis:alpine3.18
             mem_limit: \${DEMYX_APP_DB_MEM}
@@ -1158,6 +1178,7 @@ demyx_yml_service_sftp() {
     demyx_event
     demyx_app_env wp "
         DEMYX_APP_COMPOSE_PROJECT
+        DEMYX_APP_CONTAINER
         DEMYX_APP_DOMAIN
         DEMYX_APP_ID
         DEMYX_APP_PREFIX
@@ -1167,6 +1188,14 @@ demyx_yml_service_sftp() {
         DEMYX_APP_TYPE
         DEMYX_APP_WP_VOLUME
     "
+
+    local DEMYX_YML_SERVICE_SFTP_CONTAINER=
+
+    if [[ "${DEMYX_APP_PREFIX}" == *"${DEMYX_APP_ID}"* ]]; then
+        DEMYX_YML_SERVICE_SFTP_CONTAINER="\${DEMYX_APP_COMPOSE_PROJECT}-sftp_\${DEMYX_APP_ID}-1"
+    else
+        DEMYX_YML_SERVICE_SFTP_CONTAINER="\${DEMYX_APP_CONTAINER}_sftp"
+    fi
 
     if [[ "$DEMYX_APP_SFTP" = true ]]; then
         local DEMYX_YML_SERVICE_SFTP_PORTS=
@@ -1180,7 +1209,7 @@ demyx_yml_service_sftp() {
         DEMYX_YML_SERVICE_SFTP_PORTS="$(cat < "$DEMYX_TMP"/"$DEMYX_APP_DOMAIN"_sftp)"
 
         echo "sftp_${DEMYX_APP_ID}:
-            container_name: \${DEMYX_APP_PREFIX}_sftp
+            container_name: $DEMYX_YML_SERVICE_SFTP_CONTAINER
             cpus: \${DEMYX_APP_DB_CPU}
             environment:
               - DEMYX_DOMAIN=\${DEMYX_APP_DOMAIN}
