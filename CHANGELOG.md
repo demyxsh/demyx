@@ -43,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove `demyx_yml_nginx_basic_auth()` and `demyx_yml_nginx_whitelist()` [9167aa0](https://github.com/demyxsh/demyx/commit/9167aa058f452cf69f71cd73f7a1645e3d313382)
 - Remove these flags: `--php-max-children --php-max-spare-servers --php-min-spare-servers --php-pm --php-process-idle-timeout --php-start-servers` [fd5fa74](https://github.com/demyxsh/demyx/commit/fd5fa7499b7dc16563e6de9d2bc770e0aa918ada)
 - Remove `demyx config --php-pm-calc` [044767c](https://github.com/demyxsh/demyx/commit/044767c64fd8caf8bb1772b0041a45afbda72e16)
+- Remove developer mode option from help output and add exit command in dev mode for demyx_host function. [394121e](https://github.com/demyxsh/demyx/commit/394121e34e8a370c269cbca3a6bfc8fae2048971)
 
 ### Fixed
 - Fix variable typo [efa2577](https://github.com/demyxsh/demyx/commit/efa25776e028700f340b689e14c4c428cb0eb95a)
@@ -50,6 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix typo [86d7dba](https://github.com/demyxsh/demyx/commit/86d7dba8e07d774a774aef792c3e1bd01b2d8b0f)
 - Create demyx_user volume if it doesn't exist [a16ae5e](https://github.com/demyxsh/demyx/commit/a16ae5ec85ed1881534d6bceb37b66ecd66de925)
 - Fix DEMYX_APP_WP_VOLUME assignment to use the correct container variable [5e6eb5a](https://github.com/demyxsh/demyx/commit/5e6eb5a596f41bbd5e7583ea896ee89e04ae913b)
+- Fix demyx_host_upgrade to remove carriage return characters from version output for consistent version comparison. [b39e32c](https://github.com/demyxsh/demyx/commit/b39e32c157c1bb161d3bd94b536fde4899b85a39)
 
 ## [1.8.3] - 2024-04-08
 ### Upgrading
