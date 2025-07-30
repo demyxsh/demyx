@@ -147,9 +147,11 @@ demyx_entrypoint_skeleton() {
         touch "$DEMYX_LOG"/error.log
     fi
 
-    if [[ ! -f "${DEMYX_TRAEFIK}/compose.yml" ]]; then
-        demyx refresh traefik
-    fi
+    # Refresh code
+    demyx refresh code
+
+    # Refresh traefik
+    demyx refresh traefik
 
     # Generate .env/.yml only if it doesn't exist
     demyx-yml
