@@ -56,6 +56,10 @@ demyx_motd_warning() {
         demyx_warning "Global healthchecks are disabled, set DEMYX_HEALTHCHECK to true: demyx host edit"
     fi
 
+    if [[ "$DEMYX_SERVER_IP" = localhost ]]; then
+        demyx_warning "Server IP is set to localhost, please set a valid IP for DEMYX_SERVER_IP: demyx host edit"
+    fi
+
     if [[ "$(demyx_motd_wp)" = true ]]; then
         cd "$DEMYX_WP" || exit
 
