@@ -145,8 +145,7 @@ demyx_app_is_up() {
 #
 demyx_app_login() {
     demyx_event
-    local DEMYX_APP_LOGIN=
-    local DEMYX_APP_LOGIN_COUNT=0
+    #local DEMYX_APP_LOGIN_COUNT=0
 
     demyx_app_env wp "
         DEMYX_APP_WP_CONTAINER
@@ -154,16 +153,12 @@ demyx_app_login() {
     "
 
     while true; do
-        DEMYX_APP_LOGIN="$(docker exec "$DEMYX_APP_WP_CONTAINER" wp login as "$WORDPRESS_USER" --url-only 2>&1 | tr '\r' ' ' || true)"
-
-        if [[ "$DEMYX_APP_LOGIN_COUNT" = 3 ]]; then
-            demyx_error custom "$DEMYX_APP_LOGIN"
-        elif [[ "$DEMYX_APP_LOGIN" == *"Error:"* ]]; then
-            DEMYX_APP_LOGIN_COUNT="$((DEMYX_APP_LOGIN_COUNT+1))"
-        else
-            echo "$DEMYX_APP_LOGIN"
+        if docker exec "$DEMYX_APP_WP_CONTAINER" wp login as "$WORDPRESS_USER" >/dev/null 2>&1; then
+            docker exec "$DEMYX_APP_WP_CONTAINER" wp login as "$WORDPRESS_USER" --url-only 2>&1 | tr '\r' ' ' || true
             break
         fi
+
+        sleep 1
     done
 }
 #   Get app's path using find.
