@@ -46,47 +46,6 @@ demyx_host() {
                             quay.io/vektorlab/ctop
                     fi
                 ;;
-                dev)
-                    exit
-                    DEMYX_HOST_DEV="${DEMYX_HOST_ARG_3:-false}"
-
-                    if [[ "${DEMYX_HOST_DEV}" = true ]]; then
-                        echo -e "\e[33m[WARNING]\e[39m Enabling developer mode"
-                        touch /tmp/demyx_dev
-                        docker pull demyx/demyx:dev
-                        docker pull demyx/docker-socket-proxy:dev
-                        docker pull demyx/mariadb:dev
-                        docker pull demyx/nginx:dev
-                        docker pull demyx/traefik:dev
-                        docker pull demyx/utilities:dev
-                        docker pull demyx/wordpress:dev
-                        docker run -t --rm \
-                            -v demyx:/demyx \
-                            -v /usr/local/bin:/tmp \
-                            -v /var/run/docker.sock:/var/run/docker.sock \
-                            -e DEMYX_HOST_MODE=dev \
-                            -e DOCKER_HOST="" \
-                            --user=root \
-                            --entrypoint=bash \
-                            demyx/demyx:dev -c 'demyx-yml; cp -f /etc/demyx/host.sh /tmp/demyx; chmod +x /tmp/demyx'
-                    elif [[ "${DEMYX_HOST_DEV}" = false ]]; then
-                        echo -e "\e[34m[INFO]\e[39m Disabling developer mode"
-                        rm -f /tmp/demyx_dev
-                        docker run -t --rm \
-                            -v demyx:/demyx \
-                            -v /usr/local/bin:/tmp \
-                            -v /var/run/docker.sock:/var/run/docker.sock \
-                            -e DEMYX_HOST_MODE=stable \
-                            -e DOCKER_HOST="" \
-                            --user=root \
-                            --entrypoint=bash \
-                            demyx/demyx:dev -c 'demyx-yml; cp -f /etc/demyx/host.sh /tmp/demyx; chmod +x /tmp/demyx'
-                    fi
-
-                    demyx_host_compose up -d
-                    demyx_host_exec refresh code
-                    demyx_host_exec refresh traefik
-                ;;
                 down|rm|remove)
                     demyx_host_remove "$DEMYX_HOST_ARG_3"
                 ;;
