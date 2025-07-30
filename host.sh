@@ -24,8 +24,6 @@ demyx_host() {
     DEMYX_HOST_CHECK_CODE="$(docker ps -q --filter="name=^demyx_code$")"
     local DEMYX_HOST_CHECK_TRAEFIK=
     DEMYX_HOST_CHECK_TRAEFIK="$(docker ps -q --filter="name=^demyx_traefik$")"
-    local DEMYX_HOST_TAG=latest
-    [[ -f /tmp/demyx_dev ]] && DEMYX_HOST_TAG=dev
     demyx_host_not_running
 
     case "$DEMYX_HOST_ARG_1" in
@@ -98,7 +96,7 @@ demyx_host() {
                         --user=root \
                         --entrypoint=nano \
                         -v demyx:/demyx \
-                        "demyx/demyx:${DEMYX_HOST_TAG}" .env
+                        demyx/demyx .env
                 ;;
                 env)
                     docker exec --user=root demyx cat .env
@@ -179,13 +177,12 @@ demyx_host_compose() {
         -e DOCKER_HOST= \
         -v /var/run/docker.sock:/var/run/docker.sock:ro \
         -v demyx:/demyx \
-        "demyx/demyx:${DEMYX_HOST_TAG}" compose "$@"
+        demyx/demyx compose "$@"
 }
 #
 #   Count how many updates.
 #
 demyx_host_count() {
-    [[ "${DEMYX_HOST_TAG}" = dev ]] && exit
     [[ -n "${DEMYX_HOST_CHECK_DEMYX}" ]] && \
         DEMYX_HOST_COUNT_IMAGES="$(docker exec -t --user=root demyx bash -c "[[ -f /demyx/.update_image ]] && cat /demyx/.update_image | sed 's|\r$||g' || true")"
 
@@ -265,7 +262,7 @@ demyx_host_motd() {
             -v /etc/profile.d:/tmp \
             --user=root \
             --entrypoint=bash \
-            "demyx/demyx:${DEMYX_HOST_TAG}" -c "rm -f /tmp/demyx-motd.sh"
+            demyx/demyx -c "rm -f /tmp/demyx-motd.sh"
     fi
 
     if [[ -f ~/.bashrc ]]; then
@@ -324,7 +321,7 @@ demyx_host_remove() {
 #
 demyx_host_update() {
     demyx_host_count
-    if [[ -n "${DEMYX_HOST_CHECK_DEMYX}" && "${DEMYX_HOST_TAG}" != dev ]]; then
+    if [[ -n "${DEMYX_HOST_CHECK_DEMYX}" ]]; then
         if [[ "$DEMYX_HOST_COUNT" != 0 ]]; then
             echo -e "\e[32m[UPDATE]\e[39m $DEMYX_HOST_COUNT update(s) available!"
             echo -e "\e[32m[UPDATE]\e[39m View update(s): demyx update -l"
@@ -341,21 +338,20 @@ demyx_host_upgrade() {
     DEMYX_HOST_UPGRADE_FORCE="$(echo "$DEMYX_HOST_ARGS" | grep -e "-f" || true)"
     local DEMYX_HOST_UPGRADE_VERSION=
 
-    if [[ "${DEMYX_HOST_TAG}" != dev ]]; then
         DEMYX_HOST_UPGRADE_VERSION="$(docker exec --user=root demyx bash -c 'echo $DEMYX_VERSION' | sed 's/\r//g')"
         demyx_host_exec pull demyx
         DEMYX_HOST_UPGRADE_CHECK="$(docker run -t --rm \
             -v /usr/local/bin:/tmp \
             --user=root \
             --entrypoint=bash \
-            "demyx/demyx:${DEMYX_HOST_TAG}" -c 'echo $DEMYX_VERSION' | sed 's/\r//g')"
+            demyx/demyx -c 'echo $DEMYX_VERSION' | sed 's/\r//g')"
 
         if [[ "${DEMYX_HOST_UPGRADE_VERSION}" != "${DEMYX_HOST_UPGRADE_CHECK}" ]]; then
             docker run -t --rm \
                 -v /usr/local/bin:/tmp \
                 --user=root \
                 --entrypoint=bash \
-                "demyx/demyx:${DEMYX_HOST_TAG}" -c 'cp -f /etc/demyx/host.sh /tmp/demyx; chmod +x /tmp/demyx'
+                demyx/demyx -c 'cp -f /etc/demyx/host.sh /tmp/demyx; chmod +x /tmp/demyx'
 
             demyx_host_compose up -d
             echo
@@ -398,9 +394,7 @@ demyx_host_upgrade() {
     demyx_host_exec refresh all
 
     # Update cache
-    if [[ "${DEMYX_HOST_TAG}" != dev ]]; then
-        demyx_host_exec update
-    fi
+    demyx_host_exec update
 
     # Remove old images
     docker images --filter=dangling=true -q | xargs docker rmi || true

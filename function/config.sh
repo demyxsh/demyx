@@ -686,7 +686,7 @@ demyx_config_convert() {
                 -v ${DEMYX_APP_CONTAINER}_sftp:/new/sftp \
                 -v ${DEMYX_APP_CONTAINER}_wp:/new/wp \
                 --entrypoint=bash \
-                $(demyx_image_tag demyx/utilities) -c \
+                demyx/utilities -c \
                     'rsync -avh /old/code/ /new/code/; \
                     rsync -a /old/custom/ /new/custom/; \
                     rsync -a /old/db/ /new/db/; \

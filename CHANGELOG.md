@@ -46,6 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove these flags: `--php-max-children --php-max-spare-servers --php-min-spare-servers --php-pm --php-process-idle-timeout --php-start-servers` [fd5fa74](https://github.com/demyxsh/demyx/commit/fd5fa7499b7dc16563e6de9d2bc770e0aa918ada)
 - Remove `demyx config --php-pm-calc` [044767c](https://github.com/demyxsh/demyx/commit/044767c64fd8caf8bb1772b0041a45afbda72e16)
 - Remove developer mode option from help output and add exit command in dev mode for demyx_host function. [394121e](https://github.com/demyxsh/demyx/commit/394121e34e8a370c269cbca3a6bfc8fae2048971)
+- Refactor demyx_yml function by removing unused DEMYX_HOST_MODE assignment and deleting obsolete demyx_yml_env and demyx_yml_tag functions for cleaner code. [aa17557](https://github.com/demyxsh/demyx/commit/aa175570d2e909e02473f9c89336ba2b832963ea)
 
 ### Fixed
 - Fix variable typo [efa2577](https://github.com/demyxsh/demyx/commit/efa25776e028700f340b689e14c4c428cb0eb95a)

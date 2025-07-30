@@ -26,11 +26,10 @@ demyx_install() {
         -v demyx:/demyx \
         -v /usr/local/bin:/tmp \
         -v /var/run/docker.sock:/var/run/docker.sock \
-        -e DEMYX_HOST_MODE=stable \
         -e DOCKER_HOST="" \
         --user=root \
         --entrypoint=bash \
-        demyx/demyx:dev -c 'demyx-yml; cp -f /etc/demyx/host.sh /tmp/demyx; chmod +x /tmp/demyx'
+        demyx/demyx -c 'demyx-yml; cp -f /etc/demyx/host.sh /tmp/demyx; chmod +x /tmp/demyx'
 
     demyx
 }

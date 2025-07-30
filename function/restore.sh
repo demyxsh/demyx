@@ -192,7 +192,7 @@ demyx_restore_app() {
                 -v ${DEMYX_APP_PREFIX}_sftp:/restore/sftp \
                 -v ${DEMYX_APP_WP_VOLUME}:/restore/wp \
                 -v demyx:/demyx \
-                $(demyx_image_tag demyx/wordpress) -c \
+                demyx/wordpress -c \
                     'apk add rsync; \
                     rsync -a --delete /${DEMYX_APP_PATH}/${DEMYX_APP_ID}-code/ /restore/code/; \
                     rsync -a --delete /${DEMYX_APP_PATH}/${DEMYX_APP_ID}-custom/ /restore/custom/; \

@@ -150,7 +150,7 @@ demyx_backup_app() {
                 -v ${DEMYX_APP_PREFIX}_sftp:/backup/sftp \
                 -v ${DEMYX_APP_WP_VOLUME}:/backup/wp \
                 -v demyx:/demyx \
-                $(demyx_image_tag demyx/utilities) -c \
+                demyx/utilities -c \
                     'rsync -a --delete /backup/code/ /${DEMYX_TMP}/${DEMYX_APP_DOMAIN}/${DEMYX_APP_ID}-code/; \
                     rsync -a --delete /backup/custom/ /${DEMYX_TMP}/${DEMYX_APP_DOMAIN}/${DEMYX_APP_ID}-custom/; \
                     rsync -a --delete /backup/log/ /${DEMYX_TMP}/${DEMYX_APP_DOMAIN}/${DEMYX_APP_ID}-log/; \
