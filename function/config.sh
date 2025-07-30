@@ -619,7 +619,6 @@ demyx_config_clean() {
 #   Convert and migrate data to new format.
 #
 demyx_config_convert() {
-    demyx_error custom "Disabled for now"
     demyx_event
     demyx_app_env wp "
         DEMYX_APP_COMPOSE_PROJECT
@@ -701,15 +700,18 @@ demyx_config_convert() {
             demyx_app_env_update DEMYX_APP_WP_CONTAINER=${DEMYX_APP_CONTAINER}_wp; \
             demyx_app_env_update DEMYX_APP_WP_VOLUME=${DEMYX_APP_CONTAINER}_wp"
 
-        demyx_refresh "$DEMYX_APP_DOMAIN"
-        demyx_config "$DEMYX_APP_DOMAIN" --healthcheck --maintenance=false
-        demyx_execute "Cleaning up" \
+        demyx_compose "${DEMYX_APP_DOMAIN}" down
+
+        demyx_execute "Recreating app" \
             "docker volume rm ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}; \
             docker volume rm ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_code; \
             docker volume rm ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_custom; \
             docker volume rm ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_db; \
             docker volume rm ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_log; \
             docker volume rm ${DEMYX_APP_TYPE}_${DEMYX_APP_ID}_sftp"
+
+        demyx_refresh "$DEMYX_APP_DOMAIN"
+        demyx_config "$DEMYX_APP_DOMAIN" --healthcheck --maintenance=false
     fi
 }
 #
