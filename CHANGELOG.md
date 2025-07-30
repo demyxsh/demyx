@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.9.0] - 2025-07-28
+## [1.9.0] - 2025-07-29
 
 ### Added
 - New app environment variable to set when fastcgi cache will expire `DEMYX_APP_CACHE_INACTIVE` [2a554a2](https://github.com/demyxsh/demyx/commit/2a554a2ef945c5ea1b27772e934f4b59a266bf4c)
@@ -36,6 +36,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `demyx restore` now uses rsync with backwards compatibility [24979e4](https://github.com/demyxsh/demyx/commit/24979e41c8c1a1641f1b5fc332619f9ca9eb4d97)
 - Enhance demyx installation process by updating Docker run command to include volume mounts for demyx and Docker socket, and set environment variables for stable host mode. [5628d65](https://github.com/demyxsh/demyx/commit/5628d65e0c2fe382b7aa377fd49dede6080ed242)
 - Disable data conversion in demyx_config_convert function with a custom error message. [d318237](https://github.com/demyxsh/demyx/commit/d318237ad654b187900b8486873f14009be9e6bf)
+- Update Dockerfile to use a direct reference to the docker:cli image, removing the ARG DEMYX_FROM for improved clarity. [927b13c](https://github.com/demyxsh/demyx/commit/927b13c1c77b2cc3c4b7a00df4e29349110090da)
+- Refactor demyx-yml.sh to use direct image references for demyx/docker-socket-proxy and demyx/demyx, and add a new function to retrieve the server IP with fallback options for improved clarity and maintainability. [b765cfa](https://github.com/demyxsh/demyx/commit/b765cfae0017a881250fad11e34ee1c626315ddc)
+- Refactor demyx_app_login function in global.sh to simplify login logic by removing unnecessary variables and streamlining the process for improved clarity and maintainability. [2048550](https://github.com/demyxsh/demyx/commit/204855091c40932c246d330fa5e969c4d2db234b)
+- Add warning for localhost server IP in demyx_motd_warning function to prompt users to set a valid IP for DEMYX_SERVER_IP for improved clarity and maintainability. [0253784](https://github.com/demyxsh/demyx/commit/0253784c083d32294d54e85c3669e4da64558dac)
+- Refactor demyx_host_upgrade function in host.sh to streamline version checking and update logic, improving clarity and maintainability. [dfee840](https://github.com/demyxsh/demyx/commit/dfee840acd0e745ba146045a784e9d9f2a4414e3)
 
 ### Removed
 - Remove `demyx_container_name_update()` in favor of hard coding the container names [30197cd](https://github.com/demyxsh/demyx/commit/30197cd243e27f91ab30b32ee78e0a3f4a86f434)
@@ -47,6 +52,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove `demyx config --php-pm-calc` [044767c](https://github.com/demyxsh/demyx/commit/044767c64fd8caf8bb1772b0041a45afbda72e16)
 - Remove developer mode option from help output and add exit command in dev mode for demyx_host function. [394121e](https://github.com/demyxsh/demyx/commit/394121e34e8a370c269cbca3a6bfc8fae2048971)
 - Refactor demyx_yml function by removing unused DEMYX_HOST_MODE assignment and deleting obsolete demyx_yml_env and demyx_yml_tag functions for cleaner code. [aa17557](https://github.com/demyxsh/demyx/commit/aa175570d2e909e02473f9c89336ba2b832963ea)
+- Refactor demyx_host and related functions by removing unused DEMYX_HOST_TAG variable and simplifying Docker image references for improved clarity and maintainability. [58d6324](https://github.com/demyxsh/demyx/commit/58d6324302b75acf5f8e8da24c443b729dcafc5d)
+- Remove developer mode functionality from demyx_host in host.sh for improved clarity and maintainability. [cec8cc4](https://github.com/demyxsh/demyx/commit/cec8cc48fff46923fccfa8d09b8c6841d37e57c2)
 
 ### Fixed
 - Fix variable typo [efa2577](https://github.com/demyxsh/demyx/commit/efa25776e028700f340b689e14c4c428cb0eb95a)
