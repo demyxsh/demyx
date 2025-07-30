@@ -15,7 +15,6 @@ demyx_yml() {
 
     # shellcheck disable=SC1090
     [[ -f "${DEMYX_YML_ENV}" ]] && source "${DEMYX_YML_ENV}"
-    [[ -n "${DEMYX_HOST_MODE:-}" ]] && DEMYX_MODE="${DEMYX_HOST_MODE}"
 
     cat << EOF > "${DEMYX_YML_ENV}"
 # DEMYX ${DEMYX_VERSION}
@@ -203,33 +202,6 @@ networks:
     $DEMYX_YML_NETWORK
     name: demyx_socket
 EOF
-}
-#
-#   Grabs env variable without sourcing.
-#
-demyx_yml_env() {
-    local DEMYX_YML_ENV="${1:-}"
-    local DEMYX_YML_ENV_FILE="${2:-${DEMYX}/.env}"
-    local DEMYX_YML_GREP=
-    DEMYX_YML_GREP="$(grep -w "$DEMYX_YML_ENV" "$DEMYX_YML_ENV_FILE" | awk -F '[=]' '{print $2}' || true)"
-
-    if [[ -n "$DEMYX_YML_GREP" ]]; then
-        echo "$DEMYX_YML_GREP"
-    fi
-}
-#
-#   Outputs tag based on DEMYX_MODE, defaults to latest.
-#
-demyx_yml_tag() {
-    local DEMYX_YML_TAG="${1:-}"
-
-    if [[ "${DEMYX_MODE}" = dev && "${DEMYX_YML_TAG}" == *":"* ]]; then
-        echo "${DEMYX_YML_TAG//:/:dev-}"
-    elif [[ "${DEMYX_MODE}" = dev && "${DEMYX_YML_TAG}" != *":"* ]]; then
-        echo "${DEMYX_YML_TAG}:dev"
-    else
-        echo "${DEMYX_YML_TAG}":latest
-    fi
 }
 #
 #   Init.
