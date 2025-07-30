@@ -110,7 +110,7 @@ EOF
 # DEMYX ${DEMYX_VERSION}
 services:
   socket:
-    image: $(demyx_yml_tag demyx/docker-socket-proxy)
+    image: demyx/docker-socket-proxy
     cpus: \${DEMYX_CPU:-0}
     mem_limit: \${DEMYX_MEM:-0}
     container_name: demyx_socket
@@ -129,7 +129,7 @@ services:
       - POST=1
       - VOLUMES=1
   demyx:
-    image: $(demyx_yml_tag demyx/demyx)
+    image: demyx/demyx
     cpus: \${DEMYX_CPU:-0}
     mem_limit: \${DEMYX_MEM:-0}
     container_name: demyx
@@ -170,7 +170,7 @@ services:
       - DEMYX_MATRIX_URL=\${DEMYX_MATRIX_URL}
       - DEMYX_MEM=\${DEMYX_MEM}
       - DEMYX_MODE=\${DEMYX_MODE}
-      - DEMYX_SERVER_IP=$(dig @ns1.google.com -t txt o-o.myaddr.l.google.com +short | sed 's|"||g')
+      - DEMYX_SERVER_IP=$(demyx_yml_ip)
       - DEMYX_SMTP=\${DEMYX_SMTP}
       - DEMYX_SMTP_HOST=\${DEMYX_SMTP_HOST}
       - DEMYX_SMTP_PORT=\${DEMYX_SMTP_PORT}
@@ -202,6 +202,21 @@ networks:
     $DEMYX_YML_NETWORK
     name: demyx_socket
 EOF
+}
+#
+#   Get server IP or fallback.
+#
+demyx_yml_ip() {
+    if dig @ns1.google.com >/dev/null; then
+        # First try Google DNS
+        dig @ns1.google.com -t txt o-o.myaddr.l.google.com +short | sed 's|"||g'
+    elif curl -s ifconfig.me >/dev/null; then
+        # Fallback to ifconfig.me
+        curl -s ifconfig.me
+    else
+        # Fallback to localhost
+        echo localhost
+    fi
 }
 #
 #   Init.
