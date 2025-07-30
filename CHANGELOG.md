@@ -41,6 +41,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactor demyx_app_login function in global.sh to simplify login logic by removing unnecessary variables and streamlining the process for improved clarity and maintainability. [2048550](https://github.com/demyxsh/demyx/commit/204855091c40932c246d330fa5e969c4d2db234b)
 - Add warning for localhost server IP in demyx_motd_warning function to prompt users to set a valid IP for DEMYX_SERVER_IP for improved clarity and maintainability. [0253784](https://github.com/demyxsh/demyx/commit/0253784c083d32294d54e85c3669e4da64558dac)
 - Refactor demyx_host_upgrade function in host.sh to streamline version checking and update logic, improving clarity and maintainability. [dfee840](https://github.com/demyxsh/demyx/commit/dfee840acd0e745ba146045a784e9d9f2a4414e3)
+- Refactor demyx_entrypoint_skeleton function in demyx-entrypoint.sh to improve code clarity by adding comments and reorganizing the refresh logic for code and traefik. [e46f0d5](https://github.com/demyxsh/demyx/commit/e46f0d5ff3718bad0f1ea282e09067528821660a)
+- Refactor demyx_config_convert function in config.sh to enable app recreation logic and improve cleanup process, enhancing clarity and maintainability. [17adabd](https://github.com/demyxsh/demyx/commit/17adabd47ae9604aa18d753e03189bdcdec07c96)
 
 ### Removed
 - Remove `demyx_container_name_update()` in favor of hard coding the container names [30197cd](https://github.com/demyxsh/demyx/commit/30197cd243e27f91ab30b32ee78e0a3f4a86f434)
