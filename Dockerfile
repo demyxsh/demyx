@@ -1,6 +1,5 @@
-ARG DEMYX_FROM=docker:cli
 FROM msoap/shell2http AS demyx_api
-FROM "${DEMYX_FROM}"
+FROM docker:cli
 
 LABEL sh.demyx.image demyx/demyx
 LABEL sh.demyx.maintainer Demyx <info@demyx.sh>
