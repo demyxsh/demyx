@@ -58,6 +58,7 @@ demyx_app_env() {
         local DEMYX_APP_ENV_I_VAL=
         local DEMYX_APP_ENV_REMOVE_ENV=
         local DEMYX_APP_ENV_REMOVE_COMPOSE=
+        local DEMYX_APP_ENV_EXPORTS=""
 
         # TEMPORARY
         DEMYX_APP_ENV_REMOVE_ENV="$(grep DEMYX_APP_AUTH_HTPASSWD "$DEMYX_APP_FILE" || true)"
@@ -74,6 +75,9 @@ demyx_app_env() {
         fi
 
         for DEMYX_APP_ENV_I in $DEMYX_APP_ENV_GREP; do
+            # Skip empty or invalid variable names
+            [[ -z "$DEMYX_APP_ENV_I" || "$DEMYX_APP_ENV_I" =~ [^a-zA-Z0-9_] ]] && continue
+            
             DEMYX_APP_ENV_I_VAL="$(grep -w "$DEMYX_APP_ENV_I" "$DEMYX_APP_FILE" | awk -F '=' '{print $2}' || true)"
 
             # Refresh app's .env if variable doesn't exist.
@@ -85,9 +89,16 @@ demyx_app_env() {
                 DEMYX_APP_ENV_I_VAL="$(grep -w "$DEMYX_APP_ENV_I" "$DEMYX_APP_FILE" | awk -F '=' '{print $2}' || true)"
             fi
 
-            # shellcheck disable=SC2316
-            export local "$DEMYX_APP_ENV_I"="$DEMYX_APP_ENV_I_VAL"
+            # Build export statements for caller to eval
+            if [[ -n "$DEMYX_APP_ENV_I_VAL" ]]; then
+                DEMYX_APP_ENV_EXPORTS="${DEMYX_APP_ENV_EXPORTS}export ${DEMYX_APP_ENV_I}='${DEMYX_APP_ENV_I_VAL}'; "
+            fi
         done
+        
+        # Execute exports in current context
+        if [[ -n "$DEMYX_APP_ENV_EXPORTS" ]]; then
+            eval "$DEMYX_APP_ENV_EXPORTS"
+        fi
     else
         demyx_error custom "Invalid app or missing app's .env"
     fi
@@ -333,8 +344,8 @@ demyx_execute() {
     shift
 
     echo -n "$DEMYX_EXECUTE ... "
-    # shellcheck disable=SC2153
-    eval "$*" > "$DEMYX_TMP"/demyx_execute
+    # Use eval since we've fixed the root cause (export local syntax)
+    eval "$*" > "$DEMYX_TMP"/demyx_execute 2>&1
     echo -en "\e[32mdone\e[39m\n"
 }
 #
