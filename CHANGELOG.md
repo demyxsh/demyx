@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.9.0] - 2025-07-29
+## [1.9.0] - 2025-08-01
 
 ### Added
 - New app environment variable to set when fastcgi cache will expire `DEMYX_APP_CACHE_INACTIVE` [2a554a2](https://github.com/demyxsh/demyx/commit/2a554a2ef945c5ea1b27772e934f4b59a266bf4c)
@@ -43,6 +43,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactor demyx_host_upgrade function in host.sh to streamline version checking and update logic, improving clarity and maintainability. [dfee840](https://github.com/demyxsh/demyx/commit/dfee840acd0e745ba146045a784e9d9f2a4414e3)
 - Refactor demyx_entrypoint_skeleton function in demyx-entrypoint.sh to improve code clarity by adding comments and reorganizing the refresh logic for code and traefik. [e46f0d5](https://github.com/demyxsh/demyx/commit/e46f0d5ff3718bad0f1ea282e09067528821660a)
 - Refactor demyx_config_convert function in config.sh to enable app recreation logic and improve cleanup process, enhancing clarity and maintainability. [17adabd](https://github.com/demyxsh/demyx/commit/17adabd47ae9604aa18d753e03189bdcdec07c96)
+- Enhance demyx_app_env function in global.sh by adding validation for environment variable names and restructuring export logic for improved clarity and maintainability. [91bc41e](https://github.com/demyxsh/demyx/commit/91bc41e5c8eeba66a43580f51769ac62b60b6eb3)
+- Refactor demyx_cron_weekly function in cron.sh to improve clarity by removing conditional check for stable mode when updating cache, ensuring consistent execution of update logic. [bbd2f32](https://github.com/demyxsh/demyx/commit/bbd2f323b1f6072c86d83d19fd9e747840d10286)
+- Update help.sh to enhance command descriptions for clarity and consistency, including improved explanations for backup paths, container targeting, and cron job functionalities. [5218cd0](https://github.com/demyxsh/demyx/commit/5218cd089ef1d948a8288b7d9da4b977f140f712)
 
 ### Removed
 - Remove `demyx_container_name_update()` in favor of hard coding the container names [30197cd](https://github.com/demyxsh/demyx/commit/30197cd243e27f91ab30b32ee78e0a3f4a86f434)
