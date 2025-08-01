@@ -6,6 +6,66 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.9.0] - 2025-08-01
 
+### 🚀 Major New Features
+
+#### Enhanced Configuration Management
+- **Maintenance Mode Support** - New `demyx config --maintenance` flag to activate WordPress core maintenance mode
+- **Container Migration Tool** - New `demyx config --convert` flag to convert container and volume names to new format
+- **Skip Confirmation** - New `demyx config -f` flag to bypass confirmation prompts
+
+#### Advanced Container Management
+- **Traefik Operations** - New backup/restore commands for Traefik (`demyx backup/restore traefik`)
+- **Extended Shell Access** - New exec commands for Browser (`demyx exec code`) and Traefik (`demyx exec traefik`) containers
+- **Host Management** - New `demyx host up` command for better host control
+
+#### Performance Optimizations
+- **FastCGI Cache Control** - New `DEMYX_APP_CACHE_INACTIVE` environment variable for cache expiration management
+- **PHP Performance Tuning** - New `--php-average` flag for optimized PHP configuration
+
+### ⚡ Performance & Security Improvements
+
+#### Network & Security Enhancements
+- **HTTP3/QUIC Support** - Enabled for faster, more efficient connections
+- **A+ SSL Grade** - Achieved top-tier SSL security rating
+- **Hot Configuration Updates** - Auth, rate limiting, and whitelist changes now apply without container restarts
+
+#### System Improvements  
+- **Modern PHP Versions** - Updated default PHP to 8.2/8.3
+- **Better IP Detection** - Using `dig` for improved server IP detection across distributions
+- **Rsync Integration** - Backup and restore operations now use rsync with backward compatibility
+
+### 🧹 Code Quality & Modernization
+
+#### Architectural Improvements
+- **Simplified Container Naming** - Removed dynamic container name updates in favor of hard-coded names
+- **Cleaner Codebase** - Removed deprecated logging code and CPU/memory restrictions
+- **Enhanced Installation Process** - Improved Docker run commands with better volume mounts and environment variables
+
+#### Function Refactoring
+- **Streamlined Login Logic** - Simplified `demyx_app_login` function for better maintainability  
+- **Better Error Handling** - Enhanced validation for environment variable names
+- **Improved Help Documentation** - More consistent and clear command descriptions
+
+#### Developer Experience
+- **Removed Legacy Features** - Eliminated deprecated PHP process management flags
+- **Simplified Host Operations** - Removed developer mode complexity
+- **Better Version Management** - Improved upgrade logic with cleaner version checking
+
+### 🐛 Critical Bug Fixes
+
+#### System Stability
+- **Volume Creation** - Fixed missing `demyx_user` volume creation
+- **Variable Assignment** - Corrected `DEMYX_APP_WP_VOLUME` container variable reference
+- **External Volume Errors** - Resolved "external volume not found" issues
+
+#### Version Management
+- **Upgrade Process** - Fixed carriage return characters in version output for consistent comparisons
+- **Various Typos** - Multiple variable name and syntax corrections
+
+---
+
+*This release represents a significant step forward in system reliability, performance, and developer experience while maintaining backward compatibility.*
+
 ### Added
 - New app environment variable to set when fastcgi cache will expire `DEMYX_APP_CACHE_INACTIVE` [2a554a2](https://github.com/demyxsh/demyx/commit/2a554a2ef945c5ea1b27772e934f4b59a266bf4c)
 - New flag `demyx config --maintenance` to activate WP's core maintenance mode [5cbe9c7](https://github.com/demyxsh/demyx/commit/5cbe9c773c91af1c286508630ea3e8a2611e0db4)
