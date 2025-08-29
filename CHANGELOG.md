@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.1] - 2025-08-28
+### Changed
+- Refactor demyx_host_upgrade function in host.sh to remove unnecessary refresh commands for code and traefik, streamlining the upgrade process. [c7de857](https://github.com/demyxsh/demyx/commit/c7de8570e2d90b9fbd7d755078a873fd08b57bef)
+- Refactor demyx_info_app and demyx_info_system functions in info.sh to improve output formatting and clarity by replacing echo statements with printf for better alignment, and update disk usage command for consistency. [9aa7acd](https://github.com/demyxsh/demyx/commit/9aa7acd3a21e28c9a3ec14ba9cd1ec3dc3b6206b)
+
 ## [1.9.0] - 2025-08-01
 
 ### 🚀 Major New Features
@@ -856,6 +861,7 @@ Yml
 - Switch to nginx-php as the default stack
 - Add hostname key and use app ID as part of volume name
 
+[1.9.1]: https://github.com/demyxsh/demyx/compare/1.9.0...1.9.1
 [1.9.0]: https://github.com/demyxsh/demyx/compare/1.8.3...1.9.0
 [1.8.3]: https://github.com/demyxsh/demyx/compare/1.8.2...1.8.3
 [1.8.2]: https://github.com/demyxsh/demyx/compare/1.8.1...1.8.2
