@@ -170,7 +170,7 @@ demyx_info_app() {
             } > "$DEMYX_INFO_TRANSIENT"
 
             demyx_divider_title "$DEMYX_INFO" "DB Volume ($DEMYX_INFO_APP_DB_VOLUME) - WP Volume ($DEMYX_INFO_APP_WP_VOLUME)"
-            column "$DEMYX_INFO_TRANSIENT"
+            column -t -s '=' "$DEMYX_INFO_TRANSIENT"
         fi
     fi
 }
@@ -209,7 +209,7 @@ demyx_info_system() {
     local DEMYX_INFO_SYSTEM_CONTAINER_RUNNING=
     DEMYX_INFO_SYSTEM_CONTAINER_RUNNING="$(docker ps -q | wc -l)"
     local DEMYX_INFO_SYSTEM_DF=
-    DEMYX_INFO_SYSTEM_DF="$(df -h /demyx | sed '1d')"
+    DEMYX_INFO_SYSTEM_DF="$(df -hP /demyx | sed '1d')"
     local DEMYX_INFO_SYSTEM_DISK_PERCENTAGE=
     DEMYX_INFO_SYSTEM_DISK_PERCENTAGE="$(echo "$DEMYX_INFO_SYSTEM_DF" | awk '{print $5}')"
     local DEMYX_INFO_SYSTEM_DISK_TOTAL=
@@ -256,21 +256,21 @@ demyx_info_system() {
         cat < "$DEMYX_INFO_TRANSIENT"
     else
         {
-            echo "Build                     $DEMYX_BUILD"
-            echo "Version                   $DEMYX_VERSION"
-            echo "Hostname                  $DEMYX_HOSTNAME"
-            echo "IP                        $DEMYX_SERVER_IP"
-            echo "Apps                      $DEMYX_INFO_SYSTEM_WP_COUNT"
-            echo "Backups                   $DEMYX_INFO_SYSTEM_WP_BACKUPS"
-            echo "Disk Used                 $DEMYX_INFO_SYSTEM_DISK_USED"
-            echo "Disk Total                $DEMYX_INFO_SYSTEM_DISK_TOTAL"
-            echo "Disk Total %              $DEMYX_INFO_SYSTEM_DISK_PERCENTAGE"
-            echo "Memory Used               $DEMYX_INFO_SYSTEM_MEMORY_USED"
-            echo "Memory Total              $DEMYX_INFO_SYSTEM_MEMORY_TOTAL"
-            echo "Uptime                    $DEMYX_INFO_SYSTEM_UPTIME"
-            echo "Load Average              $DEMYX_INFO_SYSTEM_LOAD_AVERAGE"
-            echo "Running Containers        $DEMYX_INFO_SYSTEM_CONTAINER_RUNNING"
-            echo "Dead Containers           $DEMYX_INFO_SYSTEM_CONTAINER_DEAD"
+            printf "%-24s %s\n" "Build" "$DEMYX_BUILD"
+            printf "%-24s %s\n" "Version" "$DEMYX_VERSION"
+            printf "%-24s %s\n" "Hostname" "$DEMYX_HOSTNAME"
+            printf "%-24s %s\n" "IP" "$DEMYX_SERVER_IP"
+            printf "%-24s %s\n" "Apps" "$DEMYX_INFO_SYSTEM_WP_COUNT"
+            printf "%-24s %s\n" "Backups" "$DEMYX_INFO_SYSTEM_WP_BACKUPS"
+            printf "%-24s %s\n" "Disk Used" "$DEMYX_INFO_SYSTEM_DISK_USED"
+            printf "%-24s %s\n" "Disk Total" "$DEMYX_INFO_SYSTEM_DISK_TOTAL"
+            printf "%-24s %s\n" "Disk Total %" "$DEMYX_INFO_SYSTEM_DISK_PERCENTAGE"
+            printf "%-24s %s\n" "Memory Used" "$DEMYX_INFO_SYSTEM_MEMORY_USED"
+            printf "%-24s %s\n" "Memory Total" "$DEMYX_INFO_SYSTEM_MEMORY_TOTAL"
+            printf "%-24s %s\n" "Uptime" "$DEMYX_INFO_SYSTEM_UPTIME"
+            printf "%-24s %s\n" "Load Average" "$DEMYX_INFO_SYSTEM_LOAD_AVERAGE"
+            printf "%-24s %s\n" "Running Containers" "$DEMYX_INFO_SYSTEM_CONTAINER_RUNNING"
+            printf "%-24s %s\n" "Dead Containers" "$DEMYX_INFO_SYSTEM_CONTAINER_DEAD"
         } > "$DEMYX_INFO_TRANSIENT"
 
         demyx_divider_title "$DEMYX_INFO" "System Information"
