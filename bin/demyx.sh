@@ -101,4 +101,21 @@ demyx() {
 #
 #   Init.
 #
-demyx "$@" 2>&1 | tee "$DEMYX_TMP"/demyx_trap
+DEMYX_MAIN_IS_INTERACTIVE_EXEC=false
+if [[ "${1:-}" = exec ]]; then
+    DEMYX_MAIN_IS_INTERACTIVE_EXEC=true
+    for DEMYX_MAIN_ARG in "${@:2}"; do
+        [[ "$DEMYX_MAIN_ARG" = "--" ]] && break
+        if [[ "$DEMYX_MAIN_ARG" = "-t" ]]; then
+            DEMYX_MAIN_IS_INTERACTIVE_EXEC=false
+            break
+        fi
+    done
+fi
+
+if [[ "$DEMYX_MAIN_IS_INTERACTIVE_EXEC" = true ]]; then
+    : > "$DEMYX_TMP"/demyx_trap
+    demyx "$@"
+else
+    demyx "$@" 2>&1 | tee "$DEMYX_TMP"/demyx_trap
+fi
