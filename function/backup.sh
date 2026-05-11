@@ -139,7 +139,7 @@ demyx_backup_app() {
         fi
 
         demyx_execute "Exporting ${DEMYX_APP_DOMAIN}" \
-            "demyx_wp ${DEMYX_APP_DOMAIN} db export ${DEMYX_APP_CONTAINER}.sql; \
+            "docker exec ${DEMYX_APP_WP_CONTAINER} demyx-db ${DEMYX_APP_CONTAINER}.sql; \
             docker run \
                 --entrypoint=bash \
                 --rm \
@@ -155,8 +155,8 @@ demyx_backup_app() {
                     rsync -a --delete /backup/custom/ /${DEMYX_TMP}/${DEMYX_APP_DOMAIN}/${DEMYX_APP_ID}-custom/; \
                     rsync -a --delete /backup/log/ /${DEMYX_TMP}/${DEMYX_APP_DOMAIN}/${DEMYX_APP_ID}-log/; \
                     rsync -a --delete /backup/sftp/ /${DEMYX_TMP}/${DEMYX_APP_DOMAIN}/${DEMYX_APP_ID}-sftp/; \
-                    rsync -a --delete /backup/wp/ /${DEMYX_TMP}/${DEMYX_APP_DOMAIN}/${DEMYX_APP_ID}-wp/'; \
-                    chown -R demyx:demyx ${DEMYX_TMP}/${DEMYX_APP_DOMAIN}"
+                    rsync -a --delete /backup/wp/ /${DEMYX_TMP}/${DEMYX_APP_DOMAIN}/${DEMYX_APP_ID}-wp/; \
+                    chown -R demyx:demyx /${DEMYX_TMP}/${DEMYX_APP_DOMAIN}'"
 
         demyx_execute "Archiving ${DEMYX_APP_DOMAIN}" \
             "tar -czf ${DEMYX_BACKUP_WP}/${DEMYX_APP_DOMAIN}/${DEMYX_BACKUP_TODAYS_DATE}-${DEMYX_APP_DOMAIN}.tgz -C ${DEMYX_TMP} ${DEMYX_APP_DOMAIN}"

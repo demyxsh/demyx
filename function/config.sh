@@ -27,9 +27,9 @@ demyx_config() {
     local DEMYX_CONFIG_FLAG_NO_COMPOSE=
     local DEMYX_CONFIG_FLAG_OPCACHE=
     local DEMYX_CONFIG_FLAG_PHP=
-    local DEMYX_CONFIG_FLAG_PHP_AVERAGE=
     local DEMYX_CONFIG_FLAG_PHP_MAX_REQUESTS=
     local DEMYX_CONFIG_FLAG_PHP_VERSION=
+    local DEMYX_CONFIG_FLAG_PM=
     local DEMYX_CONFIG_FLAG_PMA=
     local DEMYX_CONFIG_FLAG_RATE_LIMIT=
     local DEMYX_CONFIG_FLAG_REDIS=
@@ -141,17 +141,19 @@ demyx_config() {
             --opcache=false)
                 DEMYX_CONFIG_FLAG_OPCACHE=false
             ;;
-            --php=8.2|--php=8.3)
+            --php=8.3|--php=83|--php=8.4|--php=84)
                 DEMYX_CONFIG_FLAG_PHP=true
                 DEMYX_CONFIG_FLAG_PHP_VERSION="${DEMYX_CONFIG_FLAG#*=}"
-            ;;
-            --php-average=?*)
-                DEMYX_CONFIG_FLAG_PHP=true
-                DEMYX_CONFIG_FLAG_PHP_AVERAGE="${DEMYX_CONFIG_FLAG#*=}"
             ;;
             --php-max-requests=?*)
                 DEMYX_CONFIG_FLAG_PHP=true
                 DEMYX_CONFIG_FLAG_PHP_MAX_REQUESTS="${DEMYX_CONFIG_FLAG#*=}"
+            ;;
+            --pm)
+                DEMYX_CONFIG_FLAG_PM=ondemand
+            ;;
+            --pm=ondemand|--pm=dynamic|--pm=static)
+                DEMYX_CONFIG_FLAG_PM="${DEMYX_CONFIG_FLAG#*=}"
             ;;
             --pma|--pma=true)
                 DEMYX_CONFIG_FLAG_PMA=true
@@ -282,6 +284,9 @@ demyx_config() {
                 fi
                 if [[ -n "$DEMYX_CONFIG_FLAG_PHP" ]]; then
                     demyx_config_php
+                fi
+                if [[ -n "$DEMYX_CONFIG_FLAG_PM" ]]; then
+                    demyx_config_pm
                 fi
                 if [[ -n "$DEMYX_CONFIG_FLAG_PMA" ]]; then
                     demyx_config_pma
@@ -859,37 +864,40 @@ demyx_config_opcache() {
     fi
 }
 #
-#   Configures an app's php-fpm settings.
+#   Configures an app's PHP version and/or php-fpm max requests.
 #
 demyx_config_php() {
     demyx_event
-    demyx_app_env wp "
-        DEMYX_APP_WP_CONTAINER
-    "
+    demyx_app_env wp DEMYX_APP_STACK
 
-    local DEMYX_CONFIG_PHP=
+    DEMYX_CONFIG_COMPOSE=true
 
-    if [[ -n "${DEMYX_CONFIG_FLAG_PHP_AVERAGE}" ]]; then
-        demyx_ols_not_supported
-        demyx_execute "Updating pm average memory usage $DEMYX_CONFIG_FLAG_PHP_AVERAGE" \
-            "demyx_app_env_update DEMYX_APP_PHP_PM_AVERAGE=$DEMYX_CONFIG_FLAG_PHP_AVERAGE"
-        DEMYX_CONFIG_PHP+="-e DEMYX_PM_AVERAGE=${DEMYX_CONFIG_FLAG_PHP_AVERAGE} "
-    fi
-    if [[ -n "$DEMYX_CONFIG_FLAG_PHP_MAX_REQUESTS" ]]; then
-        demyx_ols_not_supported
-        demyx_execute "Updating pm.max_requests $DEMYX_CONFIG_FLAG_PHP_MAX_REQUESTS" \
-            "demyx_app_env_update DEMYX_APP_PHP_PM_MAX_REQUESTS=$DEMYX_CONFIG_FLAG_PHP_MAX_REQUESTS"
-        DEMYX_CONFIG_PHP+="-e DEMYX_PM_MAX_REQUESTS=${DEMYX_CONFIG_FLAG_PHP_MAX_REQUESTS} "
-    fi
     if [[ -n "$DEMYX_CONFIG_FLAG_PHP_VERSION" ]]; then
-        demyx_execute "Updating php to version $DEMYX_CONFIG_FLAG_PHP_VERSION" \
-            "demyx_app_env_update DEMYX_APP_PHP=${DEMYX_CONFIG_FLAG_PHP_VERSION}; \
-            demyx_app_env_update DEMYX_APP_OLS_LSPHP=${DEMYX_CONFIG_FLAG_PHP_VERSION}"
-        DEMYX_CONFIG_PHP+="-e DEMYX_PHP=${DEMYX_CONFIG_FLAG_PHP_VERSION} -e DEMYX_LSPHP=${DEMYX_CONFIG_FLAG_PHP_VERSION} "
+        case "$DEMYX_CONFIG_FLAG_PHP_VERSION" in
+            83) DEMYX_CONFIG_FLAG_PHP_VERSION=8.3 ;;
+            84) DEMYX_CONFIG_FLAG_PHP_VERSION=8.4 ;;
+        esac
+        demyx_execute "Setting PHP to $DEMYX_CONFIG_FLAG_PHP_VERSION" \
+            "demyx_app_env_update DEMYX_APP_PHP=${DEMYX_CONFIG_FLAG_PHP_VERSION}"
     fi
-    if [[ -n "${DEMYX_CONFIG_PHP}" ]]; then
-        eval "docker exec ${DEMYX_CONFIG_PHP} ${DEMYX_APP_WP_CONTAINER} demyx-entrypoint"
+
+    if [[ -n "$DEMYX_CONFIG_FLAG_PHP_MAX_REQUESTS" ]]; then
+        demyx_execute "Setting PHP-FPM max requests to $DEMYX_CONFIG_FLAG_PHP_MAX_REQUESTS" \
+            "demyx_app_env_update DEMYX_APP_PHP_PM_MAX_REQUESTS=${DEMYX_CONFIG_FLAG_PHP_MAX_REQUESTS}"
     fi
+}
+#
+#   Configures an app's PHP-FPM process manager mode.
+#
+demyx_config_pm() {
+    demyx_event
+    demyx_ols_not_supported
+    demyx_app_env wp DEMYX_APP_STACK
+
+    DEMYX_CONFIG_COMPOSE=true
+
+    demyx_execute "Setting PHP-FPM pm to $DEMYX_CONFIG_FLAG_PM" \
+        "demyx_app_env_update DEMYX_APP_PHP_PM=${DEMYX_CONFIG_FLAG_PM}"
 }
 #
 #   Configures a phpMyAdmin container for an app.
@@ -1083,6 +1091,7 @@ demyx_config_sftp() {
 
     # TODO
     #local DEMYX_CONFIG_SFTP_VOLUME=
+    local DEMYX_CONFIG_SFTP_PORT=
     DEMYX_CONFIG_COMPOSE=true
 
     demyx_execute "Setting SFTP to $DEMYX_CONFIG_FLAG_SFTP" \
@@ -1092,8 +1101,8 @@ demyx_config_sftp() {
     if [[ "$DEMYX_CONFIG_FLAG_SFTP" = true ]]; then
         DEMYX_CONFIG=SFTP
 
-        demyx_execute "Configuring SFTP container" \
-            "demyx_open_port"
+        # Read the SFTP port that was selected (or preserved) by demyx_yml/demyx_open_port
+        DEMYX_CONFIG_SFTP_PORT="$(cat < "$DEMYX_TMP"/"$DEMYX_APP_DOMAIN"_sftp)"
 
         # TODO
         #DEMYX_CONFIG_SFTP_VOLUME="$(docker run -t --rm \
@@ -1103,9 +1112,12 @@ demyx_config_sftp() {
 
         {
             echo "IP            $DEMYX_SERVER_IP"
-            echo "Port          $(cat < "$DEMYX_TMP"/"$DEMYX_APP_DOMAIN"_sftp)"
+            echo "Port          $DEMYX_CONFIG_SFTP_PORT"
             echo "Username      demyx"
             echo "Password      $DEMYX_APP_SFTP_PASSWORD"
+            echo
+            echo "IDE           demyx@$DEMYX_SERVER_IP:$DEMYX_CONFIG_SFTP_PORT"
+            echo "SSH           ssh -p $DEMYX_CONFIG_SFTP_PORT demyx@$DEMYX_SERVER_IP"
         } > "$DEMYX_CONFIG_TRANSIENT"
 
         # TODO

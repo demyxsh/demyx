@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.10.0] - 2025-10-23
+### Added
+- New `demyx config --pm` flag to configure PHP-FPM process manager mode (`ondemand`, `dynamic`, `static`).
+- SFTP config output now includes ready-to-copy IDE and SSH connection strings.
+
+### Changed
+- Bumped project version references from `1.9.1` to `1.10.0` across Dockerfile, install ping, and GitHub workflow.
+- Updated app PHP defaults from `8.3` to `8.4` and expanded PHP flag handling to accept `8.3|8.4|83|84`.
+- Switched PHP-FPM compose environment wiring to use `DEMYX_PM` (from `DEMYX_APP_PHP_PM`) instead of PM average wiring.
+- Updated host and app compose resource defaults to auto-calculate at ~90% of available CPU and memory instead of fixed `0` or half-resource defaults.
+- Updated dev compose resource assignment to use app-defined CPU/MEM env values for consistency.
+
+### Fixed
+- Fixed app backup database export command to run through the WordPress container's `demyx-db` entrypoint.
+- Fixed backup ownership command pathing during archive staging.
+- Preserved selected SFTP port in config output flow instead of re-opening/changing it during status rendering.
+- Fixed PHP auto-upgrade logic to bump any app version below `8.3` (including `8.1`/`8.2` and `81`/`82`) to `8.4`.
+
 ## [1.9.1] - 2025-08-28
 ### Changed
 - Refactor demyx_host_upgrade function in host.sh to remove unnecessary refresh commands for code and traefik, streamlining the upgrade process. [c7de857](https://github.com/demyxsh/demyx/commit/c7de8570e2d90b9fbd7d755078a873fd08b57bef)
@@ -861,6 +879,7 @@ Yml
 - Switch to nginx-php as the default stack
 - Add hostname key and use app ID as part of volume name
 
+[1.10.0]: https://github.com/demyxsh/demyx/compare/1.9.1...1.10.0
 [1.9.1]: https://github.com/demyxsh/demyx/compare/1.9.0...1.9.1
 [1.9.0]: https://github.com/demyxsh/demyx/compare/1.8.3...1.9.0
 [1.8.3]: https://github.com/demyxsh/demyx/compare/1.8.2...1.8.3

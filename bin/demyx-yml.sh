@@ -16,6 +16,12 @@ demyx_yml() {
     # shellcheck disable=SC1090
     [[ -f "${DEMYX_YML_ENV}" ]] && source "${DEMYX_YML_ENV}"
 
+    # Auto-calculate core container CPU/MEM defaults if not already set
+    local DEMYX_YML_CPU_DEFAULT
+    local DEMYX_YML_MEM_DEFAULT
+    DEMYX_YML_CPU_DEFAULT="$(demyx_yml_resource cpu)"
+    DEMYX_YML_MEM_DEFAULT="$(demyx_yml_resource mem)"
+
     cat << EOF > "${DEMYX_YML_ENV}"
 # DEMYX ${DEMYX_VERSION}
 
@@ -34,8 +40,8 @@ DEMYX_CODE_PASSWORD=${DEMYX_CODE_PASSWORD:-$(demyx utility password -r)}
 DEMYX_CODE_SSL=${DEMYX_CODE_SSL:-false}
 
 # CONTAINER CPU/MEM
-DEMYX_CPU=${DEMYX_CPU:-0}
-DEMYX_MEM=${DEMYX_MEM:-0}
+DEMYX_CPU=${DEMYX_YML_CPU_DEFAULT}
+DEMYX_MEM=${DEMYX_YML_MEM_DEFAULT}
 
 # LOGROTATE
 DEMYX_LOGROTATE=${DEMYX_LOGROTATE:-daily}
@@ -111,8 +117,8 @@ EOF
 services:
   socket:
     image: demyx/docker-socket-proxy
-    cpus: \${DEMYX_CPU:-0}
-    mem_limit: \${DEMYX_MEM:-0}
+    cpus: \${DEMYX_CPU:-$(demyx_yml_resource cpu)}
+    mem_limit: \${DEMYX_MEM:-$(demyx_yml_resource mem)}
     container_name: demyx_socket
     restart: unless-stopped
     networks:
@@ -130,8 +136,8 @@ services:
       - VOLUMES=1
   demyx:
     image: demyx/demyx
-    cpus: \${DEMYX_CPU:-0}
-    mem_limit: \${DEMYX_MEM:-0}
+    cpus: \${DEMYX_CPU:-$(demyx_yml_resource cpu)}
+    mem_limit: \${DEMYX_MEM:-$(demyx_yml_resource mem)}
     container_name: demyx
     restart: unless-stopped
     hostname: \${DEMYX_HOSTNAME}
@@ -216,6 +222,24 @@ demyx_yml_ip() {
     else
         # Fallback to localhost
         echo localhost
+    fi
+}
+#
+#   Calculates cpus and memory for core resource defaults.
+#
+demyx_yml_resource() {
+    local DEMYX_YML_RESOURCE="${1:-}"
+    local DEMYX_YML_RESOURCE_CPU=
+
+    if [[ "${DEMYX_YML_RESOURCE}" = cpu ]]; then
+        DEMYX_YML_RESOURCE_CPU="$(nproc --all)"
+        if [[ -n "$DEMYX_YML_RESOURCE_CPU" && "$DEMYX_YML_RESOURCE_CPU" -ge 1 ]]; then
+            awk -v n="$DEMYX_YML_RESOURCE_CPU" 'BEGIN{v=n*0.90; printf "%g\n", v}'
+        else
+            echo ".90"
+        fi
+    elif [[ "${DEMYX_YML_RESOURCE}" = mem ]]; then
+        echo "$(( $(free -m | awk '/^Mem:/ {print $2}') * 90 / 100 ))m"
     fi
 }
 #
