@@ -85,7 +85,7 @@ demyx_update_local() {
             echo "DEMYX_LOCAL_CODE_VERSION=$(docker run --rm --entrypoint=code-server demyx/code-server:browse --version | awk -F '[ ]' '{print $1}' | awk '{line=$0} END{print line}')"
         fi
         if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/nginx"* ]]; then
-            echo "DEMYX_LOCAL_NGINX_VERSION=$(docker run --rm --entrypoint=nginx demyx/nginx -V 2>&1 > /dev/null | head -n 1 | awk -F '/' '{print $2}')"
+            echo "DEMYX_LOCAL_NGINX_VERSION=$(docker run --rm --entrypoint=nginx demyx/nginx -V 2>&1 >/dev/null | awk -F '/' 'NR==1 {line=$2} END{print line}')"
         fi
         if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/openlitespeed"* ]]; then
             echo "DEMYX_LOCAL_OPENLITESPEED_VERSION=$(docker run --rm --entrypoint=cat demyx/openlitespeed /usr/local/lsws/VERSION)"
@@ -103,17 +103,17 @@ demyx_update_local() {
             echo "DEMYX_LOCAL_WORDPRESS_BEDROCK_VERSION=$(curl -sL https://api.github.com/repos/roots/bedrock/releases/latest | jq -r '.tag_name')"
         fi
         if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/wordrpess"* ]]; then
-            echo "DEMYX_LOCAL_WORDPRESS_PHP_LATEST_VERSION=$(docker run --rm --entrypoint=php84 demyx/wordpress -v | grep cli | awk -F '[ ]' '{print $2}')"
+            echo "DEMYX_LOCAL_WORDPRESS_PHP_LATEST_VERSION=$(docker run --rm --entrypoint=php84 demyx/wordpress -v | awk '/cli/ {print $2; exit}')"
         fi
         if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/wordrpess"* ]]; then
-            echo "DEMYX_LOCAL_WORDPRESS_PHP_VERSION=$(docker run --rm --entrypoint=php84 demyx/wordpress -v | grep cli | awk -F '[ ]' '{print $2}')"
+            echo "DEMYX_LOCAL_WORDPRESS_PHP_VERSION=$(docker run --rm --entrypoint=php84 demyx/wordpress -v | awk '/cli/ {print $2; exit}')"
         fi
         if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/wordrpess"* ]]; then
             echo "DEMYX_LOCAL_WORDPRESS_VERSION=$(docker run --rm --entrypoint=sh demyx/wordpress -c "grep '\$wp_version =' /demyx/wp-includes/version.php | cut -d\"'\" -f 2")"
         fi
 
         echo "DEMYX_LOCAL_DOCKER_VERSION=$(docker -v | awk -F ' ' '{print $3}' | sed 's|,||g')"
-        echo "DEMYX_LOCAL_HAPROXY_VERSION=$(docker run --rm --user=root --entrypoint=haproxy demyx/docker-socket-proxy -v | grep HA-Proxy | awk '{print $3}')"
+        echo "DEMYX_LOCAL_HAPROXY_VERSION=$(docker run --rm --user=root --entrypoint=haproxy demyx/docker-socket-proxy -v | awk '/HA-Proxy/ {print $3; exit}')"
         echo "DEMYX_LOCAL_MARIADB_VERSION=$(docker run --rm --entrypoint=mariadb demyx/mariadb --version | awk -F '[ ]' '{print $6}' | awk -F '[,]' '{print $1}' | sed 's/-MariaDB//g')"
         echo "DEMYX_LOCAL_TRAEFIK_VERSION=$(docker run --rm --user=root --entrypoint=traefik demyx/traefik version | sed -n 1p | awk '{print $2}')"
         echo "DEMYX_LOCAL_UTILITIES_VERSION=$(docker run --rm demyx/utilities cat /etc/debian_version)"
