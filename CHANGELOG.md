@@ -29,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.9.0] - 2025-08-01
 
-### 🚀 Major New Features
+### Added
 
 #### Enhanced Configuration Management
 - **Maintenance Mode Support** - New `demyx config --maintenance` flag to activate WordPress core maintenance mode
@@ -45,7 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **FastCGI Cache Control** - New `DEMYX_APP_CACHE_INACTIVE` environment variable for cache expiration management
 - **PHP Performance Tuning** - New `--php-average` flag for optimized PHP configuration
 
-### ⚡ Performance & Security Improvements
+### Changed
 
 #### Network & Security Enhancements
 - **HTTP3/QUIC Support** - Enabled for faster, more efficient connections
@@ -57,7 +57,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Better IP Detection** - Using `dig` for improved server IP detection across distributions
 - **Rsync Integration** - Backup and restore operations now use rsync with backward compatibility
 
-### 🧹 Code Quality & Modernization
+### Changed
 
 #### Architectural Improvements
 - **Simplified Container Naming** - Removed dynamic container name updates in favor of hard-coded names
@@ -74,7 +74,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Simplified Host Operations** - Removed developer mode complexity
 - **Better Version Management** - Improved upgrade logic with cleaner version checking
 
-### 🐛 Critical Bug Fixes
+### Fixed
 
 #### System Stability
 - **Volume Creation** - Fixed missing `demyx_user` volume creation
@@ -152,7 +152,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix demyx_host_upgrade to remove carriage return characters from version output for consistent version comparison. [b39e32c](https://github.com/demyxsh/demyx/commit/b39e32c157c1bb161d3bd94b536fde4899b85a39)
 
 ## [1.8.3] - 2024-04-08
-### Upgrading
+### Changed
 This version requries updating the host helper script first.
 ```
 # Update the demyx image to the latest version
@@ -172,7 +172,7 @@ demyx host restart
 demyx host upgrade -f
 ```
 
-### Fixes
+### Fixed
 - Move update counter commands to its own function so `demyx host restart` can work properly [5c782e3](https://github.com/demyxsh/demyx/commit/5c782e366ef0b101ea97005cb0dc0e5c83886827)
 - The script will error and exit if there are containers still using an old image [c68a85b](https://github.com/demyxsh/demyx/commit/c68a85bf42030f389dff9e0a23e6281f61b280b4)
 - Suppress external network warning [483d57a](https://github.com/demyxsh/demyx/commit/483d57a87c2db71a0bb8adc4fab6285697f54989)
@@ -188,7 +188,7 @@ demyx host upgrade -f
 - Move commands into a global function since backups are using the old container name format which would break `demyx restore` [8f3f808](https://github.com/demyxsh/demyx/commit/8f3f808ff63d573a1430d1833d8b8032197175c4)
 
 ## [1.8.2] - 2024-03-27
-### Upgrading
+### Changed
 Due to a lot of changes with Docker, there had to be a lot of fixes/workarounds made in order to ease the burden of upgrading. Follow these steps for a smooth transition.
 ```
 # Update the demyx image to the latest version
@@ -208,7 +208,7 @@ demyx host restart
 demyx host upgrade -f
 ```
 
-### Fixes
+### Fixed
 - Remove limitations on subdomains so SSL wildcards and www works on international domains and/or several levels deep of prefixes of subdomains [74fecb0](https://github.com/demyxsh/demyx/commit/74fecb0edd1afef8073c7b1c46295f3df702b039)
 - The `-f` flag should also bypass the no updates check [bab05a1](https://github.com/demyxsh/demyx/commit/bab05a1b28504666413688fe8af9811c8caf4fbf)
 - Fix GitHub Action failure [570991d](https://github.com/demyxsh/demyx/commit/570991df1bed1526cf14a2155e915ad672614801)
@@ -218,7 +218,7 @@ demyx host upgrade -f
 - Upgrade to latest Docker version to fix `KeyError: 'ContainerConfig'` errors and docker-compose is now deprecated [87c3be1](https://github.com/demyxsh/demyx/commit/87c3be1b03f6c998d92ce01191b8dae60e8ff772)
 
 ## [1.8.1] - 2024-03-19
-### Fixes
+### Fixed
 - Creating new apps were erroring on subdomains using `--ssl` flag [72fd7da](https://github.com/demyxsh/demyx/commit/72fd7da7fdde1daf1d377376cb7edf035a5617ea)
 - Docker versions would mismatch between local and remote versions [7b18cb7](https://github.com/demyxsh/demyx/commit/7b18cb7ab046d6a712b92dfcc0f10c3a4f7226a3)
 - `demyx host dev` was targeting the wrong string [87398c4](https://github.com/demyxsh/demyx/commit/87398c4043d9825a3a28e01ba3393bc5f984229c)
@@ -234,7 +234,7 @@ demyx host upgrade -f
 
 ## [1.8.0] - 2024-03-01
 
-### Highlights
+### Changed
 - Default PHP versions are now 8.1 and 8.2
 - WP Rocket + rocket-nginx is now supported
 - Wildcard SSL is now supported for any app, only for top level domains
@@ -263,12 +263,12 @@ Stack Trace:
 #4 backup domain.tld
 ```
 
-### New
+### Added
 - Custom stack trace for better error logging and debugging [47cb92f](https://github.com/demyxsh/demyx/commit/47cb92ff0b8980e6215435e3ae5af42f9fd3cd2e)
 - `demyx_event()` will replace general logging and will log every function when executed [7906b4c](https://github.com/demyxsh/demyx/commit/7906b4cafab7b9fdcbabea73c1d8c2f88ff110ec)
 - Add support for WP Rocket + rocket-nginx [e72f8ef](https://github.com/demyxsh/demyx/commit/e72f8ef47780e8f6132c49543ada7e04ea804fb6)
 - Add support for wildcard SSL [f99be89](https://github.com/demyxsh/demyx/commit/f99be89f791bf171a1e1aba5917efba75cc3fefa)
-### Changes
+### Changed
 - Match help text with the KB [c9c5530](https://github.com/demyxsh/demyx/commit/c9c5530c2e92a238612283214d8fec5bb3b12314)
 - Remove/replace old logging function [07f3d59](https://github.com/demyxsh/demyx/commit/07f3d59c8c2c58bcb5a313ff8adf7fe057ba6e35)
 - Only use demyx_execute to supress outputs from specific commands [04e8d09](https://github.com/demyxsh/demyx/commit/04e8d09c36a772082062ff49905264e3526e0fe2)
@@ -295,7 +295,7 @@ Stack Trace:
 - Utility needs to be sourced again for non alpine [380f5c3](https://github.com/demyxsh/demyx/commit/380f5c309f89a71e8e2ab4d0ac994341638b4153)
 - Set fixed width [c8a2491](https://github.com/demyxsh/demyx/commit/c8a2491baad5d36c44a4aba8b3607b5e8048d556)
 - @NuclearMonster "Update pull.sh to pull OLS and resolve out of date OLS installs." [82a1b6d](https://github.com/demyxsh/demyx/commit/82a1b6d0b1c6ba813bf78b8322d8facc4c4b6013)
-### Fixes
+### Fixed
 - Be sure to exit on error for subshells [c44e466](https://github.com/demyxsh/demyx/commit/c44e4661bca6965e3989f2cfd8ba07c9f4ddf8b5)
 - Redis wasn't configuring properly when switching stacks [7b1c1cd](https://github.com/demyxsh/demyx/commit/7b1c1cdb44919018ed79222b9f4ae27048147be5)
 - Fix incorrect filename [6d4bcf3](https://github.com/demyxsh/demyx/commit/6d4bcf3ef30e5d2af0d3867ecb82412c289fb408)
@@ -303,65 +303,65 @@ Stack Trace:
 - Add missing logrotate rule [faa2056](https://github.com/demyxsh/demyx/commit/faa20566a300411d1b601aadaed942b2f6164cbc)
 
 ## [1.7.1] - 2023-11-16
-### Changes
+### Changed
 - Missing backup/restore commands for custom volume [aa8e543](https://github.com/demyxsh/demyx/commit/aa8e5431b104261ada0ac75be43329c7175b6c84)
 
 ## [1.7.0] - 2023-11-14
-### New
+### Added
 - Add new volume `custom` for user customizations [5a1d155](https://github.com/demyxsh/demyx/commit/5a1d1553554bb10c06c3d5a34bfbb63d1366789d)
 - `demyx config <app> --backup` new flag to skip backups of a specifc app [a2497a3](https://github.com/demyxsh/demyx/commit/a2497a36d7b3a9b257b040a991519daccf332d96)
 - Add new variable DEMYX_APP_BACKUP [04cfb4c](https://github.com/demyxsh/demyx/commit/04cfb4c04058b6964ee55f2fdca24dcace297b6d)
-### Changes
+### Changed
 - Use `demyx_wordpress_ready` in `demyx_run_extras` [974fed2](https://github.com/demyxsh/demyx/commit/974fed212e4a75b264fe25b7d72fd3304d1bb7fb)
 - Log error for `demyx_wordpress_ready` [7d377cb](https://github.com/demyxsh/demyx/commit/7d377cb451a10b408094c6e84961d675bd23583d)
 - Skip app backup if DEMYX_APP_BACKUP is set to false [14bd04e](https://github.com/demyxsh/demyx/commit/14bd04e2b0683c1b3387bf53037908b3a511adf7)
 
 ## [1.6.0] - 2023-10-18
-### Changes
+### Changed
 - Update logic [b5a0984](https://github.com/demyxsh/demyx/commit/b5a0984d8babbeacc6256b93a0f8afc3391a2842)
 - Revert back to old traefik rules for www and non www labels [371070b](https://github.com/demyxsh/demyx/commit/371070b7bcfede6443318846eb76e55ab9c5195e)
 - `demyx config <app> --www` can't be used for sub domains [ef338ae](https://github.com/demyxsh/demyx/commit/ef338ae6252f95782d7660f7eca3c96fe528c6c7)
 
-### Fixes
+### Fixed
 - Fix not installed error when using `--www` in `demyx run` [f111e06](https://github.com/demyxsh/demyx/commit/f111e0633c6b883e7467cfa1b7fce02153c77882)
 
-### New
+### Added
 - New function `demyx_wordpress_ready()` loops checks if wp core is installed [99ed589](https://github.com/demyxsh/demyx/commit/99ed5896b938e05cda26644ef5902b86f49f84f7)
 - New function `demyx_subdomain()` returns a string if it's a subdomain [8eec3bb](https://github.com/demyxsh/demyx/commit/8eec3bb753c0c9da8b4be7db84aae506086eef89)
 
 ## [1.5.2] - 2023-10-10
-### Fixes
+### Fixed
 - Merge pull request #31 from NuclearMonster/master [adac58f](https://github.com/demyxsh/demyx/commit/adac58fd5e32280e95915f408a696b00cc91b686)
 - Fix netwwork typo in host.sh [094cb60](https://github.com/demyxsh/demyx/commit/094cb60d56feee6a9732ee6a7c3bbe9b4920a2f0)
 
 ## [1.5.1] - 2023-09-28
-### Fixes
+### Fixed
 - Add missing command to recreate all apps when doing an upgrade [495a908](https://github.com/demyxsh/demyx/commit/495a90875807606372e6e856045020391cabaf15)
 - Remove tag due to errors when pulling, users can manually enter tag version [b85df64](https://github.com/demyxsh/demyx/commit/b85df64506a493814fd8de78ca82f2b16cf1dec7)
 - Exit if there's no apps installed, causing notifications to fire off when there's no error [75c5563](https://github.com/demyxsh/demyx/commit/75c556357c9b92cf69987418eef745843db92fd7)
 - Remove variable causing cache to not work properly on first run [809ff8d](https://github.com/demyxsh/demyx/commit/809ff8dae0015b79456a083a28cbec7229850c9c)
 
 ## [1.5.0] - 2023-09-26
-### New
+### Added
 - All Demyx app stacks now supports Redis, either by `demyx run` or `demyx config` [08b6589](https://github.com/demyxsh/demyx/commit/08b65899ba34c06d4ef46c384edce7d5f3924420)
 - New flag `--whitelist` for `demyx run` [c093346](https://github.com/demyxsh/demyx/commit/c0933462e54ccc42bf64d1c9b7841871dc974fa9)
 - Host helper script can now print Demyx environment variables [bc78886](https://github.com/demyxsh/demyx/commit/bc7888600a65bbd4ffd16cf6b77c3a72f6245a05)
 - Debugger mode (breaks demyx, use with caution) [3aa8af3](https://github.com/demyxsh/demyx/commit/3aa8af3afe7a7e8165f64fd11a8669256dd0c70b)
 - Automatically adjust php-fpm values based on container memory [93cde6e](https://github.com/demyxsh/demyx/commit/93cde6e1e79588b87cdc2a1b0e8723e4032815a6)
 
-### Fixes
+### Fixed
 - Fix www issues for Traefik labels [bb090cc](https://github.com/demyxsh/demyx/commit/bb090ccf3318bcb57634d55d814bb66a5c3d40d7)
 - Fix cloning issue [344b0bd](https://github.com/demyxsh/demyx/commit/344b0bdf1ed3d1e99e3c6130e184b76fdd145b3a)
 - Prevent file not found error [7768c06](https://github.com/demyxsh/demyx/commit/7768c069e8781e31c2d77589a6989e66d5b6a692)
 
-### Changes
+### Changed
 - Remove linebreak [c613013](https://github.com/demyxsh/demyx/commit/c613013bae135c4f54e26efd6592e0737bd56e91)
 - Use values from `demyx_app_env` [280a7d7](https://github.com/demyxsh/demyx/commit/280a7d7a946949b665d28d42d980d1d0ff2d2643)
 - Make sure to disable docker-compose binary for non-root user [ef59bf6](https://github.com/demyxsh/demyx/commit/ef59bf64aaaa41915cd5cbbe6dd6e054b64556f5)
 - Reverting change [a97c853](https://github.com/demyxsh/demyx/commit/a97c8537fd7d52af6501003adad537dc6d5e28cb)
 
 ## [1.4.0] - 2023-09-19
-### Highlights
+### Changed
   - The whole script is now in masochist mode: set -euo pipefail
   - Refactored 99% of functions using localize variables and internal functions
   - HUGE performance gains and tons of bug fixes
