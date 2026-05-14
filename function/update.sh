@@ -91,10 +91,7 @@ demyx_update_local() {
             echo "DEMYX_LOCAL_OPENLITESPEED_VERSION=$(docker run --rm --entrypoint=cat demyx/openlitespeed /usr/local/lsws/VERSION)"
         fi
         if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/openlitespeed"* ]]; then
-            echo "DEMYX_LOCAL_OPENLITESPEED_LSPHP_LATEST_VERSION=$(docker run --rm --entrypoint=bash demyx/openlitespeed -c '/usr/local/lsws/lsphp84/bin/php -v' | head -1 | awk '{print $2}')"
-        fi
-        if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/openlitespeed"* ]]; then
-            echo "DEMYX_LOCAL_OPENLITESPEED_LSPHP_VERSION=$(docker run --rm --entrypoint=bash demyx/openlitespeed -c '/usr/local/lsws/lsphp84/bin/php -v' | head -1 | awk '{print $2}')"
+            echo "DEMYX_LOCAL_OPENLITESPEED_LSPHP_VERSION=$(docker run --rm --entrypoint=bash demyx/openlitespeed -c '/usr/local/lsws/$DEMYX_LSPHP/bin/php -v' | head -1 | awk '{print $2}')"
         fi
         if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/ssh"* ]]; then
             echo "DEMYX_LOCAL_OPENSSH_VERSION=$(docker run --rm --entrypoint=ssh demyx/ssh -V  2>&1 | cut -c -13 | awk -F '[_]' '{print $2}')"
@@ -103,10 +100,7 @@ demyx_update_local() {
             echo "DEMYX_LOCAL_WORDPRESS_BEDROCK_VERSION=$(curl -sL https://api.github.com/repos/roots/bedrock/releases/latest | jq -r '.tag_name')"
         fi
         if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/wordrpess"* ]]; then
-            echo "DEMYX_LOCAL_WORDPRESS_PHP_LATEST_VERSION=$(docker run --rm --entrypoint=php84 demyx/wordpress -v | awk '/cli/ {print $2; exit}')"
-        fi
-        if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/wordrpess"* ]]; then
-            echo "DEMYX_LOCAL_WORDPRESS_PHP_VERSION=$(docker run --rm --entrypoint=php84 demyx/wordpress -v | awk '/cli/ {print $2; exit}')"
+            echo "DEMYX_LOCAL_WORDPRESS_PHP_VERSION=$(docker run --rm --entrypoint=bash demyx/wordpress -c 'echo $DEMYX_PHP')"
         fi
         if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/wordrpess"* ]]; then
             echo "DEMYX_LOCAL_WORDPRESS_VERSION=$(docker run --rm --entrypoint=sh demyx/wordpress -c "grep '\$wp_version =' /demyx/wp-includes/version.php | cut -d\"'\" -f 2")"
@@ -133,7 +127,6 @@ demyx_update_image() {
     local DEMYX_LOCAL_HAPROXY_VERSION=
     local DEMYX_LOCAL_MARIADB_VERSION=
     local DEMYX_LOCAL_NGINX_VERSION=
-    local DEMYX_LOCAL_OPENLITESPEED_LSPHP_LATEST_VERSION=
     local DEMYX_LOCAL_OPENLITESPEED_LSPHP_VERSION=
     local DEMYX_LOCAL_OPENLITESPEED_VERSION=
     local DEMYX_LOCAL_OPENSSH_VERSION=
@@ -141,7 +134,6 @@ demyx_update_image() {
     local DEMYX_LOCAL_UTILITIES_VERSION=
     local DEMYX_LOCAL_VERSION=
     local DEMYX_LOCAL_WORDPRESS_BEDROCK_VERSION=
-    local DEMYX_LOCAL_WORDPRESS_PHP_LATEST_VERSION=
     local DEMYX_LOCAL_WORDPRESS_PHP_VERSION=
     local DEMYX_LOCAL_WORDPRESS_VERSION=
     local DEMYX_REMOTE_BROWSERSYNC_VERSION=
@@ -150,7 +142,6 @@ demyx_update_image() {
     local DEMYX_REMOTE_HAPROXY_VERSION=
     local DEMYX_REMOTE_MARIADB_VERSION=
     local DEMYX_REMOTE_NGINX_VERSION=
-    local DEMYX_REMOTE_OPENLITESPEED_LSPHP_LATEST_VERSION=
     local DEMYX_REMOTE_OPENLITESPEED_LSPHP_VERSION=
     local DEMYX_REMOTE_OPENLITESPEED_VERSION=
     local DEMYX_REMOTE_OPENSSH_VERSION=
@@ -158,7 +149,6 @@ demyx_update_image() {
     local DEMYX_REMOTE_UTILITIES_VERSION=
     local DEMYX_REMOTE_VERSION=
     local DEMYX_REMOTE_WORDPRESS_BEDROCK_VERSION=
-    local DEMYX_REMOTE_WORDPRESS_PHP_LATEST_VERSION=
     local DEMYX_REMOTE_WORDPRESS_PHP_VERSION=
     local DEMYX_REMOTE_WORDPRESS_VERSION=
 
@@ -214,10 +204,6 @@ demyx_update_image() {
             echo "openlitespeed" >> "$DEMYX_UPDATE_FILE_IMAGE"
         fi
 
-        if [[ "$(demyx_compare "$DEMYX_LOCAL_OPENLITESPEED_LSPHP_LATEST_VERSION")" -lt "$(demyx_compare "$DEMYX_REMOTE_OPENLITESPEED_LSPHP_LATEST_VERSION")" ]]; then
-            echo "openlitespeed" >> "$DEMYX_UPDATE_FILE_IMAGE"
-        fi
-
         if [[ "$(demyx_compare "$DEMYX_LOCAL_OPENLITESPEED_LSPHP_VERSION")" -lt "$(demyx_compare "$DEMYX_REMOTE_OPENLITESPEED_LSPHP_VERSION")" ]]; then
             echo "openlitespeed" >> "$DEMYX_UPDATE_FILE_IMAGE"
         fi
@@ -246,10 +232,6 @@ demyx_update_image() {
             echo "wordpress" >> "$DEMYX_UPDATE_FILE_IMAGE"
         fi
 
-        if [[ "$(demyx_compare "$DEMYX_LOCAL_WORDPRESS_PHP_LATEST_VERSION")" -lt "$(demyx_compare "$DEMYX_REMOTE_WORDPRESS_PHP_LATEST_VERSION")" ]]; then
-            echo "wordpress" >> "$DEMYX_UPDATE_FILE_IMAGE"
-        fi
-
         if [[ "$(demyx_compare "$DEMYX_LOCAL_WORDPRESS_PHP_VERSION")" -lt "$(demyx_compare "$DEMYX_REMOTE_WORDPRESS_PHP_VERSION")" ]]; then
             echo "wordpress" >> "$DEMYX_UPDATE_FILE_IMAGE"
         fi
@@ -274,7 +256,6 @@ demyx_update_list() {
     local DEMYX_LOCAL_HAPROXY_VERSION=
     local DEMYX_LOCAL_MARIADB_VERSION=
     local DEMYX_LOCAL_NGINX_VERSION=
-    local DEMYX_LOCAL_OPENLITESPEED_LSPHP_LATEST_VERSION=
     local DEMYX_LOCAL_OPENLITESPEED_LSPHP_VERSION=
     local DEMYX_LOCAL_OPENLITESPEED_VERSION=
     local DEMYX_LOCAL_OPENSSH_VERSION=
@@ -282,7 +263,6 @@ demyx_update_list() {
     local DEMYX_LOCAL_UTILITIES_VERSION=
     local DEMYX_LOCAL_VERSION=
     local DEMYX_LOCAL_WORDPRESS_BEDROCK_VERSION=
-    local DEMYX_LOCAL_WORDPRESS_PHP_LATEST_VERSION=
     local DEMYX_LOCAL_WORDPRESS_PHP_VERSION=
     local DEMYX_LOCAL_WORDPRESS_VERSION=
     local DEMYX_REMOTE_BROWSERSYNC_VERSION=
@@ -290,7 +270,6 @@ demyx_update_list() {
     local DEMYX_REMOTE_HAPROXY_VERSION=
     local DEMYX_REMOTE_MARIADB_VERSION=
     local DEMYX_REMOTE_NGINX_VERSION=
-    local DEMYX_REMOTE_OPENLITESPEED_LSPHP_LATEST_VERSION=
     local DEMYX_REMOTE_OPENLITESPEED_LSPHP_VERSION=
     local DEMYX_REMOTE_OPENLITESPEED_VERSION=
     local DEMYX_REMOTE_OPENSSH_VERSION=
@@ -298,7 +277,6 @@ demyx_update_list() {
     local DEMYX_REMOTE_UTILITIES_VERSION=
     local DEMYX_REMOTE_VERSION=
     local DEMYX_REMOTE_WORDPRESS_BEDROCK_VERSION=
-    local DEMYX_REMOTE_WORDPRESS_PHP_LATEST_VERSION=
     local DEMYX_REMOTE_WORDPRESS_PHP_VERSION=
     local DEMYX_REMOTE_WORDPRESS_VERSION=
 
@@ -383,14 +361,6 @@ demyx_update_list() {
         fi
     fi
 
-    if [[ -n "$DEMYX_LOCAL_WORDPRESS_PHP_LATEST_VERSION" && -n "$DEMYX_REMOTE_WORDPRESS_PHP_LATEST_VERSION" ]]; then
-        if [[ "$(demyx_compare "$DEMYX_LOCAL_WORDPRESS_PHP_LATEST_VERSION")" -lt "$(demyx_compare "$DEMYX_REMOTE_WORDPRESS_PHP_LATEST_VERSION")" ]]; then
-            DEMYX_REMOTE_WORDPRESS_PHP_LATEST_VERSION="$(echo -e "\e[32m(NEW) ${DEMYX_REMOTE_WORDPRESS_PHP_LATEST_VERSION}\e[39m")"
-        else
-            DEMYX_REMOTE_WORDPRESS_PHP_LATEST_VERSION=
-        fi
-    fi
-
     if [[ -n "$DEMYX_LOCAL_WORDPRESS_PHP_VERSION" && -n "$DEMYX_REMOTE_WORDPRESS_PHP_VERSION" ]]; then
         if [[ "$(demyx_compare "$DEMYX_LOCAL_WORDPRESS_PHP_VERSION")" -lt "$(demyx_compare "$DEMYX_REMOTE_WORDPRESS_PHP_VERSION")" ]]; then
             DEMYX_REMOTE_WORDPRESS_PHP_VERSION="$(echo -e "\e[32m(NEW) ${DEMYX_REMOTE_WORDPRESS_PHP_VERSION}\e[39m")"
@@ -432,14 +402,6 @@ demyx_update_list() {
                 DEMYX_REMOTE_OPENLITESPEED_VERSION=
             fi
 
-            if [[ -n "$DEMYX_LOCAL_OPENLITESPEED_LSPHP_LATEST_VERSION" && -n "$DEMYX_REMOTE_OPENLITESPEED_LSPHP_LATEST_VERSION" ]]; then
-                if [[ "$(demyx_compare "$DEMYX_LOCAL_OPENLITESPEED_LSPHP_LATEST_VERSION")" -lt "$(demyx_compare "$DEMYX_REMOTE_OPENLITESPEED_LSPHP_LATEST_VERSION")" ]]; then
-                    DEMYX_REMOTE_OPENLITESPEED_LSPHP_LATEST_VERSION="$(echo -e "\e[32m(NEW) ${DEMYX_REMOTE_OPENLITESPEED_LSPHP_LATEST_VERSION}\e[39m")"
-                else
-                    DEMYX_REMOTE_OPENLITESPEED_LSPHP_LATEST_VERSION=
-                fi
-            fi
-
             if [[ -n "$DEMYX_LOCAL_OPENLITESPEED_LSPHP_VERSION" && -n "$DEMYX_REMOTE_OPENLITESPEED_LSPHP_VERSION" ]]; then
                 if [[ "$(demyx_compare "$DEMYX_LOCAL_OPENLITESPEED_LSPHP_VERSION")" -lt "$(demyx_compare "$DEMYX_REMOTE_OPENLITESPEED_LSPHP_VERSION")" ]]; then
                     DEMYX_REMOTE_OPENLITESPEED_LSPHP_VERSION="$(echo -e "\e[32m(NEW) ${DEMYX_REMOTE_OPENLITESPEED_LSPHP_VERSION}\e[39m")"
@@ -450,7 +412,6 @@ demyx_update_list() {
 
             echo "OpenLiteSpeed           $DEMYX_LOCAL_OPENLITESPEED_VERSION $DEMYX_REMOTE_OPENLITESPEED_VERSION"
             echo " - LSPHP                $DEMYX_LOCAL_OPENLITESPEED_LSPHP_VERSION $DEMYX_REMOTE_OPENLITESPEED_LSPHP_VERSION"
-            echo " - LSPHP Latest         $DEMYX_LOCAL_OPENLITESPEED_LSPHP_LATEST_VERSION $DEMYX_REMOTE_OPENLITESPEED_LSPHP_LATEST_VERSION"
         fi
 
         if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/ssh"* ]]; then
@@ -467,7 +428,6 @@ demyx_update_list() {
         echo "Utilities               $DEMYX_LOCAL_UTILITIES_VERSION $DEMYX_REMOTE_UTILITIES_VERSION"
         echo "WordPress              $DEMYX_LOCAL_WORDPRESS_VERSION $DEMYX_REMOTE_WORDPRESS_VERSION"
         echo " - PHP                 $DEMYX_LOCAL_WORDPRESS_PHP_VERSION $DEMYX_REMOTE_WORDPRESS_PHP_VERSION"
-        echo " - PHP Latest          $DEMYX_LOCAL_WORDPRESS_PHP_LATEST_VERSION $DEMYX_REMOTE_WORDPRESS_PHP_LATEST_VERSION"
         [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/wordrpess:bedrock"* ]] && echo " - Bedrock             $DEMYX_LOCAL_WORDPRESS_BEDROCK_VERSION $DEMYX_REMOTE_WORDPRESS_BEDROCK_VERSION"
 
     } > "$DEMYX_UPDATE_TRANSIENT"
@@ -523,7 +483,6 @@ demyx_update_remote() {
     DEMYX_REMOTE_HAPROXY_VERSION=$DEMYX_DOCKER_SOCKET_PROXY_HAPROXY_VERSION
     DEMYX_REMOTE_MARIADB_VERSION=$DEMYX_MARIADB_VERSION
     DEMYX_REMOTE_NGINX_VERSION=$DEMYX_NGINX_VERSION
-    DEMYX_REMOTE_OPENLITESPEED_LSPHP_LATEST_VERSION=$DEMYX_OPENLITESPEED_LSPHP_LATEST_VERSION
     DEMYX_REMOTE_OPENLITESPEED_LSPHP_VERSION=$DEMYX_OPENLITESPEED_LSPHP_VERSION
     DEMYX_REMOTE_OPENLITESPEED_VERSION=$DEMYX_OPENLITESPEED_VERSION
     DEMYX_REMOTE_OPENSSH_VERSION=$DEMYX_SSH_OPENSSH_VERSION
@@ -531,7 +490,6 @@ demyx_update_remote() {
     DEMYX_REMOTE_UTILITIES_VERSION=$DEMYX_UTILITIES_DEBIAN_VERSION
     DEMYX_REMOTE_VERSION=$DEMYX_VERSION
     DEMYX_REMOTE_WORDPRESS_BEDROCK_VERSION=$DEMYX_WORDPRESS_BEDROCK_VERSION
-    DEMYX_REMOTE_WORDPRESS_PHP_LATEST_VERSION=$DEMYX_WORDPRESS_PHP_LATEST_VERSION
     DEMYX_REMOTE_WORDPRESS_PHP_VERSION=$DEMYX_WORDPRESS_PHP_VERSION
     DEMYX_REMOTE_WORDPRESS_VERSION=$DEMYX_WORDPRESS_VERSION" > "$DEMYX_UPDATE_FILE_REMOTE"
 
