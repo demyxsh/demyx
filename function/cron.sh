@@ -49,8 +49,46 @@ demyx_cron_daily() {
     local DEMYX_CRON_DAILY_WP_CHECK=
 
     if [[ "$DEMYX_TELEMETRY" = true ]]; then
-        demyx_execute "[CROND DAILY] Pinging home" \
-            "curl -s \"https://demyx.sh/?action=active&version=${DEMYX_VERSION}&token=V1VpdGNPcWNDVlZSUDFQdFBaR0Zhdz09OjrnA1h6ZbDFJ2T6MHOwg3p4\" -o /dev/null -w \"%{http_code}\""
+        demyx_execute "[CROND DAILY] Pinging home (REST telemetry)" \
+            "DEMYX_TELEMETRY_URL=\${DEMYX_TELEMETRY_URL:-https://demyx.sh/wp-json/demyx/v1/telemetry}; \
+            DEMYX_TELEMETRY_COMPAT_FALLBACK=\${DEMYX_TELEMETRY_COMPAT_FALLBACK:-true}; \
+            DEMYX_TELEMETRY_SECRET=\${DEMYX_TELEMETRY_SECRET:-}; \
+            DEMYX_TELEMETRY_LEGACY_BASE=\${DEMYX_TELEMETRY_URL%%/wp-json*}; \
+            DEMYX_TELEMETRY_LEGACY_URL=\${DEMYX_TELEMETRY_LEGACY_URL:-\${DEMYX_TELEMETRY_LEGACY_BASE}/?action=active&version=${DEMYX_VERSION}&token=V1VpdGNPcWNDVlZSUDFQdFBaR0Zhdz09OjrnA1h6ZbDFJ2T6MHOwg3p4}; \
+            DEMYX_TELEMETRY_TIMESTAMP=\$(date +%s); \
+            DEMYX_TELEMETRY_REQUEST_ID=\$(openssl rand -hex 16 2>/dev/null || date +%s); \
+            DEMYX_TELEMETRY_PAYLOAD=\$(printf '{\"version\":\"%s\",\"request_id\":\"%s\",\"sent_at\":%s}' \"${DEMYX_VERSION}\" \"\${DEMYX_TELEMETRY_REQUEST_ID}\" \"\${DEMYX_TELEMETRY_TIMESTAMP}\"); \
+            DEMYX_TELEMETRY_STATUS=0; \
+            if [[ -n \"\${DEMYX_TELEMETRY_SECRET}\" ]]; then \
+                DEMYX_TELEMETRY_SIGNATURE=\$(printf \"%s.%s\" \"\${DEMYX_TELEMETRY_TIMESTAMP}\" \"\${DEMYX_TELEMETRY_PAYLOAD}\" | openssl dgst -sha256 -hmac \"\${DEMYX_TELEMETRY_SECRET}\" | awk '{print \$2}'); \
+                DEMYX_TELEMETRY_ATTEMPT=1; \
+                while [[ \${DEMYX_TELEMETRY_ATTEMPT} -le 3 ]]; do \
+                    DEMYX_TELEMETRY_STATUS=\$(curl -sS -X POST \"\${DEMYX_TELEMETRY_URL}\" \
+                        -H \"Content-Type: application/json\" \
+                        -H \"X-Demyx-Timestamp: \${DEMYX_TELEMETRY_TIMESTAMP}\" \
+                        -H \"X-Demyx-Signature: \${DEMYX_TELEMETRY_SIGNATURE}\" \
+                        -H \"X-Demyx-Version: ${DEMYX_VERSION}\" \
+                        --data \"\${DEMYX_TELEMETRY_PAYLOAD}\" \
+                        -o /dev/null -w \"%{http_code}\"); \
+                    if [[ \"\${DEMYX_TELEMETRY_STATUS}\" -ge 200 && \"\${DEMYX_TELEMETRY_STATUS}\" -lt 300 ]]; then \
+                        break; \
+                    fi; \
+                    echo \"[CROND DAILY] Telemetry attempt \${DEMYX_TELEMETRY_ATTEMPT} failed with HTTP \${DEMYX_TELEMETRY_STATUS}\"; \
+                    sleep \$((DEMYX_TELEMETRY_ATTEMPT * 2)); \
+                    DEMYX_TELEMETRY_ATTEMPT=\$((DEMYX_TELEMETRY_ATTEMPT + 1)); \
+                done; \
+            else \
+                echo \"[CROND DAILY] DEMYX_TELEMETRY_SECRET missing; skipping REST telemetry.\"; \
+                DEMYX_TELEMETRY_STATUS=0; \
+            fi; \
+            if [[ ! \"\${DEMYX_TELEMETRY_STATUS}\" -ge 200 || ! \"\${DEMYX_TELEMETRY_STATUS}\" -lt 300 ]]; then \
+                if [[ \"\${DEMYX_TELEMETRY_COMPAT_FALLBACK}\" = true ]]; then \
+                    echo \"[CROND DAILY] Falling back to legacy telemetry endpoint.\"; \
+                    curl -s \"\${DEMYX_TELEMETRY_LEGACY_URL}\" -o /dev/null -w \"%{http_code}\"; \
+                else \
+                    echo \"[CROND DAILY] REST telemetry failed and legacy fallback is disabled.\"; \
+                fi; \
+            fi"
     fi
 
     # Backup demyx system and configs
