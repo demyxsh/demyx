@@ -108,7 +108,7 @@ demyx_update_local() {
         fi
 
         echo "DEMYX_LOCAL_DOCKER_VERSION=$(docker -v | awk -F ' ' '{print $3}' | sed 's|,||g')"
-        echo "DEMYX_LOCAL_HAPROXY_VERSION=$(docker run --rm --user=root --entrypoint=haproxy demyx/docker-socket-proxy -v 2>&1 | grep -Eom1 '[0-9]+\\.[0-9]+(\\.[0-9]+)+' || true)"
+        echo "DEMYX_LOCAL_HAPROXY_VERSION=$(docker run --rm --user=root --entrypoint=haproxy demyx/docker-socket-proxy -v 2>&1 | grep -Eom1 '[0-9]+\.[0-9]+(\.[0-9]+)+' || true)"
         echo "DEMYX_LOCAL_MARIADB_VERSION=$(docker run --rm --entrypoint=mariadb demyx/mariadb --version | sed -nE 's/.* ([0-9]+(\.[0-9]+)+)-MariaDB.*/\1/p')"
         echo "DEMYX_LOCAL_TRAEFIK_VERSION=$(docker run --rm --user=root --entrypoint=traefik demyx/traefik version | sed -n 1p | awk '{print $2}')"
         echo "DEMYX_LOCAL_UTILITIES_VERSION=$(docker run --rm demyx/utilities cat /etc/debian_version)"
