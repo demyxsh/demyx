@@ -100,6 +100,7 @@ demyx_update_local() {
             echo "DEMYX_LOCAL_WORDPRESS_BEDROCK_VERSION=$(curl -sL https://api.github.com/repos/roots/bedrock/releases/latest | jq -r '.tag_name')"
         fi
         if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/wordrpess"* ]]; then
+            echo "DEMYX_LOCAL_WORDPRESS_CLI_VERSION=$(docker run --rm --entrypoint=wp demyx/wordpress --version | awk -F '[ ]' '{print $2}')"
             echo "DEMYX_LOCAL_WORDPRESS_PHP_VERSION=$(docker run --rm --entrypoint=bash demyx/wordpress -c 'echo $DEMYX_PHP')"
         fi
         if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/wordrpess"* ]]; then
@@ -263,6 +264,7 @@ demyx_update_list() {
     local DEMYX_LOCAL_UTILITIES_VERSION=
     local DEMYX_LOCAL_VERSION=
     local DEMYX_LOCAL_WORDPRESS_BEDROCK_VERSION=
+    local DEMYX_LOCAL_WORDPRESS_CLI_VERSION=
     local DEMYX_LOCAL_WORDPRESS_PHP_VERSION=
     local DEMYX_LOCAL_WORDPRESS_VERSION=
     local DEMYX_REMOTE_BROWSERSYNC_VERSION=
@@ -277,6 +279,7 @@ demyx_update_list() {
     local DEMYX_REMOTE_UTILITIES_VERSION=
     local DEMYX_REMOTE_VERSION=
     local DEMYX_REMOTE_WORDPRESS_BEDROCK_VERSION=
+    local DEMYX_REMOTE_WORDPRESS_CLI_VERSION
     local DEMYX_REMOTE_WORDPRESS_PHP_VERSION=
     local DEMYX_REMOTE_WORDPRESS_VERSION=
 
@@ -361,6 +364,14 @@ demyx_update_list() {
         fi
     fi
 
+    if [[ -n "$DEMYX_LOCAL_WORDPRESS_CLI_VERSION" && -n "$DEMYX_REMOTE_WORDPRESS_CLI_VERSION" ]]; then
+        if [[ "$(demyx_compare "$DEMYX_LOCAL_WORDPRESS_CLI_VERSION")" -lt "$(demyx_compare "$DEMYX_REMOTE_WORDPRESS_CLI_VERSION")" ]]; then
+            DEMYX_REMOTE_WORDPRESS_CLI_VERSION="$(echo -e "\e[32m(NEW) ${DEMYX_REMOTE_WORDPRESS_CLI_VERSION}\e[39m")"
+        else
+            DEMYX_REMOTE_WORDPRESS_CLI_VERSION=
+        fi
+    fi
+
     if [[ -n "$DEMYX_LOCAL_WORDPRESS_PHP_VERSION" && -n "$DEMYX_REMOTE_WORDPRESS_PHP_VERSION" ]]; then
         if [[ "$(demyx_compare "$DEMYX_LOCAL_WORDPRESS_PHP_VERSION")" -lt "$(demyx_compare "$DEMYX_REMOTE_WORDPRESS_PHP_VERSION")" ]]; then
             DEMYX_REMOTE_WORDPRESS_PHP_VERSION="$(echo -e "\e[32m(NEW) ${DEMYX_REMOTE_WORDPRESS_PHP_VERSION}\e[39m")"
@@ -427,6 +438,7 @@ demyx_update_list() {
         echo "Traefik                 $DEMYX_LOCAL_TRAEFIK_VERSION $DEMYX_REMOTE_TRAEFIK_VERSION"
         echo "Utilities               $DEMYX_LOCAL_UTILITIES_VERSION $DEMYX_REMOTE_UTILITIES_VERSION"
         echo "WordPress              $DEMYX_LOCAL_WORDPRESS_VERSION $DEMYX_REMOTE_WORDPRESS_VERSION"
+        echo " - CLI                 $DEMYX_LOCAL_WORDPRESS_CLI_VERSION $DEMYX_REMOTE_WORDPRESS_CLI_VERSION"
         echo " - PHP                 $DEMYX_LOCAL_WORDPRESS_PHP_VERSION $DEMYX_REMOTE_WORDPRESS_PHP_VERSION"
         [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/wordrpess:bedrock"* ]] && echo " - Bedrock             $DEMYX_LOCAL_WORDPRESS_BEDROCK_VERSION $DEMYX_REMOTE_WORDPRESS_BEDROCK_VERSION"
 
@@ -490,6 +502,7 @@ demyx_update_remote() {
     DEMYX_REMOTE_UTILITIES_VERSION=$DEMYX_UTILITIES_DEBIAN_VERSION
     DEMYX_REMOTE_VERSION=$DEMYX_VERSION
     DEMYX_REMOTE_WORDPRESS_BEDROCK_VERSION=$DEMYX_WORDPRESS_BEDROCK_VERSION
+    DEMYX_REMOTE_WORDPRESS_CLI_VERSION=$DEMYX_WORDPRESS_CLI_VERSION
     DEMYX_REMOTE_WORDPRESS_PHP_VERSION=$DEMYX_WORDPRESS_PHP_VERSION
     DEMYX_REMOTE_WORDPRESS_VERSION=$DEMYX_WORDPRESS_VERSION" > "$DEMYX_UPDATE_FILE_REMOTE"
 
