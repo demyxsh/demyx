@@ -23,6 +23,7 @@ demyx_host() {
     DEMYX_HOST_CHECK_CODE="$(docker ps -q --filter="name=^demyx_code$")"
     local DEMYX_HOST_CHECK_TRAEFIK=
     DEMYX_HOST_CHECK_TRAEFIK="$(docker ps -q --filter="name=^demyx_traefik$")"
+    local DEMYX_HOST_VERSION=1.11.0
     demyx_host_not_running
 
     case "$DEMYX_HOST_ARG_1" in
@@ -54,7 +55,7 @@ demyx_host() {
                         --user=root \
                         --entrypoint=nano \
                         -v demyx:/demyx \
-                        demyx/demyx .env
+                        demyx/demyx:"${DEMYX_HOST_VERSION}" .env
                 ;;
                 env)
                     docker exec --user=root demyx cat .env
@@ -131,7 +132,7 @@ demyx_host_compose() {
         -e DOCKER_HOST= \
         -v /var/run/docker.sock:/var/run/docker.sock:ro \
         -v demyx:/demyx \
-        demyx/demyx compose "$@"
+        demyx/demyx:"${DEMYX_HOST_VERSION}" compose "$@"
 }
 #
 #   Count how many updates.
@@ -216,7 +217,7 @@ demyx_host_motd() {
             -v /etc/profile.d:/tmp \
             --user=root \
             --entrypoint=bash \
-            demyx/demyx -c "rm -f /tmp/demyx-motd.sh"
+            demyx/demyx:"${DEMYX_HOST_VERSION}" -c "rm -f /tmp/demyx-motd.sh"
     fi
 
     if [[ -f ~/.bashrc ]]; then

@@ -471,7 +471,7 @@ demyx_open_port() {
 
     DEMYX_OPEN_PORT="$(docker run --rm \
         --network=host \
-        demyx/utilities demyx-port | sed 's/\r//g')"
+        demyx/utilities:"${DEMYX_VERSION}" demyx-port | sed 's/\r//g')"
 
     echo "$DEMYX_OPEN_PORT" > "$DEMYX_TMP"/"$DEMYX_ARG_2"_sftp
 }

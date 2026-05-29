@@ -56,7 +56,7 @@ demyx_utility() {
                 DEMYX_UTILITY_SHELL="$*"
             fi
 
-            docker run -it --rm demyx/utilities "$DEMYX_UTILITY_SHELL"
+            docker run -it --rm demyx/utilities:"${DEMYX_VERSION}" "$DEMYX_UTILITY_SHELL"
         ;;
         user|username)
             demyx_utility_username
@@ -99,7 +99,7 @@ demyx_utility_htpasswd() {
     DEMYX_UTILITY_HTPASSWD_CHECK="$(which htpasswd 2>&1 || true)"
 
     if [[ "$DEMYX_UTILITY_HTPASSWD_CHECK" == *"not found"* || -z "$DEMYX_UTILITY_HTPASSWD_CHECK" ]]; then
-        DEMYX_UTILITY_HTPASSWD="$(docker run -it --rm demyx/utilities bash -c "htpasswd -nb '$DEMYX_UTILITY_HTPASSWD_USERNAME' '$DEMYX_UTILITY_HTPASSWD_PASSWORD'" | sed 's|\r||g')"
+        DEMYX_UTILITY_HTPASSWD="$(docker run -it --rm demyx/utilities:"${DEMYX_VERSION}" bash -c "htpasswd -nb '$DEMYX_UTILITY_HTPASSWD_USERNAME' '$DEMYX_UTILITY_HTPASSWD_PASSWORD'" | sed 's|\r||g')"
     else
         DEMYX_UTILITY_HTPASSWD="$(htpasswd -nb "$DEMYX_UTILITY_HTPASSWD_USERNAME" "$DEMYX_UTILITY_HTPASSWD_PASSWORD")"
     fi

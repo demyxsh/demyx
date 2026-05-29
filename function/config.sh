@@ -690,7 +690,7 @@ demyx_config_convert() {
                 -v ${DEMYX_APP_CONTAINER}_sftp:/new/sftp \
                 -v ${DEMYX_APP_CONTAINER}_wp:/new/wp \
                 --entrypoint=bash \
-                demyx/utilities -c \
+                demyx/utilities:${DEMYX_VERSION} -c \
                     'rsync -avh /old/code/ /new/code/; \
                     rsync -a /old/custom/ /new/custom/; \
                     rsync -a /old/db/ /new/db/; \
@@ -746,19 +746,19 @@ demyx_config_dev() {
 
     if [[ -n "$DEMYX_CONFIG_DEV_OLD_VOLUME" && "$DEMYX_CONFIG_FLAG_DEV" = true ]]; then
         demyx_execute "Transferring old files to new volume" \
-            "docker pull demyx/code-server:wp; \
+            "docker pull demyx/code-server:${DEMYX_VERSION}-wp; \
             docker volume create ${DEMYX_APP_PREFIX}_code; \
             docker run -t --rm \
                 -v /var/lib/docker/volumes/${DEMYX_CONFIG_DEV_OLD_VOLUME}:/tmp/${DEMYX_CONFIG_DEV_OLD_VOLUME} \
                 -v /var/lib/docker/volumes/${DEMYX_APP_PREFIX}_code:/tmp/${DEMYX_APP_PREFIX}_code \
                 --user=root \
                 --entrypoint=cp \
-                demyx/demyx -rp /tmp/${DEMYX_CONFIG_DEV_OLD_VOLUME}/_data/. /tmp/${DEMYX_APP_PREFIX}_code/_data; \
+                demyx/demyx:${DEMYX_VERSION} -rp /tmp/${DEMYX_CONFIG_DEV_OLD_VOLUME}/_data/. /tmp/${DEMYX_APP_PREFIX}_code/_data; \
             docker run -it --rm \
                 --user=root \
                 --entrypoint=chown \
                 -v ${DEMYX_APP_PREFIX}_code:/tmp/demyx \
-                demyx/demyx -R demyx:demyx /tmp/demyx; \
+                demyx/demyx:${DEMYX_VERSION} -R demyx:demyx /tmp/demyx; \
             docker stop ${DEMYX_APP_WP_CONTAINER}; \
             docker rm ${DEMYX_APP_WP_CONTAINER}; \
             docker volume rm $DEMYX_CONFIG_DEV_OLD_VOLUME"
@@ -1108,7 +1108,7 @@ demyx_config_sftp() {
         #DEMYX_CONFIG_SFTP_VOLUME="$(docker run -t --rm \
         #    -v "$DEMYX_APP_TYPE"_"$DEMYX_APP_ID"_sftp:/home/demyx \
         #    --entrypoint=bash \
-        #    demyx/ssh -c 'if [[ -f /home/demyx/.ssh/authorized_keys ]]; then echo true; fi')"
+        #    demyx/ssh:"${DEMYX_VERSION}" -c 'if [[ -f /home/demyx/.ssh/authorized_keys ]]; then echo true; fi')"
 
         {
             echo "IP            $DEMYX_SERVER_IP"

@@ -28,27 +28,27 @@ demyx_pull() {
 demyx_pull_all() {
     demyx_event
     local DEMYX_PULL_ALL="
-        demyx/browsersync
-        demyx/code-server:bedrock
-        demyx/code-server:browse
-        demyx/code-server:openlitespeed
-        demyx/code-server:openlitespeed-bedrock
-        demyx/code-server:wp
-        demyx/demyx
-        demyx/docker-socket-proxy
-        demyx/mariadb
-        demyx/nginx
-        demyx/openlitespeed
-        demyx/openlitespeed:bedrock
-        demyx/ssh
-        demyx/traefik
-        demyx/utilities
-        demyx/wordpress
-        demyx/wordpress:bedrock
+        demyx/browsersync:${DEMYX_VERSION}
+        demyx/code-server:${DEMYX_VERSION}-bedrock
+        demyx/code-server:${DEMYX_VERSION}-browse
+        demyx/code-server:${DEMYX_VERSION}-openlitespeed
+        demyx/code-server:${DEMYX_VERSION}-openlitespeed-bedrock
+        demyx/code-server:${DEMYX_VERSION}-wp
+        demyx/demyx:${DEMYX_VERSION}
+        demyx/docker-socket-proxy:${DEMYX_VERSION}
+        demyx/mariadb:${DEMYX_VERSION}
+        demyx/nginx:${DEMYX_VERSION}
+        demyx/openlitespeed:${DEMYX_VERSION}
+        demyx/openlitespeed:${DEMYX_VERSION}-bedrock
+        demyx/ssh:${DEMYX_VERSION}
+        demyx/traefik:${DEMYX_VERSION}
+        demyx/utilities:${DEMYX_VERSION}
+        demyx/wordpress:${DEMYX_VERSION}
+        demyx/wordpress:${DEMYX_VERSION}-bedrock
         docker:cli
         phpmyadmin/phpmyadmin
         quay.io/vektorlab/ctop
-        redis:alpine3.18
+        redis:alpine3.22
     "
     local DEMYX_PULL_ALL_CHECK=
     local DEMYX_PULL_ALL_I=
@@ -76,7 +76,7 @@ demyx_pull_image() {
             "$DEMYX_ARG_2" = phpmyadmin ]]; then
         DEMYX_PULL_IMAGE=phpmyadmin/phpmyadmin
     elif [[   "$DEMYX_ARG_2" = redis ]]; then
-        DEMYX_PULL_IMAGE=redis:alpine3.18
+        DEMYX_PULL_IMAGE=redis:alpine3.22
     fi
 
     docker pull "${DEMYX_PULL_IMAGE}"

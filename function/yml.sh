@@ -76,13 +76,13 @@ demyx_yml_bedrock() {
     local DEMYX_YML_BEDROCK_DEV_VOLUME=
     local DEMYX_YML_BEDROCK_IMAGE=
     local DEMYX_YML_BEDROCK_MEM="\${DEMYX_APP_WP_MEM}"
-    DEMYX_YML_BEDROCK_IMAGE=demyx/wordpress:bedrock
+    DEMYX_YML_BEDROCK_IMAGE="demyx/wordpress:${DEMYX_VERSION}"
 
     if [[ "$DEMYX_APP_DEV" = true ]]; then
         DEMYX_YML_BEDROCK_CPU="\${DEMYX_APP_WP_CPU}"
         DEMYX_YML_BEDROCK_DEV_PASSWORD="- DEMYX_CODE_PASSWORD=\${DEMYX_APP_DEV_PASSWORD}"
         DEMYX_YML_BEDROCK_DEV_VOLUME="- ${DEMYX_APP_PREFIX}_code:/home/demyx"
-        DEMYX_YML_BEDROCK_IMAGE=demyx/code-server:bedrock
+        DEMYX_YML_BEDROCK_IMAGE="demyx/code-server:${DEMYX_VERSION}-bedrock"
         DEMYX_YML_BEDROCK_MEM="\${DEMYX_APP_WP_MEM}"
 
         if [[ "$(demyx_app_proto)" = https ]]; then
@@ -157,7 +157,7 @@ demyx_yml_bedrock() {
               - DEMYX_WORDPRESS_CONTAINER=\${DEMYX_APP_WP_CONTAINER}
               - DEMYX_XMLRPC=\${DEMYX_APP_XMLRPC}
               - TZ=$TZ
-            image: demyx/nginx
+            image: demyx/nginx:${DEMYX_VERSION}
             labels:
               - \"traefik.enable=true\"
               $(demyx_yml_http_labels)
@@ -294,7 +294,7 @@ demyx_yml_code() {
               ${DEMYX_YML_CODE_PASSWORD}
               - TZ=$TZ
             hostname: code-${DEMYX_HOSTNAME}
-            image: demyx/code-server:browse
+            image: demyx/code-server:${DEMYX_VERSION}-browse
             labels:
               - \"traefik.enable=true\"
               - \"traefik.http.routers.demyx-code-http.rule=Host(\`${DEMYX_CODE_DOMAIN}.${DEMYX_DOMAIN}\`)\"
@@ -409,13 +409,13 @@ demyx_yml_nginx_php() {
     local DEMYX_YML_NGINX_PHP_DEV_VOLUME=
     local DEMYX_YML_NGINX_PHP_IMAGE=
     local DEMYX_YML_NGINX_PHP_MEM="\${DEMYX_APP_WP_MEM}"
-    DEMYX_YML_NGINX_PHP_IMAGE=demyx/wordpress
+    DEMYX_YML_NGINX_PHP_IMAGE="demyx/wordpress:${DEMYX_VERSION}"
 
     if [[ "$DEMYX_APP_DEV" = true ]]; then
         DEMYX_YML_NGINX_PHP_CPU="\${DEMYX_APP_WP_CPU}"
         DEMYX_YML_NGINX_PHP_DEV_PASSWORD="- DEMYX_CODE_PASSWORD=\${DEMYX_APP_DEV_PASSWORD}"
         DEMYX_YML_NGINX_PHP_DEV_VOLUME="- ${DEMYX_APP_PREFIX}_code:/home/demyx"
-        DEMYX_YML_NGINX_PHP_IMAGE=demyx/code-server:wp
+        DEMYX_YML_NGINX_PHP_IMAGE="demyx/code-server:${DEMYX_VERSION}-wp"
         DEMYX_YML_NGINX_PHP_MEM="\${DEMYX_APP_WP_MEM}"
 
         if [[ "$(demyx_app_proto)" = https ]]; then
@@ -466,7 +466,7 @@ demyx_yml_nginx_php() {
               - DEMYX_WORDPRESS_CONTAINER=\${DEMYX_APP_WP_CONTAINER}
               - DEMYX_XMLRPC=\${DEMYX_APP_XMLRPC}
               - TZ=$TZ
-            image: demyx/nginx
+            image: demyx/nginx:${DEMYX_VERSION}
             labels:
               - \"traefik.enable=true\"
               $(demyx_yml_http_labels)
@@ -571,7 +571,7 @@ demyx_yml_ols() {
     local DEMYX_YML_OLS_DEV_PASSWORD=
     local DEMYX_YML_OLS_DEV_VOLUME=
     local DEMYX_YML_OLS_IMAGE=
-    DEMYX_YML_OLS_IMAGE=demyx/openlitespeed
+    DEMYX_YML_OLS_IMAGE="demyx/openlitespeed:${DEMYX_VERSION}"
     local DEMYX_YML_OLS_MEM="\${DEMYX_APP_WP_MEM}"
     local DEMYX_YML_OLS_LABEL_ADMIN=
     local DEMYX_YML_OLS_LABEL_ASSETS=
@@ -581,7 +581,7 @@ demyx_yml_ols() {
         DEMYX_YML_OLS_CPU="\${DEMYX_APP_WP_CPU}"
         DEMYX_YML_OLS_DEV_PASSWORD="- DEMYX_CODE_PASSWORD=\${DEMYX_APP_DEV_PASSWORD}"
         DEMYX_YML_OLS_DEV_VOLUME="- ${DEMYX_APP_PREFIX}_code:/home/demyx"
-        DEMYX_YML_OLS_IMAGE=demyx/code-server:openlitespeed
+        DEMYX_YML_OLS_IMAGE="demyx/code-server:${DEMYX_VERSION}-openlitespeed"
         DEMYX_YML_OLS_MEM="\${DEMYX_APP_WP_MEM}"
         DEMYX_YML_OLS_PORT=8081
 
@@ -754,7 +754,7 @@ demyx_yml_ols_bedrock() {
     local DEMYX_YML_OLS_DEV_PASSWORD=
     local DEMYX_YML_OLS_DEV_VOLUME=
     local DEMYX_YML_OLS_IMAGE=
-    DEMYX_YML_OLS_IMAGE=demyx/openlitespeed:bedrock
+    DEMYX_YML_OLS_IMAGE="demyx/openlitespeed:${DEMYX_VERSION}"
     local DEMYX_YML_OLS_MEM="\${DEMYX_APP_WP_MEM}"
     local DEMYX_YML_OLS_LABEL_ADMIN=
     local DEMYX_YML_OLS_LABEL_ASSETS=
@@ -764,7 +764,7 @@ demyx_yml_ols_bedrock() {
         DEMYX_YML_OLS_CPU="\${DEMYX_APP_WP_CPU}"
         DEMYX_YML_OLS_DEV_PASSWORD="- DEMYX_CODE_PASSWORD=\${DEMYX_APP_DEV_PASSWORD}"
         DEMYX_YML_OLS_DEV_VOLUME="- ${DEMYX_APP_PREFIX}_code:/home/demyx"
-        DEMYX_YML_OLS_IMAGE=demyx/code-server:openlitespeed-bedrock
+        DEMYX_YML_OLS_IMAGE="demyx/code-server:${DEMYX_VERSION}-openlitespeed-bedrock"
         DEMYX_YML_OLS_MEM="\${DEMYX_APP_WP_MEM}"
         DEMYX_YML_OLS_PORT=8081
 
@@ -1034,7 +1034,7 @@ demyx_yml_service_bs() {
               - DEMYX_PATH=/demyx
               - DEMYX_PROXY=$DEMYX_YML_SERVICE_BS_PROXY
               - TZ=$TZ
-            image: demyx/browsersync
+            image: demyx/browsersync:${DEMYX_VERSION}
             labels:
               - \"traefik.enable=true\"
               - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-bs.rule=(Host(\`$(demyx_app_domain)\`) && PathPrefix(\`/demyx/bs/\`))\"
@@ -1082,7 +1082,7 @@ demyx_yml_service_mariadb() {
               - DEMYX_ROOT_PASSWORD=\${MARIADB_ROOT_PASSWORD}
               - DEMYX_USERNAME=\${WORDPRESS_DB_USER}
               - TZ=$TZ
-            image: demyx/mariadb
+            image: demyx/mariadb:${DEMYX_VERSION}
             mem_limit: \${DEMYX_APP_DB_MEM}
             networks:
               - demyx
@@ -1169,7 +1169,7 @@ demyx_yml_service_redis() {
         echo "rd_${DEMYX_APP_ID}:
             container_name: $DEMYX_YML_SERVICE_REDIS_CONTAINER
             cpus: \${DEMYX_APP_DB_CPU}
-            image: redis:alpine3.18
+            image: redis:alpine3.22
             mem_limit: \${DEMYX_APP_DB_MEM}
             networks:
               - demyx
@@ -1221,7 +1221,7 @@ demyx_yml_service_sftp() {
               - DEMYX_PASSWORD=\${DEMYX_APP_SFTP_PASSWORD}
               - TZ=$TZ
             hostname: \${DEMYX_APP_COMPOSE_PROJECT}_sftp
-            image: demyx/ssh
+            image: demyx/ssh:${DEMYX_VERSION}
             mem_limit: \${DEMYX_APP_DB_MEM}
             networks:
               - demyx
@@ -1305,7 +1305,7 @@ demyx_yml_traefik() {
               - DEMYX_TRAEFIK_LOG=$DEMYX_TRAEFIK_LOG
               - TRAEFIK_PROVIDERS_DOCKER_ENDPOINT=$DOCKER_HOST
               - TZ=$TZ
-            image: demyx/traefik
+            image: demyx/traefik:${DEMYX_VERSION}
             $DEMYX_YML_TRAEFIK_DASHBOARD
             $DEMYX_YML_TRAEFIK_LABELS
             $DEMYX_YML_TRAEFIK_SECURITY

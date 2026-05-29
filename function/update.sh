@@ -66,7 +66,7 @@ demyx_update() {
                     -v /usr/local/bin:/tmp \
                     --user=root \
                     --entrypoint=bash \
-                    demyx/demyx -c \"cp -f /etc/demyx/host.sh /tmp/demyx; chmod +x /tmp/demyx\""
+                    demyx/demyx:${DEMYX_VERSION} -c \"cp -f /etc/demyx/host.sh /tmp/demyx; chmod +x /tmp/demyx\""
         fi
 
         demyx_update_list
@@ -79,39 +79,39 @@ demyx_update_local() {
     demyx_event
     {
         if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/browsersync"* ]]; then
-            echo "DEMYX_LOCAL_BROWSERSYNC_VERSION=$(docker run --rm --entrypoint=browser-sync demyx/browsersync --version)"
+            echo "DEMYX_LOCAL_BROWSERSYNC_VERSION=$(docker run --rm --entrypoint=browser-sync demyx/browsersync:"${DEMYX_VERSION}" --version)"
         fi
-        if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/code-server:browse"* ]]; then
-            echo "DEMYX_LOCAL_CODE_VERSION=$(docker run --rm --entrypoint=code-server demyx/code-server:browse --version | awk -F '[ ]' '{print $1}' | awk '{line=$0} END{print line}')"
+        if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/code-server"* ]]; then
+            echo "DEMYX_LOCAL_CODE_VERSION=$(docker run --rm --entrypoint=code-server demyx/code-server:"${DEMYX_VERSION}"-browse --version | awk -F '[ ]' '{print $1}' | awk '{line=$0} END{print line}')"
         fi
         if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/nginx"* ]]; then
-            echo "DEMYX_LOCAL_NGINX_VERSION=$(docker run --rm --entrypoint=nginx demyx/nginx -V 2>&1 >/dev/null | awk -F '/' 'NR==1 {line=$2} END{print line}')"
+            echo "DEMYX_LOCAL_NGINX_VERSION=$(docker run --rm --entrypoint=nginx demyx/nginx:"${DEMYX_VERSION}" -V 2>&1 >/dev/null | awk -F '/' 'NR==1 {line=$2} END{print line}')"
         fi
         if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/openlitespeed"* ]]; then
-            echo "DEMYX_LOCAL_OPENLITESPEED_VERSION=$(docker run --rm --entrypoint=cat demyx/openlitespeed /usr/local/lsws/VERSION)"
+            echo "DEMYX_LOCAL_OPENLITESPEED_VERSION=$(docker run --rm --entrypoint=cat demyx/openlitespeed:"${DEMYX_VERSION}" /usr/local/lsws/VERSION)"
         fi
         if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/openlitespeed"* ]]; then
-            echo "DEMYX_LOCAL_OPENLITESPEED_LSPHP_VERSION=$(docker run --rm --entrypoint=bash demyx/openlitespeed -c '/usr/local/lsws/$DEMYX_LSPHP/bin/php -v' | head -1 | awk '{print $2}')"
+            echo "DEMYX_LOCAL_OPENLITESPEED_LSPHP_VERSION=$(docker run --rm --entrypoint=bash demyx/openlitespeed:"${DEMYX_VERSION}" -c '/usr/local/lsws/$DEMYX_LSPHP/bin/php -v' | head -1 | awk '{print $2}')"
         fi
         if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/ssh"* ]]; then
-            echo "DEMYX_LOCAL_OPENSSH_VERSION=$(docker run --rm --entrypoint=ssh demyx/ssh -V  2>&1 | cut -c -13 | awk -F '[_]' '{print $2}')"
+            echo "DEMYX_LOCAL_OPENSSH_VERSION=$(docker run --rm --entrypoint=ssh demyx/ssh:"${DEMYX_VERSION}" -V  2>&1 | cut -c -13 | awk -F '[_]' '{print $2}')"
         fi
         if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/wordrpess:bedrock"* ]]; then
             echo "DEMYX_LOCAL_WORDPRESS_BEDROCK_VERSION=$(curl -sL https://api.github.com/repos/roots/bedrock/releases/latest | jq -r '.tag_name')"
         fi
         if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/wordrpess"* ]]; then
-            echo "DEMYX_LOCAL_WORDPRESS_CLI_VERSION=$(docker run --rm --entrypoint=wp demyx/wordpress --version | awk -F '[ ]' '{print $2}')"
-            echo "DEMYX_LOCAL_WORDPRESS_PHP_VERSION=$(docker run --rm --entrypoint=bash demyx/wordpress -c 'echo $DEMYX_PHP')"
+            echo "DEMYX_LOCAL_WORDPRESS_CLI_VERSION=$(docker run --rm --entrypoint=wp demyx/wordpress:"${DEMYX_VERSION}" --version | awk -F '[ ]' '{print $2}')"
+            echo "DEMYX_LOCAL_WORDPRESS_PHP_VERSION=$(docker run --rm --entrypoint=bash demyx/wordpress:"${DEMYX_VERSION}" -c 'echo $DEMYX_PHP')"
         fi
         if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/wordrpess"* ]]; then
-            echo "DEMYX_LOCAL_WORDPRESS_VERSION=$(docker run --rm --entrypoint=sh demyx/wordpress -c "grep '\$wp_version =' /demyx/wp-includes/version.php | cut -d\"'\" -f 2")"
+            echo "DEMYX_LOCAL_WORDPRESS_VERSION=$(docker run --rm --entrypoint=sh demyx/wordpress:"${DEMYX_VERSION}" -c "grep '\$wp_version =' /demyx/wp-includes/version.php | cut -d\"'\" -f 2")"
         fi
 
         echo "DEMYX_LOCAL_DOCKER_VERSION=$(docker -v | awk -F ' ' '{print $3}' | sed 's|,||g')"
-        echo "DEMYX_LOCAL_HAPROXY_VERSION=$(docker run --rm --user=root --entrypoint=haproxy demyx/docker-socket-proxy -v 2>&1 | grep -Eom1 '[0-9]+\.[0-9]+(\.[0-9]+)+' || true)"
-        echo "DEMYX_LOCAL_MARIADB_VERSION=$(docker run --rm --entrypoint=mariadb demyx/mariadb --version | sed -nE 's/.* ([0-9]+(\.[0-9]+)+)-MariaDB.*/\1/p')"
-        echo "DEMYX_LOCAL_TRAEFIK_VERSION=$(docker run --rm --user=root --entrypoint=traefik demyx/traefik version | sed -n 1p | awk '{print $2}')"
-        echo "DEMYX_LOCAL_UTILITIES_VERSION=$(docker run --rm demyx/utilities cat /etc/debian_version)"
+        echo "DEMYX_LOCAL_HAPROXY_VERSION=$(docker run --rm --user=root --entrypoint=haproxy demyx/docker-socket-proxy:"${DEMYX_VERSION}" -v 2>&1 | grep -Eom1 '[0-9]+\.[0-9]+(\.[0-9]+)+' || true)"
+        echo "DEMYX_LOCAL_MARIADB_VERSION=$(docker run --rm --entrypoint=mariadb demyx/mariadb:"${DEMYX_VERSION}" --version | sed -nE 's/.* ([0-9]+(\.[0-9]+)+)-MariaDB.*/\1/p')"
+        echo "DEMYX_LOCAL_TRAEFIK_VERSION=$(docker run --rm --user=root --entrypoint=traefik demyx/traefik:"${DEMYX_VERSION}" version | sed -n 1p | awk '{print $2}')"
+        echo "DEMYX_LOCAL_UTILITIES_VERSION=$(docker run --rm demyx/utilities:"${DEMYX_VERSION}" cat /etc/debian_version)"
         echo "DEMYX_LOCAL_VERSION=$DEMYX_VERSION"
     } > "$DEMYX_UPDATE_FILE_LOCAL"
 
@@ -399,7 +399,7 @@ demyx_update_list() {
             echo "Browsersync             $DEMYX_LOCAL_BROWSERSYNC_VERSION $DEMYX_REMOTE_BROWSERSYNC_VERSION"
         fi
 
-        [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/code-server:browse"* ]] && echo "Code Server             $DEMYX_LOCAL_CODE_VERSION $DEMYX_REMOTE_CODE_VERSION"
+        [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/code-server"* ]] && echo "Code Server             $DEMYX_LOCAL_CODE_VERSION $DEMYX_REMOTE_CODE_VERSION"
         echo "Demyx                   $DEMYX_LOCAL_VERSION $DEMYX_REMOTE_VERSION"
         echo " - Docker               $DEMYX_LOCAL_DOCKER_VERSION $DEMYX_REMOTE_DOCKER_VERSION"
         echo "Docker Socket Proxy     $DEMYX_LOCAL_HAPROXY_VERSION $DEMYX_REMOTE_HAPROXY_VERSION"

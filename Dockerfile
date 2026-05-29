@@ -58,7 +58,7 @@ ENV DEMYX_SMTP_TO                       false
 ENV DEMYX_TELEMETRY                     true
 ENV DEMYX_TRAEFIK_LOG                   INFO
 ENV DEMYX_TRAEFIK_SSL                   false
-ENV DEMYX_VERSION                       1.10.0
+ENV DEMYX_VERSION                       1.11.0
 ENV DOCKER_HOST                         tcp://demyx_socket:2375
 ENV TZ                                  America/Los_Angeles
 
@@ -68,11 +68,13 @@ RUN set -ex; \
     apache2-utils \
     bash \
     bind-tools \
+    ca-certificates \
     curl \
     jq \
     htop \
     logrotate \
     nano \
+    openssl \
     ssmtp \
     sudo \
     tzdata \

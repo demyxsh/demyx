@@ -150,7 +150,7 @@ demyx_restore_app() {
                     --user=root \
                     -v demyx:$DEMYX \
                     -v ${DEMYX_APP_PREFIX}_code:/${DEMYX_APP_PREFIX}_code \
-                    demyx/demyx -c 'cp -rp ${DEMYX_APP_PATH}/demyx-code/. /${DEMYX_APP_PREFIX}_code'"
+                    demyx/demyx:${DEMYX_VERSION} -c 'cp -rp ${DEMYX_APP_PATH}/demyx-code/. /${DEMYX_APP_PREFIX}_code'"
         fi
 
         if [[ -d "$DEMYX_APP_PATH"/demyx-sftp ]]; then
@@ -161,7 +161,7 @@ demyx_restore_app() {
                     --user=root \
                     -v demyx:$DEMYX \
                     -v ${DEMYX_APP_PREFIX}_sftp:/${DEMYX_APP_PREFIX}_sftp \
-                    demyx/demyx -c 'cp -rp ${DEMYX_APP_PATH}/demyx-sftp/. /${DEMYX_APP_PREFIX}_sftp'"
+                    demyx/demyx:${DEMYX_VERSION} -c 'cp -rp ${DEMYX_APP_PATH}/demyx-sftp/. /${DEMYX_APP_PREFIX}_sftp'"
         fi
 
         demyx_execute "Restoring app" \
@@ -172,7 +172,7 @@ demyx_restore_app() {
                 -v ${DEMYX_APP_WP_VOLUME}:/demyx \
                 -v ${DEMYX_APP_PREFIX}_custom:/etc/demyx/custom \
                 -v ${DEMYX_APP_PREFIX}_log:/var/log/demyx \
-                demyx/wordpress; \
+                demyx/wordpress:${DEMYX_VERSION}; \
             docker cp ${DEMYX_APP_PATH}/demyx-wp/. ${DEMYX_APP_WP_CONTAINER}:/demyx; \
             docker cp ${DEMYX_APP_PATH}/demyx-custom/. ${DEMYX_APP_WP_CONTAINER}:/etc/demyx/custom; \
             docker cp ${DEMYX_APP_PATH}/demyx-log/. ${DEMYX_APP_WP_CONTAINER}:/var/log/demyx; \
@@ -192,7 +192,7 @@ demyx_restore_app() {
                 -v ${DEMYX_APP_PREFIX}_sftp:/restore/sftp \
                 -v ${DEMYX_APP_WP_VOLUME}:/restore/wp \
                 -v demyx:/demyx \
-                demyx/wordpress -c \
+                demyx/wordpress:${DEMYX_VERSION} -c \
                     'apk add rsync; \
                     rsync -a --delete /${DEMYX_APP_PATH}/${DEMYX_APP_ID}-code/ /restore/code/; \
                     rsync -a --delete /${DEMYX_APP_PATH}/${DEMYX_APP_ID}-custom/ /restore/custom/; \

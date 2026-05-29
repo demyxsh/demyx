@@ -116,7 +116,7 @@ EOF
 # DEMYX ${DEMYX_VERSION}
 services:
   socket:
-    image: demyx/docker-socket-proxy
+    image: demyx/docker-socket-proxy:${DEMYX_VERSION}
     cpus: \${DEMYX_CPU:-$(demyx_yml_resource cpu)}
     mem_limit: \${DEMYX_MEM:-$(demyx_yml_resource mem)}
     container_name: demyx_socket
@@ -135,7 +135,7 @@ services:
       - POST=1
       - VOLUMES=1
   demyx:
-    image: demyx/demyx
+    image: demyx/demyx:${DEMYX_VERSION}
     cpus: \${DEMYX_CPU:-$(demyx_yml_resource cpu)}
     mem_limit: \${DEMYX_MEM:-$(demyx_yml_resource mem)}
     container_name: demyx

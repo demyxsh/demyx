@@ -5,7 +5,7 @@ on:
     branches:
       - master
   schedule:
-    - cron:  '0 0 * * 6'
+    - cron:  '30 23 * * 4'
   workflow_dispatch:
 
 jobs:
@@ -13,24 +13,24 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DEMYX_REPOSITORY: demyx
-      DEMYX_VERSION: 1.10.0
+      DEMYX_VERSION: 1.11.0
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
       - name: Login
-        uses: docker/login-action@v1
+        uses: docker/login-action@v4
         with:
           username: demyx
           password: ${{ secrets.DOCKER_TOKEN }}
       - name: Build
         run: |
-          docker pull demyx/docker-socket-proxy
-          docker pull demyx/mariadb
-          docker pull demyx/nginx
-          docker pull demyx/traefik
-          docker pull demyx/utilities
-          docker pull demyx/wordpress
-          docker build --build-arg DEMYX_BUILD="$(date +%F-%T)" -t demyx/${{ env.DEMYX_REPOSITORY }} -t demyx/${{ env.DEMYX_REPOSITORY }}:${{ env.DEMYX_VERSION }} .
+          docker pull demyx/docker-socket-proxy:"${DEMYX_VERSION}"
+          docker pull demyx/mariadb:"${DEMYX_VERSION}"
+          docker pull demyx/nginx:"${DEMYX_VERSION}"
+          docker pull demyx/traefik:"${DEMYX_VERSION}"
+          docker pull demyx/utilities:"${DEMYX_VERSION}"
+          docker pull demyx/wordpress:"${DEMYX_VERSION}"
+          docker build --build-arg DEMYX_BUILD="$(date +%F-%T)" -t demyx/${{ env.DEMYX_REPOSITORY }} -t demyx/${{ env.DEMYX_REPOSITORY }}:${{ env.DEMYX_VERSION }} -t demyx/${{ env.DEMYX_REPOSITORY }}:v1 .
       - name: Test
         id: test
         shell: 'script -q -e -c "bash {0}"'
@@ -45,7 +45,7 @@ jobs:
             -e DOCKER_HOST="" \
             --user=root \
             --entrypoint=bash \
-            demyx/demyx -c 'demyx-yml; cp -f /etc/demyx/host.sh /tmp/demyx; chmod +x /tmp/demyx'
+            demyx/demyx:"${DEMYX_VERSION}" -c 'demyx-yml; cp -f /etc/demyx/host.sh /tmp/demyx; chmod +x /tmp/demyx'
 
           demyx
 
@@ -66,14 +66,13 @@ jobs:
         run: |
           DEMYX_ALPINE_VERSION="$(docker exec --user=root ${{ env.DEMYX_REPOSITORY }} cat /etc/os-release | grep VERSION_ID | cut -c 12-)"
           DEMYX_DOCKER_VERSION="$(docker exec --user=root ${{ env.DEMYX_REPOSITORY }} docker version | grep Version: | head -n 1 | awk -F ' ' '{print $2}')"
-          DEMYX_JQ="$(jq ".alpine = \"$DEMYX_ALPINE_VERSION\" | .demyx = \"$DEMYX_VERSION\" | .docker = \"$DEMYX_DOCKER_VERSION\" | .docker_compose = \"$DEMYX_DOCKER_COMPOSE_VERSION\"" version.json)"
+          DEMYX_JQ="$(jq ".alpine = \"$DEMYX_ALPINE_VERSION\" | .demyx = \"$DEMYX_VERSION\" | .docker = \"$DEMYX_DOCKER_VERSION\"" version.json)"
 
           # Update versions
           echo "$DEMYX_JQ" > version.json
           echo "DEMYX_ALPINE_VERSION=$DEMYX_ALPINE_VERSION
           DEMYX_VERSION=$DEMYX_VERSION
-          DEMYX_DOCKER_VERSION=$DEMYX_DOCKER_VERSION
-          DEMYX_DOCKER_COMPOSE_VERSION=$DEMYX_DOCKER_COMPOSE_VERSION" > VERSION
+          DEMYX_DOCKER_VERSION=$DEMYX_DOCKER_VERSION" > VERSION
       - name: Push
         run: |
           # Not sure why this is being created?
@@ -91,3 +90,4 @@ jobs:
 
           docker push demyx/${{ env.DEMYX_REPOSITORY }}
           docker push demyx/${{ env.DEMYX_REPOSITORY }}:${{ env.DEMYX_VERSION }}
+          docker push demyx/${{ env.DEMYX_REPOSITORY }}:v1

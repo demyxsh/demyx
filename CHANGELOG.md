@@ -4,7 +4,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.10.0] - 2025-10-23
+## [1.11.0] - 2026-05-29
+### Added
+- Added `ca-certificates` and `openssl` to the Demyx image for signed telemetry requests.
+- Added WordPress CLI version tracking to the update system.
+- Added TOFU telemetry identity bootstrap in daily cron: auto-creates `/demyx/.telemetry`, generates Ed25519 keypair when missing, and creates `/demyx/.telemetry/identity.json` for `install_id` and `key_id`.
+- Added TOFU telemetry registration flow to `POST /wp-json/demyx/v1/telemetry/register` when local identity is not yet registered.
+
+### Changed
+- Updated Demyx stack and app compose YAML generation to use direct `demyx/<image>:${DEMYX_VERSION}` tags instead of runtime Docker Hub tag resolution.
+- Updated Docker run, pull, backup, restore, utility, install, host, and version-check commands to use release-pinned Demyx image tags.
+- Updated code-server image references to use release-pinned variant tags such as `${DEMYX_VERSION}-wp`, `${DEMYX_VERSION}-browse`, and `${DEMYX_VERSION}-bedrock`.
+- Updated Redis compose image from `redis:alpine3.18` to `redis:alpine3.22`.
+- Added `v1` moving tag to build and push steps in GitHub Actions workflow.
+- Updated GitHub Actions dependencies to `actions/checkout@v6` and `docker/login-action@v4`.
+- Changed scheduled GitHub Actions build day from Friday to Thursday.
+- Pinned generated host helper and install-time helper commands to the release version.
+- Simplified HAProxy and MariaDB version extraction using regex patterns with `grep`.
+- Removed duplicate version checks and consolidated LSPHP/PHP version detection using environment variables.
+- Refactored `awk` commands in the update workflow for better efficiency and consistency.
+- Standardized changelog section headers to align with Keep a Changelog formatting.
+- Replaced shared-secret HMAC telemetry signing in cron with TOFU Ed25519 signed request flow against `POST /wp-json/demyx/v1/telemetry`.
+- Telemetry request headers now use install identity metadata (`X-Demyx-Install-Id`, `X-Demyx-Key-Id`, `X-Demyx-Request-Id`, `X-Demyx-Signature-Alg`) instead of HMAC-only auth headers.
+- Updated install `--no-ping` handling to pass telemetry-disabled state into the helper container.
+
+### Fixed
+- Fixed regex escaping in the HAProxy version extraction pattern.
+
+### Removed
+- Removed Docker Compose version metadata from the generated `VERSION` file.
+- Removed `DEMYX_TELEMETRY_SECRET` usage from the daily telemetry send path in `function/cron.sh`.
+
+## [1.10.0] - 2026-05-11
 ### Added
 - New `demyx config --pm` flag to configure PHP-FPM process manager mode (`ondemand`, `dynamic`, `static`).
 - SFTP config output now includes ready-to-copy IDE and SSH connection strings.
@@ -879,6 +910,7 @@ Yml
 - Switch to nginx-php as the default stack
 - Add hostname key and use app ID as part of volume name
 
+[1.11.0]: https://github.com/demyxsh/demyx/compare/1.10.0...1.11.0
 [1.10.0]: https://github.com/demyxsh/demyx/compare/1.9.1...1.10.0
 [1.9.1]: https://github.com/demyxsh/demyx/compare/1.9.0...1.9.1
 [1.9.0]: https://github.com/demyxsh/demyx/compare/1.8.3...1.9.0
