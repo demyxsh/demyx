@@ -94,7 +94,7 @@ demyx_update_local() {
             echo "DEMYX_LOCAL_OPENLITESPEED_LSPHP_VERSION=$(docker run --rm --entrypoint=bash demyx/openlitespeed:"${DEMYX_VERSION}" -c '/usr/local/lsws/$DEMYX_LSPHP/bin/php -v' | head -1 | awk '{print $2}')"
         fi
         if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/ssh"* ]]; then
-            echo "DEMYX_LOCAL_OPENSSH_VERSION=$(docker run --rm --entrypoint=ssh demyx/ssh:"${DEMYX_VERSION}" -V  2>&1 | cut -c -13 | awk -F '[_]' '{print $2}')"
+            echo "DEMYX_LOCAL_OPENSSH_VERSION=$(docker run --rm --entrypoint=ssh demyx/ssh:"${DEMYX_VERSION}" -V 2>&1 | sed -n 's/^OpenSSH_\([^ ,]*\).*/\1/p')"
         fi
         if [[ "$DEMYX_UPDATE_IMAGES" == *"demyx/wordrpess:bedrock"* ]]; then
             echo "DEMYX_LOCAL_WORDPRESS_BEDROCK_VERSION=$(curl -sL https://api.github.com/repos/roots/bedrock/releases/latest | jq -r '.tag_name')"

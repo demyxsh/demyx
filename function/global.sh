@@ -247,7 +247,19 @@ demyx_arg_valid() {
 #
 demyx_compare() {
     demyx_event
-    echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }';
+    echo "$@" | awk '{
+        delete version
+        count = 0
+        while (match($0, /[0-9]+/)) {
+            count++
+            version[count] = substr($0, RSTART, RLENGTH)
+            $0 = substr($0, RSTART + RLENGTH)
+            if (count == 4) {
+                break
+            }
+        }
+        printf("%d%03d%03d%03d\n", version[1], version[2], version[3], version[4])
+    }'
 }
 #
 #   Count all WP sites.

@@ -32,6 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `demyx host upgrade` repeatedly re-running after helper updates by regenerating pinned compose config and force-recreating core services from the target release image.
 - Fixed `demyx host upgrade` dangling image cleanup to skip `docker rmi` when no dangling images exist.
 - Fixed single-image `demyx pull` commands for Demyx images to use release-pinned tags instead of falling back to `latest`.
+- Fixed version comparisons for OpenSSH portable versions such as `10.0p1` and `10.0p2`.
+- Fixed SSH update cache parsing to preserve full OpenSSH portable versions such as `10.0p2`.
 - Fixed regex escaping in the HAProxy version extraction pattern.
 
 ### Removed
