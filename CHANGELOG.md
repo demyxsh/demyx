@@ -29,6 +29,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated install `--no-ping` handling to pass telemetry-disabled state into the helper container.
 
 ### Fixed
+- Fixed `demyx host upgrade` repeatedly re-running after helper updates by regenerating pinned compose config and force-recreating core services from the target release image.
+- Fixed `demyx host upgrade` dangling image cleanup to skip `docker rmi` when no dangling images exist.
+- Fixed single-image `demyx pull` commands for Demyx images to use release-pinned tags instead of falling back to `latest`.
 - Fixed regex escaping in the HAProxy version extraction pattern.
 
 ### Removed

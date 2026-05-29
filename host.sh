@@ -294,23 +294,32 @@ demyx_host_upgrade() {
     local DEMYX_HOST_UPGRADE_VERSION=
 
     DEMYX_HOST_UPGRADE_VERSION="$(docker exec --user=root demyx bash -c 'echo $DEMYX_VERSION' | sed 's/\r//g')"
-    demyx_host_exec pull demyx
+    docker pull demyx/demyx:"${DEMYX_HOST_VERSION}"
     DEMYX_HOST_UPGRADE_CHECK="$(docker run -t --rm \
         -v /usr/local/bin:/tmp \
+        -v demyx:/demyx \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -e DOCKER_HOST="" \
         --user=root \
         --entrypoint=bash \
-        demyx/demyx -c 'echo $DEMYX_VERSION' | sed 's/\r//g')"
+        demyx/demyx:"${DEMYX_HOST_VERSION}" -c 'echo $DEMYX_VERSION' | sed 's/\r//g')"
 
     if [[ "${DEMYX_HOST_UPGRADE_VERSION}" != "${DEMYX_HOST_UPGRADE_CHECK}" ]]; then
         docker run -t --rm \
             -v /usr/local/bin:/tmp \
+            -v demyx:/demyx \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -e DOCKER_HOST="" \
             --user=root \
             --entrypoint=bash \
-            demyx/demyx -c 'cp -f /etc/demyx/host.sh /tmp/demyx; chmod +x /tmp/demyx'
+            demyx/demyx:"${DEMYX_HOST_VERSION}" -c 'demyx-yml; cp -f /etc/demyx/host.sh /tmp/demyx; chmod +x /tmp/demyx'
 
-        demyx_host_compose up -d
+        demyx_host_compose up -d --force-recreate --remove-orphans
         echo
         echo -e "\e[33m[WARNING]\e[39m Helper script has been updated, running upgrade again ..."
+        if [[ -n "$DEMYX_HOST_UPGRADE_FORCE" ]]; then
+            exec demyx host upgrade -f
+        fi
         exec demyx host upgrade
     fi
 
@@ -349,7 +358,7 @@ demyx_host_upgrade() {
     demyx_host_exec update
 
     # Remove old images
-    docker images --filter=dangling=true -q | xargs docker rmi || true
+    docker images --filter=dangling=true -q | xargs -r docker rmi || true
 
     # Empty out this variable to suppress update message
     DEMYX_HOST_COUNT=0

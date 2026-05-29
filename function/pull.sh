@@ -69,9 +69,30 @@ demyx_pull_all() {
 demyx_pull_image() {
     demyx_event
     local DEMYX_PULL_IMAGE=demyx/"$DEMYX_ARG_2"
+    local DEMYX_PULL_IMAGE_VARIANT=
 
     if [[ "$DEMYX_ARG_2" = ctop ]]; then
         DEMYX_PULL_IMAGE="quay.io/vektorlab/ctop"
+    elif [[ "$DEMYX_ARG_2" == code-server:* ]]; then
+        DEMYX_PULL_IMAGE_VARIANT="${DEMYX_ARG_2#code-server:}"
+        DEMYX_PULL_IMAGE=demyx/code-server:"${DEMYX_VERSION}-${DEMYX_PULL_IMAGE_VARIANT}"
+    elif [[ "$DEMYX_ARG_2" == openlitespeed:* ]]; then
+        DEMYX_PULL_IMAGE_VARIANT="${DEMYX_ARG_2#openlitespeed:}"
+        DEMYX_PULL_IMAGE=demyx/openlitespeed:"${DEMYX_VERSION}-${DEMYX_PULL_IMAGE_VARIANT}"
+    elif [[ "$DEMYX_ARG_2" == wordpress:* ]]; then
+        DEMYX_PULL_IMAGE_VARIANT="${DEMYX_ARG_2#wordpress:}"
+        DEMYX_PULL_IMAGE=demyx/wordpress:"${DEMYX_VERSION}-${DEMYX_PULL_IMAGE_VARIANT}"
+    elif [[ "$DEMYX_ARG_2" = browsersync ||
+            "$DEMYX_ARG_2" = demyx ||
+            "$DEMYX_ARG_2" = docker-socket-proxy ||
+            "$DEMYX_ARG_2" = mariadb ||
+            "$DEMYX_ARG_2" = nginx ||
+            "$DEMYX_ARG_2" = openlitespeed ||
+            "$DEMYX_ARG_2" = ssh ||
+            "$DEMYX_ARG_2" = traefik ||
+            "$DEMYX_ARG_2" = utilities ||
+            "$DEMYX_ARG_2" = wordpress ]]; then
+        DEMYX_PULL_IMAGE=demyx/"$DEMYX_ARG_2":"${DEMYX_VERSION}"
     elif [[   "$DEMYX_ARG_2" = pma ||
             "$DEMYX_ARG_2" = phpmyadmin ]]; then
         DEMYX_PULL_IMAGE=phpmyadmin/phpmyadmin
