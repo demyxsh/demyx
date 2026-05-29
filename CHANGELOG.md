@@ -40,6 +40,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed Docker Compose version metadata from the generated `VERSION` file.
 - Removed `DEMYX_TELEMETRY_SECRET` usage from the daily telemetry send path in `function/cron.sh`.
 
+### Security
+- Replaced shared-secret telemetry authentication with per-install Ed25519 signed telemetry requests.
+
 ## [1.10.0] - 2026-05-11
 ### Added
 - New `demyx config --pm` flag to configure PHP-FPM process manager mode (`ondemand`, `dynamic`, `static`).
