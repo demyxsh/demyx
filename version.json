@@ -1,6 +1,6 @@
 {
   "alpine": "3.24.1",
   "demyx": "1.11.0",
-  "docker": "29.5.3",
+  "docker": "29.6.0",
   "docker_compose": ""
 }
