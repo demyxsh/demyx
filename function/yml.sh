@@ -1130,7 +1130,7 @@ demyx_yml_service_pma() {
               - PMA_HOST=db_\${DEMYX_APP_ID}
               - TZ=$TZ
               - UPLOAD_LIMIT=64M
-            image: phpmyadmin/phpmyadmin
+            image: phpmyadmin
             labels:
               - \"traefik.enable=true\"
               - \"traefik.http.routers.\${DEMYX_APP_COMPOSE_PROJECT}-pma.rule=(Host(\`$(demyx_app_domain)\`) && PathPrefix(\`/demyx/pma/\`))\"
